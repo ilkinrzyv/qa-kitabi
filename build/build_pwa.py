@@ -167,8 +167,9 @@ adi tətbiq kimi quraşdırılır.
 
 Claude (müəllim, rol oyunları, “Claude ilə” düymələri) yalnız internet olanda işləyir — iki yolla:
 
-1. **Öz Anthropic API açarınla** — cavablar birbaşa tətbiqin içində gəlir.
-2. **claude.ai versiyasında** — {ARTIFACT} (açar lazım deyil, Claude öz hesabınla işləyir).
+1. **claude.ai versiyasında** — {ARTIFACT} (açar lazım deyil, Claude öz claude.ai hesabınla işləyir).
+   Açar yoxdursa, tətbiqdəki Claude düymələri bu versiyanı eyni bölmədə açır və eyni əməliyyatı başladır.
+2. **Öz Anthropic API açarınla** (istəyə görə) — cavablar birbaşa tətbiqin içində gəlir.
 
 Versiya: `{VERSION}` · cihazda tutduğu yer: təxminən {mb} MB.
 
@@ -202,10 +203,15 @@ Hesabsız yüklənən sayt müvəqqəti qalır — saxlamaq üçün pulsuz hesab
 İlk açılışda bütün kitab cihazda saxlanılır. Ayarlar → Tətbiq bölməsində “Offline hazırdır” yazısı görünəndən
 sonra tətbiqi internetsiz də aça bilərsən.
 
-## 3. Claude-u qoş (istəyə görə)
+## 3. Claude
+
+Heç nə qurmaq lazım deyil: açar yoxdursa, Claude düymələri claude.ai versiyasını açır və Claude orada öz
+claude.ai hesabınla (məsələn, Pro abunəliyinlə) işləyir. Yazdığın cavab və ya sual buferə kopyalanır — orada yapışdır.
+
+Cavabların tətbiqin özündə gəlməsini istəsən, öz API açarını əlavə et:
 
 1. Anthropic Console-da açar yarat: https://platform.claude.com/settings/keys (açar `sk-ant-` ilə başlayır).
-2. Tətbiqdə Ayarlar → Claude → açarı yapışdır → “Yoxla və saxla”.
+2. Tətbiqdə Ayarlar → Claude → “Əlavə: öz API açarınla bu tətbiqin içində” → açarı yapışdır → “Yoxla və saxla”.
 3. Model və düşünmə dərinliyini seç. Standart: Opus 5.5, “Yüksək”.
 
 Bilməli olduqların:
@@ -213,7 +219,7 @@ Bilməli olduqların:
   Console-da xərc limiti qoymaq məsləhətdir. Tətbiq bu cihazdakı sorğu və token sayını Ayarlarda göstərir.
 - Açar yalnız bu cihazın brauzerində saxlanılır və yalnız `api.anthropic.com`-a göndərilir. Paylaşılan cihazda
   açar saxlama; açar başqasının əlinə keçsə, Console-da onu ləğv et.
-- Açar olmadan Claude düymələri claude.ai versiyasını açmağı təklif edir.
+- Açarı silsən, Claude düymələri yenə claude.ai versiyasını açacaq.
 
 ## 4. Məlumatların
 

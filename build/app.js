@@ -302,7 +302,7 @@ function aiErr(e) {
     case 'refused': return 'Claude bu sorğuya cavab vermədi. Sualı başqa cür yaz.';
     case 'empty_completion': return 'Cavab boş gəldi. Sualı qısalt və ya sadələşdir.';
     case 'prompt_too_large': return 'Mətn çox uzundur. Daha qısa hissə seç.';
-    case 'no_key': return 'Claude üçün API açarı lazımdır — və ya bu bölməni claude.ai versiyasında aç.';
+    case 'no_key': return 'API açarı yoxdur — bu bölməni claude.ai versiyasında aç, Claude orada öz hesabınla işləyir.';
     case 'offline': return 'İnternet yoxdur. Claude yalnız onlayn işləyir; kitab, testlər və kartlar offline da işləyir.';
     case 'auth': case 'permission': return 'API açarı qəbul edilmədi (yanlışdır və ya ləğv edilib). Claude ayarlarında açarı yoxla.';
     case 'credit': return 'Anthropic API hesabında kredit qalmayıb. Console-da (platform.claude.com) Billing bölməsindən balansı artır.';
@@ -332,15 +332,26 @@ function artHash() {
   if (S.view === 'practice') return 'mesq';
   return '';
 }
-// offline app: stop before an AI action when Claude cannot answer, and show the way to connect
+// offline app: stop before an AI action when Claude cannot answer here. Without a key the action moves to the
+// claude.ai version, where Claude runs on the reader's own claude.ai account (no API key)
 let PENDING = null;
 function claudeGate(resume, ctx) {
   if (!PWA) return false;
   const st = PWA.status();
   if (st === 'ok') return false;
   if (st === 'offline') { toast('İnternet yoxdur — Claude yalnız onlayn işləyir.'); return true; }
-  openClaudeSetup(Object.assign({ resume }, ctx || {}));
+  openOnClaudeAi(Object.assign({ resume }, ctx || {}));
   return true;
+}
+// what the reader typed or selected never goes into the link (anyone could craft one); it goes to the clipboard
+const COPY = { answer: ['Cavabın', 'Cavabımı'], question: ['Sualın', 'Sualımı'], message: ['Mesajın', 'Mesajımı'], selection: ['Seçdiyin hissə', 'Seçdiyim hissəni'] };
+function openOnClaudeAi(ctx) {
+  const kind = COPY[ctx.copyKind] ? ctx.copyKind : 'answer';
+  if (ctx.copy) { try { navigator.clipboard.writeText(ctx.copy).catch(() => { }); } catch (e) { } }
+  const w = window.open(PWA.artifactLink(ctx.hash || artHash()), '_blank');
+  if (!w) { openClaudeSetup(ctx); return; } // pop-up blocked: the setup sheet has the same link
+  try { w.opener = null; } catch (e) { }
+  toast(ctx.copy ? `${COPY[kind][0]} kopyalandı — claude.ai-da yapışdır. Claude orada öz hesabınla işləyir.` : 'claude.ai versiyası açıldı — Claude orada öz hesabınla işləyir.');
 }
 const RULES = `Sən QA (proqram təminatının testi) üzrə təcrübəli və səbirli müəllimsən. Tələbə QA-nı sıfırdan öyrənir: proqramlaşdırma təcrübəsi yoxdur, kursla yanaşı “QA Kitabı: Sıfırdan Peşəkar Testerə” kitabını interaktiv formada oxuyur.
 Qaydalar:
@@ -908,8 +919,8 @@ function pwaNotice() {
   if (!PWA) return '';
   const st = PWA.status();
   if (st === 'offline') return `<div class="card pwa-note"><div class="kicker"><span lang="en">Offline</span> rejim</div><p>İnternet yoxdur — Claude internet qayıdanda işləyəcək. Kitab, testlər, kartlar və qeydlər indi də işləyir.</p></div>`;
-  if (st === 'no_key') return `<div class="card pwa-note"><div class="kicker">Claude qoşulmayıb</div><p>Müəllim, rol oyunları və “Claude ilə” düymələri üçün iki yol var: öz Anthropic API açarını əlavə et və ya bu bölməni claude.ai versiyasında aç.</p>
-    <div class="row"><button class="btn sm primary" data-act="claude-setup">${icon('key')}API açarı əlavə et</button><a class="btn sm" href="${esc(PWA.artifactLink(artHash()))}" target="_blank" rel="noopener">claude.ai-da aç${icon('ext')}</a></div></div>`;
+  if (st === 'no_key') return `<div class="card pwa-note"><div class="kicker">Claude — claude.ai-da</div><p>Müəllim və rol oyunları claude.ai versiyasında açılır: Claude orada öz claude.ai hesabınla işləyir, API açarı lazım deyil. Sualını göndərəndə də ora keçəcəksən.</p>
+    <div class="row"><a class="btn sm primary" href="${esc(PWA.artifactLink(artHash()))}" target="_blank" rel="noopener">claude.ai-da aç${icon('ext')}</a><button class="btn sm ghost" data-act="claude-setup">${icon('key')}Öz API açarım var</button></div></div>`;
   return '';
 }
 const modeSwitch = () => `<div class="seg tmode" role="group" aria-label="Rejim"><button data-act="tutor-mode" data-v="chat" aria-pressed="${S.tutorMode !== 'rp'}">${icon('chat')}Söhbət</button><button data-act="tutor-mode" data-v="rp" aria-pressed="${S.tutorMode === 'rp'}">${icon('users')}Rol oyunu</button></div>`;
@@ -924,7 +935,7 @@ function vTutor(v) {
   const quick = ['Bu fəsli 5 cümlədə xülasə et', 'Mənə 3 qısa sual ver', 'Bu mövzudan müsahibə sualı ver', 'Ən çətin anlayışı sadə izah et'];
   v.innerHTML = `<div class="tutor">${modeSwitch()}${pwaNotice()}
     <div class="ctxbar"><span class="kicker">Kontekst</span><select id="tctx" aria-label="Söhbətin konteksti">${opts}</select></div>
-    <div class="msgs" id="msgs">${chat.turns.length ? chat.turns.map(msgHTML).join('') : `<div class="card"><div style="font-weight:600">Salam! Mən Claude-am — bu kitab üzrə müəllimin.</div><p class="muted" style="margin:6px 0 0;font-size:14.5px">Seçdiyin fəsil haqqında istənilən sualı ver: anlamadığın yer, misal, müsahibə hazırlığı. ${PWA ? 'Cavablar Ayarlar → Claude bölməsində seçdiyin modellə hazırlanır; ilk söz bir az gec gələ bilər.' : 'Cavablar Opus 5.5 ilə maksimum düşünmə rejimində hazırlanır, ona görə ilk söz bir az gec gələ bilər.'}</p></div>`}</div>
+    <div class="msgs" id="msgs">${chat.turns.length ? chat.turns.map(msgHTML).join('') : `<div class="card"><div style="font-weight:600">Salam! Mən Claude-am — bu kitab üzrə müəllimin.</div><p class="muted" style="margin:6px 0 0;font-size:14.5px">Seçdiyin fəsil haqqında istənilən sualı ver: anlamadığın yer, misal, müsahibə hazırlığı. ${PWA ? (PWA.hasKey() ? 'Cavablar Ayarlar → Claude bölməsində seçdiyin modellə hazırlanır; ilk söz bir az gec gələ bilər.' : 'Sualını göndərəndə claude.ai versiyası açılır və Claude orada öz hesabınla cavab verir.') : 'Cavablar Opus 5.5 ilə maksimum düşünmə rejimində hazırlanır, ona görə ilk söz bir az gec gələ bilər.'}</p></div>`}</div>
     <div class="quick" id="quick">${quick.map(q => `<button class="qp" data-act="tutor-quick" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
     <div class="composer"><textarea id="tin" rows="1" placeholder="Sualını yaz…" aria-label="Sual"></textarea><button class="send" id="tsend" data-act="tutor-send" aria-label="Göndər">${icon('send')}</button></div>
     <div class="ai-note" id="tnote">${esc(AI.modelNote)}</div></div>`;
@@ -953,7 +964,7 @@ function tutorInput() {
 async function tutorSend(text) {
   text = (text || '').trim();
   if (!text || S.tutorBusy) return;
-  if (claudeGate(() => tutorSend(text), { hash: 'muellim' })) { const t = $('#tin'); if (t && !t.value) { t.value = text; autoGrow(t); } return; }
+  if (claudeGate(() => tutorSend(text), { hash: 'muellim', copy: text, copyKind: 'question' })) { const t = $('#tin'); if (t && !t.value) { t.value = text; autoGrow(t); } return; }
   const chat = Store.doc('chat');
   chat.turns.push({ role: 'user', content: text });
   if (chat.turns.length > 40) chat.turns = chat.turns.slice(-40);
@@ -1092,7 +1103,7 @@ function vRoleplay(v) {
 }
 async function rpCall(kind, text) {
   const r = RP.find(x => x.id === S.rp); if (!r || S.rpBusy) return;
-  if (claudeGate(() => rpCall(kind, text), { hash: 'rol' })) { const t = $('#rpin'); if (kind === 'send' && t && !t.value) { t.value = text || ''; autoGrow(t); } return; }
+  if (claudeGate(() => rpCall(kind, text), { hash: 'rol', copy: kind === 'send' ? text || '' : '', copyKind: 'message' })) { const t = $('#rpin'); if (kind === 'send' && t && !t.value) { t.value = text || ''; autoGrow(t); } return; }
   const rec = rpRec(r.id);
   if (kind === 'send') {
     text = (text || '').trim(); if (!text) return;
@@ -1227,14 +1238,21 @@ function pwaClaudeRow() {
   const c = PWA.cfg(), has = PWA.hasKey(), u = c.usage;
   const segM = PWA.MODELS.map(m => `<button data-act="ai-model" data-v="${m[0]}" aria-pressed="${String(c.model === m[0])}">${esc(m[1])}</button>`).join('');
   const segE = PWA.EFFORTS.map(m => `<button data-act="ai-effort" data-v="${m[0]}" aria-pressed="${String(c.effort === m[0])}">${esc(m[1])}</button>`).join('');
-  return `<div class="set-row" id="set-claude"><div class="lb">Claude</div>
-    <div class="ds">${has ? `Qoşulub — açar ${esc(PWA.keyHint())}. Claude internet olanda işləyir.` : 'Qoşulmayıb. Öz API açarını əlavə et və ya Claude-dan claude.ai versiyasında istifadə et.'}</div>
-    ${has ? `<div class="row"><button class="btn sm ghost" data-act="key-del">${icon('trash')}Açarı sil</button></div>` : keyFormHTML()}
-    <div class="lb2">Model</div><div class="seg">${segM}</div>
+  const art = `<div class="row"><a class="btn sm${has ? ' ghost' : ''}" href="${esc(PWA.artifactLink(artHash()))}" target="_blank" rel="noopener">claude.ai versiyasını aç${icon('ext')}</a></div>`;
+  const tuning = `<div class="lb2">Model</div><div class="seg">${segM}</div>
     <div class="lb2">Düşünmə dərinliyi</div><div class="seg">${segE}</div>
     <div class="ds">Opus 5.5 — ən güclü; Sonnet 5.5 — təxminən iki dəfə ucuz; Haiku 5.5 — ən sürətli və ən ucuz. “Maksimum” daha dərin düşünür, amma daha yavaş və baha olur.</div>
-    <div class="ds">Bu cihazda: ${fmtN(u.n)} sorğu · ${fmtN(u.inp)} giriş + ${fmtN(u.out)} çıxış token${u.n ? ` · <button class="linkbtn" data-act="usage-reset">sıfırla</button>` : ''}</div>
-    <div class="row"><a class="btn sm ghost" href="${esc(PWA.artifactLink(artHash()))}" target="_blank" rel="noopener">claude.ai versiyasını aç${icon('ext')}</a></div></div>`;
+    <div class="ds">Bu cihazda: ${fmtN(u.n)} sorğu · ${fmtN(u.inp)} giriş + ${fmtN(u.out)} çıxış token${u.n ? ` · <button class="linkbtn" data-act="usage-reset">sıfırla</button>` : ''}</div>`;
+  // no key: claude.ai is the way; the API key stays available but folded away
+  if (!has) return `<div class="set-row" id="set-claude"><div class="lb">Claude</div>
+    <div class="ds">Claude düymələri claude.ai versiyasını eyni bölmədə açır və eyni əməliyyatı başladır. Claude orada öz claude.ai hesabınla işləyir — API açarı lazım deyil.</div>
+    ${art}
+    <details class="keyopt"><summary>Əlavə: öz API açarınla bu tətbiqin içində</summary>${keyFormHTML()}${tuning}</details></div>`;
+  return `<div class="set-row" id="set-claude"><div class="lb">Claude</div>
+    <div class="ds">Qoşulub — açar ${esc(PWA.keyHint())}. Claude bu tətbiqin içində, internet olanda işləyir.</div>
+    <div class="row"><button class="btn sm ghost" data-act="key-del">${icon('trash')}Açarı sil</button></div>
+    ${tuning}
+    ${art}</div>`;
 }
 function pwaDataRow() {
   return `<div class="set-row"><div class="lb">Məlumatlar</div>
@@ -1258,17 +1276,19 @@ function refreshPwaRow(id) {
 function openClaudeSetup(ctx) {
   ctx = ctx || {};
   const link = PWA.artifactLink(ctx.hash || artHash());
+  const kind = COPY[ctx.copyKind] ? ctx.copyKind : 'answer';
   openSheet(sheetHead('Claude', 'Claude-u necə qoşaq?') + `<div class="sheet-body">
     <p class="setup-lead">Kitab, testlər və kartlar internetsiz işləyir. Claude isə internet tələb edir — iki yol var:</p>
-    <div class="card setup"><div class="kicker">1 · Burada, öz API açarınla</div>
-      <p>Cavablar bu tətbiqin içində gəlir. Açarı Anthropic Console-da yaradırsan; ödəniş API hesabından çıxılır.</p>
+    <div class="card setup"><div class="kicker">1 · <span lang="en">claude.ai</span> versiyasında — açarsız</div>
+      <p>Eyni interaktiv kitab claude.ai-da açılır və Claude orada öz claude.ai hesabınla işləyir. Oradakı irəliləyiş bu tətbiqdən ayrıca saxlanılır.</p>
+      <div class="row">${ctx.copy ? `<button class="btn sm" data-act="copy-ans">${icon('copy')}${COPY[kind][1]} kopyala</button>` : ''}<a class="btn sm primary" href="${esc(link)}" target="_blank" rel="noopener">claude.ai-da aç${icon('ext')}</a></div></div>
+    <div class="card setup"><div class="kicker">2 · Burada, öz API açarınla</div>
+      <p>Cavablar bu tətbiqin içində gəlir. Açarı Anthropic Console-da yaradırsan; ödəniş claude.ai abunəliyindən ayrı, API hesabından çıxılır.</p>
       ${keyFormHTML()}</div>
-    <div class="card setup"><div class="kicker">2 · <span lang="en">claude.ai</span> versiyasında</div>
-      <p>Eyni interaktiv kitab claude.ai-da açılır və Claude orada öz hesabınla işləyir — açar lazım deyil. Oradakı irəliləyiş bu tətbiqdən ayrıca saxlanılır.</p>
-      <div class="row">${ctx.answer ? `<button class="btn sm" data-act="copy-ans">${icon('copy')}Cavabımı kopyala</button>` : ''}<a class="btn sm primary" href="${esc(link)}" target="_blank" rel="noopener">claude.ai-da aç${icon('ext')}</a></div></div>
   </div>`, '', () => { PENDING = null; });
   PENDING = ctx.resume || null;
-  sheetEl._answer = ctx.answer || '';
+  sheetEl._answer = ctx.copy || '';
+  sheetEl._copyKind = kind;
 }
 async function saveKey(btn) {
   const inp = $('#apikey'), msg = $('#keymsg');
@@ -1368,7 +1388,7 @@ function openConfirm(title, text, okLabel, onOk) {
 /* AI conversation sheet */
 let SH = null; // {turns, kicker, title, sid, ctl, busy}
 function openAISheet(cfg) {
-  if (claudeGate(() => openAISheet(cfg), { hash: cfg.sid ? secCh[cfg.sid] : artHash() })) return;
+  if (claudeGate(() => openAISheet(cfg), { hash: cfg.art || cfg.sid || artHash(), copy: cfg.copy, copyKind: cfg.copyKind })) return;
   SH = { turns: [{ role: 'user', content: cfg.prompt }], shown: [], kicker: cfg.kicker, title: cfg.title, sid: cfg.sid || null, cache: !!cfg.cache, ctl: null, busy: false, follow: cfg.follow !== false, label: cfg.label || '' };
   openSheet(sheetHead('Claude · ' + cfg.kicker, cfg.title) + `<div class="sheet-body" id="shb">${cfg.label ? `<div class="ai-note" style="margin-bottom:10px">${esc(cfg.label)}</div>` : ''}<div class="msgs" id="shm"></div></div>
     <div class="sheet-foot"><div class="acts" id="sha"></div>${SH.follow ? `<div class="inrow"><textarea id="shin" rows="1" placeholder="${['quizme', 'lesson', 'mistakes', 'weak'].includes(cfg.mode) ? 'Cavabını yaz…' : 'Əlavə sual ver…'}" aria-label="Mesaj"></textarea><button class="send" id="shsend" data-act="sh-send" aria-label="Göndər">${icon('send')}</button></div>` : ''}<div class="ai-note" id="shnote"></div></div>`, 'ai', () => { if (SH && SH.ctl) SH.ctl.abort(); SH = null; });
@@ -1420,16 +1440,16 @@ function shSend() {
 }
 function aiForSection(mode, sid) {
   const s = secById[sid]; const M = MODES[mode];
-  openAISheet({ mode, kicker: M.kicker, title: secLabel(s), sid, cache: !!M.cache, prompt: `${RULES}\n\n${secCtx(sid)}\n\nTapşırıq: ${M.ask}` });
+  openAISheet({ mode, kicker: M.kicker, title: secLabel(s), sid, art: sid + '-' + mode, cache: !!M.cache, prompt: `${RULES}\n\n${secCtx(sid)}\n\nTapşırıq: ${M.ask}` });
 }
 function aiForSelection(text, sid) {
   const s = secById[sid];
-  openAISheet({ mode: 'sel', kicker: 'Seçilmiş hissə', title: secLabel(s), sid, label: '«' + (text.length > 140 ? text.slice(0, 140) + '…' : text) + '»',
+  openAISheet({ mode: 'sel', kicker: 'Seçilmiş hissə', title: secLabel(s), sid, copy: text, copyKind: 'selection', label: '«' + (text.length > 140 ? text.slice(0, 140) + '…' : text) + '»',
     prompt: `${RULES}\n\n${secCtx(sid, 6000)}\n\nTələbə bu bölmədən aşağıdakı hissəni seçib və onu başa düşmək istəyir:\n«${text.slice(0, 1500)}»\n\nTapşırıq: seçilmiş hissəni sadə dillə izah et; lazım olsa, kiçik misal ver. Həcm: 120–250 söz.` });
 }
 function aiForTerm(gid) {
   const g = glById[gid];
-  openAISheet({ mode: 'term', kicker: 'Termin', title: `${g.en} — ${g.az}`, cache: true,
+  openAISheet({ mode: 'term', kicker: 'Termin', title: `${g.en} — ${g.az}`, art: gid + '-term', cache: true,
     prompt: `${RULES}\n\nTapşırıq: “${g.en}” (${g.az}) terminini izah et: nə deməkdir, tester üçün niyə vacibdir, bir praktik misal ver və tez-tez qarışdırılan oxşar terminlə fərqini göstər. Kitabdakı qısa izah: “${g.def}” (Fəsil ${g.ch.join(', ')}). Həcm: 150–250 söz.` });
 }
 function aiForQuiz() {
@@ -1439,18 +1459,18 @@ function aiForQuiz() {
   const pickL = L[it.perm.indexOf(it.pick)], rightL = L[it.perm.indexOf(q.a)];
   const wrong = it.pick !== q.a;
   const s = secById[q.sec];
-  openAISheet({ mode: 'quizwhy', kicker: 'Test sualı', title: q.q, cache: true,
+  openAISheet({ mode: 'quizwhy', kicker: 'Test sualı', title: q.q, art: s ? s.id : '', cache: true,
     prompt: `${RULES}\n\n${s ? secCtx(s.id, 5000) + '\n\n' : ''}Test sualı: ${q.q}\nVariantlar:\n${optsTxt}\nMənim seçimim: ${pickL}) ${q.o[it.pick]}\nDüzgün cavab: ${rightL}) ${q.o[q.a]}\nKitabdakı qısa izah: ${q.e}\n\nTapşırıq: ${wrong ? 'mənim seçimimin niyə səhv olduğunu və düzgün cavabın niyə doğru olduğunu' : 'düzgün cavabın niyə doğru olduğunu daha dərindən'} sadə dillə, bir misalla izah et. Həcm: 120–220 söz.` });
 }
 
 function aiForChapterLesson(cid) {
   const c = chById[cid];
-  openAISheet({ mode: 'lesson', kicker: 'Fəsil üzrə dərs', title: chLabel(c),
+  openAISheet({ mode: 'lesson', kicker: 'Fəsil üzrə dərs', title: chLabel(c), art: cid + '-lesson',
     prompt: `${RULES}\n\nKontekst — ${chLabel(c)}.\nBölmələr: ${c.sections.filter(s => s.x).map(secLabel).join('; ')}\n\n<fəsil_mətni>\n${chText(c, 15000)}\n</fəsil_mətni>\n\nTapşırıq: ${LESSON_ASK('fəsli', '6–8')}\nHər addım fəslin bir və ya iki bölməsini əhatə etsin və addımın başlığında bölmə nömrəsini göstər.` });
 }
 function aiForKonspekt(cid) {
   const c = chById[cid];
-  openAISheet({ mode: 'quizme', kicker: 'Konspekt üzrə yoxlama', title: chLabel(c),
+  openAISheet({ mode: 'quizme', kicker: 'Konspekt üzrə yoxlama', title: chLabel(c), art: cid + '-konspekt',
     prompt: `${RULES}\n\nKontekst — ${chLabel(c)}. Fəslin konspekti:\n<konspekt>\n${konspektText(c).slice(0, 9000)}\n</konspekt>\n\nTapşırıq: konspekt üzrə biliyimi sürətli yoxla. Mənə bir-bir 5 qısa sual ver (hər mesajda BİR sual; fəslin müxtəlif bölmələrindən, bir neçəsi praktik ssenari olsun). Hər cavabımdan sonra 1–2 cümlə ilə qiymətləndir və növbəti suala keç. 5 sualdan sonra nəticəni “5-dən N” formatında yaz və hansı bölmələri təkrar oxumalı olduğumu de. İndi 1-ci sualı ver.` });
 }
 function aiForMistakes() {
@@ -1496,7 +1516,7 @@ async function inlineAI(kind, id) {
   const ta = document.querySelector(`[data-ans="${id}"]`);
   const answer = (ta && ta.value || '').trim();
   if (kind !== 'hint' && !answer) { toast('Əvvəlcə cavabını yaz.'); if (ta) ta.focus(); return; }
-  if (claudeGate(() => inlineAI(kind, id), { hash: info.ch, answer })) return;
+  if (claudeGate(() => inlineAI(kind, id), { hash: info.sec || (mini ? mini.s.id : info.ch), copy: answer, copyKind: 'answer' })) return;
   const itemText = htmlToText(mini ? mini.s.x.ex.try : (isTask ? info.t.html : info.q.html));
   let prompt;
   if (mini) {
@@ -1702,7 +1722,7 @@ document.addEventListener('click', ev => {
     }
     case 'claude-setup': if (PWA) openClaudeSetup({}); break;
     case 'key-save': if (PWA) saveKey(el); break;
-    case 'key-del': if (PWA) openConfirm('Açarı sil', 'API açarı bu cihazdan silinəcək. Yeni açar əlavə edənə qədər Claude burada işləməyəcək.', 'Sil', () => { PWA.clearKey(); toast('Açar silindi.'); openSettings(); if (S.view === 'tutor' && !S.tutorBusy && !S.rpBusy) rerender(); }); break;
+    case 'key-del': if (PWA) openConfirm('Açarı sil', 'API açarı bu cihazdan silinəcək. Bundan sonra Claude düymələri claude.ai versiyasını açacaq.', 'Sil', () => { PWA.clearKey(); toast('Açar silindi.'); openSettings(); if (S.view === 'tutor' && !S.tutorBusy && !S.rpBusy) rerender(); }); break;
     case 'ai-model': case 'ai-effort': {
       if (!PWA) break;
       if (act === 'ai-model') PWA.setModel(d.v); else PWA.setEffort(d.v);
@@ -1713,7 +1733,8 @@ document.addEventListener('click', ev => {
     case 'usage-reset': if (PWA) { PWA.resetUsage(); refreshPwaRow('set-claude'); } break;
     case 'copy-ans': {
       const a = sheetEl && sheetEl._answer; if (!a) break;
-      try { navigator.clipboard.writeText(a).then(() => toast('Cavabın kopyalandı — claude.ai-da eyni tapşırığa yapışdır.'), () => toast('Kopyalamaq alınmadı.')); } catch (e) { toast('Kopyalamaq alınmadı.'); }
+      const label = (COPY[sheetEl._copyKind] || COPY.answer)[0];
+      try { navigator.clipboard.writeText(a).then(() => toast(label + ' kopyalandı — claude.ai-da yapışdır.'), () => toast('Kopyalamaq alınmadı.')); } catch (e) { toast('Kopyalamaq alınmadı.'); }
       break;
     }
     case 'data-export': if (PWA) exportData(); break;
@@ -1803,9 +1824,24 @@ pill.id = 'selpill'; pill.className = 'selpill'; pill.hidden = true; pill.innerH
 document.body.appendChild(pill);
 applyPrefs();
 AI.setState('pending');
+// links from the offline app: #c3s4 opens a section; #c3s4-simple, #c3-lesson, #c3-konspekt and #g12-term also
+// start that Claude action once Claude is ready. Only ids from the book are accepted, so a link cannot carry its own prompt.
+let AUTO = null;
+const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 function routeHash() {
+  AUTO = null;
   const h = (location.hash || '').replace('#', '');
-  if (/^c\d{1,2}$/.test(h) && chById[h]) { S.tab = 'book'; S.view = 'reader'; S.params = { ch: h }; }
+  const [t, act] = h.split('-');
+  if (/^c\d{1,2}$/.test(t) && chById[t]) {
+    S.tab = 'book'; S.view = 'reader'; S.params = { ch: t };
+    if (act === 'lesson') AUTO = () => aiForChapterLesson(t);
+    else if (act === 'konspekt') AUTO = () => aiForKonspekt(t);
+  }
+  else if (own(secById, t)) {
+    S.tab = 'book'; S.view = 'reader'; S.params = { ch: secCh[t], sec: t };
+    if (own(MODES, act) && (act !== 'lesson' || secById[t].x)) AUTO = () => aiForSection(act, t);
+  }
+  else if (own(glById, t) && act === 'term') { S.view = 'glossary'; S.params = {}; AUTO = () => aiForTerm(t); }
   else if (h === 'gb') { S.view = 'reader'; S.params = { ch: 'gb' }; }
   else if (h === 'ga' || h === 'luget') { S.view = 'glossary'; S.params = {}; }
   else if (h === 'mesq' || h === 'practice') { S.tab = 'practice'; S.view = 'practice'; S.params = {}; }
@@ -1816,11 +1852,19 @@ function routeHash() {
   S.stack = [];
   return true;
 }
+// claude.ai version only: the offline app has no Claude without a key and would bounce the action straight back
+function runAuto() {
+  const f = AUTO; AUTO = null;
+  if (!f || PWA) return;
+  if (AI.state !== 'on') { toast('Claude bu görünüşdə əlçatan deyil: icazə verilməyib və ya hesabda söndürülüb.'); return; }
+  try { history.replaceState(null, '', '#' + location.hash.slice(1).split('-')[0]); } catch (e) { } // a reload must not repeat it
+  f();
+}
 (function boot() { routeHash(); render(); })();
 // links like #c5 or #mesq (app shortcuts) also work while the page is already open
-window.addEventListener('hashchange', () => { if (routeHash()) { closeSheet(); render(); } });
+window.addEventListener('hashchange', () => { if (routeHash()) { closeSheet(); render(); AI.ready.then(runAuto); } });
 AI.ready = AI.init();
-AI.ready.then(() => { if (S.view === 'tutor' && !S.tutorBusy) rerender(); refreshSettings(); });
+AI.ready.then(() => { if (S.view === 'tutor' && !S.tutorBusy) rerender(); refreshSettings(); runAuto(); });
 if (PWA) {
   PWA.on('net', () => {
     toast(PWA.online() ? 'İnternet bərpa olundu — Claude yenə əlçatandır.' : 'İnternet yoxdur — kitab offline işləyir, Claude isə yox.');
