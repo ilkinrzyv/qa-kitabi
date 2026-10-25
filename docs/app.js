@@ -596,13 +596,24 @@ function miniHTML(c, s, open) {
         <div class="fb" data-fb="${id}"${a.fb || a.h ? '' : ' hidden'}>${fbHTML(a)}</div></div>
     </div></details>`;
 }
+// good / bad cards (compare.json): the wrong and the right way to write one field; "Niyə?" opens the reason
+function cmpHTML(s) {
+  if (!s.cmp || !s.cmp.length) return '';
+  return `<div class="cmp"><div class="cmp-k">${icon('checklist')}Pis və yaxşı yazılış</div>${s.cmp.map((k, i) => {
+    const o = `cmp:${s.id}:${i}`;
+    return `<div class="cmp-card"><div class="cmp-tag">${esc(k.tag)}</div>
+      <div class="cmp-pair"><div class="cmp-side bad"><span class="cmp-m">${icon('x')}Pis</span><p>${esc(k.bad)}</p></div>
+        <div class="cmp-side good"><span class="cmp-m">${icon('check')}Yaxşı</span><p>${esc(k.good)}</p></div></div>
+      <details class="cmp-why" data-open="${o}"${OPEN[o] ? ' open' : ''}><summary>${icon('help')}Niyə?</summary><p>${esc(k.why)}</p></details></div>`;
+  }).join('')}</div>`;
+}
 function textBody(c, s) {
   const lv = lvlOf(s.id);
   if (lv === 'short') {
-    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${keysHTML(s.x)}
+    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${keysHTML(s.x)}
       <button class="btn sm ghost more" data-act="lvl" data-sec="${s.id}" data-v="std">${icon('book')}Tam mətni oxu</button>${miniHTML(c, s, false)}`;
   }
-  return `<div class="prose">${s.html}</div>${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
+  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
 }
 function fbHTML(a) {
   let h = '';
@@ -651,7 +662,7 @@ function secHTML(c, s) {
   else if (s.kind === 'selfcheck') body = selfHTML(c, s);
   else if (s.kind === 'checklist') body = checklistHTML(s);
   else if (s.x) body = textBody(c, s);
-  else body = `<div class="prose">${s.html}</div>`;
+  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}`;
   return `<section class="sec${learned ? ' learned' : ''}" id="${s.id}" data-sec="${s.id}" data-kind="${s.kind}">
     <header class="sec-h"><span class="sec-num">${esc(s.num || kindTag(s).toLocaleUpperCase('az'))}</span><h2>${esc(s.title)}</h2>${s.x ? lvlCtl(s.id, lvlOf(s.id)) : ''}</header>
     ${body}${footerHTML(c, s)}</section>`;
