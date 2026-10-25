@@ -27,6 +27,8 @@ Screenshots land in `build/shots/` (gitignored).
   with Pygments, inserts diagrams after their anchor text and links glossary terms.
 - `build/deep/cNN.txt` — depth layers per section: `=== <sid>`, then `@qısa`, `@yadda` (3 bullets), `@dərin`, `@nümunə`,
   `@addımlar` (3–6 steps), `@növbən`.
+- `build/interview.json` — “Müsahibədə belə de” line for every glossary term, keyed by the English term; `parse_book.py`
+  counts a missing or unknown term as an error. Shown in the term sheet, the glossary (folded) and on flipped flashcards.
 - `build/quiz_*.json` — chapter quizzes. `build/diagrams.py` — SVG diagrams registered with `reg(slug, sid, anchor, cap, d)`,
   drawn with `svgkit.py` (text measured with the vendored fonts in `fonts/`, overlap and overflow checks).
 - `build/app.js` — the whole UI in one IIFE, no framework. `PWA = window.QA_PWA` exists only in the offline build:

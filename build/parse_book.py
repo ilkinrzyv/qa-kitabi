@@ -410,6 +410,15 @@ for chn, qs in quizzes.items():
         else:
             q['sec'] = target['id']
         assert len(q['o']) == 4 and 0 <= q['a'] < 4, q
+# ---------- 6c. "say it in an interview" lines for every glossary term (interview.json, keyed by English term) ----------
+say = json.load(open(os.path.join(BASE, 'interview.json'), encoding='utf-8'))
+for g in glossary:
+    if not (say.get(g['en']) or '').strip():
+        print('ERR interview line missing', g['en'], file=sys.stderr); errors += 1
+    else:
+        g['say'] = say[g['en']].strip()
+for k in set(say) - {g['en'] for g in glossary}:
+    print('ERR interview line for unknown term', k, file=sys.stderr); errors += 1
 # ---------- 6b. new narrow diagrams (diagrams.py) ----------
 sys.path.insert(0, BASE)
 from diagrams import ALL as NEW_DIAGRAMS
@@ -544,5 +553,5 @@ for ch in chapters:
             extra += f" k{len(s['items'])}"
     print(f"  {ch['id']:4} {ch['kind']:9} {str(ch['num']):5} secs={len(ch['sections']):2} {kinds} {extra} | {ch['title'][:50]}")
 print('deep layers', deep_count, 'missing', len(deep_missing))
-print('total sections', tot_sec, 'glossary', len(glossary), 'quiz chapters', len(quizzes), 'quiz q', sum(len(v) for v in quizzes.values()), 'errors', errors)
+print('total sections', tot_sec, 'glossary', len(glossary), 'quiz chapters', len(quizzes), 'quiz q', sum(len(v) for v in quizzes.values()), 'interview lines', sum(1 for g in glossary if g.get('say')), 'errors', errors)
 print('json bytes', os.path.getsize(OUT))
