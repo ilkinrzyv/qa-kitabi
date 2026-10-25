@@ -31,6 +31,9 @@ Screenshots land in `build/shots/` (gitignored).
   drawn with `svgkit.py` (text measured with the vendored fonts in `fonts/`, overlap and overflow checks).
 - `build/app.js` — the whole UI in one IIFE, no framework. `PWA = window.QA_PWA` exists only in the offline build:
   guard PWA-only code with `if (PWA)` so the artifact keeps working.
+- Offline app without a key: `claudeGate()` opens the artifact at `#<id>-<action>` (`#c3s4-simple`, `#c3-lesson`,
+  `#c3-konspekt`, `#g12-term`); `routeHash()` there starts that action once. Only book ids travel in the link — typed
+  text goes to the clipboard. The handoff needs the artifact republished from the same `app.js`.
 - `build/pwa.js` — offline layer: service-worker registration, install prompt, Claude through the reader's own Anthropic
   API key (Messages API, streamed SSE, `anthropic-dangerous-direct-browser-access`, default model `claude-opus-5-5`,
   `output_config.effort`), progress export/import. Its `sample()` keeps the artifact runtime's contract

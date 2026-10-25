@@ -2,7 +2,7 @@
    Loaded before app.js; app.js finds it as window.QA_PWA. */
 (function () {
 'use strict';
-const VERSION = '2026.10.25-4a9eb04';
+const VERSION = '2026.10.25-c20884d';
 const ASSET_COUNT = 46;
 const CACHE = 'qa-kitab-' + VERSION;
 const ARTIFACT = 'https://claude.ai/artifact/ARfQ7Q2V6TsZ3nBnJdQzLq';
@@ -41,7 +41,8 @@ function keyHint() { const k = key(); return k ? k.slice(0, 7) + '…' + k.slice
 function modelName(id) { const m = MODELS.find(x => x[0] === id); return m ? m[2] : id; }
 function effortName(id) { const e = EFFORTS.find(x => x[0] === id); return e ? e[1].toLocaleLowerCase('az') : id; }
 function modelLabel() { const c = cfg(); return `${modelName(c.model)} · düşünmə: ${effortName(c.effort)} · öz API açarın`; }
-function artifactLink(hash) { return ARTIFACT + (hash && /^[a-z0-9]+$/i.test(hash) ? '#' + hash : ''); }
+// hash: a place (c5, c3s4, muellim…) and optionally the Claude action to start there (c3s4-simple, g12-term)
+function artifactLink(hash) { return ARTIFACT + (hash && /^[a-z0-9]+(-[a-z]+)?$/i.test(hash) ? '#' + hash : ''); }
 
 /* ---------- Claude: Messages API, streamed, from the browser ---------- */
 function apiHeaders(k, json) {

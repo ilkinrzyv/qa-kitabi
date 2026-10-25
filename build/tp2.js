@@ -1,4 +1,5 @@
-// PWA test 2: Claude through the reader's own API key (mocked Anthropic API), setup flow, errors, export/import.
+// PWA test 2: no key → Claude buttons hand the action to the claude.ai version; then Claude through the reader's own
+// API key (mocked Anthropic API), setup flow, errors, export/import.
 const { chromium } = require('playwright');
 const http = require('http');
 const fs = require('fs');
@@ -59,6 +60,8 @@ function okStream(text) {
         { type: 'error', error: { type: 'overloaded_error', message: 'Overloaded' } }]) });
       return route.fulfill({ status: 200, headers: Object.assign({ 'content-type': 'text/event-stream' }, CORS), body: okStream('Salam! Bu **test cavabıdır**.\n\n- birinci bənd\n- ikinci bənd\n\nƏsas fikir: hər şey işləyir.') });
     });
+    await ctx.route('https://claude.ai/**', route => route.fulfill({ status: 200, contentType: 'text/html', body: '<title>claude.ai stub</title>' }));
+    await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: `http://127.0.0.1:${PORT}` });
     const page = await ctx.newPage();
     const errors = [];
     page.on('pageerror', e => errors.push('pageerror: ' + e.message));
@@ -71,12 +74,49 @@ function okStream(text) {
     return { errors, overflow };
   };
 
-  const r1 = await run(390, false, async page => {
-    // 1. no key: an AI button opens the setup sheet with a link to the same chapter on claude.ai
+  const r1 = await run(390, false, async (page, ctx) => {
+    // 1. no key: Claude buttons open the claude.ai version at the same place with the same action; typed text goes
+    //    to the clipboard, never into the link
+    const handoff = async click => {
+      const [pop] = await Promise.all([ctx.waitForEvent('page'), click()]);
+      await pop.waitForLoadState('domcontentloaded').catch(() => { });
+      const url = pop.url(); await pop.close(); await page.bringToFront();
+      return url.replace(/^https:\/\/claude\.ai\/artifact\/[A-Za-z0-9]+/, '');
+    };
+    const clip = () => page.evaluate(() => navigator.clipboard.readText()).catch(e => 'ERR ' + e.message);
+    const H = out.handoff = {};
+    await page.click('[data-act="open-ch"][data-ch="c3"]');
+    await page.waitForSelector('.sec');
+    const sec = await page.$eval('[data-act="ai"][data-mode="simple"]', el => el.dataset.sec);
+    H.section = [await handoff(() => page.click(`[data-act="ai"][data-mode="simple"][data-sec="${sec}"]`)), '#' + sec + '-simple'];
+    H.sheetOpened = !!(await page.$('.sheet-head'));
+    H.toast = await page.$eval('.toast', el => el.textContent).catch(() => null);
+    H.lesson = [await handoff(() => page.click('[data-act="ch-lesson"][data-ch="c3"]')), '#c3-lesson'];
+    const ta0 = await page.$('.task textarea');
+    await ta0.fill('Sərhəd dəyərləri: 17, 18, 60, 61.');
+    const tid0 = await ta0.getAttribute('data-ans');
+    H.task = [await handoff(() => page.click(`[data-act="task-check"][data-task="${tid0}"]`)), '#' + await page.evaluate(id => document.querySelector(`[data-ans="${id}"]`).closest('.sec').id, tid0)];
+    H.taskClipboard = await clip();
+    await page.evaluate(() => { location.hash = '#ga'; });
+    await page.waitForSelector('[data-act="ai-term"]');
+    const g = await page.$eval('[data-act="ai-term"]', el => el.dataset.g);
+    H.term = [await handoff(() => page.click(`[data-act="ai-term"][data-g="${g}"]`)), '#' + g + '-term'];
+    await page.click('[data-act="tab"][data-tab="tutor"]');
+    await page.waitForSelector('#tin');
+    H.tutorNote = await page.$eval('.pwa-note', el => el.innerText.replace(/\s+/g, ' '));
+    await page.fill('#tin', 'Sərhəd dəyəri nədir?');
+    H.tutor = [await handoff(() => page.click('#tsend')), '#muellim'];
+    H.tutorClipboard = await clip();
+    H.tutorInputKept = await page.$eval('#tin', el => el.value);
+    H.calls = calls.length;
+    // pop-up blocked: the setup sheet appears instead, claude.ai first, the key as the second way
+    await page.evaluate(() => { window.open = () => null; });
+    await page.click('[data-act="tab"][data-tab="book"]');
     await page.click('[data-act="open-ch"][data-ch="c3"]');
     await page.waitForSelector('.sec');
     await page.click('[data-act="ai"][data-mode="simple"]');
     await page.waitForSelector('#apikey');
+    out.setupCards = await page.$$eval('.card.setup .kicker', els => els.map(e => e.textContent));
     await page.waitForTimeout(450);
     out.setupTitle = await page.$eval('.sheet-head h3', el => el.textContent);
     out.setupLink = await page.$eval('.sheet a.btn.primary', el => el.href);
@@ -174,8 +214,10 @@ function okStream(text) {
     await page.click('#topbar [data-act="settings"]');
     await page.click('[data-act="key-del"]');
     await page.click('[data-act="confirm-ok"]');
-    await page.waitForSelector('#set-claude #apikey');
+    await page.waitForSelector('#set-claude #apikey', { state: 'attached' });
     out.afterDelete = await page.evaluate(() => QA_PWA.hasKey());
+    out.claudeRowNoKey = await page.$eval('#set-claude', el => el.innerText.replace(/\s+/g, ' '));
+    out.keyFormFolded = await page.$eval('#set-claude details.keyopt', el => !el.open);
   });
   out.r1 = r1;
 
@@ -189,6 +231,17 @@ function okStream(text) {
     await page.waitForTimeout(450);
     await page.screenshot({ path: path.join(SHOTS, 'pwa-setup-360-dark.png') });
     out.sheetOverflow360 = await page.$eval('.sheet-panel', el => el.scrollWidth - el.clientWidth);
+    // settings without a key: the API key form is folded under "Əlavə"
+    await page.click('.sheet-head [data-act="sheet-close"]');
+    await page.click('#topbar [data-act="settings"]');
+    await page.waitForSelector('#set-claude details.keyopt');
+    await page.$eval('#set-claude', el => el.scrollIntoView());
+    await page.waitForTimeout(450);
+    await page.screenshot({ path: path.join(SHOTS, 'pwa-settings-nokey-360-dark.png') });
+    await page.click('#set-claude details.keyopt > summary');
+    await page.waitForSelector('#set-claude #apikey');
+    await page.screenshot({ path: path.join(SHOTS, 'pwa-settings-nokey-open-360-dark.png') });
+    out.settingsOverflow360 = await page.$eval('.sheet-panel', el => el.scrollWidth - el.clientWidth);
   });
   out.r2 = r2;
   console.log(JSON.stringify(out, null, 1));
