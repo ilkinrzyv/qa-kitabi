@@ -1,0 +1,63 @@
+{
+ "id": "./",
+ "name": "QA Kitabı — Sıfırdan Peşəkar Testerə",
+ "short_name": "QA Kitabı",
+ "description": "QA kitabı: 21 fəsil, addım-addım nümunələr, tapşırıqlar, testlər, fleş kartlar. Offline işləyir; Claude müəllim internet olanda.",
+ "lang": "az",
+ "dir": "ltr",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#F5F3EC",
+ "theme_color": "#F5F3EC",
+ "categories": [
+  "education",
+  "books"
+ ],
+ "icons": [
+  {
+   "src": "icons/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icons/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icons/maskable-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "maskable"
+  },
+  {
+   "src": "icons/maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ],
+ "shortcuts": [
+  {
+   "name": "Məşq",
+   "short_name": "Məşq",
+   "description": "Testlər, fleş kartlar, tapşırıqlar",
+   "url": "./#mesq"
+  },
+  {
+   "name": "Müəllim",
+   "short_name": "Müəllim",
+   "description": "Claude ilə söhbət və rol oyunları",
+   "url": "./#muellim"
+  },
+  {
+   "name": "İrəliləyiş",
+   "short_name": "İrəliləyiş",
+   "description": "Öyrənmə hesabatı",
+   "url": "./#progress"
+  }
+ ]
+}
