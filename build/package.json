@@ -5,7 +5,7 @@
   "scripts": {
     "icons": "node make_icons.js",
     "widgets": "node render.mjs",
-    "test:app": "node t1.js && node t2.js && node t3.js && node t4.js && node t5.js && node t6.js && node t7.js && node t8.js && node t9.js && node t10.js && node t11.js",
+    "test:app": "node t1.js && node t2.js && node t3.js && node t4.js && node t5.js && node t6.js && node t7.js && node t8.js && node t9.js && node t10.js && node t11.js && node t12.js",
     "test:pwa": "node tp1.js && node tp2.js && node tp3.js && node tp4.js"
   },
   "devDependencies": {

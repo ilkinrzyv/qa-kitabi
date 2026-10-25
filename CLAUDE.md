@@ -34,6 +34,9 @@ Screenshots land in `build/shots/` (gitignored).
 - Offline app without a key: `claudeGate()` opens the artifact at `#<id>-<action>` (`#c3s4-simple`, `#c3-lesson`,
   `#c3-konspekt`, `#g12-term`); `routeHash()` there starts that action once. Only book ids travel in the link — typed
   text goes to the clipboard. The handoff needs the artifact republished from the same `app.js`.
+- Screen-words hint (`SW_RULES` in `app.js`): answers to items that ask for written results (`SW_TASK`) get an offline
+  hint for opinion, ability, inference, "-malıdır", description-instead-of-value and bare-negation words; quoted text
+  is skipped because it is copied from the screen.
 - `build/pwa.js` — offline layer: service-worker registration, install prompt, Claude through the reader's own Anthropic
   API key (Messages API, streamed SSE, `anthropic-dangerous-direct-browser-access`, default model `claude-opus-5-5`,
   `output_config.effort`), progress export/import. Its `sample()` keeps the artifact runtime's contract
