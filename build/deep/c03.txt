@@ -1,0 +1,273 @@
+=== c3s1
+@qısa
+SDLC proqramın yaranma yoludur: tələblər, dizayn, kodlaşdırma, test, yerləşdirmə və dəstək. Tester hansı mərhələdə olduğunu bilməlidir, çünki hər mərhələdə onun işi fərqlidir.
+@yadda
+- 6 mərhələ: tələblər → dizayn → kod → test → yerləşdirmə → dəstək.
+- Tester-in işi yalnız “Test” mərhələsində deyil, hər mərhələdədir.
+- Dəstək mərhələsində də yeni versiyalar və düzəlişlər test olunur.
+@dərin
+### Tester hər mərhələdə nə edir?
+| Mərhələ | Tester-in işi |
+| --- | --- |
+| Tələblər | Tələbləri oxuyur, qeyri-müəyyənlikləri tapır, sual verir |
+| Dizayn | Maketlərə baxır: boş vəziyyət, xəta mesajları, uzun mətn |
+| Kodlaşdırma | Test case və test data hazırlayır, mühiti planlaşdırır |
+| Test | Testləri icra edir, bug report yazır, retest və regression aparır |
+| Yerləşdirmə | Canlı sistemdə smoke test, relizin yoxlanması |
+| Dəstək | Düzəlişləri və yenilikləri yoxlayır, canlıda tapılan problemləri təkrarlayır |
+
+### Mərhələlər həmişə ayrı-ayrı olmur
+Agile komandada bu mərhələlər hər sprintdə kiçik miqyasda təkrarlanır və bir-birinə qarışır: bir tapşırıq test olunarkən digəri kodlaşdırılır. Məntiq eyni qalır, sadəcə dövr qısalır.
+
+### Canlıya çıxandan sonra iş bitmir
+Dəstək mərhələsi çox vaxt ən uzun mərhələdir: məhsul illərlə yaşayır. Hər yeni versiya regression testi tələb edir — avtomatlaşdırmanın əsas dəyəri məhz burada görünür.
+
+### Tipik yanlış anlama
+“Tester yalnız Test mərhələsində lazımdır.” Tester-in ən ucuz və ən dəyərli işi tələblər mərhələsində görülür (Prinsip 3).
+@nümunə
+**Tapşırıq.** Kafe üçün onlayn sifariş saytı hazırlanır. SDLC-nin hər mərhələsində tester-in görə biləcəyi bir konkret işi yaz.
+@addımlar
+1. **Tələblər:** “Kafe bağlı olanda sifariş qəbul olunurmu?” sualını vermək.
+2. **Dizayn:** maketdə “səbət boşdur” ekranının olub-olmadığını yoxlamaq.
+3. **Kodlaşdırma:** menyu, səbət və ödəniş üçün test case-lər və test kartları hazırlamaq.
+4. **Test:** sifarişi tam keçmək, tapılan defektləri yazmaq, düzəlişləri yoxlamaq.
+5. **Yerləşdirmə və dəstək:** canlıda bir test sifarişi ilə smoke test; menyuya yeni məhsul əlavə olunanda regression.
+@növbən
+Universitet üçün dərs cədvəli tətbiqi hazırlanır. SDLC-nin 6 mərhələsinin hər birində tester-in edə biləcəyi bir konkret işi yaz.
+
+=== c3s2
+@qısa
+Komandada hər kəsin öz rolu var: Product Owner nəyin qurulacağına qərar verir, biznes analitik tələbləri yazır, dizayner ekranları çəkir, proqramçı kodu yazır, tester keyfiyyəti və riskləri göstərir, DevOps isə serverləri və yerləşdirməni idarə edir.
+@yadda
+- Tester hər rolla işləyir və sualı düzgün ünvana verməlidir.
+- PO — “nə və niyə”, proqramçı — “necə”, tester — “nə səhv gedə bilər”.
+- Keyfiyyət bütün komandanın məsuliyyətidir.
+@dərin
+### Hansı sualı kimə vermək lazımdır?
+| Sual | Kimə |
+| --- | --- |
+| “Bu funksiya hansı problemi həll edir? Prioriteti nədir?” | Product Owner |
+| “Tələbdə ‘tez’ deyilib — neçə saniyə?” | Biznes analitik |
+| “Xəta mesajı maketdə yoxdur, necə görünməlidir?” | UI/UX dizayner |
+| “Bu endpoint hansı xəta kodlarını qaytarır?” | Backend proqramçı |
+| “Test mühiti niyə işləmir?” | DevOps |
+| “Sprintə nə qədər test işi sığar?” | Komanda birlikdə, Scrum Master kömək edir |
+
+### Tester-in qeyri-rəsmi rolları
+Tester çox vaxt komandada “tərcüməçi” olur: biznesin dilini texniki detallara, texniki problemi biznes riskinə çevirir. “500 xətası” deməkdən çox “istifadəçilərin 10%-i ödəniş edə bilmir” demək qərar verənlərə daha aydındır.
+
+### Rol adları fərqlənir
+Kiçik şirkətdə bir nəfər həm analitik, həm tester ola bilər; böyük şirkətdə isə ayrıca QA Lead, SDET (avtomatlaşdırma mühəndisi), performans mühəndisi olur. Müsahibədə komandanın tərkibini soruşmaq normaldır.
+
+### Tipik yanlış anlama
+“Tester yalnız proqramçı ilə işləyir.” Ən dəyərli tester-lər PO və analitik ilə də sıx işləyir — çünki defektlərin bir hissəsi tələbdə doğulur.
+@nümunə
+**Tapşırıq.** Testdə bu üç problemlə qarşılaşdın. Hər birini kimə və necə ünvanlayardın? (a) Tələbdə endirimin faizi yazılmayıb. (b) Test serveri açılmır. (c) Proqramçı “bu dizayn belədir” deyir, amma düymə ekrana sığmır.
+@addımlar
+1. **(a)** Biznes analitikə (və ya PO-ya) yazılı sual: “US-21-də endirim faizi göstərilməyib. 10% nəzərdə tutulub? Sabit məbləğ ola bilərmi?”
+2. **(b)** DevOps-a: hansı ünvan, nə vaxtdan, hansı xəta; test bloklandığı üçün təcili olduğunu qeyd et.
+3. **(c)** Dizaynerə: ekran şəkli və ölçü (məsələn, 360 px) ilə; proqramçını da əlavə et ki, qərar birlikdə verilsin.
+4. **Qayda:** sualı problemi həll edə biləcək adama ver, faktı və sübutu əlavə et, mübahisəni şəxsi yox, peşəkar saxla.
+@növbən
+Bu vəziyyətlərdə kimə müraciət edərdin və necə yazardın: (a) relizə 1 gün qalıb, kritik baq hələ açıqdır; (b) maketdə Azərbaycan dilində mətn düyməyə sığmır; (c) eyni funksiya üçün iki fərqli tələb sənədi var.
+
+=== c3s3
+@qısa
+Waterfall-da mərhələlər ardıcıl gedir: əvvəlki bitmədən növbəti başlamır. Plan və sənədlər aydındır, amma test sona qalır, dəyişiklik bahalıdır və müştəri məhsulu yalnız sonda görür.
+@yadda
+- Ardıcıl model: geri qayıtmaq çətin və bahadır.
+- Test layihənin sonunda cəmləşir — defektlər gec tapılır.
+- Sabit tələbli, yaxşı başa düşülmüş layihələrə uyğundur.
+@dərin
+### Waterfall-da tester-in riskləri
+- **Sıxılmış test vaxtı:** əvvəlki mərhələlər gecikəndə reliz tarixi dəyişmir, test vaxtı qısalır.
+- **Gec rəy:** tələbdəki səhv aylar sonra testdə üzə çıxır.
+- **Böyük paket:** hər şey birdən test olunur, defektlərin sayı və qarşılıqlı təsiri çoxalır.
+
+### Tester bu riskləri necə azalda bilər?
+Tələb sənədi hazır olan kimi review et, test case-ləri kod yazılarkən hazırla, mühiti əvvəlcədən qur. Yəni Waterfall daxilində də “shift left” etmək mümkündür.
+
+### Waterfall hələ də harada işlədilir?
+Tələblərin qanun və ya müqavilə ilə sabitləndiyi, dəyişikliyin çox baha olduğu sahələrdə: bəzi dövlət layihələri, tikinti və istehsalatla bağlı sistemlər, avadanlıq daxilindəki proqramlar. Çox vaxt “hibrid” görünür: planlaşdırma ardıcıl, inkişaf isə qısa dövrlərlə.
+
+### Maraqlı fakt
+Waterfall adətən 1970-ci ildə Uinston Roysun məqaləsi ilə əlaqələndirilir. Maraqlıdır ki, Royce həmin məqalədə tam ardıcıl yanaşmanın riskli olduğunu yazır və geri rəyi tövsiyə edirdi.
+
+### Tipik yanlış anlama
+“Waterfall köhnədir, deməli, səhvdir.” Model kontekstə görə seçilir (Prinsip 6): sabit tələblərdə ardıcıllıq üstünlük ola bilər.
+@nümunə
+**Tapşırıq.** Waterfall layihəsində kodlaşdırma 3 həftə gecikdi, reliz tarixi isə dəyişmir. Test üçün 4 həftə yerinə 1 həftə qaldı. Tester olaraq nə edərdin?
+@addımlar
+1. **Riski görünən et:** “4 həftəlik test 1 həftəyə sığmır” faktını rəqəmlərlə menecerə yaz.
+2. **Prioritetləşdir:** test case-ləri riskə görə sırala — əvvəlcə kritik biznes yolları (məsələn, ödəniş), sonra qalanlar.
+3. **Əhatəni razılaşdır:** hansı sahələrin bu relizdə yoxlanmayacağını yazılı təsdiqlət.
+4. **Hesabatda açıq yaz:** test olunmayan sahələr və qalan risklər yekun hesabatda göstərilir — qərarı biznes verir.
+@növbən
+Waterfall layihəsində tələb sənədi 80 səhifədir və test mərhələsinə hələ 2 ay var. Bu 2 ayda tester-in görə biləcəyi 4 faydalı işi yaz və hər birinin hansı riski azaltdığını göstər.
+
+=== c3s4
+@qısa
+V-model Waterfall-un inkişaf etmiş formasıdır: hər inkişaf mərhələsinin qarşısında ona uyğun test səviyyəsi dayanır. Testlərin planlaşdırılması kod yazılmazdan çox əvvəl başlayır.
+@yadda
+- Sol qol — inkişaf, sağ qol — test səviyyələri.
+- Tələblərə qarşı qəbul testi, arxitekturaya qarşı inteqrasiya testi planlanır.
+- V-model erkən test prinsipinin praktik formasıdır.
+@dərin
+### Cütlər necə uyğunlaşır?
+| İnkişaf mərhələsi | Qarşı tərəfdəki test | Nə yoxlanılır |
+| --- | --- | --- |
+| Biznes tələbləri | Qəbul testi | Biznes ehtiyacı ödənirmi |
+| Sistem tələbləri | Sistem testi | Bütöv sistem tələblərə uyğundurmu |
+| Arxitektura | İnteqrasiya testi | Modullar düzgün əlaqə qururmu |
+| Modul dizaynı | Unit test | Hər modul ayrıca düzgün işləyirmi |
+
+### Niyə “V” hərfi?
+Sol tərəfdə detallar yuxarıdan aşağı artır (ümumi tələbdən modul dizaynına), dibdə kod yazılır, sağ tərəfdə isə yoxlama aşağıdan yuxarı qalxır (unitdən qəbula). Hər səviyyə öz cütünün “güzgüsü”dür.
+
+### V-model-in güclü və zəif tərəfləri
+Güclü: test planlaşdırması erkən başlayır, hər səviyyənin aydın giriş və çıxış meyarları olur, izlənə bilənlik (RTM) yaxşıdır. Zəif: dəyişikliklər yenə də bahadır, işləyən məhsul gec görünür.
+
+### Harada işlədilir?
+Səhvin qiymətinin çox yüksək olduğu sahələrdə: tibbi avadanlıq, avtomobil, aviasiya proqramları. Bu sahələrin standartları çox vaxt V-model məntiqinə əsaslanır.
+
+### Tipik yanlış anlama
+“V-model-də testlər sonda yazılır.” Əksinə: test case-lər sol qoldakı mərhələ bitən kimi hazırlanmağa başlayır, sonda yalnız icra olunur.
+@nümunə
+**Tapşırıq.** Xəstəxana üçün dərman paylama sistemi V-model ilə hazırlanır. “Sistem tələbləri” mərhələsi bitdi. Tester bu anda nə edə bilər və bu iş hansı test səviyyəsinə aiddir?
+@addımlar
+1. **Cütü tap:** sistem tələblərinin qarşısında sistem testi dayanır.
+2. **Test dizaynına başla:** hər sistem tələbi üçün test ssenariləri və gözlənilən nəticələr yaz (məsələn, “eyni xəstəyə 24 saatda maksimum doza aşılmır”).
+3. **İzlənə bilənliyi qur:** RTM-də hər tələbi test ssenarisinə bağla — heç biri testsiz qalmasın.
+4. **Sual ver:** test dizaynı zamanı tapılan qeyri-müəyyənlikləri (məsələn, “maksimum doza haradan götürülür?”) indi soruş — kod yazılmazdan əvvəl.
+@növbən
+V-model ilə avtomobil parkinq sensoru proqramı hazırlanır. “Arxitektura” mərhələsi bitəndə tester-in hazırlaya biləcəyi 3 inteqrasiya test ssenarisini yaz.
+
+=== c3s5
+@qısa
+Agile məhsulu qısa dövrlərdə, hissə-hissə qurmaq və hər addımda rəy almaq fəlsəfəsidir. Manifestin 4 dəyəri insanları, işləyən məhsulu, müştəri ilə əməkdaşlığı və dəyişikliyə uyğunlaşmağı önə çəkir.
+@yadda
+- Agile — model deyil, fəlsəfədir; Scrum və Kanban onun çərçivələridir.
+- Kiçik addımlar + tez rəy = riskin erkən görünməsi.
+- Sənəd və plan lazımdır, sadəcə işləyən məhsul daha vacibdir.
+@dərin
+### Manifestin arxasında 12 prinsip
+2001-ci ildə yazılmış manifestin 4 dəyərindən başqa 12 prinsipi də var. Tester üçün ən vacibləri: işləyən proqram tez-tez təhvil verilir; biznes və proqramçılar hər gün birlikdə işləyir; texniki mükəmməlliyə daim diqqət; komanda müntəzəm olaraq özünü təhlil edib yaxşılaşdırır.
+
+### Agile komandada tester necə işləyir?
+- Tapşırıq sprintə götürüləndə acceptance criteria-nı birgə yazır.
+- Proqramçı kodu yazarkən test case və test data hazırlayır.
+- Hər hazır tapşırığı dərhal yoxlayır — sprintin sonunu gözləmir.
+- Regression-u avtomatlaşdırmaya çalışır, çünki relizlər tez-tez olur.
+
+### Agile test kvadrantları
+Agile komandalarda testlər dörd qrupa bölünür: komandaya kömək edən texniki testlər (unit, komponent), komandaya kömək edən biznes testləri (funksional, nümunələr, story testləri), məhsulu tənqid edən biznes testləri (exploratory, usability, UAT) və məhsulu tənqid edən texniki testlər (performans, təhlükəsizlik). Bu model “hansı testləri unutmuşuq?” sualına cavab tapmağa kömək edir.
+
+### Tipik yanlış anlama
+“Agile — plansız və sənədsiz işləməkdir.” Agile-da plan qısa dövrlərlə yenilənir, sənəd isə “lazım olduğu qədər” yazılır — bu, sənədsizlik deyil, dəqiqlikdir.
+@nümunə
+**Tapşırıq.** Manifestin 4 dəyərindən hər biri üçün tester-in gündəlik işində bir misal yaz.
+@addımlar
+1. **İnsanlar və ünsiyyət:** baqı yalnız Jira-ya yazmaqla kifayətlənməyib proqramçı ilə 5 dəqiqə birlikdə baxmaq.
+2. **İşləyən məhsul:** 30 səhifəlik test planı əvəzinə qısa plan və işləyən avtomatik smoke testlər.
+3. **Müştəri ilə əməkdaşlıq:** sprint review-da müştərinin rəyini dinləyib yeni test ssenarilərinə çevirmək.
+4. **Dəyişikliyə reaksiya:** sprint ortasında prioritet dəyişəndə test planını həmin gün yeniləmək.
+@növbən
+Agile komandada işləyən tester-in sprint ərzində edə biləcəyi 5 konkret işi yaz və hər birinin manifestin hansı dəyərinə uyğun gəldiyini göstər.
+
+=== c3s6
+@qısa
+Scrum işi 1–4 həftəlik sprintlərə bölür. Üç məsuliyyət (Product Owner, Scrum Master, Developers), üç artefakt (Product Backlog, Sprint Backlog, Increment) və sprint daxilində dörd görüş var. Tester Developers komandasının üzvüdür.
+@yadda
+- Sprint — sabit uzunluqlu iş dövrü, sonunda işləyən nəticə.
+- Tester Developers-in bir hissəsidir, ayrıca “tester rolu” yoxdur.
+- Definition of Done keyfiyyətin razılaşdırılmış minimumudur.
+@dərin
+### Scrum Guide nə deyir?
+2020-ci il Scrum Guide-a görə sprintin özü də bir “event” sayılır və digər dörd görüş onun içində keçir: Sprint Planning, Daily Scrum, Sprint Review, Sprint Retrospective. Product Backlog-un “Product Goal”, Sprint Backlog-un “Sprint Goal”, Increment-in isə “Definition of Done” öhdəliyi var.
+
+### Backlog refinement
+Rəsmi görüş olmasa da, komandalar sprint boyu backlog-u “təmizləyir”: story-ləri bölür, aydınlaşdırır, qiymətləndirir. Tester üçün bu, tələb review-nun Agile formasıdır — ən dəyərli sualların verildiyi yer.
+
+### Qiymətləndirmə: story point
+Komanda işi çox vaxt saatla yox, nisbi “story point”lə qiymətləndirir (1, 2, 3, 5, 8…). Tester qiymətləndirməyə test işini də əlavə etməlidir: “Bu story-nin test datası hazırlamaq çətindir, 3 yox, 5 verək.”
+
+### Sprintin sonunda “test borcu” yaranmasın
+Ən çox rast gəlinən problem: proqramçılar sprintin sonuna yaxın kodu təhvil verir, tester-ə vaxt qalmır. Həllər: kiçik story-lər, gündəlik təhvil, WIP limiti, DoD-də “test olunub” şərti, sprintin son günlərində yeni kod qəbul etməmək.
+
+### Tipik yanlış anlama
+“Daily Scrum hesabat görüşüdür.” Daily Scrum menecerə hesabat yox, komandanın gününü planlaşdırmasıdır: maneələr burada üzə çıxır.
+@nümunə
+**Tapşırıq.** 2 həftəlik sprintin 8-ci günü 5 story-dən cəmi 1-i test olunub, qalan 4-ü hələ “In Progress”-dədir. Daily Scrum-da tester olaraq nə deyərdin və retrospektivdə nə təklif edərdin?
+@addımlar
+1. **Faktı de:** “Sprintin 8-ci günüdür, 5 story-dən 1-i test olunub. Qalan 4-ü son 2 günə yığılsa, hamısını keyfiyyətlə test edə bilməyəcəyik.”
+2. **Həll təklif et:** “Story-ləri hissə-hissə təhvil verək; ən vacib ikisini bu gün test üçün hazırlayaq.”
+3. **Riski PO-ya göstər:** hansı story-nin bu sprintdə “Done” olmaya biləcəyini əvvəlcədən bildir.
+4. **Retrospektivdə:** story-ləri kiçik bölmək, DoD-yə “test olunub” şərtini əlavə etmək, Testing sütununa WIP limiti qoymaq.
+@növbən
+Sənin komandanın Definition of Done-ı belədir: “Kod yazılıb, code review olunub.” Ona tester baxımından 4 bənd əlavə et və hər bəndin hansı problemin qarşısını aldığını yaz.
+
+=== c3s7
+@qısa
+Kanban işin axınını lövhədə göstərir: To Do → In Progress → Testing → Done. Sprint yoxdur, iş davamlı axır. Əsas qayda WIP limitidir: bir sütunda eyni anda olan işlərin sayı məhduddur.
+@yadda
+- Kanban — davamlı axın, sprint yoxdur.
+- WIP limiti tester-in üstünə iş yığılmasının qarşısını alır.
+- Darboğaz (bottleneck) lövhədə dərhal görünür.
+@dərin
+### Kanban-ın əsas ideyaları
+- **Vizuallaşdırma:** hər iş kartdır, hər mərhələ sütundur.
+- **WIP limiti:** “Testing” sütununda limit 3-dürsə, 4-cü iş ora girə bilməz — komanda əvvəl mövcud işləri bitirməyə kömək edir.
+- **Çəkmə sistemi (pull):** iş “itələnmir”, növbəti mərhələ boşaldıqca “çəkilir”.
+
+### Metriklər
+- **Lead time** — işin yarandığı andan bitdiyi ana qədər keçən vaxt (müştərinin gözləməsi).
+- **Cycle time** — işə başlanandan bitənə qədər keçən vaxt.
+- **Cumulative flow diagram** — sütunlardakı işlərin zamanla dəyişməsi; “Testing” zolağı genişlənirsə, test darboğazdır.
+
+### Tester üçün dəyəri
+Kanban-da test darboğazı gizlənmir. Əgər “Testing” sütunu daim doludursa, bu, tester-in yavaşlığı deyil, sistemin problemidir: tapşırıqlar çox böyükdür, avtomatlaşdırma azdır və ya proqramçılar testə kömək etmir.
+
+### Tipik yanlış anlama
+“WIP limiti işi yavaşladır.” Qısa müddətdə belə görünə bilər, amma limit yarımçıq işlərin yığılmasının qarşısını alır və nəticədə iş daha tez “Done”-a çatır.
+@nümunə
+**Tapşırıq.** Kanban lövhəsində “Testing” sütununun WIP limiti 3-dür və 3 iş artıq oradadır. Proqramçı 4-cü işi bitirib və onu testə keçirmək istəyir. Komanda nə etməlidir?
+@addımlar
+1. **Limiti poz:** 4-cü işi “Testing”-ə keçirmək olmaz — limit doludur.
+2. **Kömək et:** proqramçı test datası hazırlamağa, retest-ə və ya avtomatik testə kömək edir ki, “Testing”-dəki işlər tez bitsin.
+3. **Səbəbi araşdır:** limit tez-tez dolursa, işlər çox böyükdür və ya test avtomatlaşdırması zəifdir.
+4. **Nəticə:** WIP limiti problemi gizlətmir, onu komandanın ortaq problemi edir.
+@növbən
+Komandanın Kanban lövhəsində son 2 həftədə “Testing” sütunu həmişə doludur, “Done”-a isə az iş çatır. Bunun 3 mümkün səbəbini və hər biri üçün bir həll yolunu yaz.
+
+=== c3s8
+@qısa
+Waterfall və V-model sabit tələbli, ciddi sənədləşmə tələb edən layihələrə, Agile isə tez dəyişən bazara uyğundur. Model kontekstə görə seçilir və tester-in nə vaxt, necə işlədiyini müəyyən edir.
+@yadda
+- Waterfall — ardıcıl, V-model — ardıcıl + erkən test planı, Agile — iterativ.
+- Dəyişikliyin qiyməti Agile-da ən aşağıdır.
+- Real şirkətlərdə hibrid modellər çox yayılıb.
+@dərin
+### Hibrid modellər
+Real həyatda “təmiz” model az rast gəlinir. Məsələn, layihənin planlaşdırması və büdcəsi ardıcıl, inkişaf isə sprintlərlə aparılır. Bəzən buna zarafatla “Water-Scrum-Fall” deyirlər. Böyük şirkətlərdə çoxlu Agile komandanı əlaqələndirmək üçün SAFe kimi çərçivələr işlədilir.
+
+### Modeli seçəndə hansı suallar verilir?
+- Tələblər nə qədər sabitdir?
+- Müştəri nə qədər tez-tez rəy verə bilər?
+- Səhvin qiyməti nə qədər yüksəkdir (sağlamlıq, pul, qanun)?
+- Hansı səviyyədə sənəd və audit lazımdır?
+- Komanda nə qədər təcrübəlidir?
+
+### Tester müsahibədə nə soruşmalıdır?
+“Komanda hansı modellə işləyir? Sprint neçə həftədir? Tester tələblərin müzakirəsinə qoşulurmu? Regression necə aparılır?” Bu suallar gələcək işin necə keçəcəyini göstərir.
+
+### Tipik yanlış anlama
+“Agile həmişə daha yaxşıdır.” Agile dəyişən bazarda güclüdür, amma qanunla sabitlənmiş, ciddi audit tələb edən layihədə ardıcıl model daha uyğun ola bilər.
+@nümunə
+**Tapşırıq.** Üç layihə üçün model seç: (a) bank üçün mobil tətbiq, hər ay yeni funksiya; (b) gömrük üçün qanunla müəyyən olunmuş bəyannamə sistemi; (c) kiçik restoran üçün sadə sayt, 2 həftəlik iş.
+@addımlar
+1. **(a)** Tələblər tez dəyişir, rəy vacibdir — **Scrum**; amma bank olduğu üçün təhlükəsizlik testləri və sənədləşmə DoD-də olmalıdır.
+2. **(b)** Tələblər qanunla sabitdir, audit vacibdir — **V-model** və ya Waterfall; testlər tələb mərhələsində planlanır.
+3. **(c)** Kiçik, aydın iş — sadə **Kanban** lövhəsi kifayətdir, ağır proses lazımsızdır.
+4. **Qayda:** seçim “hansı model modadır” yox, “bu layihənin riski və dəyişkənliyi necədir” sualına əsaslanır.
+@növbən
+Bu layihələr üçün model seç və iki cümlə ilə əsaslandır: (a) yeni sosial şəbəkə startapı; (b) aeroport üçün baqaj izləmə sistemi; (c) mövcud saytın dəstəyi — hər gün kiçik düzəliş sorğuları gəlir.

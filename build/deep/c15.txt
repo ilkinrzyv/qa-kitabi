@@ -1,0 +1,339 @@
+=== c15s1
+@qısa
+API proqramların bir-biri ilə danışma qaydalarıdır: hansı sorğu göndərilir və hansı cavab qaytarılır. Mobil tətbiq və sayt çox vaxt eyni API-dən istifadə edir — API-ni test etmək sistemi “mühərrik” səviyyəsində yoxlamaqdır.
+@yadda
+- API — proqramlar arası “menyu” və “ofisiant”.
+- Bir API-ni çoxlu client (veb, mobil, partnyor) istifadə edə bilər.
+- API sənədi (Swagger/OpenAPI) test bazasıdır.
+@dərin
+### API növləri
+- **REST** — ən geniş yayılmış: resurslar, URL-lər, HTTP metodları, adətən JSON.
+- **SOAP** — köhnə, ciddi formatlı, XML əsaslı; banklarda və dövlət sistemlərində hələ də rast gəlinir.
+- **GraphQL** — bir endpoint, client lazım olan sahələri sorğuda özü seçir.
+- **gRPC** — servislər arası sürətli əlaqə, ikilik formatla.
+Junior tester üçün REST və JSON əsasdır; digərlərinin varlığını bilmək kifayətdir.
+
+### API sənədi necə oxunur?
+Swagger (OpenAPI) səhifəsində hər endpoint üçün: metod və yol, parametrlər (məcburi/məcburi olmayan, tip), sorğu gövdəsinin nümunəsi, mümkün cavab kodları və nümunə cavablar. Tester bunları tələb kimi oxuyur: “422 cavabı sənəddə var — hansı halda qayıdır?” Çox vaxt “Try it out” düyməsi ilə birbaşa sorğu göndərmək də olur.
+
+### API-nin “müqaviləsi”
+API sənədi client ilə server arasında müqavilədir. Sahənin adı, tipi və ya məcburiliyi xəbərsiz dəyişəndə mobil tətbiq sına bilər — buna “breaking change” deyilir. Tester sənədlə faktiki cavabı müqayisə edərək bunu tutur.
+
+### Tipik yanlış anlama
+“API testi yalnız avtomatlaşdırma mütəxəssislərinin işidir.” Postman ilə API testi manual tester üçün ən sürətli və ən faydalı bacarıqlardandır.
+@nümunə
+**Tapşırıq.** Hava proqnozu tətbiqi şəhər adına görə temperaturu API-dən alır. Sənəddə: `GET /weather?city=Baku` → 200, `{"city": "Baku", "temp": 18.5, "unit": "C"}`; şəhər tapılmasa → 404. Bu sənədə əsasən 5 test ideyası yaz.
+@addımlar
+1. **Pozitiv:** `city=Baku` → 200; `temp` ədəddir, `unit` “C”-dir.
+2. **Tapılmayan şəhər:** `city=Abcdef` → 404 və aydın xəta mesajı.
+3. **Parametr yoxdur:** `GET /weather` → 400 (sənəddə yoxdursa, soruş).
+4. **Azərbaycan hərfləri:** `city=Şəki` (URL-də kodlanmış) → 200, şəhər adı cavabda pozulmur.
+5. **Müqavilə:** cavabda sənəddə olmayan sahə və ya tip dəyişikliyi varmı (`temp` mətn kimi “18.5” gəlmirmi)?
+@növbən
+Valyuta məzənnəsi API-si: `GET /rates?base=AZN&target=USD` → 200, `{"rate": 0.588, "date": "2026-10-24"}`. Sənədə əsasən 5 test ideyası yaz: pozitiv, yanlış valyuta, parametr çatışmazlığı, tip yoxlaması və tarix daxil olmaqla.
+
+=== c15s2
+@qısa
+API testi UI hazır olmadan başlaya bilər, sürətlidir, dizayn dəyişəndə sınmır və UI-nin gizlətdiyi defektləri tapır: UI 100 simvol qəbul edir, API isə 10 000 — bu, defektdir.
+@yadda
+- API testi — erkən, sürətli, sabit.
+- UI məhdudiyyəti təhlükəsizlik deyil, API də yoxlamalıdır.
+- Test piramidasının orta qatıdır.
+@dərin
+### UI ilə API arasındakı “boşluqlar”
+UI istifadəçini çox şeydən qoruyur: açılan siyahı yanlış dəyər seçməyə imkan vermir, düymə deaktivdir, sahə 50 simvoldan çox qəbul etmir. Amma API-yə birbaşa sorğu göndərən (və ya pis niyyətli) şəxs bu məhdudiyyətləri görmür. Tester API-də yoxlayır:
+- Siyahıda olmayan dəyər göndəriləndə nə olur?
+- Deaktiv düymənin etdiyi əməliyyatı API ilə etmək mümkündürmü?
+- Mənfi məbləğ, sıfır say, çox uzun mətn qəbul olunurmu?
+
+### API testinin vaxt üstünlüyü
+UI ilə 30 saniyə çəkən ssenari API ilə 200 millisaniyədir. Yüzlərlə data kombinasiyasını (data-driven) API səviyyəsində yoxlamaq, UI-də isə yalnız əsas ssenarini saxlamaq — test piramidasının məntiqi budur (Fəsil 19).
+
+### Test datası hazırlamaq üçün API
+UI testindən əvvəl lazım olan datanı (istifadəçi, sifariş) API ilə saniyələr içində yaratmaq olar. Bu, manual testdə də vaxt qazandırır.
+
+### Tipik yanlış anlama
+“API testi UI testini əvəz edir.” API düzgün data qaytara bilər, amma ekran onu səhv göstərə bilər. İkisi fərqli riskləri yoxlayır.
+@nümunə
+**Tapşırıq.** Onlayn mağazanın UI-sində məhsul sayı açılan siyahıdan 1–10 seçilir. API-də `POST /cart/items` gövdə `{"productId": 15, "qty": 2}` qəbul edir. UI-nin gizlədə biləcəyi defektləri tapmaq üçün 5 API testi yaz.
+@addımlar
+1. **Sərhəddən kənar:** `qty: 11` → 400/422 gözlənilir; qəbul olunursa — defekt.
+2. **Sıfır və mənfi:** `qty: 0` və `qty: -3` → rədd olunmalıdır (mənfi say səbət cəmini azalda bilər!).
+3. **Yanlış tip:** `qty: "iki"` → 400, 500 yox.
+4. **Mövcud olmayan məhsul:** `productId: 999999` → 404.
+5. **Stok:** stokda 3 ədəd varsa, `qty: 5` → aydın xəta və ya tələbə görə davranış.
+@növbən
+Qeydiyyat formasında yaş sahəsi açılan siyahıdır (18–80), API isə `POST /register` gövdə `{"name": …, "age": …}` qəbul edir. UI-nin gizlədə biləcəyi defektləri tapmaq üçün 5 API testi yaz.
+
+=== c15s3
+@qısa
+REST-də hər şey resursdur və hər resursun ünvanı var; resursla HTTP metodları ilə işləyirik. JSON-da 6 data tipi var: string, number, boolean, null, object və array. "5" (mətn) ilə 5 (ədəd) fərqlidir.
+@yadda
+- Resurs + URL + metod = REST əməliyyatı.
+- JSON tipləri: string, number, boolean, null, object, array.
+- Tip uyğunsuzluğu da defektdir.
+@dərin
+### Yaxşı REST dizaynının əlamətləri
+- Resurslar isimdir və çoxluqdadır: `/users`, `/orders` (fel yox: `/getUsers` deyil).
+- İç-içə resurslar: `/users/5/orders` — 5 nömrəli istifadəçinin sifarişləri.
+- Filtr və səhifələmə parametrlərlə: `/orders?status=paid&page=2&limit=20`.
+- Statelessness: hər sorğu özündə lazım olan hər şeyi daşıyır (məsələn, token).
+Tester bu qaydaları yoxlamır, amma uyğunsuzluqları müşahidə edə bilər: eyni API-də bir yerdə `userId`, digərində `user_id`.
+
+### JSON-un sərt qaydaları
+- Açarlar həmişə cüt dırnaqda: `"name"`.
+- Sonuncu elementdən sonra vergül olmaz.
+- Şərh (comment) yazmaq olmaz.
+- Kəsr nöqtə ilə: `125.50`, vergül ilə yox.
+Postman-da səhv JSON göndəriləndə server 400 qaytarmalıdır — bu, ayrıca test ideyasıdır.
+
+### Cavab quruluşunun yoxlanması
+- Bütün gözlənilən sahələr var?
+- Tiplər düzgündür (id — number, email — string, roles — array)?
+- `null` gözlənilən yerdədir, yoxsa sahə ümumiyyətlə yoxa çıxır?
+- Pul məbləğləri necə qaytarılır — 125.5, “125.50”, yoxsa qəpiklə 12550?
+
+### Tipik yanlış anlama
+“Cavab gəldisə, quruluş düzgündür.” Sahənin tipinin dəyişməsi (ədəddən mətnə) mobil tətbiqi çökdürə bilər — quruluşun yoxlanması API testinin vacib hissəsidir.
+@nümunə
+**Tapşırıq.** Cavab: `{"id": "17", "name": "Leyla", "isActive": "true", "balance": 125.5, "phone": null, "roles": "customer"}`. Sənəddə id — number, isActive — boolean, roles — array yazılıb. Uyğunsuzluqları tap.
+@addımlar
+1. **id:** `"17"` mətndir, sənəddə number — tip uyğunsuzluğu.
+2. **isActive:** `"true"` mətndir, boolean deyil — `if (isActive)` yoxlaması “false” mətnini də doğru sayar!
+3. **roles:** `"customer"` mətndir, array olmalı idi: `["customer"]`.
+4. **phone: null:** sənədə uyğundur (telefon yoxdur) — problem deyil, amma UI-nin null-u necə göstərdiyini yoxla.
+5. **Nəticə:** 3 müqavilə pozuntusu — bir bug report-da cədvəl kimi yaz və ya hər birini ayrıca aç (komanda qaydasına görə).
+@növbən
+Cavab: `{"orderId": 9001, "total": "39,80", "items": {"name": "Termos"}, "paid": 1, "createdAt": "24/10/2026"}`. Sənəd: total — number, items — array, paid — boolean, createdAt — ISO format (YYYY-MM-DD). Uyğunsuzluqları tap və hər birinin mümkün təsirini yaz.
+
+=== c15s4
+@qısa
+Postman API sorğularını göndərmək və yoxlamaq üçün ən populyar alətdir. Əsas anlayışlar: workspace, collection (sorğu qovluğu), request, environment (dəyişənlər dəsti) və variable (`{{baseUrl}}`).
+@yadda
+- Collection — əlaqəli sorğuların qovluğu.
+- Environment — mühitə görə dəyişənlər (test, staging).
+- Hər sorğuya təsvir və nümunə cavab əlavə et.
+@dərin
+### Kolleksiyanı necə təşkil etməli?
+Qovluqlar resurslara görə: Users, Posts, Comments. Hər qovluqda əvvəl pozitiv, sonra neqativ sorğular. Sorğuların adı nəyi yoxladığını deyir: “GET user — mövcud ID (200)”, “GET user — mövcud olmayan ID (404)”. Belə kolleksiya həm test dəsti, həm də canlı sənəddir.
+
+### Dəyişən səviyyələri (scopes)
+Postman-da dəyişənlər bir neçə səviyyədə olur: global, collection, environment, data (Runner faylından) və local (skript daxilində). Eyni adlı dəyişən bir neçə yerdədirsə, daha dar səviyyə qalib gəlir (local → data → environment → collection → global). Qarışıqlıq olmasın deyə: server ünvanları — environment-də, kolleksiyaya aid sabitlər — collection-da.
+
+### Kolleksiyanı paylaşmaq
+Kolleksiyanı JSON kimi ixrac edib GitHub-a qoymaq olar (portfolio üçün əla). Token və şifrələr environment-də saxlanılır və environment faylı ayrıca, ehtiyatla paylaşılır — ya da “secret” tipli dəyişən kimi işarələnir.
+
+### Tipik yanlış anlama
+“Postman yalnız sorğu göndərmək üçündür.” Postman-da avtomatik yoxlamalar, data-driven icra, mock serverlər və sənədləşmə də var — manual tester üçün tam test aləti ola bilər.
+@nümunə
+**Tapşırıq.** JSONPlaceholder üçün Postman kolleksiyasının strukturunu planla: qovluqlar, sorğu adları və environment dəyişənləri.
+@addımlar
+1. **Environment “JSONPlaceholder”:** `baseUrl = https://jsonplaceholder.typicode.com`.
+2. **Qovluq “Users”:** “GET users — siyahı (200)”, “GET user — 1 (200)”, “GET user — 9999 (404)”.
+3. **Qovluq “Posts”:** “GET posts — userId=1 filtr (10 post)”, “POST post — yeni (201)”, “PATCH post — başlıq (200)”, “DELETE post — 1 (200)”.
+4. **Qovluq “Comments”:** “GET comments — postId=1”.
+5. **Hər sorğuya:** qısa təsvir, gözlənilən status və Post-response testləri (15.6).
+@növbən
+Öz uydurduğun “Kitabxana API”-si (kitablar, oxucular, götürmələr) üçün Postman kolleksiyasının strukturunu planla: environment dəyişənləri, 3 qovluq və hər qovluqda pozitiv və neqativ sorğu adları.
+
+=== c15s5
+@qısa
+JSONPlaceholder ilə addım-addım: GET ilə bir istifadəçi, parametrlə filtr, POST ilə yeni post (201, id 101), PUT/PATCH/DELETE və mövcud olmayan resurs (404). Yazma sorğuları saxtadır — data həqiqətən dəyişmir.
+@yadda
+- GET /users/1 → 200, Leanne Graham.
+- POST /posts → 201, id 101, amma saxlanmır.
+- GET /posts/9999 → 404 və boş obyekt.
+@dərin
+### Hər sorğuda nəyə baxmaq lazımdır?
+1. **Status** — gözlənilən kod?
+2. **Body** — sahələr və dəyərlər düzgün?
+3. **Headers** — `Content-Type: application/json`?
+4. **Time** — məqbul vaxt?
+5. **Size** — gözlənilməz dərəcədə böyük cavab varmı?
+
+### Fake API-nin limitləri
+JSONPlaceholder öyrənmək üçün idealdır, amma: POST data saxlamır, validasiya yoxdur (boş gövdə də 201 qaytarır), autentifikasiya yoxdur. Yəni orada “neqativ” testlərin çoxu real nəticə vermir. Real API ilə işləyəndə eyni testlər daha çox defekt tapacaq.
+
+### Digər məşq API-ləri
+Öyrənmək üçün açıq API-lər var: ReqRes (login və qeydiyyat simulyasiyası ilə), Restful-Booker (autentifikasiya və tam CRUD ilə, xüsusi olaraq tester-lər üçün hazırlanıb). Bunlar token və xəta hallarını məşq etməyə imkan verir.
+
+### Tipik yanlış anlama
+“POST 201 qaytardı — deməli, resurs yaradılıb.” Real API-də bunu GET ilə təsdiqlə: yaradılan resurs tapılırmı, sahələr düzgün saxlanıbmı? JSONPlaceholder-də isə bu yoxlama qəsdən uğursuz olur.
+@nümunə
+**Tapşırıq.** JSONPlaceholder-də `GET /posts?userId=1` sorğusunun cavabını yoxlamaq üçün 4 müşahidə nöqtəsi yaz və gözlənilən nəticələri göstər.
+@addımlar
+1. **Status:** 200.
+2. **Say:** cavab massivdir və düz 10 element var.
+3. **Filtr düzgünlüyü:** hər elementdə `userId` 1-dir — başqa istifadəçinin postu yoxdur.
+4. **Quruluş:** hər elementdə `id` (number), `title` (string), `body` (string) var.
+5. **Bonus neqativ:** `GET /posts?userId=999` → 200 və boş massiv `[]` — boş nəticə də düzgün cavabdır.
+@növbən
+JSONPlaceholder-də `GET /comments?postId=1` sorğusu üçün 4 müşahidə nöqtəsi yaz (status, say, filtr, quruluş) və bir neqativ variant əlavə et.
+
+=== c15s6
+@qısa
+Postman-da Scripts → Post-response tabında JavaScript ilə avtomatik yoxlamalar yazılır: status, sahələrin dəyəri, mətnin içindəki simvol, cavab vaxtı. Hər Send-dən sonra Test Results-da PASS və ya FAIL görünür.
+@yadda
+- `pm.test("ad", function () { … })` — bir yoxlama.
+- `pm.expect(a).to.eql(b)` — bərabərlik.
+- Tip, uzunluq və quruluşu da yoxla.
+@dərin
+### Faydalı yoxlama nümunələri
+```javascript
+const data = pm.response.json();
+
+pm.test("Cavab massivdir və 10 elementdir", function () {
+  pm.expect(data).to.be.an("array");
+  pm.expect(data).to.have.lengthOf(10);
+});
+
+pm.test("Hər postun userId-si 1-dir", function () {
+  data.forEach(function (post) {
+    pm.expect(post.userId).to.eql(1);
+  });
+});
+
+pm.test("Content-Type JSON-dur", function () {
+  pm.response.to.have.header("Content-Type");
+  pm.expect(pm.response.headers.get("Content-Type")).to.include("application/json");
+});
+```
+
+### JSON Schema ilə quruluş yoxlaması
+Hər sahəni ayrıca yoxlamaq əvəzinə cavabın “şablonunu” (schema) təsvir etmək olar: hansı sahələr məcburidir və tipi nədir. Postman-da `pm.response.to.have.jsonSchema(schema)` bütün quruluşu bir dəfəyə yoxlayır — sahə yoxa çıxanda və ya tip dəyişəndə dərhal düşür.
+
+### Pre-request skriptləri
+Sorğudan əvvəl işləyən skriptlər data hazırlayır: məsələn, hər dəfə unikal email yaratmaq — `pm.variables.set("email", "user" + Date.now() + "@example.com")`. Beləcə “bu email artıq var” xətası testləri pozmur.
+
+### Tipik yanlış anlama
+“Yalnız status kodunu yoxlamaq kifayətdir.” Status 200 olsa da, cavab boş və ya səhv ola bilər. Yaxşı test həm statusu, həm datanı, həm də quruluşu yoxlayır.
+@nümunə
+**Tapşırıq.** `GET /users/1` üçün 4 yoxlama yaz: status 200, `id` 1-dir, `email` daxilində “@” var, `address.city` boş deyil.
+@addımlar
+1. **Status:** `pm.test("Status 200", () => pm.response.to.have.status(200));`
+2. **Datanı al:** `const data = pm.response.json();`
+3. **id:** `pm.test("id 1-dir", () => pm.expect(data.id).to.eql(1));`
+4. **email:** `pm.test("email-də @ var", () => pm.expect(data.email).to.include("@"));`
+5. **Şəhər:** `pm.test("Şəhər boş deyil", () => { pm.expect(data.address.city).to.be.a("string"); pm.expect(data.address.city.length).to.be.above(0); });`
+@növbən
+`GET /posts/1` üçün 4 yoxlama yaz: status 200, `userId` ədəddir, `title` boş deyil, cavab 1000 ms-dən tez gəlir. Kodu yaz və hər sətrin nə etdiyini izah et.
+
+=== c15s7
+@qısa
+Dəyişənlər eyni sorğuları müxtəlif serverlərdə işlətməyə imkan verir: `{{baseUrl}}/users/1`. Cavabdan dəyər götürüb (`pm.environment.set`) sonrakı sorğuda istifadə etmək olur — login token-i məhz belə ötürülür.
+@yadda
+- Server ünvanı environment dəyişənidir.
+- Cavabdan götürülən id və token sorğuları zəncirə bağlayır.
+- Şifrə və token kolleksiyaya yazılmır.
+@dərin
+### Sorğu zənciri (chaining)
+Real ssenari bir neçə sorğudan ibarətdir: login → token → istifadəçi yarat → id → istifadəçini yenilə → sil. Hər addım əvvəlkinin nəticəsindən istifadə edir:
+```javascript
+// Login sorğusunun Post-response hissəsində
+const data = pm.response.json();
+pm.environment.set("token", data.token);
+```
+Növbəti sorğunun Authorization tabında: Bearer Token → `{{token}}`.
+
+### Environment-lərin dəyişdirilməsi
+“Test” və “Staging” environment-lərində eyni dəyişən adları (`baseUrl`, `token`) fərqli dəyərlərlə saxlanır. Sağ yuxarıdakı seçimlə mühiti dəyişmək kifayətdir — sorğulara toxunmadan.
+
+### Dinamik dəyişənlər
+Postman-ın hazır dinamik dəyişənləri var: `{{$randomEmail}}`, `{{$randomFirstName}}`, `{{$timestamp}}`, `{{$guid}}`. Hər sorğuda yeni dəyər yaradılır — test datasını unikal etmək üçün rahatdır.
+
+### Tipik yanlış anlama
+“Dəyişən — sadəcə rahatlıqdır.” Dəyişənlər testləri mühitdən müstəqil edir və avtomatik icranı (Runner, Newman, CI) mümkün edir.
+@nümunə
+**Tapşırıq.** Zəncir qur: 1) `POST /posts` ilə yeni post yarat; 2) qaytarılan `id`-ni yadda saxla; 3) `GET /posts/{{postId}}` ilə oxu. Skriptləri yaz və JSONPlaceholder-də nəticəni izah et.
+@addımlar
+1. **POST sorğusu:** `{{baseUrl}}/posts`, gövdə `{"title": "Test", "body": "Zəncir", "userId": 1}`.
+2. **Post-response skripti:** `const data = pm.response.json(); pm.environment.set("postId", data.id);` — `postId` = 101 olur.
+3. **GET sorğusu:** `{{baseUrl}}/posts/{{postId}}`.
+4. **Nəticə:** JSONPlaceholder-də 404 qayıdır, çünki data saxlanmır. Real API-də 200 və eyni başlıq gözlənilir.
+5. **Dərs:** zəncir texnikası düzgündür; nəticə API-nin xüsusiyyətini göstərir — test yazanda mühitin davranışını bil.
+@növbən
+Zəncir planla: login (`POST /login` → token), profil (`GET /me` token ilə), profili yenilə (`PATCH /me`). Hər addımın skriptini və Authorization ayarını yaz.
+
+=== c15s8
+@qısa
+Collection Runner kolleksiyadakı bütün sorğuları və testləri ardıcıl işə salır — regression üçün idealdır. Newman eyni kolleksiyaları terminaldan işə salır və CI/CD-yə qoşulur.
+@yadda
+- Runner — Postman daxilində toplu icra.
+- Data faylı (CSV/JSON) ilə data-driven test.
+- Newman — terminal və CI üçün.
+@dərin
+### Data-driven test
+Runner-də CSV faylı seçmək olar: hər sətir bir iterasiyadır. Məsələn:
+```text
+userId,expectedCount
+1,10
+2,10
+11,0
+```
+Sorğuda `{{userId}}`, testdə isə `pm.iterationData.get("expectedCount")` istifadə olunur. Beləcə bir sorğu ilə onlarla data halı yoxlanır.
+
+### Newman ilə faydalı parametrlər
+```bash
+newman run users-api.postman_collection.json \
+  -e test.postman_environment.json \
+  -d users.csv \
+  -r cli,htmlextra
+```
+- `-e` — environment faylı, `-d` — data faylı, `-r` — hesabat formatları.
+- `htmlextra` hesabatı ayrıca quraşdırılır (`npm install -g newman-reporter-htmlextra`) və gözəl HTML hesabat yaradır.
+- Testlərdən biri düşəndə Newman sıfırdan fərqli kodla bitir — CI bunu “qırmızı” kimi qəbul edir.
+
+### Sorğuların sırası
+Runner sorğuları kolleksiyadakı sıra ilə icra edir. Zəncirli testlərdə (login → yarat → sil) sıra vacibdir. Müstəqil testlər isə istənilən sırada işləməlidir — bu, testlərin sağlamlığının göstəricisidir.
+
+### Tipik yanlış anlama
+“Runner-də hamısı yaşıldırsa, API qaydasındadır.” Yaşıl yalnız yazılmış yoxlamaların keçdiyini göstərir; yoxlamalar zəifdirsə (yalnız status), çox defekt gözdən qaçır.
+@nümunə
+**Tapşırıq.** `GET /posts?userId={{userId}}` üçün data-driven test qur: istifadəçi 1, 5, 10 üçün 10 post, 11 üçün 0 post gözlənilir. CSV faylını və testi yaz.
+@addımlar
+1. **CSV:** başlıq `userId,expectedCount`; sətirlər `1,10`, `5,10`, `10,10`, `11,0`.
+2. **Sorğu:** `{{baseUrl}}/posts?userId={{userId}}`.
+3. **Test:** `const data = pm.response.json(); pm.test("Post sayı düzgündür", () => pm.expect(data.length).to.eql(Number(pm.iterationData.get("expectedCount"))));`
+4. **Runner:** kolleksiyanı seç, data faylını yüklə — 4 iterasiya.
+5. **Nəticə:** hər iterasiyanın nəticəsi ayrıca görünür; düşən iterasiya hansı datanın problemli olduğunu göstərir.
+@növbən
+`GET /comments?postId={{postId}}` üçün data-driven test planla: 4 sətirlik CSV (biri neqativ), testin kodu və Newman əmri (environment və data faylı ilə).
+
+=== c15s9
+@qısa
+API test ideyaları: düzgün sorğu, cavabın quruluşu, məcburi sahə, yanlış tip, token yoxluğu, başqasının resursu, mövcud olmayan ID, yanlış metod, böyük və boş data, xüsusi simvollar, təkrar sorğu, cavab müddəti və səhifələmə.
+@yadda
+- Hər endpoint üçün pozitiv + neqativ + təhlükəsizlik.
+- 500 heç vaxt düzgün cavab deyil.
+- Təkrar POST dublikat yaratmamalıdır (tələbə görə).
+@dərin
+### Səhifələmənin (pagination) yoxlanması
+- `page=1` və son səhifə — sərhədlər.
+- `limit=0`, `limit=-1`, çox böyük `limit` — server limiti tətbiq edirmi?
+- Səhifələr arasında element təkrarlanırmı və ya itirmi (xüsusən data dəyişərkən)?
+- Cavabda ümumi say (`total`) və növbəti səhifə linki düzgündürmü?
+
+### İdempotency açarı
+Ödəniş API-ləri tez-tez xüsusi başlıq qəbul edir (məsələn, `Idempotency-Key`): eyni açarla təkrar POST ikinci ödəniş yaratmır, ilkin nəticəni qaytarır. Tester eyni açarla iki sorğu göndərib bunu yoxlayır.
+
+### Rate limiting
+Dəqiqədə icazə veriləndən çox sorğu göndəriləndə 429 qayıtmalıdır və cavabda nə vaxt yenidən cəhd etmək olacağı (`Retry-After`) göstərilə bilər. Bu, test mühitində, icazə ilə yoxlanır.
+
+### Mesajların keyfiyyəti
+Xəta cavabında: aydın mesaj, hansı sahənin problemli olduğu, standart format. Mesajda texniki detal (stack trace, SQL sorğusu) olmamalıdır — bu, həm istifadəçi təcrübəsi, həm də təhlükəsizlik məsələsidir.
+
+### Tipik yanlış anlama
+“API testi yalnız pozitiv sorğulardır.” API səviyyəsi neqativ və təhlükəsizlik testləri üçün ən əlverişli yerdir — UI-nin qoruyucu təbəqəsi orada yoxdur.
+@nümunə
+**Tapşırıq.** `POST /orders` (gövdə: productId, qty, addressId; token tələb olunur) üçün 8 test ideyası yaz və gözlənilən statusları göstər.
+@addımlar
+1. **Pozitiv:** düzgün data və token → 201, cavabda `id` və `status: "new"`.
+2. **Token yoxdur:** → 401.
+3. **Başqasının ünvanı:** `addressId` başqa istifadəçiyə aiddir → 403 və ya 404.
+4. **Məcburi sahə yoxdur:** `qty` göndərilməyib → 400/422, mesajda sahə adı.
+5. **Yanlış tip və dəyər:** `qty: "iki"`, `qty: 0` → 400/422.
+6. **Mövcud olmayan məhsul:** → 404.
+7. **Yanlış metod:** `DELETE /orders` → 405.
+8. **Təkrar sorğu:** eyni sorğunu iki dəfə tez göndər → tələbə görə ikinci sifariş yaranmamalı və ya idempotency açarı ilə eyni nəticə qayıtmalıdır.
+@növbən
+`PATCH /users/{id}` (gövdə: name, phone; token tələb olunur) üçün 8 test ideyası yaz: pozitiv, token, başqasının profili, yanlış format, boş gövdə, mövcud olmayan id, yanlış metod və Azərbaycan hərfləri daxil olmaqla.

@@ -1,0 +1,347 @@
+=== c13s1
+@qısa
+Veb tətbiq iki tərəfin söhbətidir: brauzer (client) sorğu göndərir, server məntiqi işlədib bazadan datanı alır və cavab qaytarır. Frontend istifadəçinin gördüyü hissə, backend serverdəki məntiq, baza isə məlumatın saxlandığı yerdir.
+@yadda
+- Client sorğu göndərir, server cavab verir.
+- Frontend — HTML, CSS, JavaScript; backend — server məntiqi; baza — data.
+- Defekt üç yerdən birində ola bilər — tester onu ayırd etməyi öyrənir.
+@dərin
+### Bir klikin “daxili səyahəti”
+1. **DNS:** brauzer domen adını IP ünvanına çevirir.
+2. **Bağlantı:** serverlə əlaqə qurulur (HTTPS-də şifrələnmiş kanal razılaşdırılır).
+3. **Sorğu:** brauzer HTTP sorğusunu göndərir.
+4. **Server işi:** backend sorğunu yoxlayır, bazaya müraciət edir, cavab hazırlayır.
+5. **Cavab və göstərmə:** brauzer HTML-i oxuyur, CSS və JavaScript fayllarını, şəkilləri ayrıca yükləyir və səhifəni çəkir.
+Hər addımda problem yarana bilər: DNS tapılmır, sertifikat vaxtı keçib, server gec cavab verir, JavaScript xətası səhifəni “sındırır”.
+
+### Arxitektura növləri
+- **Monolit:** backend bir böyük tətbiqdir.
+- **Mikroservislər:** hər funksiya (ödəniş, istifadəçilər, bildirişlər) ayrıca servisdir və onlar API ilə danışır. Tester üçün bu, daha çox inteqrasiya nöqtəsi deməkdir.
+- **SPA (single-page application):** səhifə bir dəfə yüklənir, sonra JavaScript API sorğuları ilə hissə-hissə yenilənir — Network panelində çoxlu Fetch/XHR sorğusu görünür.
+
+### Tipik yanlış anlama
+“Ekranda gördüyüm səhv hər zaman frontend səhvidir.” Ekranda göstərilən yanlış məbləğ bazadakı səhv datadan və ya serverin hesablamasından gələ bilər. Sorğu-cavaba baxmadan qərar vermə (13.10).
+@nümunə
+**Tapşırıq.** İstifadəçi onlayn mağazada “Səbətə əlavə et” basır. Bu hərəkətin client, server və baza üzrə yolunu təsvir et və hər hissədə bir mümkün defekt yaz.
+@addımlar
+1. **Client (frontend):** JavaScript düyməni tutur və POST sorğusu göndərir. Defekt: düymə iki dəfə basılanda iki sorğu gedir.
+2. **Server (backend):** sorğunu yoxlayır (məhsul varmı, stok kifayətdirmi), səbətə yazır. Defekt: stok 0 olsa da məhsul əlavə olunur.
+3. **Baza:** səbət cədvəlinə yeni sətir yazılır. Defekt: eyni məhsul iki ayrı sətir kimi saxlanır, say isə toplanmır.
+4. **Cavab və ekran:** server yenilənmiş səbəti qaytarır, frontend sayğacı göstərir. Defekt: cavab düzgündür, amma sayğac köhnə qalır.
+@növbən
+İstifadəçi taksi tətbiqində “Sifariş et” basır. Client, server və baza üzrə yolu təsvir et və hər hissədə bir mümkün defekt yaz.
+
+=== c13s2
+@qısa
+URL protokol, domen, port, yol, sorğu parametrləri və fraqmentdən ibarətdir. Parametrləri dəyişmək də testdir: `?page=-1`, `?page=abc`, çox böyük ədəd — sayt necə reaksiya verir?
+@yadda
+- Protokol://domen:port/yol?parametrlər#fraqment.
+- Fraqment serverə göndərilmir.
+- URL-də olmayan hərflər kodlanır (percent-encoding).
+@dərin
+### Percent-encoding (URL kodlaşdırması)
+URL-də yalnız müəyyən simvollar birbaşa işlənə bilər. Boşluq `%20` (bəzən `+`), Azərbaycan hərfləri isə baytlarla kodlanır: “ə” hərfi `%C9%99` kimi yazılır. Axtarışda “şəkər” yazanda URL-də `q=%C5%9F%C9%99k%C9%99r` görə bilərsən. Tester yoxlayır: belə URL-i paylaşanda və açanda axtarış düzgün işləyirmi?
+
+### URL ilə test ideyaları
+- **Parametrlərin dəyişdirilməsi:** `?page=0`, `?page=-1`, `?page=999999`, `?sort=unknown`.
+- **Icazələr:** `/orders/1001` → `/orders/1002` — başqasının məlumatı açılmamalıdır (Fəsil 14).
+- **Yönləndirmə:** `http://` ilə açanda avtomatik `https://`-ə keçirmi?
+- **Böyük-kiçik hərf və sonda “/”:** `/Products` və `/products/` eyni səhifəni açırmı?
+- **Mövcud olmayan yol:** səliqəli 404 səhifəsi göstərilirmi?
+
+### Subdomen və mühitlər
+Mühitlər tez-tez subdomenlə ayrılır: `test.shop.example.com`, `staging.shop.example.com`, `shop.example.com`. Bug report-da URL-i tam yazmaq mühiti dəqiq göstərir.
+
+### Tipik yanlış anlama
+“URL-i istifadəçi dəyişmir, onu test etməyə ehtiyac yoxdur.” İstifadəçilər URL-i kopyalayır, redaktə edir, köhnə linklərə qayıdır — təhlükəsizlik problemlərinin bir hissəsi məhz URL dəyişikliyi ilə tapılır.
+@nümunə
+**Tapşırıq.** URL: `https://shop.example.com/catalog/shoes?size=42&color=qara&page=2`. Hissələrə ayır və bu URL üçün 5 test ideyası yaz.
+@addımlar
+1. **Hissələr:** protokol — https; domen — shop.example.com; yol — /catalog/shoes; parametrlər — size=42, color=qara, page=2; port və fraqment yoxdur (https üçün default port 443).
+2. **Sərhəd:** `page=0`, `page=-1` və son səhifədən sonrakı səhifə — xəta yox, səliqəli davranış.
+3. **Yanlış tip:** `size=abc` — 500 xətası olmamalıdır.
+4. **Mövcud olmayan dəyər:** `color=bənövşəyi` — boş nəticə və aydın mesaj.
+5. **Kodlaşdırma və paylaşma:** Azərbaycan hərfli dəyəri olan URL-i başqa brauzerdə aç — eyni nəticə; `http://` ilə açanda `https://`-ə yönlənmə.
+@növbən
+URL: `https://bank.example.az/cards/4471/transactions?from=2026-10-01&to=2026-10-31`. Hissələrə ayır və 5 test ideyası yaz — ən azı biri təhlükəsizlik, biri tarix sərhədləri ilə bağlı olsun.
+
+=== c13s3
+@qısa
+HTTP brauzerlə serverin danışıq qaydalarıdır, HTTPS isə eyni qaydalar şifrələnmiş kanal (TLS) üzərindən. Login, ödəniş və şəxsi məlumat olan hər səhifə HTTPS ilə işləməlidir.
+@yadda
+- HTTPS = HTTP + TLS şifrələməsi.
+- Sertifikat serverin həqiqiliyini təsdiqləyir.
+- HTTP-dən HTTPS-ə avtomatik yönləndirmə olmalıdır.
+@dərin
+### TLS nəyi qoruyur?
+- **Məxfilik:** yolda (məsələn, açıq Wi-Fi-da) məlumatı oxumaq olmur.
+- **Bütövlük:** məlumatı yolda dəyişmək olmur.
+- **Həqiqilik:** sertifikat saytın həqiqətən o sayt olduğunu təsdiqləyir.
+
+### Tester üçün HTTPS yoxlamaları
+- `http://` ilə açanda `https://`-ə yönlənirmi (301)?
+- Sertifikatın müddəti bitməyib? Brauzer xəbərdarlıq göstərmir?
+- **Mixed content:** HTTPS səhifədə şəkil və ya skript `http://` ilə yüklənirsə, brauzer onu bloklaya və ya xəbərdarlıq göstərə bilər — Console-da görünür.
+- Test mühitlərində tez-tez öz-özünə imzalanmış (self-signed) sertifikat olur; bu, canlı sistemə keçməməlidir.
+
+### HTTP versiyaları
+HTTP/1.1, HTTP/2 və HTTP/3 eyni məntiqlə işləyir (metod, status, başlıq), fərq ötürmə sürətindədir. DevTools-un Network panelində “Protocol” sütununu açıb hansının işlədiyini görmək olar.
+
+### Tipik yanlış anlama
+“HTTPS-dirsə, sayt təhlükəsizdir.” HTTPS yalnız yoldakı məlumatı qoruyur. Serverdəki icazə səhvi, zəif şifrə qaydası və ya başqasının məlumatının görünməsi HTTPS ilə həll olunmur.
+@nümunə
+**Tapşırıq.** Yeni internet-mağazanın canlıya çıxışından əvvəl HTTPS ilə bağlı 5 yoxlama yaz.
+@addımlar
+1. **Yönləndirmə:** `http://shop.example.com` → avtomatik `https://` (301), login və ödəniş səhifələri daxil.
+2. **Sertifikat:** brauzerdə qıfıl işarəsi; sertifikatın sahibi və bitmə tarixi düzgündür.
+3. **Mixed content:** bütün əsas səhifələrdə Console-da “mixed content” xəbərdarlığı yoxdur.
+4. **Formalar:** login və ödəniş formaları yalnız HTTPS ünvanına göndərilir (Network-da sorğunun URL-i).
+5. **Subdomenlər:** `www.` və `api.` subdomenləri də HTTPS ilə işləyir.
+@növbən
+Universitetin tələbə portalı üçün HTTPS ilə bağlı 4 yoxlama yaz və hər birinin hansı riski azaltdığını qeyd et.
+
+=== c13s4
+@qısa
+Sorğu dörd hissədən ibarətdir: metod, URL, başlıqlar və (bəzən) gövdə. Cavab isə status kodu, başlıqlar və gövdədir. Tester bunları DevTools-un Network panelində oxuyur.
+@yadda
+- Sorğu: metod + URL + başlıqlar + gövdə.
+- Cavab: status + başlıqlar + gövdə.
+- Content-Type datanın formatını, Authorization isə kimliyi bildirir.
+@dərin
+### Tez-tez rast gəlinən başlıqlar
+| Başlıq | Nə deyir |
+| --- | --- |
+| Content-Type | Gövdənin formatı: application/json, text/html |
+| Accept | Client hansı formatı qəbul edir |
+| Authorization | Kimlik: məsələn, `Bearer <token>` |
+| Accept-Language | İstifadəçinin dili: az, en |
+| User-Agent | Brauzer və OS haqqında məlumat |
+| Cookie / Set-Cookie | Brauzerin göndərdiyi / serverin qoyduğu cookie |
+| Cache-Control | Cavabın necə keşlənəcəyi |
+
+### Network panelində sorğunu oxumaq
+Sorğuya klik edəndə tablar açılır: **Headers** (metod, URL, status, başlıqlar), **Payload** (göndərilən data), **Preview/Response** (cavabın gövdəsi), **Timing** (vaxtın harada getdiyi). Bug report-a ən çox Headers və Response hissələri əlavə olunur.
+
+### Test ideyaları başlıqlarla
+- `Accept-Language: en` göndəriləndə cavab ingiliscə gəlirmi?
+- `Authorization` olmadan qorunan sorğu 401 qaytarırmı?
+- Yanlış `Content-Type` ilə göndərilən data 400/415 ilə rədd olunurmu, 500 yox?
+Bu yoxlamalar Postman ilə asan aparılır (Fəsil 15).
+
+### Tipik yanlış anlama
+“Gövdə hər sorğuda olur.” GET sorğularında adətən gövdə olmur — parametrlər URL-də göndərilir. POST, PUT və PATCH-də isə data gövdədədir.
+@nümunə
+**Tapşırıq.** Network panelində bu sorğunu gördün: `POST /api/orders`, status 201, sorğu gövdəsi `{"productId": 15, "qty": 2}`, cavab `{"id": 9001, "total": 39.80, "status": "new"}`. Bu məlumatla nəyi yoxlaya bilərsən?
+@addımlar
+1. **Status:** 201 — yeni resurs yaradılıb, POST üçün gözlənilən cavabdır.
+2. **Sorğu datası:** ekranda seçilən məhsul və say (15 nömrəli məhsul, 2 ədəd) düzgün göndərilib.
+3. **Hesablama:** məhsulun qiyməti 19,90 AZN-dirsə, 2 × 19,90 = 39,80 — cəm düzgündür.
+4. **UI ilə müqayisə:** ekranda sifariş nömrəsi 9001 və status “Yeni” göstərilirmi?
+5. **Baza ilə müqayisə:** `orders` cədvəlində 9001 nömrəli sifariş eyni məbləğlə varmı (Fəsil 16)?
+@növbən
+Network-da `PATCH /api/profile` sorğusunu gördün: gövdə `{"phone": "+994501234567"}`, status 200, cavabda telefon `"0501234567"` formatındadır. Bu müşahidədən hansı sualları verərdin və nəyi yoxlayardın? 4 addım yaz.
+
+=== c13s5
+@qısa
+HTTP metodları sorğunun məqsədini göstərir: GET oxuyur, POST yaradır, PUT tam əvəz edir, PATCH qismən dəyişir, DELETE silir. Bu, data ilə dörd əsas əməliyyat — CRUD — ilə uyğun gəlir.
+@yadda
+- GET — oxu, POST — yarat, PUT/PATCH — yenilə, DELETE — sil.
+- GET datanı dəyişməməlidir.
+- Təkrar POST dublikat yarada bilər — test et.
+@dərin
+### Təhlükəsiz və idempotent metodlar
+- **Təhlükəsiz (safe):** serverdəki datanı dəyişmir — GET (həmçinin HEAD, OPTIONS).
+- **İdempotent:** eyni sorğunu bir və ya on dəfə göndərmək eyni nəticəni verir — GET, PUT, DELETE. Məsələn, eyni resursu 3 dəfə silmək: birinci dəfə silinir, sonrakılar heç nəyi dəyişmir.
+- **POST idempotent deyil:** iki dəfə göndərilən POST iki sifariş yarada bilər.
+
+### Bunlar testdə nə deməkdir?
+- GET sorğusunu təkrarlamaq heç nəyi dəyişməməlidir (məsələn, səhifəni yeniləmək sifariş yaratmamalıdır).
+- “Ödə” düyməsi iki dəfə basılanda iki POST getməməlidir və ya server dublikatı tanımalıdır.
+- DELETE-dən sonra eyni resursa GET — 404 gözlənilir.
+- PUT ilə bütün sahələri göndərməyəndə nə olur — göndərilməyən sahələr boşalırmı? (PUT “tam əvəz” deməkdir, PATCH isə yox.)
+
+### Tipik yanlış anlama
+“GET və POST arasında fərq yalnız datanın harada olmasıdır.” Əsas fərq məqsəddədir: GET oxuyur və təkrarlana bilər, POST yeni şey yaradır və təkrarı nəticəni dəyişir.
+@nümunə
+**Tapşırıq.** Bloq sistemi API-si üçün CRUD əməliyyatlarına uyğun 5 sorğu yaz və hər birinin gözlənilən statusunu göstər.
+@addımlar
+1. **Create:** `POST /posts` (başlıq və mətnlə) → 201, cavabda yeni `id`.
+2. **Read:** `GET /posts/77` → 200 və postun datası; mövcud olmayan `GET /posts/99999` → 404.
+3. **Update (qismən):** `PATCH /posts/77` gövdə `{"title": "Yeni"}` → 200, yalnız başlıq dəyişir.
+4. **Update (tam):** `PUT /posts/77` bütün sahələrlə → 200; sahə buraxılarsa, tələbə görə 400 və ya boşalma — yoxla.
+5. **Delete:** `DELETE /posts/77` → 200 və ya 204; sonra `GET /posts/77` → 404; ikinci DELETE → 404 və ya 204 (idempotentlik).
+@növbən
+“Ünvanlar” resursu (`/addresses`) üçün CRUD-a uyğun 5 sorğu yaz, gözlənilən statusları göstər və təkrar POST ilə bağlı bir test ideyası əlavə et.
+
+=== c13s6
+@qısa
+Status kodunun birinci rəqəmi qrupu göstərir: 2xx — uğur, 3xx — yönləndirmə, 4xx — sorğunun problemi, 5xx — serverin problemi. İstifadəçi nə yazırsa yazsın, server 500 qaytarmamalıdır.
+@yadda
+- 4xx — client tərəfi, 5xx — server tərəfi.
+- 401 — kimlik yoxdur, 403 — icazə yoxdur.
+- Yanlış dataya 400/422, server xətasına 500 — hər 500 bug report-dur.
+@dərin
+### Yönləndirmələr: 301, 302, 307, 308
+- **301 / 308** — daimi köçmə (brauzer və axtarış sistemləri yeni ünvanı yadda saxlayır).
+- **302 / 307** — müvəqqəti yönləndirmə (məsələn, login-dən sonra əvvəlki səhifəyə qayıtmaq).
+307 və 308 metodun dəyişmədiyini zəmanət edir: POST yönləndiriləndə də POST qalır.
+
+### 304 Not Modified necə işləyir?
+Brauzer faylı əvvəlcədən saxlayıbsa, serverə “bu versiya hələ təzədirmi?” soruşur (`If-None-Match` başlığı ilə). Server “dəyişməyib” deyirsə, 304 qaytarır və fayl təkrar yüklənmir. Bu, sürət üçündür — amma köhnə faylın görünməsi problemlərinin də mənbəyidir (13.8).
+
+### Status və gövdə uyğun olmalıdır
+Bəzi API-lər xətanı 200 statusu ilə qaytarır: `{"success": false, "error": "..."}`. Bu, avtomatik monitorinqi və testləri aldadır. Tester bunu qeyd edir və standart kodları təklif edir.
+
+### Xəta cavabının keyfiyyəti
+Yaxşı xəta cavabı: düzgün status, aydın mesaj, hansı sahənin səhv olduğu. Pis cavab: boş gövdə, texniki stack trace, baza xətasının mətni (təhlükəsizlik riski).
+
+### Tipik yanlış anlama
+“404 həmişə baqdır.” Mövcud olmayan resurs üçün 404 düzgün cavabdır. Baq — mövcud olan resursun 404 qaytarmasıdır və ya başqasının resursu üçün 200 qaytarılmasıdır.
+@nümunə
+**Tapşırıq.** Hər hal üçün gözlənilən status kodunu yaz: (a) formada məcburi email göndərilməyib; (b) token-in vaxtı bitib; (c) adi istifadəçi başqasının sifarişini silmək istəyir; (d) eyni email ilə ikinci qeydiyyat; (e) server bazaya qoşula bilmir; (f) dəqiqədə 100 dəfə login cəhdi.
+@addımlar
+1. **(a)** 400 və ya 422 — sorğunun datası natamamdır, mesajda hansı sahə olduğu yazılmalıdır.
+2. **(b)** 401 — kimlik etibarsızdır, istifadəçi yenidən daxil olmalıdır.
+3. **(c)** 403 (və ya resursun varlığını gizlətmək üçün 404) — kimlik bəllidir, icazə yoxdur.
+4. **(d)** 409 — konflikt: bu email artıq qeydiyyatdadır.
+5. **(e)** 500 və ya 503 — server tərəfi; istifadəçiyə səliqəli mesaj, loga ətraflı məlumat.
+6. **(f)** 429 — limit aşılıb, bir müddət sonra yenidən cəhd.
+@növbən
+Bu hallar üçün gözlənilən status kodunu və istifadəçinin görməli olduğu mesajı yaz: (a) mövcud olmayan məhsul səhifəsi; (b) şifrə dəyişdirmə sorğusunda köhnə şifrə yanlışdır; (c) admin səhifəsinə login olmadan giriş; (d) çox böyük fayl yükləmə; (e) yeni ödəniş uğurla yaradıldı.
+
+=== c13s7
+@qısa
+HTTP yaddaşsızdır, ona görə server istifadəçini cookie və ya token ilə tanıyır. Cookie-ni server qoyur və brauzer hər sorğu ilə geri göndərir; token isə Authorization başlığında göndərilir. localStorage və sessionStorage brauzerdə data saxlayır.
+@yadda
+- Cookie — server qoyur, brauzer avtomatik göndərir.
+- Token (JWT) — login-dən sonra verilən “keçid kartı”.
+- sessionStorage tab bağlananda silinir, localStorage qalır.
+@dərin
+### Cookie atributları
+- **Expires / Max-Age:** nə vaxt silinəcək; yoxdursa — sessiya cookie-si.
+- **Secure:** yalnız HTTPS ilə göndərilir.
+- **HttpOnly:** JavaScript oxuya bilmir — XSS-ə qarşı müdafiə.
+- **SameSite:** başqa saytdan gələn sorğularda göndərilib-göndərilməyəcəyi.
+Tester DevTools → Application → Cookies-də bunları görür: sessiya cookie-sində HttpOnly və Secure olmaması təhlükəsizlik komandasına bildirilməli məsələdir.
+
+### JWT-nin quruluşu
+Token üç hissədən ibarətdir: başlıq, məzmun (payload) və imza — nöqtələrlə ayrılır. Məzmun şifrələnmir, sadəcə kodlanır: içində istifadəçi ID-si, rolu, bitmə vaxtı (`exp`) görünə bilər. Buna görə JWT-də şifrə və həssas data olmamalıdır. Test mühitindəki token-i dekodlayıb `exp`-ə baxmaq sessiya testlərində faydalıdır (canlı token-i heç vaxt kənar saytlara yapışdırma).
+
+### Sessiya testləri
+- Logout-dan sonra köhnə token/cookie ilə sorğu — 401 gözlənilir.
+- Şifrə dəyişəndən sonra digər cihazlardakı sessiyalar bağlanırmı?
+- Uzun müddət hərəkətsizlikdən sonra sessiya bitirmi?
+- “Məni yadda saxla” işarələnməyəndə brauzeri bağlayıb açanda sessiya qalırmı?
+
+### Tipik yanlış anlama
+“localStorage-da token saxlamaq təhlükəsizdir.” JavaScript ona çıxış edə bilir — XSS zəifliyi olarsa, token oğurlana bilər. Bu arxitektura qərarıdır, amma tester riski bilməlidir.
+@nümunə
+**Tapşırıq.** Bank saytında sessiya ilə bağlı 5 test ideyası yaz və hər biri üçün gözlənilən nəticəni göstər.
+@addımlar
+1. **Logout:** çıxışdan sonra “Geri” düyməsi — şəxsi səhifə açılmır, login tələb olunur.
+2. **Köhnə token:** logout-dan sonra Network-dan köçürülmüş köhnə sorğunu Postman-da təkrarla — 401.
+3. **Hərəkətsizlik:** 10 dəqiqə toxunma — sessiya bitir, yenidən login tələb olunur (tələbdəki müddətə görə).
+4. **Cookie atributları:** sessiya cookie-sində HttpOnly və Secure var.
+5. **Paralel sessiya:** şifrəni kompüterdə dəyiş — telefondakı sessiya bağlanır (tələb belədirsə).
+@növbən
+Onlayn kurs platforması üçün sessiya və cookie ilə bağlı 5 test ideyası yaz — ən azı biri “Məni yadda saxla”, biri iki tab, biri logout ilə bağlı olsun.
+
+=== c13s8
+@qısa
+Brauzer sürət üçün faylları yadda saxlayır (keş). Ona görə düzəlişdən sonra köhnə versiya görünə bilər. Sərt yeniləmə (Ctrl + Shift + R), gizli pəncərə və DevTools-da “Disable cache” bunu istisna etməyə kömək edir.
+@yadda
+- “Düzəlməyib” deməzdən əvvəl keşi istisna et.
+- Keş brauzerdə, CDN-də və serverdə ola bilər.
+- Keşlə bağlı baq da baqdır: köhnə qiymət istifadəçiyə görünməməlidir.
+@dərin
+### Keşin qatları
+- **Brauzer keşi:** CSS, JS, şəkillər; Cache-Control başlığı müddəti təyin edir.
+- **CDN keşi:** dünyanın müxtəlif yerlərindəki serverlər faylların nüsxəsini saxlayır — yeni versiya hər yerə dərhal çatmaya bilər.
+- **Server keşi:** tez-tez soruşulan data (məhsul siyahısı) yaddaşda saxlanır — bazada dəyişiklik bir müddət görünməyə bilər.
+- **Service worker (PWA):** sayt oflayn işləmək üçün faylları özü keşləyir — sərt yeniləmə belə bəzən kömək etmir; Application → Service Workers bölməsindən təmizlənir.
+
+### Keşlə bağlı tipik defektlər
+- Yeni dizayn yayılıb, amma köhnə CSS ilə qarışıq görünür.
+- Qiymət dəyişib, amma bəzi istifadəçilərə köhnə qiymət göstərilir.
+- Logout-dan sonra şəxsi səhifə keşdən açılır (Cache-Control düzgün deyil).
+
+### Bug report-da necə qeyd etməli?
+“Sərt yeniləmədən və gizli pəncərədən sonra da təkrarlanır” cümləsi proqramçıya keşi artıq istisna etdiyini göstərir. Əgər yalnız keşlə bağlıdırsa, bu da yazılır: “Yalnız əvvəlki versiyanı açmış istifadəçilərdə; sərt yeniləmədən sonra düzəlir.”
+
+### Tipik yanlış anlama
+“Keş problemi istifadəçinin problemidir.” İstifadəçi sərt yeniləmə bilmir; yeni versiya çıxanda köhnə faylların avtomatik yenilənməsi sistemin vəzifəsidir.
+@nümunə
+**Tapşırıq.** Proqramçı “düymənin rəngini düzəltdim” deyir, sən isə köhnə rəngi görürsən. Addım-addım yoxla.
+@addımlar
+1. **Build-i yoxla:** test mühitində həqiqətən yeni versiya var? (versiya nömrəsi, release notes)
+2. **Sərt yeniləmə:** Ctrl + Shift + R — rəng dəyişdi?
+3. **Gizli pəncərə:** keşsiz açılan səhifədə yeni rəng görünürmü?
+4. **DevTools:** Network → “Disable cache” işarələ və yenilə; CSS faylının 200 və ya 304 qaytardığına bax.
+5. **Nəticə:** yalnız keşdəndirsə — proqramçıya “yeni CSS köhnə keşi əvəz etmir” kimi bildir (fayl versiyalaşdırılması lazım ola bilər); gizli pəncərədə də köhnədirsə — düzəliş mühitə çatmayıb və ya işləmir, baqı Reopened et.
+@növbən
+Admin paneldə məhsulun qiyməti 25 AZN-dən 20 AZN-ə dəyişdirildi, amma saytda bəzi istifadəçilər hələ 25 AZN görür. Keşin hansı qatlarında problem ola bilər? Araşdırma üçün 4 addım yaz.
+
+=== c13s9
+@qısa
+DevTools (F12) tester-in əsas alətidir: Elements — HTML/CSS, Console — xətalar, Network — sorğular, Application — cookie və yaddaş, Device toolbar — mobil ekranlar, Lighthouse — avtomatik audit.
+@yadda
+- Network: status, vaxt, göndərilən və qayıdan data.
+- Console: qırmızı xətalar bug report-a əlavə olunur.
+- Elements-də dəyişiklik müvəqqətidir — test ideyasıdır, düzəliş yox.
+@dərin
+### Az bilinən, amma çox faydalı funksiyalar
+- **Request blocking:** sorğuya sağ klik → Block request URL. Şəkil və ya skript yüklənməyəndə sayt necə görünür? (Real həyatda CDN çökəndə belə olur.)
+- **Copy as cURL / Copy as fetch:** sorğunu dəqiq təkrarlamaq və proqramçıya göndərmək üçün.
+- **Timing tabı:** vaxtın harada getdiyini göstərir — DNS, bağlantı, “Waiting for server response” (serverin cavab hazırlama vaxtı).
+- **Elements → “Force state”:** hover, focus, active vəziyyətlərini sabitləyib stili yoxlamaq.
+- **Console-da `document.querySelectorAll('img:not([alt])')`:** alt mətni olmayan şəkilləri tez tapmaq (əlçatanlıq).
+- **Sensors:** geolokasiya və vaxt zonasını dəyişmək.
+
+### Uzun mətn testi
+Elements panelində düymənin mətnini “Yadda saxla və növbəti mərhələyə keç” kimi uzun mətnlə əvəz et — sığırmı, qırılırmı? Bu, lokalizasiya problemlərini kod dəyişmədən tapmağa imkan verir.
+
+### Tipik yanlış anlama
+“DevTools proqramçıların alətidir.” DevTools tester-in “rentgenidir”: ekranın arxasında nə baş verdiyini göstərir və bug report-u günlərlə araşdırmadan xilas edir.
+@nümunə
+**Tapşırıq.** Sayt yavaş açılır. DevTools ilə hansı addımlarla səbəbi daraldarsan?
+@addımlar
+1. **Network-u aç, “Disable cache” işarələ və səhifəni yenilə** — ilk açılışı istifadəçi kimi gör.
+2. **Ən yavaş sorğunu tap:** “Time” sütununa görə sırala.
+3. **Timing tabına bax:** vaxt əsasən “Waiting for server response”-dadırsa — backend; “Content Download”-dadırsa — fayl çox böyükdür.
+4. **Ölçülərə bax:** 3 MB-lıq şəkillər varmı? “Size” sütununa görə sırala.
+5. **Lighthouse-u işə sal:** Performance balı və konkret tövsiyələr (şəkilləri sıxmaq, skriptləri gecikdirmək) — hesabatın ekran şəklini bug report-a əlavə et.
+@növbən
+Qeydiyyat forması göndəriləndə heç bir mesaj çıxmır. DevTools-un 3 panelindən istifadə edərək araşdırma planı yaz: hansı paneldə nəyə baxacaqsan və hər nəticə nəyi göstərəcək.
+
+=== c13s10
+@qısa
+Defektin frontend-də, yoxsa backend-də olduğunu Network göstərir: sorğu getmirsə — frontend; 500 qayıdırsa — backend; 400/422 — göndərilən data; 200 və düzgün cavab, amma səhv ekran — frontend; 200, amma səhv data — backend.
+@yadda
+- Sorğu yoxdur → frontend.
+- 5xx və ya səhv data cavabda → backend.
+- Cavab düzgün, ekran səhv → frontend.
+@dərin
+### Daha mürəkkəb hallar
+- **Sorğu gedir, amma yanlış datayla** (məsələn, səbətdə 3 məhsul var, sorğuda 2): frontend datanı düzgün toplamayıb.
+- **Cavab düzgündür, amma gec gəlir** və ekran “donur”: backend-in performansı və ya frontend-in loader göstərməməsi — ikisi də ola bilər.
+- **Bəzən işləyir, bəzən yox:** keş, yarış vəziyyəti (race condition) və ya bir neçə serverdən birinin köhnə versiyada olması.
+- **Üçüncü tərəf servisi:** ödəniş və ya xəritə servisi xəta verir — nə frontend, nə backend: inteqrasiya problemi və ya xarici xidmətin nasazlığı.
+
+### Bug report-a nə əlavə etməli?
+Sorğunun metodu və URL-i, status kodu, sorğu və cavabın gövdəsi (şəxsi data gizlədilmiş), Console xətası, vaxt. Bu məlumatla proqramçı problemi öz kompüterində axtarmadan başlayır.
+
+### Ehtiyatlı ol
+Bu cədvəl istiqamət verir, son hökm proqramçınındır. Report-da “backend-də baq var” deyə iddia etmək əvəzinə müşahidəni yaz: “POST /api/profile 500 qaytarır, cavab: ‘Internal error’.” Fakt həmişə təxmindən güclüdür.
+
+### Tipik yanlış anlama
+“Baqın kimə aid olduğunu tapmaq tester-in işi deyil.” Dəqiq yönləndirmə baqın düzgün komandaya tez çatmasını təmin edir — bu, tester-in dəyərini artırır.
+@nümunə
+**Tapşırıq.** Bu müşahidələrin hər birində problemin ehtimal olunan yerini müəyyən et: (a) “Sevimlilərə əlavə et” basılır, Network-da heç nə görünmür, Console-da “TypeError” var; (b) sorğu 200 qaytarır, cavabda qiymət 0, bazada isə 25 AZN; (c) cavabda düzgün sifariş siyahısı var, ekranda isə boş siyahı; (d) ödəniş sorğusu 502 qaytarır.
+@addımlar
+1. **(a) Frontend** — sorğu getmir, JavaScript xətası düyməni “sındırıb”; Console mətnini report-a əlavə et.
+2. **(b) Backend** — bazada düzgün dəyər var, server onu səhv oxuyur və ya hesablayır.
+3. **(c) Frontend** — data gəlir, amma göstərilmir (məsələn, format uyğunsuzluğu).
+4. **(d) Server tərəfi / infrastruktur** — 502 adətən serverin arxasındakı servisin cavab vermədiyini göstərir; DevOps-u da məlumatlandır.
+5. **Hər report-da:** təxmin yox, müşahidə — metod, URL, status, cavab, Console.
+@növbən
+Bu müşahidələr üçün problemin ehtimal olunan yerini və report-a əlavə edəcəyin sübutları yaz: (a) şəkil yükləmə sorğusu 413 qaytarır; (b) cavabda tarix “2026-10-24”, ekranda “10/24/2026”; (c) axtarış sorğusu 30 saniyə sonra 504 qaytarır; (d) düymə basılanda iki eyni POST sorğusu gedir.

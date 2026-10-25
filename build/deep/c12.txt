@@ -1,0 +1,316 @@
+=== c12s1
+@qısa
+Bug report-un məqsədi proqramçının defekti səndən heç nə soruşmadan təkrarlaya bilməsidir. Əsas sahələr: başlıq, mühit, severity, priority, ilkin şərtlər, addımlar, gözlənilən və faktiki nəticə, tezlik və sübutlar.
+@yadda
+- Addımlar + gözlənilən + faktiki = report-un ürəyi.
+- Mühit olmadan report yarımçıqdır.
+- Sübut (video, log, cavab) mübahisəni faktla bitirir.
+@dərin
+### Report yazmazdan əvvəl 4 addım
+1. **Təkrarla:** ən azı 2–3 dəfə; tezliyi qeyd et.
+2. **Minimallaşdır:** lazımsız addımları çıxar — ən qısa yol tapılsın.
+3. **İzolyasiya et:** başqa brauzerdə, başqa hesabla, başqa data ilə də olurmu? Bu, səbəbi daraldır.
+4. **Axtar:** belə baq artıq yazılıbmı? (dublikatın qarşısı)
+
+### Gözlənilən nəticənin mənbəyi
+“Gözlənilən” tester-in fikri deyil — tələbə, acceptance criteria-ya, maketə istinad olmalıdır: “AC-3-ə görə email böyük-kiçik hərfə həssas olmamalıdır.” Mənbə yoxdursa, report-da qeyd et və PO-dan soruş.
+
+### Faydalı əlavə sahələr
+- **Workaround:** istifadəçi problemi necə keçə bilər — prioritetə təsir edir.
+- **Regression?:** əvvəlki versiyada işləyirdimi? Bu, səbəbi tapmağı sürətləndirir.
+- **Test data:** hansı hesab, hansı məhsul — dəqiq ID-lərlə.
+
+### Tipik yanlış anlama
+“Uzun report yaxşı report-dur.” Yaxşı report qısa və dəqiqdir: hər sahədə yalnız lazım olan məlumat. Uzun mətndə vacib detal itir.
+@nümunə
+**Tapşırıq.** Müşahidə: “Səbətdə 3 məhsul var idi, birini silən kimi cəm yenilənmədi. Səhifəni yeniləyəndə düzəldi. Chrome-da olur, Firefox-da yox.” Bu müşahidədən tam bug report hazırla.
+@addımlar
+1. **Başlıq:** “Səbət: məhsul silindikdə ümumi məbləğ səhifə yenilənənə qədər dəyişmir (Chrome)”.
+2. **Mühit:** Windows 11, Chrome (versiya chrome://version-dan), test serveri, build 3.4.1; Firefox-da təkrarlanmır.
+3. **İlkin şərtlər və addımlar:** səbətdə 3 məhsul (10, 20, 30 AZN, cəmi 60); 1) Səbəti aç. 2) 20 AZN-lik məhsulu “Sil” ilə sil.
+4. **Gözlənilən / faktiki:** gözlənilən — cəm dərhal 40 AZN olur; faktiki — cəm 60 AZN qalır, yeniləmədən sonra 40 AZN göstərilir.
+5. **Digər sahələr:** tezlik 5/5; severity Major (yanlış məbləğ göstərilir, yolu var); priority High (təklif); sübut — video və Network-da DELETE sorğusunun 200 cavabı.
+@növbən
+Müşahidə: “Mobil tətbiqdə profil şəklini dəyişdim, şəkil 90 dərəcə dönmüş göründü. Yalnız telefonun kamerası ilə çəkiləndə olur, qalereyadan seçiləndə yox.” Tam bug report yaz.
+
+=== c12s2
+@qısa
+Yaxşı başlığın formulu: harada + nə baş verir + hansı şərtdə. Başlıq siyahıda tək başına oxunanda problemi aydın göstərməlidir — emosiya və qeyri-müəyyən sözlər olmadan.
+@yadda
+- [Harada]: [nə baş verir] [hansı şərtdə].
+- “İşləmir”, “problem var”, “TƏCİLİ” — yaxşı başlıq deyil.
+- Başlıq axtarışda tapılmalıdır: açar sözlər vacibdir.
+@dərin
+### Niyə başlıq bu qədər vacibdir?
+Jira-da yüzlərlə baq siyahı kimi görünür. Prioritet görüşündə PO çox vaxt yalnız başlıqları oxuyur. Dublikat axtaran tester də başlıqlara baxır. Pis başlıq baqı “görünməz” edir və ya dublikat yaradır.
+
+### Başlığın keyfiyyət testi
+Özünə sual ver:
+- Başlığı oxuyan funksiyanı tanıyırmı (Səbət, Login)?
+- Nəyin səhv olduğunu anlayırmı?
+- Hansı şəraitdə baş verdiyini bilirmi?
+- Başlıq 10–15 sözdən uzun deyilmi?
+
+### Faydalı nüanslar
+- Faktiki nəticəni yaz, səbəbi təxmin etmə: “cəm yenilənmir” — yaxşı; “JavaScript xətası var” — bu, təxmindir.
+- Platformanı yalnız fərq edirsə əlavə et: “(iOS)”, “(Safari)”.
+- Eyni modulun baqları üçün ardıcıl prefiks işlət: “Səbət:”, “Ödəniş:”.
+
+### Tipik yanlış anlama
+“Başlıq qısa olmalıdır, detallar mətndədir.” Qısalıq yaxşıdır, amma şərt itəndə başlıq yanıltıcı olur: “Login işləmir” — hər kəs üçün? Yalnız böyük hərfli email ilə?
+@nümunə
+**Tapşırıq.** Bu başlıqları formula görə yaxşılaşdır: (a) “Ödəniş problemi!!!”; (b) “Səhifə açılmır”; (c) “Telefonda düymə”; (d) “Axtarış səhvdir”.
+@addımlar
+1. **(a)** “Ödəniş: Mastercard ilə ödənişdə ‘Gözlənilməz xəta’ çıxır və sifariş yaranmır” — kart növü şərtdir.
+2. **(b)** “Kataloq: 2-ci səhifəyə keçəndə 404 xətası göstərilir” — harada və nə dəqiq yazılıb.
+3. **(c)** “Checkout: 360 px ekranda ‘Sifarişi təsdiqlə’ düyməsi ekrandan kənara çıxır (Android)” — ekran ölçüsü şərtdir.
+4. **(d)** “Axtarış: ‘ə’ hərfi olan sözlər (məsələn, ‘şəkər’) nəticə qaytarmır” — nümunə ilə.
+5. **Qayda:** hər başlıq ayrıca oxunanda nə, harada və nə vaxt sualına cavab verir.
+@növbən
+Bu başlıqları formula görə yenidən yaz və hər biri üçün hansı məlumatı əlavə etdiyini qeyd et: (a) “Bildiriş gəlmir”; (b) “Qeydiyyat səhvi”; (c) “Şəkil pis görünür”; (d) “Tətbiq çökür”.
+
+=== c12s3
+@qısa
+Severity defektin sistemə texniki təsiridir: Blocker, Critical, Major, Minor, Trivial. Adətən tester təyin edir və onu təsirə görə — kimə, nə qədər, yolu varmı — əsaslandırır.
+@yadda
+- Severity — “nə qədər pisdir?”.
+- Data itkisi və təhlükəsizlik riski adətən Critical-dır.
+- Workaround (yolu) varsa, severity çox vaxt bir pillə aşağı düşür.
+@dərin
+### Severity-ni təyin edən suallar
+1. Əsas funksiya işləyirmi?
+2. Data itir və ya pozulurmu?
+3. Təhlükəsizlik riski varmı?
+4. İstifadəçinin yolu (workaround) varmı?
+5. Neçə istifadəçiyə təsir edir?
+
+### Sərhəd hallarına nümunələr
+- Ödəniş 10 halda 1 dəfə uğursuz olur, təkrar cəhd işləyir — Major (yolu var), amma tezlik yüksək olsa, Critical-a yaxındır.
+- Hesabatın PDF ixracı işləmir, Excel ixracı işləyir — Major və ya Minor (alternativ yol var).
+- İstifadəçi başqasının sifarişini URL ilə görə bilir — Critical (təhlükəsizlik), hətta “az adam bilsə də”.
+
+### Severity inflyasiyası
+Hər baq Critical yazılanda kateqoriya mənasını itirir və həqiqi kritik baqlar növbədə itir. Severity-ni əsaslandır: “Critical — ödəniş alınır, sifariş yaranmır, data uyğunsuzluğu var.”
+
+### Tipik yanlış anlama
+“Severity ekrandakı görüntüyə görə verilir.” Çökmə ekranı qorxulu görünə bilər, amma nadir istifadə olunan admin funksiyasındadırsa və yolu varsa, Major ola bilər. Severity təsirə görə verilir, görüntüyə görə yox.
+@nümunə
+**Tapşırıq.** Bu defektlərə severity ver və əsaslandır: (a) qeydiyyatdan sonra təsdiq e-poçtu heç kimə gəlmir; (b) profil şəkli yüklənəndə yüngül bulanıq görünür; (c) admin istifadəçinin şifrəsini açıq mətnlə görür; (d) “Haqqımızda” səhifəsində telefon nömrəsi köhnədir.
+@addımlar
+1. **(a) Critical** — yeni istifadəçilər hesabı aktivləşdirə bilmir; əsas axın dayanıb (yolu yoxdursa, Blocker-ə yaxındır).
+2. **(b) Minor** — kiçik vizual problem, funksiya işləyir.
+3. **(c) Critical** — ciddi təhlükəsizlik və məxfilik pozuntusu; şifrələr heç kimə görünməməlidir.
+4. **(d) Minor və ya Trivial** — texniki təsiri azdır, amma müştəri yanlış nömrəyə zəng edə bilər; priority isə yüksək ola bilər.
+5. **Qayda:** hər qərarın yanında 1 cümləlik əsaslandırma yaz — mübahisəni azaldır.
+@növbən
+Bu defektlərə severity ver və hər birini bir cümlə ilə əsaslandır: (a) çatdırılma haqqı hər sifarişə 2 dəfə əlavə olunur; (b) qaranlıq rejimdə bir düymənin mətni zəif görünür; (c) logout-dan sonra “Geri” ilə profil açılır; (d) tətbiq açılanda 10 saniyə ağ ekran qalır, sonra işləyir.
+
+=== c12s4
+@qısa
+Priority defektin nə qədər tez düzəldilməli olduğudur: High, Medium, Low. Bu, biznes qərarıdır — adətən PO və ya menecer təyin edir, tester isə əsaslandırılmış təklif verir.
+@yadda
+- Priority — “nə vaxt düzəltməliyik?”.
+- Biznes təsiri, istifadəçi sayı, reliz tarixi və reputasiya nəzərə alınır.
+- Tester təklif edir, qərar biznesindir.
+@dərin
+### Priority-yə təsir edən amillər
+- **Biznes təsiri:** gəlir itkisi, müqavilə öhdəliyi, qanun.
+- **Görünürlük:** ana səhifə, marketinq kampaniyası, böyük müştəri.
+- **İstifadəçi sayı:** neçə nəfər qarşılaşır?
+- **Vaxt:** reliz nə vaxtdır, kampaniya sabah başlayır?
+- **Düzəlişin qiyməti:** bəzən kiçik düzəliş tez edilir, böyük düzəliş isə planlaşdırılır.
+
+### Bəzi komandalarda P1–P4
+Priority çox vaxt rəqəmlə yazılır: P1 (dərhal, hətta gecə), P2 (bu sprintdə), P3 (yaxın relizlərdə), P4 (vaxt olanda). Jira-da isə Highest, High, Medium, Low, Lowest.
+
+### Tester-in təklifi necə əsaslandırılır?
+“Priority High təklif edirəm: mobil istifadəçilərin təxminən 60%-i (analitikaya görə) bu ekrandan keçir və sabah kampaniya başlayır.” Rəqəm və kontekst təklifi güclü edir.
+
+### Tipik yanlış anlama
+“Priority dəyişməzdir.” Kontekst dəyişəndə priority də dəyişir: kampaniya bitdi — Low; böyük müştəri şikayət etdi — High.
+@nümunə
+**Tapşırıq.** Defekt: “Çatdırılma ünvanında ‘ə’ hərfi kuryer tətbiqində ‘?’ kimi görünür.” Priority təklifini əsaslandır.
+@addımlar
+1. **Təsiri qiymətləndir:** kuryer ünvanı səhv oxuyur — çatdırılma gecikə və ya səhv ünvana gedə bilər.
+2. **Əhatəni ölç:** Azərbaycan ünvanlarının çoxunda “ə” var — demək olar ki, bütün sifarişlər.
+3. **Yolu yoxla:** kuryer müştəriyə zəng edir — yol var, amma vaxt aparır.
+4. **Təklif:** severity Major, priority High: “Sifarişlərin böyük hissəsinə təsir edir, çatdırılmanı yavaşladır; kuryer zəngləri xərc yaradır.” Son qərar PO-nundur.
+@növbən
+Defekt: “Qış kampaniyasının banneri ana səhifədə köhnə tarixlə görünür (kampaniya 2 gün sonra başlayır).” Severity və priority təklif et və hər birini əsaslandır — kampaniya tarixinin təsirini də nəzərə al.
+
+=== c12s5
+@qısa
+Severity “nə qədər pisdir?”, priority isə “nə vaxt düzəltməliyik?” sualına cavab verir. Onlar adətən uyğun gəlir, amma həmişə yox: şirkət adının səhv yazılması aşağı severity, yüksək priority-dir.
+@yadda
+- Severity — texniki təsir, priority — biznes təcililiyi.
+- Dörd kombinasiyanın hamısı mümkündür.
+- Müsahibənin ən populyar sualıdır — misalla cavab ver.
+@dərin
+### Dörd kombinasiyanı yadda saxlamağın yolu
+| | Yüksək priority | Aşağı priority |
+| --- | --- | --- |
+| **Yüksək severity** | Ödəniş işləmir | Nadir istifadə olunan arxiv hesabatında çökmə |
+| **Aşağı severity** | Ana səhifədə şirkət adının səhvi | Daxili ayarlar səhifəsində kiçik boşluq fərqi |
+
+### Müsahibədə necə cavab vermək?
+1. Tərifi ver: severity — təsir, priority — təcililik.
+2. Kim təyin edir: severity — adətən tester, priority — PO.
+3. Ən maraqlı iki kombinasiyaya misal ver: yüksək severity/aşağı priority və əksinə.
+4. Əlavə et: priority kontekstlə dəyişir.
+
+### Konflikt olanda
+Tester Critical yazıb, PO Low priority verib — bu, normaldır, əgər qərar əsaslandırılıbsa. Tester-in vəzifəsi riski aydın göstərməkdir; razılaşmırsa, faktla bir dəfə də izah edir, sonra qərara hörmət edir və qərarı qeyd edir.
+
+### Tipik yanlış anlama
+“Severity yüksəkdirsə, priority də yüksək olmalıdır.” Biznes kontekstində bəzən ciddi, amma nadir problem gözləyə bilər, kiçik, amma hamının gördüyü problem isə dərhal düzəldilməlidir.
+@nümunə
+**Tapşırıq.** Hər kombinasiyaya mobil bank tətbiqindən bir misal tap: yüksək/yüksək, yüksək/aşağı, aşağı/yüksək, aşağı/aşağı (severity/priority).
+@addımlar
+1. **Yüksək/yüksək:** köçürmə zamanı pul göndərənin hesabından çıxılır, alıcıya çatmır.
+2. **Yüksək/aşağı:** 5 il əvvəlki çıxarışı PDF-ə ixrac edəndə tətbiq çökür — ciddi, amma çox nadir istifadə olunur.
+3. **Aşağı/yüksək:** giriş ekranında bankın adı səhv yazılıb — texniki təsir yoxdur, amma hamı görür.
+4. **Aşağı/aşağı:** “Haqqında” bölməsində versiya nömrəsinin şrifti fərqlidir.
+5. **Yoxlama:** hər misalda severity-ni təsirə, priority-ni biznes təcililiyinə görə əsaslandırdım.
+@növbən
+Onlayn oyun mağazası üçün severity/priority-nin 4 kombinasiyasının hər birinə bir defekt misalı uydur və hər birinin yanında əsaslandırma yaz.
+
+=== c12s6
+@qısa
+Hər defekt statuslardan keçir: New → Assigned → Open/In Progress → Fixed → Ready for Test → Verified → Closed. Retest uğursuzdursa — Reopened; digər nəticələr — Rejected, Duplicate, Deferred, Cannot Reproduce.
+@yadda
+- Verified/Closed-u yalnız retest-dən sonra tester edir.
+- Reopened — düzəliş işləmədi.
+- Rejected və Cannot Reproduce — müzakirə və əlavə məlumat üçün siqnaldır.
+@dərin
+### Hər keçiddə tester-in məsuliyyəti
+- **New:** report tam və təkrarlana bilən olmalıdır.
+- **Ready for Test:** build-in həqiqətən test mühitində olduğunu yoxla (versiya nömrəsi).
+- **Retest:** eyni addımlar, eyni data, eyni mühit; sonra yaxın funksiyalara qısa regression.
+- **Reopened:** nəyin dəyişmədiyini və ya yeni nəyin çıxdığını dəqiq yaz; tamamilə fərqli problemdirsə — yeni baq aç.
+- **Closed:** Verified-dən sonra, adətən reliz çıxanda.
+
+### Deferred nə vaxt düzgündür?
+Biznes qərarı ilə: təsir azdır, düzəliş riskli və ya bahadır, reliz tarixi yaxındır. Deferred baq unudulmamalıdır — növbəti relizin backlog-unda olmalı və mümkünsə Known Issues siyahısına (məlum problemlər) düşməlidir.
+
+### Workflow şirkətdən-şirkətə fərqlənir
+Bəzi komandalar Verified-i atlayıb birbaşa Closed edir, bəziləri “In Review”, “Won't Fix” statusları əlavə edir. Yeni komandada ilk iş workflow sxeminə baxmaqdır — Jira-da “View workflow” düyməsi var.
+
+### Tipik yanlış anlama
+“Cannot Reproduce — baq yoxdur.” Bu, “indiki məlumatla təkrarlaya bilmədik” deməkdir. Tester mühiti, datanı, addımları yoxlayır, video əlavə edir və ya proqramçı ilə birlikdə baxır.
+@nümunə
+**Tapşırıq.** Baq “Promo kod tətbiq olunmur” Fixed statusundadır. Retest zamanı: kod indi tətbiq olunur, amma endirim 10% yox, 1% hesablanır. Nə edərdin?
+@addımlar
+1. **Retest-i düzgün apar:** bug report-dakı eyni kod və eyni səbətlə yoxla, build versiyasını qeyd et.
+2. **Nəticəni təhlil et:** ilkin problem (kod tətbiq olunmur) düzəlib, amma hesablama səhvdir.
+3. **Qərar:** bu, eyni funksiyanın düzgün işləməməsidir — ilkin baqda gözlənilən nəticə “10% endirim” idisə, baqı **Reopened** et və yeni faktiki nəticəni yaz.
+4. **Alternativ:** komanda qaydası “hər yeni simptom üçün yeni baq” deyirsə, ilkin baqı Verified et və hesablama üçün yeni baq aç, ikisini “relates to” ilə bağla.
+5. **Hər halda:** nə etdiyini şərhdə izah et ki, tarixçə aydın qalsın.
+@növbən
+Baq “Mobil tətbiq ödəniş zamanı çökür” proqramçı tərəfindən Cannot Reproduce statusuna keçirilib. Sən isə bunu 10 cəhddən 3-də görmüsən. Növbəti 4 addımını yaz.
+
+=== c12s7
+@qısa
+Yaxşı tester yazmazdan əvvəl axtarır, bir report-a bir defekt yazır, emosiya yox fakt yazır, şəxsə yox problemə yönəlir, addımları minimallaşdırır və “Rejected” cavabına inciməyib əlavə məlumat verir.
+@yadda
+- Axtar → təkrarla → minimallaşdır → yaz.
+- Fakt, sübut və hörmətli ton.
+- Rədd edilmiş baq — müzakirə üçün fürsətdir.
+@dərin
+### Proqramçı ilə münasibət
+Tester və proqramçı eyni məqsəd üçün işləyir. Faydalı vərdişlər:
+- Baqı yazandan sonra vacibdirsə, qısa mesajla xəbər ver: “SHOP-142 — ödəniş ekranında, kritikdir, video əlavə etmişəm.”
+- Proqramçının sualına tez cavab ver — onun vaxtı da dəyərlidir.
+- Düzəlişdən sonra təşəkkür et — bu, kiçik, amma əhəmiyyətli vərdişdir.
+
+### Bir report — bir defekt niyə vacibdir?
+İki problem bir report-dadırsa, biri düzəlir, digəri qalır — status nə olmalıdır? Statistikalar da pozulur. İki problem əlaqəlidirsə, iki report aç və onları “relates to” ilə bağla.
+
+### Mübahisəli vəziyyətdə ton
+Pis: “Bu açıq-aydın baqdır, niyə rədd edirsiniz?”
+Yaxşı: “AC-2-də ‘email böyük-kiçik hərfə həssas deyil’ yazılıb, video əlavə etmişəm. Tələb dəyişibsə, PO ilə dəqiqləşdirək?”
+
+### Tipik yanlış anlama
+“Tester-in işi baqı yazmaqla bitir.” Baqın taleyini izləmək — retest, regression, kök səbəb müzakirəsi — işin davamıdır.
+@nümunə
+**Tapşırıq.** Bu report mətnini davranış qaydalarına uyğun yenidən yaz: “Yenə də səbət sınıb!!! Proqramçılar heç test etmir. Həm məhsul silinmir, həm də endirim yanlışdır. Təcili düzəldin.”
+@addımlar
+1. **Problemləri ayır:** iki fərqli defekt var — məhsulun silinməməsi və endirimin yanlışlığı — iki report.
+2. **Emosiyanı sil:** “yenə də”, “heç test etmir”, “!!!” — faktla əvəz et.
+3. **Report 1 başlığı:** “Səbət: ‘Sil’ düyməsi basıldıqda məhsul səbətdə qalır”.
+4. **Report 2 başlığı:** “Səbət: 10% promo kod 15% endirim kimi hesablanır”.
+5. **Hər birinə:** addımlar, gözlənilən/faktiki, mühit, sübut; təcililik priority təklifi ilə ifadə olunur, nida işarəsi ilə yox.
+@növbən
+Bu mesajı peşəkar tonda yenidən yaz və lazım olsa report-lara böl: “Login-də yenə problem var, telefonda heç nə işləmir, bu nə işdir? Şəkillər də yüklənmir.”
+
+=== c12s8
+@qısa
+Sübutlar bug report-u mübahisəsiz edir: ekran şəkli, ekran videosu, konsol xətaları, şəbəkə sorğuları və mobil loglar. Video addımları göstərmək üçün ən güclü sübutdur.
+@yadda
+- Ekran şəkli — nə görünür, video — necə baş verir.
+- DevTools-dan konsol xətası və sorğunun cavabı əlavə et.
+- Sübutda şəxsi məlumatları (token, şifrə) gizlət.
+@dərin
+### Hansı problem üçün hansı sübut?
+| Problem | Ən yaxşı sübut |
+| --- | --- |
+| Vizual (sürüşmə, rəng) | Ekran şəkli, işarələnmiş |
+| Addımla bağlı (axın pozulur) | Ekran videosu |
+| Backend xətası | Network: sorğu, status, cavab |
+| JavaScript xətası | Console mesajı |
+| Mobil çökmə | Video + cihaz logu (adb logcat) |
+| Aralıq problem | Bir neçə video, tezlik qeydi |
+
+### Yaxşı video necə olur?
+Qısa (30–60 saniyə), başlanğıc vəziyyətdən, yalnız lazım olan addımlarla. Mobil cihazda “Show taps” açıq olsun. Video çəkərkən problemi təsvir edən qısa mətni də report-a yaz — hər kəs videonu açmır.
+
+### HAR faylı
+Bütün şəbəkə fəaliyyətini saxlayır və backend proqramçısı üçün çox faydalıdır. Amma içində cookie, token və şəxsi data ola bilər — yalnız daxili alətlərə əlavə et və ehtiyatla paylaş.
+
+### Tipik yanlış anlama
+“Ekran şəkli həmişə kifayətdir.” Şəkil nəticəni göstərir, amma ona necə gəlindiyini yox. Axınla bağlı baqlarda video vaxtı xeyli qısaldır.
+@nümunə
+**Tapşırıq.** Defekt: “Sifariş təsdiq düyməsi basılanda heç nə olmur.” Hansı sübutları toplayardın və necə?
+@addımlar
+1. **Video:** səbətdən təsdiq düyməsinə qədər addımlar, düymə basılır, heç nə dəyişmir (30 saniyə).
+2. **Console:** DevTools → Console — qırmızı xəta varmı? Mətnini köçür.
+3. **Network:** Fetch/XHR filtri — düymə basılanda sorğu gedirmi? Gedirsə, URL, status və cavab mətni.
+4. **Mühit:** brauzer versiyası, ekran ölçüsü, build nömrəsi.
+5. **Gizlət:** cavabda token və ya şəxsi məlumat varsa, ekran şəklində və mətndə ört.
+@növbən
+Defekt: “Mobil tətbiq foto yükləyəndə bəzən donur.” Toplayacağın 4 sübutu, onları necə əldə edəcəyini və tezliyi necə qeyd edəcəyini yaz.
+
+=== c12s9
+@qısa
+Jira tapşırıq və defektlərin izlənməsi üçün ən populyar alətdir: issue növləri (Epic, Story, Task, Bug), workflow, board, sahələr və linklər var. JQL ilə istənilən baq siyahısını tez tapmaq olur.
+@yadda
+- Issue növləri: Epic, Story, Task, Bug, Sub-task.
+- JQL: sahə + operator + dəyər, AND/OR, ORDER BY.
+- Filtrləri saxla və dashboard-a əlavə et.
+@dərin
+### Faydalı JQL operatorları və funksiyaları
+- `=`, `!=`, `IN (…)`, `NOT IN (…)` — dəqiq dəyərlər.
+- `~` — mətnin içində axtarış: `summary ~ "promo"`.
+- `IS EMPTY` — boş sahə: `assignee IS EMPTY` (təyin olunmamış baqlar).
+- Nisbi tarix: `created >= -7d`, `updated <= -30d`.
+- Funksiyalar: `currentUser()`, `startOfWeek()`, `openSprints()`.
+
+### Tester üçün hazır sorğular
+- Mənim retest gözləyən baqlarım: `issuetype = Bug AND status = "Ready for Test" AND reporter = currentUser()`
+- Bu sprintin açıq baqları: `issuetype = Bug AND sprint in openSprints() AND resolution = Unresolved`
+- Uzun müddət toxunulmayan baqlar: `issuetype = Bug AND resolution = Unresolved AND updated <= -30d`
+
+### Saxlanmış filtrlər və dashboard
+Sorğunu “Save as” ilə saxla, sonra dashboard-a vidjet kimi əlavə et: “Mənə aid baqlar”, “Bu sprintin Critical-ları”. Gündəlik iş bu dashboard-a baxmaqla başlayır.
+
+### Tipik yanlış anlama
+“Jira-da baq yazmaq üçün yalnız Summary və Description kifayətdir.” Component, Affects Version, Priority və linklər olmadan baqları filtrləmək, statistikası toplamaq və relizə bağlamaq mümkün olmur.
+@nümunə
+**Tapşırıq.** JQL yaz: SHOP layihəsində, son 14 gündə yaradılmış, statusu Closed olmayan, prioriteti High və ya Highest olan bütün baqlar, ən yeniləri yuxarıda. (Jira-da standart sahə Priority-dir; severity adətən ayrıca xüsusi sahə olur.)
+@addımlar
+1. **Layihə və növ:** `project = SHOP AND issuetype = Bug`
+2. **Tarix:** `AND created >= -14d`
+3. **Status:** `AND status != Closed`
+4. **Prioritet:** `AND priority IN (High, Highest)`
+5. **Sıralama:** `ORDER BY created DESC` — yekun sorğu: `project = SHOP AND issuetype = Bug AND created >= -14d AND status != Closed AND priority IN (High, Highest) ORDER BY created DESC`
+@növbən
+JQL yaz: APP layihəsində, sənin yazdığın (reporter), statusu “Ready for Test” olan və ya son 3 gündə yenilənmiş bütün baqlar, prioritetə görə azalan sırada. Mötərizələrdən düzgün istifadə et.

@@ -1,0 +1,7 @@
+node_modules/
+__pycache__/
+build/book.json
+build/test.html
+build/gallery.html
+build/shots/
+dist/

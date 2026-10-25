@@ -1,0 +1,456 @@
+=== c19s1
+@qısa
+Avtomatlaşdırmaya namizədlər: tez-tez təkrarlanan (regression, smoke), çox datalı, çox brauzerli və API testləri. Manual qalanlar: exploratory, usability, birdəfəlik yoxlamalar, hələ sabitləşməmiş funksiyalar və “göz” tələb edən vizual qiymətləndirmə.
+@yadda
+- Təkrarlanır + sabitdir = avtomatlaşdırmağa namizəd.
+- Avtomatik testi yazmaq da, saxlamaq da vaxt tələb edir.
+- Avtomatlaşdırma manual testi əvəz etmir — insanı düşünmə tələb edən işə azad edir.
+@dərin
+### Avtomatlaşdırmanın qiyməti
+Avtomatik test “pulsuz” deyil: onu yazmaq, sabitləşdirmək və saxlamaq (dəyişikliklərdən sonra düzəltmək) vaxt aparır. Kobud hesab:
+- **Manual:** icra 10 dəqiqə, hər relizdə təkrar, ildə 50 reliz → 500 dəqiqə.
+- **Avtomatik:** yazmaq 2 saat + ildə 2 saat saxlama → 240 dəqiqə.
+Fayda göz qabağındadır. Amma test ildə bir dəfə işləyirsə, avtomatlaşdırma özünü doğrultmur.
+
+### Seçim meyarları
+- **Tezlik:** test neçə dəfə icra olunacaq?
+- **Sabitlik:** funksiya və UI tez-tez dəyişirmi?
+- **Risk:** səhv nə qədər bahadır (ödəniş, giriş)?
+- **Dəqiq nəticə:** nəticə maşınla yoxlana bilirmi? “Dizayn gözəldir” — yox; “cəm 32,39-dur” — bəli.
+- **Data həcmi:** eyni ssenari 100 fərqli data ilə işləyirmi?
+
+### Avtomatlaşdırma nəyi tapmır?
+Avtomatik test yalnız yazdığın yoxlamaları edir — onun “gözü” yoxdur. Düymənin üstünə düşən reklamı, anlaşılmaz mətni, yavaş hiss olunan animasiyanı exploratory tester tapır. Ən yaxşı komandalar maşına təkrarlanan işi, insana isə düşünmə tələb edən işi tapşırır.
+
+### Tipik yanlış anlama
+“Hər şeyi avtomatlaşdırmaq — məqsəddir.” Məqsəd sürətli və etibarlı rəy almaqdır. 100% avtomatlaşdırma saxlama xərcini artırır, fayda isə bir nöqtədən sonra azalır.
+@nümunə
+**Tapşırıq.** Onlayn mağaza üçün 6 test var. Hər biri üçün “avtomatlaşdır” və ya “manual saxla” qərarı ver və əsaslandır: (a) login — hər relizdə; (b) yeni banner dizaynının qiymətləndirilməsi; (c) 200 promo kodun endirim hesablaması; (d) checkout axını Chrome, Firefox və Safari-də; (e) birdəfəlik data miqrasiyasının yoxlanması; (f) hələ hər həftə dəyişən yeni “Hədiyyə kartı” ekranı.
+@addımlar
+1. **(a) Login — avtomatlaşdır:** hər relizdə təkrarlanır, sabitdir, riski yüksəkdir — smoke dəstinin əsasıdır.
+2. **(c) 200 promo kod — avtomatlaşdır, API səviyyəsində:** eyni ssenari çox data ilə, nəticə dəqiq rəqəmdir.
+3. **(d) Checkout 3 brauzerdə — avtomatlaşdır:** eyni test, fərqli konfiqurasiya; Playwright-da bir əmr hər üç brauzeri işə salır.
+4. **(b) Banner dizaynı — manual:** “göz” və subyektiv qiymətləndirmə tələb edir.
+5. **(e) Birdəfəlik miqrasiya — manual və ya birdəfəlik SQL skripti:** bir dəfə icra olunur, sabit test dəstinə ehtiyac yoxdur.
+6. **(f) Yeni ekran — hələlik manual:** dizayn hər həftə dəyişir, test də hər həftə sınar; ekran sabitləşəndə avtomatlaşdırmağa qayıt.
+@növbən
+Bank tətbiqi üçün 5 test var: (a) valyuta konvertasiyası 30 valyuta cütü ilə; (b) yeni onboarding ekranlarının anlaşıqlılığı; (c) hər gecə yaranan hesabat faylının formatı; (d) mobil versiyada jestlərin rahatlığı; (e) köçürmə limitinin sərhəd dəyərləri. Hər biri üçün qərar ver, səviyyə (UI, API və ya unit) təklif et və əsaslandır.
+
+=== c19s2
+@qısa
+Test piramidasının aşağısında çoxlu sürətli və ucuz unit testlər, ortada inteqrasiya və API testləri, yuxarıda isə az sayda yavaş və baha UI/E2E testləri olur. Tərsinə forma — “dondurma qabı” — testlərin çoxu UI-dadırsa, dəst yavaş və kövrək olur.
+@yadda
+- Hər yoxlamanı mümkün olan ən aşağı səviyyədə et.
+- E2E testlər — yalnız əsas istifadəçi yolları üçün.
+- Piramida dəqiq nisbət deyil, istiqamətdir.
+@dərin
+### Səviyyələrin müqayisəsi
+| Səviyyə | Sürət | Nəyi yoxlayır | Düşəndə nə deyir |
+| --- | --- | --- | --- |
+| Unit | millisaniyələr | bir funksiya | “dəqiq bu funksiya səhvdir” |
+| API/inteqrasiya | yüz millisaniyələr | servis + baza | “bu endpoint səhvdir” |
+| UI/E2E | saniyələr–dəqiqələr | bütün sistem | “haradasa nəsə səhvdir” |
+Aşağı səviyyəli test düşəndə səbəb dərhal bəlli olur. E2E test düşəndə isə əvvəl axtarış lazımdır: UI? API? baza? mühit?
+
+### Eyni qayda — üç səviyyədə
+“Endirim 0–100% aralığındadır” qaydası:
+- **Unit:** `calculateDiscount` funksiyası üçün 10 sərhəd dəyəri — cəmi bir neçə millisaniyə.
+- **API:** düzgün və səhv faizlə 2–3 sorğu — status kodları və cavab.
+- **E2E:** bir test — istifadəçi promo kodu yazır və səbətdə endirimli məbləği görür.
+Bütün sərhədləri UI ilə yoxlamaq əvəzinə onları aşağı səviyyəyə “endiririk”.
+
+### Digər modellər
+Bəzi komandalar “test kuboku” (testing trophy) modelindən danışır — burada inteqrasiya testlərinə daha çox çəki verilir. Modellər fərqlənsə də, əsas fikir eynidir: bahalı E2E testlərin sayını məhdud saxla.
+
+### Tipik yanlış anlama
+“Tester yalnız piramidanın yuxarısı ilə məşğuldur.” Tester bütün piramidanın strategiyasında iştirak edir: hansı yoxlamanın hansı səviyyədə edilməli olduğunu müzakirə edir, API testlərini isə çox vaxt özü yazır.
+@nümunə
+**Tapşırıq.** Qeydiyyat formasının qaydaları: email formatı yoxlanır, parol 8–20 simvoldur, yaş 18+ olmalıdır, email unikal olmalıdır, uğurlu qeydiyyatdan sonra salamlama emaili göndərilir. Bu yoxlamaları piramidanın səviyyələrinə payla.
+@addımlar
+1. **Unit:** email formatı, parol uzunluğu (7, 8, 20, 21), yaş sərhədləri (17, 18) — validasiya funksiyaları; onlarla hal bir neçə millisaniyədə yoxlanır.
+2. **API/inteqrasiya:** eyni email ilə ikinci qeydiyyat → 409; uğurlu qeydiyyat → 201 və istifadəçi bazada yaranır; salamlama emaili göndərmə növbəsinə qoyulur.
+3. **E2E:** bir “xoşbəxt yol” testi — istifadəçi formanı doldurur və uğur mesajını görür; bir neqativ test — UI xətanı düzgün göstərir.
+4. **Manual:** formanın anlaşıqlılığı, xəta mətnlərinin aydınlığı, mobil görünüş — exploratory sessiya.
+5. **Nəticə:** 20-dən çox yoxlamanın əksəriyyəti aşağı səviyyədədir, E2E isə cəmi 2 testdir — dəst sürətli və sabit qalır.
+@növbən
+“Səbətdə məhsul miqdarı 1–10 arasında olmalıdır”, “ümumi məbləğ avtomatik hesablanır” və “stokda olmayan məhsul əlavə edilə bilməz” qaydaları üçün yoxlamaları unit, API və E2E səviyyələrinə payla. Hər səviyyədə neçə test olacağını və E2E testlərini niyə az saxladığını izah et.
+
+=== c19s3
+@qısa
+Playwright (JS/TS, Python, Java, C#; Chromium, Firefox, WebKit), Cypress (JS/TS; brauzerin içində işləyir) və Selenium (çox dil, W3C WebDriver standartı) ən populyar veb avtomatlaşdırma alətləridir. Prinsiplər hamısında eynidir: lokator, hərəkət, yoxlama.
+@yadda
+- Playwright — müasir, avtomatik gözləmə, güclü köməkçi alətlər.
+- Cypress — rahat debug, amma brauzer və tab məhdudiyyətləri var.
+- Selenium — ən geniş ekosistem və dil seçimi.
+@dərin
+### Alət necə seçilir?
+- **Komandanın dili:** layihə Java-dadırsa — Selenium və ya Playwright Java; JavaScript-dədirsə — Playwright və ya Cypress.
+- **Brauzerlər:** Safari mühərriki (WebKit) vacibdirsə — Playwright.
+- **Mövcud sərmayə:** şirkətdə artıq yüzlərlə Selenium testi və infrastruktur varsa, keçid bahalıdır.
+- **Komandanın təcrübəsi:** ən yaxşı alət komandanın yaxşı işlədə bildiyi alətdir.
+
+### Digər sahələrin alətləri
+- **API:** Postman/Newman, REST Assured (Java), Playwright-ın `request` imkanı.
+- **Mobil:** Appium, Espresso, XCUITest.
+- **Performans:** JMeter, k6.
+- **Vizual müqayisə:** Playwright-ın `toHaveScreenshot()` yoxlaması ekran şəklini əvvəl saxlanmış “etalon” şəkillə müqayisə edir.
+
+### Test runner nədir?
+Test runner testləri tapan, işə salan və hesabat verən hissədir: Playwright Test, Jest, Mocha. Playwright və Cypress öz runner-ləri ilə gəlir. Selenium isə yalnız brauzeri idarə edir — runner (JUnit, TestNG, pytest, Mocha) ayrıca seçilir.
+
+### Tipik yanlış anlama
+“Alət seçimi ən vacib qərardır.” Daha vacib olanlar: hansı testlərin avtomatlaşdırılacağı, lokatorların sabitliyi və testlərin müstəqilliyi. Pis yazılmış test istənilən alətdə flaky olacaq.
+@nümunə
+**Tapşırıq.** Üç komanda üçün alət tövsiyə et: (A) Java-da yazılmış böyük bank sistemi, 800 mövcud Selenium testi; (B) React-da yazılan yeni startap, istifadəçilərin çoxu Safari işlədir, komanda JavaScript bilir; (C) Python bilən QA komandası həm veb, həm də API testləri yazacaq.
+@addımlar
+1. **A — Selenium-da qal:** 800 test və mövcud infrastruktur böyük sərmayədir. Yeni testlər üçün Playwright Java-nı kiçik pilot kimi sınamaq olar, amma kütləvi köçürmə bahalıdır.
+2. **B — Playwright (JS/TS):** WebKit dəstəyi Safari riskini erkən göstərir, dil komandanın dili ilə eynidir, avtomatik gözləmə flaky riskini azaldır.
+3. **C — Playwright Python:** UI testlərini və onun `request` imkanı ilə API testlərini bir alətdə və bir dildə yazmaq olar.
+4. **Ümumi meyarlar:** dil, brauzerlər, mövcud sərmayə və komandanın bacarığı. Sual “ən yaxşı alət hansıdır?” yox, “bu komanda üçün hansı alət uyğundur?” olmalıdır.
+@növbən
+İki komanda üçün alət tövsiyə et və əsaslandır: (A) yalnız Chrome-da işləyən daxili admin panel, komanda JavaScript bilir, sürətli debug vacibdir; (B) C# ilə yazılmış korporativ sistem, testlər Windows-da və müxtəlif brauzerlərdə işləməlidir. Hər biri üçün ən azı 3 meyar göstər.
+
+=== c19s4
+@qısa
+Node.js quraşdırılır, layihə qovluğu VS Code-da açılır və `npm init playwright@latest` əmri layihəni yaradıb brauzerləri yükləyir. `npx playwright test` testləri işə salır, `npx playwright show-report` isə HTML hesabatı açır. Bütün ayarlar `playwright.config.js` faylındadır.
+@yadda
+- Quraşdırmadan sonra nümunə testləri işə sal — mühit işləyirmi?
+- `playwright.config.js` — bütün ayarların mərkəzi.
+- `--headed`, `--ui` və codegen öyrənməni sürətləndirir.
+@dərin
+### Quraşdırmanın yaratdığı fayllar
+- **playwright.config.js** — konfiqurasiya: testlərin qovluğu, brauzerlər, təkrar cəhdlər, hesabat.
+- **tests/example.spec.js** — nümunə test.
+- **package.json** — layihənin asılılıqları (`@playwright/test`).
+- **node_modules/** — yüklənmiş paketlər; Git-ə əlavə olunmur (Fəsil 20).
+
+### Konfiqurasiyanın əsas sahələri
+```javascript
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests',
+  retries: process.env.CI ? 2 : 0,   // CI-da düşən testi 2 dəfə təkrar et
+  reporter: 'html',
+  use: {
+    baseURL: 'https://www.saucedemo.com',
+    trace: 'on-first-retry',         // təkrar cəhddə addım-addım iz yaz
+  },
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+  ],
+});
+```
+`baseURL` təyin ediləndə testdə `page.goto('/')` yazmaq kifayətdir. `projects` eyni testləri üç brauzerdə işə salır; yalnız birini seçmək üçün: `npx playwright test --project=chromium`.
+
+### Faydalı əmrlər
+- `npx playwright test -g "giriş"` — adında “giriş” olan testlər.
+- `npx playwright test --debug` — Playwright Inspector ilə addım-addım icra.
+- `npx playwright test --repeat-each=10` — hər testi 10 dəfə işə sal (flaky yoxlaması).
+
+### Tipik yanlış anlama
+“Quraşdırma işləmirsə, problem Playwright-dadır.” Ən çox rast gəlinən səbəblər: köhnə Node.js versiyası, terminalın səhv qovluqda açılması və ya şirkət şəbəkəsinin brauzerlərin yüklənməsini bloklaması.
+@nümunə
+**Tapşırıq.** Playwright layihəsini Swag Labs üçün hazırla: baseURL əlavə et, test düşəndə ekran şəkli saxlansın və testlər yalnız Chromium-da işə düşsün. Sonra dəyişikliklərin işlədiyini yoxla.
+@addımlar
+1. **baseURL:** `use` bölməsinə `baseURL: 'https://www.saucedemo.com'` əlavə et — testlərdə `page.goto('/')` kifayət edəcək.
+2. **Ekran şəkli:** `use` bölməsinə `screenshot: 'only-on-failure'` əlavə et — şəkil yalnız düşən testlər üçün saxlanır.
+3. **Yalnız Chromium:** əmrlə seç — `npx playwright test --project=chromium`; və ya `projects` siyahısında firefox və webkit sətirlərini müvəqqəti şərhə al.
+4. **Yoxla:** bir testi qəsdən sındır (gözlənilən mətni dəyiş), `npx playwright test --project=chromium`, sonra `npx playwright show-report` — düşən testin yanında ekran şəkli görünür.
+5. **Qaytar:** testi əvvəlki halına sal — konfiqurasiya dəyişiklikləri qalır, sınaq bitdi.
+@növbən
+Konfiqurasiyaya bu dəyişiklikləri et və hər birinin nə etdiyini öz sözlərinlə izah et: (1) testlər 3 brauzerdə işləsin; (2) düşən testlərin videosu saxlansın (`video: 'retain-on-failure'`); (3) öz kompüterində təkrar cəhd olmasın, CI-da isə 2 dəfə olsun. Dəyişikliklərdən sonra yalnız Firefox-da hansı əmrlə işə salarsan?
+
+=== c19s5
+@qısa
+Lokator Playwright-a hansı elementlə işləyəcəyini deyir. Tövsiyə olunan sıra: getByRole, getByLabel, getByPlaceholder, getByText, getByTestId və son çarə kimi CSS lokatoru. İstifadəçinin gördüyünə əsaslanan lokatorlar dizayn dəyişəndə də işləməyə davam edir.
+@yadda
+- Əvvəl rol və görünən ad — istifadəçi necə görürsə.
+- Lokator tam bir elementə uyğun gəlməlidir (strict mode).
+- Uzun CSS zəncirləri və sıra nömrələri kövrəkdir.
+@dərin
+### Strict mode — bir lokator, bir element
+Lokator bir neçə elementə uyğun gəlirsə, Playwright hərəkət etmir və “strict mode violation” xətası verir. Məsələn, Swag Labs-da hər məhsulun öz “Add to cart” düyməsi var:
+```javascript
+await page.getByRole('button', { name: 'Add to cart' }).click();   // xəta: 6 element
+```
+Həll — konteyner ilə daraltmaq:
+```javascript
+await page.locator('.inventory_item')
+  .filter({ hasText: 'Sauce Labs Backpack' })
+  .getByRole('button', { name: 'Add to cart' })
+  .click();
+```
+Bu yazılış istifadəçinin düşüncəsinə uyğundur: “Backpack kartındakı Add to cart düyməsi”.
+
+### getByTestId və Swag Labs
+Playwright default olaraq `data-testid` atributunu axtarır, Swag Labs isə `data-test` işlədir. Konfiqurasiyada `use: { testIdAttribute: 'data-test' }` yazandan sonra `page.getByTestId('login-button')` işləyir.
+
+### Kövrək lokatorlar
+- `div > div:nth-child(3) > button` — düzülüş dəyişəndə sınır.
+- `.first()`, `.nth(2)` — sıra dəyişəndə səhv elementə klik edir.
+- Avtomatik yaradılan class adları (`.css-1x2y3z`) — hər build-də dəyişə bilər.
+
+### Lokatoru necə tapmaq və yoxlamaq?
+`npx playwright codegen` və UI rejimindəki “Pick locator” düyməsi elementə basanda tövsiyə olunan lokatoru göstərir. Lokatorun tam bir elementə uyğun gəldiyini `await expect(locator).toHaveCount(1)` ilə yoxlamaq olar.
+
+### Tipik yanlış anlama
+“İşləyən lokator — yaxşı lokatordur.” Bu gün işləyən `nth-child` lokatoru sabah yeni banner əlavə olunanda səhv elementə basacaq: test ya səhv səbəbdən düşəcək, ya da daha pisi — səhv səbəbdən keçəcək.
+@nümunə
+**Tapşırıq.** Swag Labs-da bu elementlər üçün ən sabit lokatoru seç və əsaslandır: (1) “Login” düyməsi; (2) “Sauce Labs Bike Light” kartındakı “Add to cart” düyməsi; (3) məhsulların sıralama siyahısı; (4) səbət ikonundakı say nişanı.
+@addımlar
+1. **Login düyməsi:** `page.getByRole('button', { name: 'Login' })` — istifadəçinin gördüyü rol və mətn.
+2. **Bike Light “Add to cart”:** `page.locator('.inventory_item').filter({ hasText: 'Sauce Labs Bike Light' }).getByRole('button', { name: 'Add to cart' })` — kartla daraldıq, strict mode xətası olmayacaq.
+3. **Sıralama siyahısı:** `testIdAttribute: 'data-test'` ilə `page.getByTestId('product-sort-container')`; alternativ — `page.getByRole('combobox')`, əgər səhifədə tək açılan siyahıdırsa.
+4. **Səbət nişanı:** `page.locator('.shopping_cart_badge')` — onun görünən mətni (rəqəm) dəyişir, CSS class-ı isə sabitdir; burada CSS məqbul son çarədir.
+5. **Yoxla:** hər lokatoru UI rejimində “Pick locator” ilə və ya `await expect(locator).toHaveCount(1)` ilə sına — tam bir element tapılmalıdır.
+@növbən
+Swag Labs-ın checkout formasında (First Name, Last Name, Zip/Postal Code sahələri və Continue düyməsi) hər element üçün iki lokator yaz — biri tövsiyə olunan, biri kövrək. Hər cüt üçün kövrək variantın hansı dəyişiklikdən sonra sınacağını izah et.
+
+=== c19s6
+@qısa
+İlk test login ssenarisini koda çevirir: səhifəni aç (`goto`), sahələri doldur (`fill`), düyməyə bas (`click`), nəticəni yoxla (`expect`). Hər hərəkətin qarşısında `await` var, Playwright isə elementləri avtomatik gözləyir.
+@yadda
+- Test strukturu: hazırlıq → hərəkət → yoxlama (Arrange–Act–Assert).
+- `await expect(locator)` yoxlamaları şərt ödənənə qədər gözləyir.
+- Neqativ ssenarilər də avtomatlaşdırılır: bloklanmış istifadəçi, səhv şifrə.
+@dərin
+### Arrange – Act – Assert
+Hər test üç hissədən ibarətdir:
+- **Arrange (hazırlıq):** səhifəni aç, lazım olan vəziyyəti yarat.
+- **Act (hərəkət):** yoxlanılan addımı et.
+- **Assert (yoxlama):** gözlənilən nəticəni yoxla.
+Bu, manual test case-dəki “ilkin şərt — addımlar — gözlənilən nəticə” strukturunun eynisidir.
+
+### Gözləyən və gözləməyən yoxlamalar
+```javascript
+await expect(page.getByText('Products')).toBeVisible();   // şərt ödənənə qədər yenidən yoxlayır
+expect(await page.title()).toBe('Swag Labs');             // dərhal, bir dəfə yoxlayır
+```
+Birinci növ (web-first assertion) şərt ödənənə qədər təkrar yoxlayır — dinamik səhifələr üçün düzgün seçimdir. Default gözləmə müddəti 5 saniyədir və konfiqurasiyada dəyişdirilə bilər.
+
+### beforeEach — təkrarı aradan qaldırmaq
+```javascript
+test.beforeEach(async ({ page }) => {
+  await page.goto('https://www.saucedemo.com/');
+});
+```
+Bu blok hər testdən əvvəl işləyir: testlər müstəqil qalır, eyni sətir hər testdə təkrarlanmır. `test.describe('Login', () => { … })` isə testləri qruplaşdırır.
+
+### Swag Labs-ın digər test istifadəçiləri
+`problem_user` (vizual və funksional baqlar), `performance_glitch_user` (girişdə qəsdən gecikmə), `error_user` və `visual_user` — avtomatik testlərin baq tapmasını və gecikmələrlə işləməyi məşq etmək üçün yaradılıb.
+
+### Tipik yanlış anlama
+“Test keçdisə, funksiya işləyir.” Test yalnız yoxladığını təsdiqləyir. `toHaveURL(/inventory/)` keçsə də, məhsul şəkilləri səhv ola bilər (`problem_user` ilə yoxla). Yoxlamalar ssenarinin vacib nəticələrini əhatə etməlidir.
+@nümunə
+**Tapşırıq.** Swag Labs üçün “boş istifadəçi adı ilə giriş” testini yaz: istifadəçi adı boş, şifrə dolu, “Login”-ə basılır — “Username is required” mesajı görünməli və istifadəçi login səhifəsində qalmalıdır.
+@addımlar
+1. **Əvvəl manual case kimi düşün:** ilkin şərt — login səhifəsi açıqdır; addım — yalnız şifrəni yaz və “Login”-ə bas; gözlənilən — xəta mesajı, istifadəçi login səhifəsində qalır.
+2. **Arrange:** `await page.goto('https://www.saucedemo.com/');`
+3. **Act:** `await page.getByPlaceholder('Password').fill('secret_sauce');` və `await page.getByRole('button', { name: 'Login' }).click();`
+4. **Assert:** `await expect(page.locator('[data-test="error"]')).toContainText('Username is required');` və `await expect(page).not.toHaveURL(/inventory/);`
+5. **İşə sal və testi yoxla:** `npx playwright test --headed`; sonra gözlənilən mətni qəsdən dəyiş və testin düşdüyünü gör — deməli, test həqiqətən yoxlayır.
+@növbən
+Swag Labs üçün iki test yaz: (1) səhv şifrə ilə giriş — xəta mesajında “do not match” ifadəsi olmalıdır; (2) `problem_user` ilə giriş edib “hər məhsulun şəkli fərqlidir” yoxlaması — bu istifadəçi qəsdən baqlı olduğu üçün test düşməlidir; testin baqı necə göstərdiyini izah et. Hər testdə Arrange, Act və Assert hissələrini qeyd et.
+
+=== c19s7
+@qısa
+Page Object Model hər səhifə üçün bir class yaradır: lokatorlar və hərəkətlər orada bir dəfə yazılır, testlər isə bu class-ı çağırır. Lokator dəyişəndə yalnız bir yer düzəldilir, testlər isə “nə” etdiyini oxunaqlı dillə deyir.
+@yadda
+- Lokator və hərəkətlər — page class-da, yoxlamalar — testdə.
+- Bir səhifə (və ya komponent) — bir class.
+- Metod adları istifadəçinin dilində: `login()`, `addToCart()`, `sortBy()`.
+@dərin
+### Yoxlamalar harada olmalıdır?
+Adətən page class-ı hərəkətləri və lokatorları saxlayır, `expect` isə testdə qalır. Səbəb: test nəyi yoxladığını açıq göstərməlidir. `loginPage.login(…)` metodunun içində gizli yoxlama varsa, testi oxuyan şəxs onu görmür.
+
+### Bir neçə səhifə ilə iş
+```javascript
+// pages/InventoryPage.js
+export class InventoryPage {
+  constructor(page) {
+    this.page = page;
+    this.title = page.locator('.title');
+    this.cartBadge = page.locator('.shopping_cart_badge');
+  }
+
+  async addToCart(productName) {
+    await this.page.locator('.inventory_item')
+      .filter({ hasText: productName })
+      .getByRole('button', { name: 'Add to cart' })
+      .click();
+  }
+}
+```
+Test indi bir neçə cümlə kimi oxunur:
+```javascript
+await loginPage.login('standard_user', 'secret_sauce');
+await inventoryPage.addToCart('Sauce Labs Backpack');
+await expect(inventoryPage.cartBadge).toHaveText('1');
+```
+
+### Komponent obyektləri
+Bütün səhifələrdə görünən hissələr (menyu, başlıq, səbət ikonu) üçün ayrıca “komponent” class-ı yaratmaq olar — onda hər səhifə class-ı eyni lokatorları təkrar yazmır.
+
+### Tipik yanlış anlama
+“POM hər layihədə məcburidir.” 3–5 testlik kiçik layihədə POM artıq mürəkkəblik yarada bilər. Testlər çoxalanda və eyni lokatorlar təkrarlanmağa başlayanda POM-a keçmək məntiqlidir.
+@nümunə
+**Tapşırıq.** Swag Labs-ın məhsullar səhifəsi üçün `InventoryPage` class-ına iki metod əlavə et: sıralama seçimi və qiymətləri oxumaq. Sonra “Price (low to high)” sıralamasının düzgün işlədiyini yoxlayan test yaz.
+@addımlar
+1. **Lokatorlar:** constructor-a əlavə et — `this.sortSelect = page.locator('[data-test="product-sort-container"]');` və `this.prices = page.locator('.inventory_item_price');`
+2. **Hərəkət metodu:** `async sortBy(label) { await this.sortSelect.selectOption({ label }); }` — istifadəçinin gördüyü mətnlə seçir.
+3. **Oxuma metodu:** `async getPrices() { const texts = await this.prices.allTextContents(); return texts.map(t => Number(t.replace('$', ''))); }` → `[7.99, 9.99, 15.99, 15.99, 29.99, 49.99]`.
+4. **Test:** `await inventoryPage.sortBy('Price (low to high)');` → sıralamanın tətbiq olunmasını gözlə: `await expect(inventoryPage.prices.first()).toHaveText('$7.99');` → `const prices = await inventoryPage.getPrices();` → `expect(prices).toEqual([...prices].sort((a, b) => a - b));`
+5. **Rolların bölgüsü:** page class yalnız “nə etmək” və “nə oxumaq”ı bilir, “nə gözlənilir” isə testdədir. Bonus: eyni testi `problem_user` ilə işə sal və nəticəni müqayisə et.
+@növbən
+`InventoryPage`-ə `getNames()` metodu əlavə et (`.inventory_item_name` elementlərinin mətnləri) və “Name (Z to A)” sıralaması üçün test yaz: adlar əlifba sırasının tərsinə düzülməlidir. Gözlənilən sıranı `localeCompare` ilə necə quracağını izah et.
+
+=== c19s8
+@qısa
+Yaxşı avtomatik test müstəqildir, sabit gözləmə işlətmir, sabit lokatorlara söykənir, aydın adı var, bir ssenarini yoxlayır və test datasını səliqəli saxlayır. Bu qaydalar testi etibarlı, sürətli və saxlanması asan edir.
+@yadda
+- Müstəqil test istənilən sırada və tək işləyir.
+- Şərti gözləmə (`expect`) — bəli, sabit gözləmə (`waitForTimeout`) — yox.
+- Test düşəndə adı və mesajı problemi izah etməlidir.
+@dərin
+### Müstəqilliyi necə təmin etmək?
+- Playwright hər testə yeni, təmiz brauzer konteksti verir: cookie və local storage testlər arasında paylaşılmır. Amma serverdəki data (yaradılmış istifadəçi, sifariş) paylaşılır — asılılıq məhz oradan yaranır.
+- Hər test öz datasını yaradır (məsələn, API ilə yeni istifadəçi) və ya məlum, təmiz vəziyyətdən başlayır.
+- Login-i hər testdə UI ilə təkrarlamamaq üçün Playwright giriş vəziyyətini faylda saxlayıb testlərə ötürə bilər (`storageState`).
+- Testlər paralel işləyir: iki test eyni hesabın səbətini dəyişirsə, bir-birini pozur.
+
+### Yoxlamaların keyfiyyəti
+- Yoxlama nəticəni dəqiq ifadə etməlidir: `toHaveText('1')` yoxlaması `toBeVisible()`-dan daha güclüdür.
+- Hər testdə ən azı bir mənalı `expect` olmalıdır — yoxlamasız test heç vaxt düşmür və heç nəyi sübut etmir.
+- Gözlənilən dəyərlər tələbdən gəlir, “indiki faktiki nəticədən” köçürülmür.
+
+### Test datası
+```javascript
+// test-data/users.js
+export const users = {
+  standard: { username: 'standard_user', password: 'secret_sauce' },
+  locked: { username: 'locked_out_user', password: 'secret_sauce' },
+};
+```
+Real layihədə şifrələr kodda yox, mühit dəyişənlərində (`process.env`) saxlanır və Git-ə düşmür.
+
+### Tipik yanlış anlama
+“Testlər çox olsa, keyfiyyət yüksəkdir.” 500 flaky test 50 etibarlı testdən pisdir: komanda düşən testlərə inanmağı dayandırır və real baqlar gözdən qaçır.
+@nümunə
+**Tapşırıq.** Bu testdə yaxşı test qaydalarının pozulduğu yerləri tap və düzəlt.
+
+```javascript
+test('test2', async ({ page }) => {
+  await page.goto('https://www.saucedemo.com/');
+  await page.locator('#user-name').fill('standard_user');
+  await page.locator('#password').fill('secret_sauce');
+  await page.locator('form input').nth(2).click();
+  await page.waitForTimeout(3000);
+  await page.locator('.inventory_item button').first().click();
+  await page.waitForTimeout(2000);
+});
+```
+@addımlar
+1. **Ad:** `test2` heç nə demir → `'standard_user məhsulu səbətə əlavə edir və səbətdə 1 görünür'`.
+2. **Kövrək lokatorlar:** `form input` + `.nth(2)` və `.first()` → `getByRole('button', { name: 'Login' })` və “Sauce Labs Backpack” kartı üzrə `filter({ hasText })`.
+3. **Sabit gözləmələr:** iki `waitForTimeout` silinir — Playwright klikdən əvvəl elementi özü gözləyir, nəticəni isə `await expect(…)` gözləyəcək.
+4. **Yoxlama yoxdur:** test heç nəyi yoxlamır və həmişə keçir. Əlavə et: `await expect(page.locator('.shopping_cart_badge')).toHaveText('1');`
+5. **Test datası:** istifadəçi adı və şifrə birbaşa koddadır → `users.standard` faylından və ya mühit dəyişənindən götür.
+@növbən
+İki test birlikdə işləyəndə keçir, ikincisi tək işə salınanda isə düşür. Birinci test API ilə serverdə “test_user_1” istifadəçisini yaradır, ikinci test isə həmin istifadəçi ilə daxil olub profil səhifəsini yoxlayır. Səbəbi izah et və testləri müstəqil etmək üçün iki fərqli yol təklif et.
+
+=== c19s9
+@qısa
+Flaky test kod dəyişmədən bəzən keçir, bəzən düşür. Əsas səbəblər: vaxtla bağlı problemlər, testlərin bir-birindən asılılığı, paylaşılan test datası və qeyri-sabit mühit. Həll yolu səbəbi tapıb aradan qaldırmaqdır, təkrar cəhdlə (retry) gizlətmək yox.
+@yadda
+- Flaky test etibarı öldürür: komanda “yenə həmin test” deyib real baqı da görməzdən gəlir.
+- Trace viewer düşən testin hər addımını göstərir.
+- `--repeat-each` flaky testi öz kompüterində üzə çıxarır.
+@dərin
+### Səbəblər və əlamətlər
+| Səbəb | Əlamət | Həll |
+| --- | --- | --- |
+| Yarış (race) | Data yüklənməmiş yoxlanılır | `await expect` ilə şərti gözlə |
+| Animasiya | Klik səhv yerə düşür | Elementin sabitləşməsini gözlə, testdə animasiyanı söndür |
+| Paylaşılan data | Paralel işləyəndə düşür | Hər testin öz datası |
+| Test sırası | Tək işləyəndə düşür | Asılılığı aradan qaldır |
+| Mühit | Yalnız CI-da düşür | Resursları, şəbəkəni, vaxt zonasını yoxla |
+| Tarix və vaxt | Ayın sonunda düşür | Testdə sabit tarix işlət |
+
+### Diaqnostika
+1. `npx playwright test login.spec.js --repeat-each=20` — 20 icradan neçəsində düşür?
+2. Trace-i aç (HTML hesabatından və ya `npx playwright show-trace trace.zip`): hər addımın ekran şəkli, DOM, şəbəkə sorğuları və konsol mesajları.
+3. Düşən və keçən icranı müqayisə et: fərq hansı addımda başlayır?
+
+### Retry nə vaxt məqbuldur?
+CI-da `retries: 2` qısamüddətli “təhlükəsizlik yastığı”dır. Təkrar cəhddə keçən testlər hesabatda “flaky” kimi işarələnir — onlar siyahıya alınmalı və düzəldilməlidir. Retry problemi həll etmir, sadəcə gizlədir.
+
+### Karantin
+Bəzi komandalar flaky testi müvəqqəti “karantinə” köçürür (məsələn, `test.fixme` və ya xüsusi etiket ilə): əsas dəst yaşıl qalır, test isə düzəldilmək üçün ayrıca tapşırıq kimi açılır.
+
+### Tipik yanlış anlama
+“Flaky test — yalnız test problemidir.” Bəzən qeyri-sabitlik məhsulun özündədir: real yarış vəziyyəti (race condition), yaddaş sızması və ya yavaş API. Bu halda istifadəçi də eyni problemi yaşayır.
+@nümunə
+**Tapşırıq.** `performance_glitch_user` ilə giriş testi CI-da 10 icradan 3-də düşür. Xəta: `expect(page).toHaveURL(/inventory/)` — “Timed out 5000ms”. Səbəbi araşdır və düzgün həll təklif et.
+@addımlar
+1. **Təkrarla:** `npx playwright test login.spec.js --repeat-each=10` — öz kompüterində də arabir düşür; problem real və vaxtla bağlıdır.
+2. **Trace-ə bax:** klikdən sonra səhifə keçidi bir neçə saniyə çəkir və bəzən 5 saniyəni keçir — yoxlama default gözləmə müddətinin sərhədindədir.
+3. **Səbəb:** bu istifadəçi qəsdən yavaş girişi simulyasiya edir — test məhsulun real gecikməsi ilə toqquşur.
+4. **Həll:** yalnız bu yoxlama üçün gözləməni artır: `await expect(page).toHaveURL(/inventory/, { timeout: 15000 });` — şərti gözləmə qalır, `waitForTimeout` işlədilmir.
+5. **Əlavə addım:** gecikmənin özünü performans problemi kimi qeyd et — 5 saniyəlik giriş istifadəçi üçün qəbuledilməzdirsə, bu, ayrıca bug report mövzusudur.
+@növbən
+Səbətə məhsul əlavə edən test yalnız CI-da və yalnız paralel icrada düşür (10 dəfədən 2-də). Bütün testlər serverdəki eyni test hesabından istifadə edir. Ehtimal olunan səbəbi, diaqnostika addımlarını (`--repeat-each`, `--workers=1`, trace) və həll yolunu yaz.
+
+=== c19s10
+@qısa
+Cypress testi brauzerin içində işləyir və əmrləri öz növbəsinə qoyur — `await` lazım deyil. Selenium WebDriver protokolu ilə brauzeri kənardan idarə edir və çoxlu dili dəstəkləyir. Lokator, hərəkət və yoxlama məntiqi bütün alətlərdə eynidir.
+@yadda
+- Cypress: `cy.get(…).should(…)` şərti avtomatik təkrar yoxlayır.
+- Selenium: gözləmələri çox vaxt açıq yazmaq lazımdır (explicit wait).
+- Bir aləti dərindən bilmək digərinə keçidi asanlaşdırır.
+@dərin
+### Eyni login testi Selenium-da (JavaScript)
+```javascript
+const { Builder, By, until } = require('selenium-webdriver');
+
+(async () => {
+  const driver = await new Builder().forBrowser('chrome').build();
+  try {
+    await driver.get('https://www.saucedemo.com/');
+    await driver.findElement(By.id('user-name')).sendKeys('standard_user');
+    await driver.findElement(By.id('password')).sendKeys('secret_sauce');
+    await driver.findElement(By.id('login-button')).click();
+    await driver.wait(until.urlContains('inventory'), 5000);   // açıq gözləmə
+    console.log('PASS: giriş uğurludur');
+  } finally {
+    await driver.quit();   // brauzeri hər halda bağla
+  }
+})();
+```
+Selenium özü test runner deyil: yoxlama və hesabat üçün Mocha, Jest, JUnit və ya pytest kimi runner əlavə olunur. Selenium 4-dən başlayaraq brauzer drayverlərini Selenium Manager avtomatik yükləyir.
+
+### Əsas fərqlər
+| | Playwright | Cypress | Selenium |
+| --- | --- | --- | --- |
+| Gözləmə | avtomatik | avtomatik təkrar yoxlama | çox vaxt açıq yazılır |
+| Bir neçə tab və domen | rahat | məhdud (`cy.origin`) | rahat |
+| Paralel icra | daxili | əsasən bulud xidməti və ya əlavə alətlərlə | Selenium Grid |
+| Dillər | JS/TS, Python, Java, C# | JS/TS | çox |
+
+### Keçid lüğəti
+`page.goto` ↔ `cy.visit` ↔ `driver.get`; `fill` ↔ `type` ↔ `sendKeys`; `expect(page).toHaveURL(…)` ↔ `cy.url().should('include', …)` ↔ `driver.wait(until.urlContains(…))`.
+
+### Tipik yanlış anlama
+“Selenium köhnədir, öyrənməyə dəyməz.” Bir çox böyük şirkətdə minlərlə Selenium testi işləyir və iş elanlarında o, hələ də tez-tez tələb olunur. Prinsipləri bilmək hər iki dünyada işləməyə imkan verir.
+@nümunə
+**Tapşırıq.** Kitabdakı Playwright testini — “bloklanmış istifadəçi xəta mesajı görür” — Cypress-ə çevir və hər sətrin qarşılığını göstər.
+@addımlar
+1. **Struktur:** `test('…', async ({ page }) => { … })` → `describe('Login', () => { it('bloklanmış istifadəçi xəta mesajı görür', () => { … }); });`
+2. **Səhifəni aç:** `await page.goto('https://www.saucedemo.com/')` → `cy.visit('https://www.saucedemo.com/')`.
+3. **Sahələr:** `getByPlaceholder('Username').fill('locked_out_user')` → `cy.get('[data-test="username"]').type('locked_out_user')`; şifrə sahəsi də eyni qayda ilə: `cy.get('[data-test="password"]').type('secret_sauce')`.
+4. **Klik:** `getByRole('button', { name: 'Login' }).click()` → `cy.get('[data-test="login-button"]').click()`.
+5. **Yoxlama:** `await expect(page.locator('[data-test="error"]')).toContainText('locked out')` → `cy.get('[data-test="error"]').should('contain', 'locked out')`. Cypress-də `await` yoxdur — `should` şərt ödənənə qədər yenidən yoxlayır.
+@növbən
+Kitabdakı “məhsul səbətə əlavə olunur” Playwright testini Selenium (JavaScript) ilə yaz: `By.css('[data-test="add-to-cart-sauce-labs-backpack"]')` lokatorundan, `until.elementLocated` ilə açıq gözləmədən və səbət nişanının mətnini `getText()` ilə yoxlamaqdan istifadə et.

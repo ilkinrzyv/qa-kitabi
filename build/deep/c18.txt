@@ -1,0 +1,528 @@
+=== c18s1
+@qısa
+JavaScript kodunu iki yerdə işə salmaq olar: kompüterdə Node.js ilə (`node fayl.js`) və brauzerdə DevTools → Console panelində. `console.log()` nəticəni ekrana çıxarır — kodu yoxlamağın ən sadə yoludur. Xəta çıxanda mesaj həm xətanın növünü, həm də yerini göstərir.
+@yadda
+- Node.js — JavaScript-i brauzerdən kənarda işlədir.
+- DevTools Console — açıq səhifənin üzərində tez sınaq.
+- Xəta mesajını oxu: növ, mətn və sətir nömrəsi.
+@dərin
+### Node.js-in versiyası
+Terminalda `node -v` versiyanı göstərir (məsələn, v22.x). Playwright kimi alətlər Node.js-in yeni versiyalarını tələb edir, ona görə rəsmi saytdan “LTS” (uzunmüddətli dəstək) versiyasını seç.
+
+### console-un faydalı əmrləri
+```javascript
+console.log('Mətn', 42);      // adi çap
+console.error('Xəta!');       // xəta axınına çap
+console.table([{ id: 1, ad: 'Aysel' }, { id: 2, ad: 'Murad' }]);  // cədvəl kimi
+```
+`console.table` massiv və obyektləri cədvəl şəklində göstərir — API cavablarını oxumaq üçün rahatdır.
+
+### Xəta mesajını oxumaq
+```text
+console.log(price * quantiy);
+                    ^
+ReferenceError: quantiy is not defined
+    at Object.<anonymous> (C:\qa\ders.js:3:21)
+```
+- **Növ:** ReferenceError — mövcud olmayan ada müraciət edilib.
+- **Yer:** `ders.js:3:21` — 3-cü sətir, 21-ci simvol; `^` işarəsi də həmin yeri göstərir.
+Digər tez-tez görünən növlər: **SyntaxError** (yazılış qaydası pozulub, məsələn, mötərizə bağlanmayıb) və **TypeError** (dəyərlə mümkün olmayan əməliyyat, məsələn, `undefined`-in sahəsini oxumaq).
+
+### Tipik yanlış anlama
+“Xəta mesajı qorxuludur — bağla, yenidən yaz.” Xəta mesajı problemin növünü və yerini dəqiq göstərir. Tester bug report-da da elə bunu axtarır: nə və harada.
+@nümunə
+**Tapşırıq.** `ders.js` faylındakı kod işə salınanda xəta verir. Xəta mesajını oxu, səbəbi tap və düzəlt.
+
+```javascript
+const price = 20;
+const quantity = 3;
+console.log(price * quantiy);
+```
+@addımlar
+1. **İşə sal:** `node ders.js` → `ReferenceError: quantiy is not defined`, yer: `ders.js:3:21`.
+2. **Növü anla:** ReferenceError — kod mövcud olmayan bir ada müraciət edir.
+3. **Yeri tap:** 3-cü sətirdə `quantiy` yazılıb, dəyişənin adı isə `quantity`-dir — bir hərf çatışmır.
+4. **Düzəlt və yoxla:** `console.log(price * quantity);` → `60`.
+5. **Dərs:** xəta mesajı “nə?” və “harada?” suallarına cavab verir; kodu kiçik hissələrlə işə salıb yoxlamaq səhvi tez tapmağa kömək edir.
+@növbən
+Bu kod xəta verir. Əvvəl xəta növünü təxmin et, sonra işə salıb yoxla, səbəbi izah et və kodu elə düzəlt ki, ünvan olmayanda xəta əvəzinə “Ünvan yoxdur” çap olunsun.
+
+```javascript
+const user = { name: 'Aysel' };
+console.log(user.address.city);
+```
+
+=== c18s2
+@qısa
+Dəyişən — adı olan məlumat “qutusu”dur: dəyişməyən dəyər üçün `const`, dəyişən dəyər üçün `let` işlədilir. Əsas tiplər: string, number, boolean, undefined, null, object və array. `typeof` operatoru dəyərin tipini göstərir.
+@yadda
+- Default olaraq `const`, dəyər dəyişəcəksə `let`; `var` yox.
+- `'42'` (mətn) və `42` (ədəd) fərqli tiplərdir.
+- `undefined` — dəyər verilməyib, `null` — qəsdən boşdur.
+@dərin
+### const “dəyişməz” yox, “yenidən təyin olunmaz” deməkdir
+```javascript
+const user = { name: 'Aysel' };
+user.name = 'Leyla';   // işləyir — obyektin içi dəyişir
+user = {};             // TypeError: Assignment to constant variable.
+```
+`const` dəyişəni başqa dəyərə bağlamağa icazə vermir, amma obyektin və massivin içindəkiləri dəyişmək olar.
+
+### typeof-un sürprizləri
+```javascript
+typeof null;        // 'object' — dilin köhnə xətası
+typeof [];          // 'object' — massiv də obyektdir
+Array.isArray([]);  // true — massivi belə yoxla
+typeof NaN;         // 'number' — “ədəd deyil” də ədəd tipidir
+```
+
+### Tester üçün niyə vacibdir?
+API cavabında `"price": "19.99"` (mətn) gəlirsə, sənəddə isə ədəd yazılıbsa, bu, müqavilə defektidir. Mətnlə hesablama gözlənilməz nəticə verir: `'19.99' + 1` → `'19.991'`. Tip yoxlaması (`typeof data.price === 'number'`) belə defektləri dərhal tutur.
+
+### Adlandırma qaydaları
+Ad hərf, `_` və ya `$` ilə başlayır və böyük-kiçik hərfə həssasdır (`price` ≠ `Price`). JavaScript-də adət camelCase yazılışdır: `totalPrice`, `isLoggedIn`. Mənalı ad kodu sənəd kimi oxunaqlı edir.
+
+### Tipik yanlış anlama
+“`null` və `undefined` eynidir.” `undefined` — dəyər heç verilməyib (məsələn, cavabda sahə yoxdur), `null` — sahə var, amma qəsdən boşdur. API testində bu fərq vacibdir: `"middleName": null` ilə sahənin ümumiyyətlə olmaması fərqli hallardır.
+@nümunə
+**Tapşırıq.** API-dən belə məhsul cavabı gəlib: `{ id: 7, name: 'Termos', price: '19.99', inStock: 'true', discount: null }`. Sənədə görə: id — number, name — string, price — number, inStock — boolean, discount — number və ya null. Hər sahənin tipini `typeof` ilə yoxla və uyğunsuzluqları tap.
+@addımlar
+1. **Obyekti yarat:** `const product = { id: 7, name: 'Termos', price: '19.99', inStock: 'true', discount: null };`
+2. **Tipləri çap et:** `console.log(typeof product.id, typeof product.name, typeof product.price, typeof product.inStock, typeof product.discount);` → `number string string string object`.
+3. **Müqayisə et:** `price` mətn gəlir, ədəd gözlənilir — defekt; `inStock` mətn `'true'` gəlir, boolean gözlənilir — defekt.
+4. **discount-u ayrıca yoxla:** `typeof null` nəticəsi `'object'` olduğu üçün `product.discount === null` ilə yoxla — null icazəlidir, problem yoxdur.
+5. **Nəticə:** 2 müqavilə defekti (price, inStock). Risk: `'19.99' + 1` → `'19.991'`, `'false'` mətni isə şərtdə doğru sayılır.
+@növbən
+API-dən istifadəçi cavabı gəlib: `{ id: '15', email: 'leyla@example.com', age: 30, isActive: false, phone: undefined }`. Sənədə görə: id — number, email — string, age — number, isActive — boolean, phone — string (məcburi). Tipləri `typeof` ilə yoxla, uyğunsuzluqları tap və hər biri üçün riski izah et.
+
+=== c18s3
+@qısa
+Operatorlar üç qrupa bölünür: riyazi (+, −, *, /, %), müqayisə (===, !==, >, <, >=, <=) və məntiqi (&&, ||, !). `==` tipləri çevirərək müqayisə edir və səhvləri gizlədir — həmişə `===` işlət.
+@yadda
+- `===` həm dəyəri, həm də tipi müqayisə edir.
+- `+` mətnlə görüşəndə toplamır, yapışdırır: `'5' + 3` → `'53'`.
+- `&&` ilə yazılmış aralıq sərhəd dəyərlərini birbaşa göstərir.
+@dərin
+### `+` operatorunun iki üzü
+```javascript
+'5' + 3;     // '53' — mətn birləşməsi
+'5' - 3;     // 2    — mətn ədədə çevrilir
+'5' * '2';   // 10
+10 / 0;      // Infinity
+'abc' * 2;   // NaN (Not a Number — “ədəd deyil”)
+```
+Formadan gələn dəyərlər həmişə mətndir. “Səbətdə 2 + 3 = 23 məhsul” tipli baqların səbəbi budur.
+
+### NaN-in qəribəliyi
+`NaN === NaN` → `false`. NaN-i yoxlamaq üçün `Number.isNaN(x)` işlədilir. Ekranda “NaN AZN” görmək hesablamaya mətn və ya boş dəyərin qarışdığının əlamətidir.
+
+### Qalıq operatoru (%) harada lazımdır?
+`n % 2 === 0` — cüt ədəd; `minutes % 60` — tam saatlardan artıq qalan dəqiqələr. Tester üçün: “hər 3-cü sifarişə endirim” kimi qaydanın sərhədlərini (2, 3, 4, 6) % ilə yoxlamaq olar.
+
+### Məntiqi operatorlar
+`age >= 18 && age <= 60` — hər iki şərt doğru olmalıdır (aralıq). `role === 'admin' || role === 'editor'` — biri kifayətdir. `!isBlocked` — inkar. `&&` ilə yazılmış aralıq Fəsil 8-in BVA dəyərlərini birbaşa verir: 17, 18, 60, 61.
+
+### Tipik yanlış anlama
+“`==` daha rahatdır, nəticə onsuz da eynidir.” `0 == ''`, `0 == '0'` və `null == undefined` ifadələrinin hamısı `true`-dur — `==` fərqli dəyərləri bərabər sayaraq defektləri gizlədir.
+@nümunə
+**Tapşırıq.** Formadan gələn iki dəyərin cəmini hesablayan kod səhv nəticə verir: `const a = '2'; const b = '3'; console.log(a + b);` → `23`. Səbəbi izah et, kodu düzəlt və boş və hərfli dəyərlər üçün yoxla.
+@addımlar
+1. **Səbəb:** forma dəyərləri mətndir; `+` mətnləri yapışdırır: `'2' + '3'` → `'23'`.
+2. **Düzəliş:** əvvəl ədədə çevir — `Number(a) + Number(b)` → `5`.
+3. **Boş sahə:** `Number('')` → `0` — boş sahə səssizcə 0 kimi qəbul olunur. Bu, validasiya sualıdır: boş sahə xəta verməli deyilmi?
+4. **Hərfli dəyər:** `Number('3a')` → `NaN`, cəm də `NaN` olur — `Number.isNaN(result)` ilə yoxlayıb istifadəçiyə xəta göstərmək lazımdır.
+5. **Test dəyərləri:** '2' və '3' → 5; '' → xəta (və ya tələbə görə); '3a' → xəta; ' 4 ' (boşluqlu) → `Number(' 4 ')` → 4 — bu qəbul olunurmu, tələbdə qeyd et.
+@növbən
+Endirim kodunun nəticəsini təxmin et, sonra işə salıb yoxla: `const price = '50'; const discount = '10'; console.log(price - discount, price + discount, price * discount / 100);` Hansı nəticə “səhv”dir və niyə? Kodu elə düzəlt ki, hər üç ifadə ədədlərlə işləsin.
+
+=== c18s4
+@qısa
+Mətnlərlə iş üçün əsas alətlər: `length` (uzunluq), `trim()` (kənar boşluqları silir), `toLowerCase()`/`toUpperCase()`, `includes()` (içində varmı) və template literal ilə `${}` daxil etmə. Azərbaycan hərfləri üçün `toLocaleLowerCase('az')` işlədilir.
+@yadda
+- Email və login müqayisəsindən əvvəl `trim()` və kiçik hərfə çevirmə.
+- “İ/i” və “I/ı” cütləri üçün dil qaydası ilə çevir: `'az'`.
+- `length` boşluqları və bəzi simvolları gözlənilmədən sayır.
+@dərin
+### Faydalı metodlar
+```javascript
+const s = 'order-2026-1001';
+s.startsWith('order');      // true
+s.endsWith('1001');         // true
+s.split('-');               // ['order', '2026', '1001']
+s.slice(0, 5);              // 'order'
+s.replace('order', 'ORD');  // 'ORD-2026-1001'
+'7'.padStart(3, '0');       // '007'
+```
+`split` mətni hissələrə bölür — tarix, nömrə və ID-ləri parçalamaq üçün; `padStart` isə “007” kimi formatlı nömrələr üçündür.
+
+### Uzunluq sürprizləri
+```javascript
+'Salam'.length;     // 5
+'😀'.length;        // 2 — emoji iki “vahid” tutur
+[...'😀'].length;   // 1 — real simvol sayı
+```
+“Ad 20 simvola qədər” qaydasında emoji ilə yazılan ad sərhəddə fərqli sayıla bilər: UI 20 göstərir, server 21 sayır. Sərhəd testlərinə emoji də əlavə et.
+
+### Azərbaycan hərfləri və sıralama
+```javascript
+'i'.toUpperCase();             // 'I' — ingilis qaydası
+'i'.toLocaleUpperCase('az');   // 'İ'
+['Şahin', 'Cavid', 'Səbinə', 'Çingiz'].sort((a, b) => a.localeCompare(b, 'az'));
+// ['Cavid', 'Çingiz', 'Səbinə', 'Şahin']
+```
+`localeCompare(…, 'az')` Azərbaycan əlifbası ilə sıralayır. Adi `sort()` isə simvol kodlarına görə sıralayır və nəticə `['Cavid', 'Səbinə', 'Çingiz', 'Şahin']` olur — “Ç” və “Ş” sona düşür.
+
+### Tipik yanlış anlama
+“Mətnləri `===` ilə müqayisə etmək həmişə kifayətdir.” `'Aysel '` və `'Aysel'`, `'ALI'` və `'ali'` fərqli mətnlərdir. Müqayisədən əvvəl qayda müəyyən olunmalıdır: boşluqlar silinirmi, böyük-kiçik hərf nəzərə alınırmı?
+@nümunə
+**Tapşırıq.** Login formasında email müqayisəsi belə yazılıb: `if (inputEmail === savedEmail)`. Bazada `aysel@example.com` saxlanılır, istifadəçi isə `  Aysel@Example.com ` yazır. Problemi göstər, düzəlt və 4 test dəyəri ilə yoxla.
+@addımlar
+1. **Problem:** `'  Aysel@Example.com ' === 'aysel@example.com'` → `false` — istifadəçi düzgün email yazsa da, daxil ola bilmir.
+2. **Normallaşdırma funksiyası:** `const normalize = e => e.trim().toLowerCase();`
+3. **Düzəlişli müqayisə:** `normalize(inputEmail) === normalize(savedEmail)` → `true`.
+4. **Test dəyərləri:** `'aysel@example.com'` → true; `'  Aysel@Example.com '` → true; `'AYSEL@EXAMPLE.COM'` → true; `'aysel@example.co'` → false.
+5. **Tələb sualı:** email-in “@”-dan əvvəlki hissəsi nəzəri olaraq böyük-kiçik hərfə həssas ola bilər, amma praktikada əksər sistemlər onu həssas saymır — komandanın qaydasını tələbdə qeyd et.
+@növbən
+Axtarış sahəsi istifadəçinin yazdığı sözü məhsul adlarında `includes()` ilə axtarır və müqayisədən əvvəl hər ikisini `toLowerCase()` ilə kiçildir. “İSTİ ÇAY” məhsulunu istifadəçi “isti” yazanda tapa bilmir. Səbəbi kodla göstər (`toLowerCase` və `toLocaleLowerCase('az')` nəticələrini müqayisə et), kodu düzəlt və 4 test dəyəri təklif et.
+
+=== c18s5
+@qısa
+`if / else if / else` kodun hansı yolla gedəcəyini şərtə görə seçir. Hər yol ayrıca test halıdır: 3 yolu olan kod üçün branch coverage-də ən azı 3 test lazımdır. Sərhəd dəyərləri isə şərtlərdəki rəqəmlərdən çıxır.
+@yadda
+- Hər `if` budağı — ayrıca test.
+- `>=` ilə `>` fərqi sərhəd defektlərinin əsas mənbəyidir.
+- `0`, `''`, `null`, `undefined`, `NaN` şərtdə “yalan” sayılır.
+@dərin
+### “Doğru” və “yalan” sayılan dəyərlər (truthy/falsy)
+`if`-ə yalnız `true` və `false` yox, istənilən dəyər vermək olar. Yalan sayılanlar: `false`, `0`, `''`, `null`, `undefined`, `NaN`. Qalan hamısı doğrudur — `'0'`, `'false'` və `[]` də!
+```javascript
+const quantity = 0;
+if (quantity) {
+  console.log('Miqdar göstərilib');
+} else {
+  console.log('Miqdar göstərilməyib');   // bu çap olunur!
+}
+```
+Kodun niyyəti “miqdar sahəsi doldurulubmu?” idisə, `0` dəyəri səhvən “doldurulmayıb” kimi emal olunur. Tester üçün: 0 həmişə xüsusi test dəyəridir.
+
+### Şərtlərin sırası
+```javascript
+if (total >= 50) { fee = 2; }
+else if (total >= 100) { fee = 0; }   // heç vaxt işləməyəcək!
+```
+İkinci şərtə heç vaxt növbə çatmır: 100-dən böyük hər məbləğ artıq birinci şərtə düşür. Belə “ölü budaqları” branch coverage tapır — test etmək mümkün olmayan budaq dizayn xətasıdır.
+
+### switch
+Bir dəyişəni çox dəyərlə müqayisə etmək üçün `switch` işlədilir:
+```javascript
+switch (status) {
+  case 'paid': label = 'Ödənilib'; break;
+  case 'shipped': label = 'Göndərilib'; break;
+  default: label = 'Naməlum';
+}
+```
+`break`-i unutmaq növbəti `case`-in də icrasına səbəb olur — klassik defektdir.
+
+### Tipik yanlış anlama
+“`else` yazmaq vacib deyil.” `else` olmayanda gözlənilməz dəyər (mənfi yaş, boş status) səssizcə heç bir budağa düşmür. Tester “heç bir şərtə uyğun gəlməyən dəyər”i də yoxlamalıdır.
+@nümunə
+**Tapşırıq.** Çatdırılma haqqı: 50 AZN-dən az — 5 AZN, 50–99,99 AZN — 2 AZN, 100 AZN və çox — pulsuz. Funksiyanı `if/else` ilə yaz, bütün budaqları və sərhədləri əhatə edən test dəyərlərini seç.
+@addımlar
+1. **Kod:** `function deliveryFee(total) { if (total >= 100) { return 0; } else if (total >= 50) { return 2; } else { return 5; } }`
+2. **Budaqlar:** 3 yol var — branch coverage üçün ən azı 3 test: 30 → 5, 70 → 2, 150 → 0.
+3. **Sərhədlər:** 49.99 → 5; 50 → 2; 99.99 → 2; 100 → 0.
+4. **Xüsusi dəyərlər:** 0 → 5 (boş səbətə haqq alınmalıdırmı?); −10 → 5 — kod mənfi məbləği qəbul edir, tələbə görə isə xəta olmalıdır. Bunu sual və ya defekt kimi qeyd et.
+5. **Sıranı yoxla:** şərtlər böyükdən kiçiyə yazılıb — ölü budaq yoxdur.
+@növbən
+Parol gücü funksiyası yaz: 8 simvoldan az — “zəif”, 8–11 simvol — “orta”, 12 və çox — “güclü”. `if/else` ilə yaz, bütün budaqlar və sərhədlər üçün test dəyərlərini (uzunluqlarla) seç və boş parol üçün nə olmalı olduğunu müzakirə et.
+
+=== c18s6
+@qısa
+Funksiya — adı olan, təkrar istifadə olunan kod blokudur: parametrlər qəbul edir və `return` ilə nəticə qaytarır. Ox funksiyası (`=>`) qısa yazılışdır. Yaxşı funksiya bir iş görür və eyni girişə həmişə eyni nəticə verir — belə funksiyanı test etmək asandır.
+@yadda
+- Parametr — giriş, `return` — çıxış.
+- Ötürülməyən parametr `undefined` olur və hesablamada `NaN` yaradır.
+- Eyni giriş → eyni nəticə: test üçün ideal funksiya.
+@dərin
+### Default parametrlər
+```javascript
+function calculateDiscount(price, percent = 0) {
+  return price - (price * percent / 100);
+}
+calculateDiscount(100);   // 100 — percent verilməyib, 0 götürülür
+```
+Default dəyər olmasaydı: `100 - (100 * undefined / 100)` → `NaN`. Ekranda “NaN AZN” görünən baqların bir səbəbi də budur.
+
+### return-süz funksiya
+`return` yazılmayıbsa, funksiya `undefined` qaytarır. `console.log(calculateTotal(…))` → `undefined` görürsənsə, ilk yoxlanılacaq yer `return`-dür.
+
+### “Saf” funksiya — tester-in dostu
+Saf funksiya yalnız parametrlərindən asılıdır və kənarda heç nəyi dəyişmir: `calculateDiscount(100, 10)` həmişə 90 qaytarır, ona test yazmaq çox asandır. Cari vaxtdan, təsadüfi ədəddən və ya qlobal dəyişəndən asılı funksiyanı test etmək çətindir. Məsələn, “bu gün endirim günüdürmü?” funksiyasına tarixi parametr kimi ötürmək onu test edilə bilən edir.
+
+### Funksiya — parametr kimi
+JavaScript-də funksiyanı başqa funksiyaya ötürmək olar: `prices.filter(p => p > 50)` — burada `p => p > 50` funksiyadır. Playwright-dakı `test('ad', async ({ page }) => { … })` yazılışı da eyni məntiqdir: test özü bir funksiyadır.
+
+### Tipik yanlış anlama
+“Funksiya işləyirsə, iş bitib.” Funksiyanın da sərhədləri var: mənfi qiymət, 100%-dən böyük endirim, mətn tipli parametr. `calculateDiscount(100, 150)` → `-50` — mənfi qiymət!
+@nümunə
+**Tapşırıq.** `calculateDiscount(price, percent)` funksiyasına yoxlama əlavə et: qiymət mənfi olmasın, faiz 0–100 aralığında olsun; səhv girişdə funksiya `null` qaytarsın. Sonra 5 test dəyəri ilə yoxla.
+@addımlar
+1. **Kod:** `function calculateDiscount(price, percent = 0) { if (price < 0 || percent < 0 || percent > 100) return null; return price - (price * percent / 100); }`
+2. **Normal hal:** `calculateDiscount(100, 10)` → `90`.
+3. **Sərhədlər:** `calculateDiscount(100, 0)` → `100`; `calculateDiscount(100, 100)` → `0`.
+4. **Səhv girişlər:** `calculateDiscount(100, 150)` → `null`; `calculateDiscount(-10, 10)` → `null`.
+5. **Açıq qalan sual:** `calculateDiscount('100', 10)` → `90` — mətn səssizcə ədədə çevrilir. Funksiya tipləri də yoxlamalıdırmı? Bu, tələb sualıdır.
+@növbən
+`calculateTax(amount, rate = 18)` funksiyasını yaz: vergini qaytarsın (məbləğ × faiz / 100). Default parametri, mənfi məbləği və mətn tipli girişi (`'200'`) yoxlayan 5 test dəyəri seç və gözlənilən nəticələri yaz.
+
+=== c18s7
+@qısa
+Massiv — sıralı siyahıdır: indeks 0-dan başlayır, sonuncu element `length − 1` indeksindədir. `for...of` hər elementi gəzir; `filter` seçir, `map` çevirir, `find` ilk uyğun elementi qaytarır.
+@yadda
+- İndeks 0-dan başlayır — off-by-one səhvlərinin mənbəyi.
+- `filter` və `map` yeni massiv qaytarır; `find` — bir element və ya `undefined`.
+- `sort()` ədədləri mətn kimi sıralayır — müqayisə funksiyası lazımdır.
+@dərin
+### reduce — cəm və yekunlar
+```javascript
+const prices = [45.5, 120, 15, 80];
+const total = prices.reduce((sum, p) => sum + p, 0);   // 260.5
+```
+`reduce` massivi bir dəyərə “yığır”: cəm, maksimum, say. Səbət cəmini yoxlamaq üçün əsas alətdir.
+
+### sort()-un tələsi
+```javascript
+[10, 9, 1, 100].sort();                  // [1, 10, 100, 9] — mətn kimi!
+[10, 9, 1, 100].sort((a, b) => a - b);   // [1, 9, 10, 100]
+```
+Müqayisə funksiyası olmadan ədədlər mətn kimi sıralanır. “Qiymətə görə sırala”da 100 AZN-in 9 AZN-dən əvvəl gəlməsi məhz bu səhvdir. Həm də `sort()` massivin özünü dəyişir.
+
+### some və every
+```javascript
+prices.some(p => p > 100);   // true — ən azı biri
+prices.every(p => p > 0);    // true — hamısı
+```
+Testdə: “bütün qiymətlər müsbətdirmi?”, “ən azı bir məhsul endirimlidirmi?”
+
+### Klassik for və off-by-one
+```javascript
+for (let i = 0; i <= prices.length; i++) {   // <= səhvdir!
+  console.log(prices[i]);                    // sonda: undefined
+}
+```
+Düzgün şərt `i < prices.length`-dir. Siyahının sonunda boş sətir, `undefined` və ya “artıq bir element” görünürsə, səbəb çox vaxt budur.
+
+### Tipik yanlış anlama
+“`find` heç nə tapmasa, xəta verir.” Xəta vermir — `undefined` qaytarır. Növbəti sətirdə `undefined`-in sahəsini oxumaq isə TypeError verir.
+@nümunə
+**Tapşırıq.** Səbət: `[{ name: 'Termos', price: 19.9, qty: 2 }, { name: 'Fincan', price: 6.5, qty: 4 }, { name: 'Çay dəsti', price: 45, qty: 1 }]`. Ümumi məbləği hesabla, 20 AZN-dən baha məhsulları seç və məhsulları qiymətə görə artan sırala.
+@addımlar
+1. **Cəm:** `cart.reduce((sum, item) => sum + item.price * item.qty, 0)` → `110.8` (39,8 + 26 + 45).
+2. **Kəsr riskini nəzərə al:** bu dəfə nəticə “təmiz” çıxdı, amma kəsr ədədlərin cəmi həmişə belə olmur (`0.1 + 0.2`). Pul üçün `Math.round(total * 100) / 100` ilə yuvarlaqlaşdır və ya qəpiklə hesabla.
+3. **Filtr:** `cart.filter(item => item.price > 20).map(item => item.name)` → `['Çay dəsti']`.
+4. **Sıralama:** `[...cart].sort((a, b) => a.price - b.price).map(item => item.name)` → `['Fincan', 'Termos', 'Çay dəsti']`; `[...cart]` surət yaradır ki, orijinal massiv dəyişməsin.
+5. **Yoxlama:** `cart.every(item => item.qty > 0)` → `true` — səbətdə sıfır miqdarlı məhsul yoxdur.
+@növbən
+Sifarişlər massivi: `[{ id: 201, total: 45.5, status: 'paid' }, { id: 202, total: 120, status: 'shipped' }, { id: 203, total: 15, status: 'cancelled' }, { id: 204, total: 80, status: 'paid' }]`. Ləğv edilməmiş sifarişlərin cəmini, ən bahalı sifarişin id-sini və `paid` statuslu sifarişlərin sayını kodla hesabla. Hər nəticəni əvvəlcə əl ilə hesabla, sonra kodun cavabı ilə müqayisə et.
+
+=== c18s8
+@qısa
+Obyekt “açar: dəyər” cütlərindən ibarətdir; sahələrə nöqtə ilə müraciət olunur (`user.name`). JSON obyektin mətn formasıdır: `JSON.stringify` obyekti mətnə, `JSON.parse` mətni obyektə çevirir. API cavabları çox vaxt JSON-dur.
+@yadda
+- İç-içə sahələr: `user.address.city`.
+- `?.` olmayan sahədə xəta əvəzinə `undefined` qaytarır.
+- İki obyekt `===` ilə yox, məzmunca müqayisə olunur.
+@dərin
+### Optional chaining (?.)
+```javascript
+const user = { name: 'Aysel' };
+user.address.city;    // TypeError: Cannot read properties of undefined (reading 'city')
+user.address?.city;   // undefined — xəta yoxdur
+```
+API cavabında gözlənilən sahə gəlməyəndə səhifə “ağ ekran” verirsə, səbəb çox vaxt belə TypeError-dur. Test ideyası: cavabdan məcburi olmayan sahəni çıxar və UI-nin davranışına bax.
+
+### Destructuring — sahələri tez çıxarmaq
+```javascript
+const { name, email } = user;   // const name = user.name; const email = user.email;
+```
+Playwright-dakı `async ({ page }) =>` yazılışı məhz budur: test obyektindən `page` sahəsi çıxarılır.
+
+### Obyektlərin müqayisəsi
+```javascript
+const a = { x: 1 };
+const b = { x: 1 };
+a === b;                                   // false — iki ayrı obyektdir
+JSON.stringify(a) === JSON.stringify(b);   // true — sadə hallarda işləyir
+```
+`===` obyektlərin məzmununu yox, “eyni obyekt olub-olmadığını” yoxlayır. JSON müqayisəsi isə açarların sırası fərqli olanda `false` verə bilər. Test alətlərində bunun üçün xüsusi yoxlama var: Playwright-da `expect(obj).toEqual(...)`.
+
+### JSON-un qaydaları
+- Açarlar və mətnlər yalnız qoşa dırnaqla yazılır: `{"name": "Aysel"}`.
+- `undefined` və funksiyalar `JSON.stringify`-da itir, tarix isə mətnə çevrilir.
+- Səhv JSON `JSON.parse`-da SyntaxError verir — `try/catch` ilə tutulur.
+`JSON.stringify(obj, null, 2)` JSON-u girintilərlə, oxunaqlı formatda çap edir.
+
+### Tipik yanlış anlama
+“JSON və JavaScript obyekti eyni şeydir.” JSON — qaydaları daha sərt olan mətndir, obyekt isə yaddaşdakı məlumatdır. Postman-da `pm.response.json()` mətni obyektə çevirir — yalnız bundan sonra `data.name` yazmaq olur.
+@nümunə
+**Tapşırıq.** API-dən belə JSON mətni gəlib: `{"id": 15, "name": "Leyla", "address": {"city": "Gəncə"}, "roles": ["customer", "beta"]}`. Onu obyektə çevir, şəhəri və rolların sayını çap et, “admin” rolunun olmadığını yoxla və telefon sahəsini təhlükəsiz oxu.
+@addımlar
+1. **Çevir:** mətni `text` dəyişəninə yaz və `const data = JSON.parse(text);`
+2. **İç-içə sahə:** `data.address.city` → `'Gəncə'`.
+3. **Massiv sahəsi:** `data.roles.length` → `2`; `data.roles.includes('admin')` → `false`.
+4. **Olmayan sahə:** `data.phone?.number` → `undefined`, xəta yoxdur; `?.` olmasaydı, `data.phone.number` TypeError verərdi.
+5. **Geri çevir:** `JSON.stringify(data, null, 2)` — oxunaqlı JSON; bug report-a əlavə etmək üçün rahatdır.
+@növbən
+Bu JSON mətnində iki qayda pozulub. Mətni tərs dırnaqlar (backtick) içində `JSON.parse`-a ver, hansı xəta mesajını aldığını yaz, iki problemi tap və düzəlt. Sonra səhv JSON-u `try/catch` ilə təhlükəsiz emal edən kod yaz.
+
+```text
+{"id": 7, "name": 'Termos', "price": 19.9,}
+```
+
+=== c18s9
+@qısa
+Şəbəkə və brauzer əməliyyatları vaxt aparır, JavaScript onları asinxron icra edir və nəticə üçün “vəd” (Promise) qaytarır. `await` nəticə gələnə qədər gözləyir, `async` isə funksiyanın içində gözləmə olduğunu bildirir.
+@yadda
+- Promise üç vəziyyətdə olur: gözləmədə, uğurlu, uğursuz.
+- `await`-siz kod nəticəni gözləmədən irəli qaçır.
+- Xətanı `try/catch` ilə tut; `fetch` 404-də xəta vermir — statusu yoxla.
+@dərin
+### await-i unutmaq nə edir?
+```javascript
+async function getUser() {
+  const response = fetch('https://jsonplaceholder.typicode.com/users/1');   // await yoxdur!
+  console.log(response);   // Promise { <pending> }
+}
+```
+Dəyər əvəzinə “hələ yerinə yetirilməmiş vəd” alınır. Playwright-da `await`-siz `click()` klikin bitməsini gözləmir — növbəti yoxlama vaxtından əvvəl işləyir və test təsadüfi düşür.
+
+### Xətaların tutulması
+```javascript
+async function getUser(id) {
+  try {
+    const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
+    if (!response.ok) {
+      console.log('Status:', response.status);   // məsələn, 404 — fetch bunu xəta saymır!
+      return null;
+    }
+    return await response.json();
+  } catch (error) {
+    console.log('Şəbəkə xətası:', error.message);   // məsələn, internet yoxdur
+    return null;
+  }
+}
+```
+`fetch` yalnız şəbəkə xətasında (bağlantı yoxdur) uğursuz olur; 404 və 500 cavabları “gəlmiş cavab” sayılır. Ona görə `response.ok` (status 200–299) və ya `response.status` mütləq yoxlanır.
+
+### Paralel gözləmə
+`await Promise.all([getUser(1), getUser(2)])` iki sorğunu eyni anda göndərir və hər ikisinin cavabını gözləyir — ardıcıl iki `await`-dən daha sürətlidir.
+
+### Tipik yanlış anlama
+“Gözləmək üçün 3 saniyəlik sabit fasilə kifayətdir.” Sabit gözləmə ya vaxt itirir, ya da yavaş mühitdə çatmır — flaky testlərin əsas səbəblərindəndir. Düzgün yol şərti gözləmədir: “element görünənə qədər” (Fəsil 19).
+@nümunə
+**Tapşırıq.** Bu funksiya istifadəçinin adını çap etməlidir, amma xəta verir. Səhvləri tap, düzəlt və mövcud (1) və mövcud olmayan (999) istifadəçi üçün davranışı yoxla.
+
+```javascript
+async function showUserName(id) {
+  const response = fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
+  const user = response.json();
+  console.log(user.name);
+}
+showUserName(1);
+```
+@addımlar
+1. **Xətanı oxu:** `TypeError: response.json is not a function` — `response` cavab deyil, Promise-dir, çünki `fetch`-dən əvvəl `await` yoxdur.
+2. **Düzəliş 1:** `const response = await fetch(...)`.
+3. **Düzəliş 2:** `response.json()` da Promise qaytarır — `const user = await response.json();`.
+4. **Status yoxlaması:** `json()`-dan əvvəl əlavə et: `if (!response.ok) { console.log('İstifadəçi tapılmadı:', response.status); return; }` — 999 üçün server 404 qaytarır, `fetch` isə xəta vermir.
+5. **Nəticə:** `showUserName(1)` → `Leanne Graham`; `showUserName(999)` → `İstifadəçi tapılmadı: 404`. Status yoxlaması olmasaydı, 999 üçün `undefined` çap olunardı — cavab gövdəsi boş obyektdir.
+@növbən
+Bu kodda iki problem var: (1) çap ardıcıllığı gözlənilən kimi deyil, (2) xəta halı emal olunmur. Nəyin hansı ardıcıllıqla çap olunacağını təxmin et, sonra işə salıb yoxla və kodu `await`, `response.ok` və `try/catch` ilə düzəlt.
+
+```javascript
+async function loadPosts() {
+  const res = await fetch('https://jsonplaceholder.typicode.com/posts?userId=1');
+  const posts = await res.json();
+  console.log('Yazıların sayı:', posts.length);
+}
+loadPosts();
+console.log('Hazırdır!');
+```
+
+=== c18s10
+@qısa
+`check(description, actual, expected)` funksiyası avtomatik testin mahiyyətini göstərir: faktiki nəticəni gözlənilənlə müqayisə edir və PASS və ya FAIL yazır. Playwright-ın `expect()` funksiyası eyni işi daha güclü şəkildə görür, Node.js-in isə öz daxili test aləti var.
+@yadda
+- Test = giriş + gözlənilən nəticə + müqayisə.
+- Test adı nəyi yoxladığını aydın deməlidir.
+- `node:test` və `node:assert` — Node.js-in daxili test alətləri.
+@dərin
+### check()-i təkmilləşdirək: yekun hesabat
+```javascript
+let passed = 0;
+let failed = 0;
+
+function check(description, actual, expected) {
+  if (actual === expected) {
+    passed++;
+    console.log('PASS:', description);
+  } else {
+    failed++;
+    console.log('FAIL:', description, '| gözlənilən:', expected, '| faktiki:', actual);
+  }
+}
+
+// ... yoxlamalar ...
+console.log(`Nəticə: ${passed} keçdi, ${failed} düşdü`);
+```
+Real test alətləri də sonda belə yekun verir: “6 passed, 1 failed”.
+
+### Node.js-in daxili test aləti
+```javascript
+// yas.test.js
+const test = require('node:test');
+const assert = require('node:assert');
+
+function isValidAge(age) {
+  return Number.isInteger(age) && age >= 18 && age <= 60;
+}
+
+test('18 qəbul olunur', () => {
+  assert.strictEqual(isValidAge(18), true);
+});
+
+test('61 rədd olunur', () => {
+  assert.strictEqual(isValidAge(61), false);
+});
+```
+`node --test yas.test.js` əmri testləri işə salır və neçəsinin keçdiyini (pass) və düşdüyünü (fail) göstərir. `assert.strictEqual` `===` ilə müqayisə edir, `assert.deepStrictEqual` isə obyekt və massivləri məzmunca müqayisə edir.
+
+### Yaxşı test adı
+“Test 1” yox, “17 yaş rədd olunur”. Test düşəndə adı oxuyan hər kəs nəyin sındığını dərhal anlamalıdır.
+
+### Tipik yanlış anlama
+“Testlərin hamısı keçirsə, kod düzgündür.” Testlər yalnız yoxladığın halları təsdiqləyir. `isValidAge(NaN)` və ya `isValidAge(null)` yoxlanılmayıbsa, onlar haqqında heç nə bilmirik.
+@nümunə
+**Tapşırıq.** Muzey bileti: 7 yaşdan kiçiklər üçün pulsuz, 65 yaş və yuxarı üçün 5 AZN, qalanlar üçün 10 AZN. Proqramçının yazdığı funksiyanı `check()` ilə test et və defekt varsa, tap.
+
+```javascript
+function ticketPrice(age) {
+  if (age < 7) return 0;
+  if (age > 65) return 5;
+  return 10;
+}
+```
+@addımlar
+1. **Tələbdən sərhədləri çıxar:** 7 və 65 — test dəyərləri: 6, 7, 64, 65, 66.
+2. **Yoxlamaları yaz:** `check('6 yaş — pulsuz', ticketPrice(6), 0);` `check('7 yaş — 10 AZN', ticketPrice(7), 10);` `check('64 yaş — 10 AZN', ticketPrice(64), 10);` `check('65 yaş — 5 AZN', ticketPrice(65), 5);` `check('66 yaş — 5 AZN', ticketPrice(66), 5);`
+3. **İşə sal:** `FAIL: 65 yaş — 5 AZN | gözlənilən: 5 | faktiki: 10`; yekun: 4 keçdi, 1 düşdü.
+4. **Səbəb və düzəliş:** kodda `age > 65` yazılıb, tələb isə “65 və yuxarı” deyir → `age >= 65`. Yenidən işə sal: 5 keçdi, 0 düşdü.
+5. **Açıq suallar:** `ticketPrice(-1)` → `0`, `ticketPrice('abc')` → `10`. Funksiya belə girişlərdə xəta qaytarmalıdırmı? Tələb sualı kimi qeyd et.
+@növbən
+Tələb: istifadəçi adı 3–15 simvol olmalı və boşluq olmamalıdır. Bu funksiyanı `check()` ilə test et: BVA dəyərləri (2, 3, 15, 16 simvol) və boşluqlu ad üçün yoxlamalar yaz, düşən testi tap, defekti düzəlt və yekun nəticəni yaz. Bonus: emoji ilə yazılmış 15 simvollu ad üçün nə baş verir?
+
+```javascript
+function isValidUsername(name) {
+  return name.length > 3 && name.length <= 15 && !name.includes(' ');
+}
+```

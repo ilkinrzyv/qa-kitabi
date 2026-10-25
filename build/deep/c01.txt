@@ -1,0 +1,163 @@
+=== c1s1
+@qısa
+Test — proqramın gözlənildiyi kimi işlədiyini yoxlamaq və problemləri tapmaqdır. Tester iki sual verir: məhsulu tələbə uyğun qururuqmu (verification) və bu, istifadəçiyə həqiqətən lazım olan məhsuldurmu (validation).
+@yadda
+- Test proqramı yoxlayıb problemləri tapmaq prosesidir.
+- Verification — “tələbə uyğundurmu?”, validation — “istifadəçiyə lazımdırmı?”.
+- Məhsul tələbə tam uyğun ola bilər, amma yenə də istifadəçiyə yaramaya bilər.
+@dərin
+### Testin məqsədləri
+Test yalnız “baq tapmaq” deyil. ISTQB testin bir neçə məqsədini sadalayır: defektləri tapmaq, tələblərin yerinə yetirildiyini yoxlamaq, riskləri azaltmaq, məhsula inam yaratmaq və komandaya qərar üçün məlumat vermək — məsələn, “relizə hazırıqmı?” sualına cavab.
+
+### Test oracle — “düzgün” nəyə görə bilinir?
+Tester faktiki nəticəni nə ilə müqayisə edir? Bu mənbəyə **test oracle** deyilir: tələb sənədi, dizayn maketi, köhnə versiyanın davranışı, oxşar məhsul, sağlam məntiq. Oracle yoxdursa, “bu düzgündürmü?” sualına cavab vermək olmur. Ona görə yaxşı tester ilk növbədə mənbəni soruşur: “Bunu haradan bilək?”
+
+### Verification və validation praktikada
+Verification çox vaxt sənədə qarşı aparılır: review, test case-lər, avtomatik yoxlamalar. Validation real istifadəçinin baxışını tələb edir: UAT, beta test, istifadə rahatlığı testi. Biri “düzgün qurulub”, digəri “düzgün şey qurulub” deməkdir — ikisi də lazımdır.
+
+### Tipik yanlış anlama
+“Test kod hazır olandan sonra başlayır.” Əslində tələbləri oxumaq və sual vermək də testdir — buna statik test deyilir (Fəsil 7).
+@nümunə
+**Tapşırıq.** Tələbdə yazılıb: “Taksi tətbiqində sərnişin sifarişi 5 dəqiqə ərzində ödənişsiz ləğv edə bilər.” Proqram buna tam uyğundur. Amma sürücülər şikayət edir: maşın 2 dəqiqəyə gəlir, sərnişin isə qapının ağzında sifarişi pulsuz ləğv edir. Verification və validation nəticəsini müəyyən et.
+@addımlar
+1. **Verification:** tələb “5 dəqiqə, ödənişsiz” deyir, proqram da belə işləyir. Verification keçib.
+2. **Validation:** real istifadədə qayda sürücülərə zərər verir — məhsul biznesin real ehtiyacını ödəmir. Validation uğursuzdur.
+3. **Nəticə:** problem kodda yox, tələbin özündədir. Tester bunu tələb mərhələsində sual verməklə tuta bilərdi: “Maşın artıq gəlibsə, ləğv yenə də ödənişsizdir?”
+@növbən
+Onlayn mağazada tələb belədir: “Məhsulu səbətə əlavə edəndə səhifə yenilənir.” Proqram belə edir, amma istifadəçilər hər dəfə səhifənin ən yuxarıya qaçmasından narazıdır. Verification və validation nəticəsini yaz və tester-in burada nə edə biləcəyini izah et.
+
+=== c1s2
+@qısa
+QA prosesə baxır və problemin qarşısını almağa çalışır, QC hazır məhsulu yoxlayıb problemi aşkar edir, testing isə konkret yoxlama hərəkətləridir. Testing QC-nin, QC isə QA-nın içindədir.
+@yadda
+- QA — proses və qarşısını almaq, QC — məhsul və aşkar etmək.
+- Testing — QC-nin konkret hərəkətləri: yoxla, müqayisə et, qeyd et.
+- Yaxşı QA mütəxəssisi baq tapmaqla yanaşı prosesi də yaxşılaşdırır.
+@dərin
+### Niyə üç ayrı söz var?
+Keyfiyyət iki yolla əldə olunur: səhvin baş verməsinin qarşısını almaq və baş vermiş səhvi tutmaq. QA birinci yolun, QC ikinci yolun adıdır. Fabrikdə QA — avadanlığın təmizlənmə qaydası, QC — konveyerin sonunda məhsulun yoxlanmasıdır.
+
+### QA fəaliyyətlərinə misallar
+- Kod yazılmazdan əvvəl tələblərin birgə nəzərdən keçirilməsi.
+- Code review qaydası: heç bir kod ikinci baxışsız birləşdirilmir.
+- Definition of Done, test standartları, şablonlar.
+- Retrospektivdə “bu baq niyə buraxıldı?” sualına cavab axtarmaq (root cause analysis).
+
+### QC fəaliyyətlərinə misallar
+Test icrası, reliz öncəsi yoxlama, bug report yazmaq, retest. Bunlar artıq yaranmış məhsula baxır.
+
+### Vəzifə adları qarışıqdır
+Şirkətlərdə “QA Engineer”, “Test Engineer”, “QC Specialist” adları çox vaxt eyni işi bildirir. Müsahibədə fərqi izah edə bilmək vacibdir, amma iş elanında ada yox, vəzifələrin siyahısına bax.
+
+### Tipik yanlış anlama
+“QA — tester-in işidir.” Əslində keyfiyyət bütün komandanın məsuliyyətidir: proqramçı unit test yazır, analitik aydın tələb yazır, tester isə riskləri görünən edir.
+@nümunə
+**Tapşırıq.** Bank tətbiqi komandasında bu üç fəaliyyəti QA, QC və ya testing kimi qruplaşdır: (a) hər yeni funksiya üçün tələblərin tester ilə birgə oxunması qaydası; (b) reliz öncəsi köçürmə modulunun tam yoxlanması; (c) köçürmə formasına 0,00 AZN yazıb nəticəyə baxmaq.
+@addımlar
+1. **(a)** problemin qarşısını almaq üçün qurulmuş prosesdir — **QA**.
+2. **(b)** hazır məhsulun standarta uyğunluğunu yoxlayır — **QC**.
+3. **(c)** konkret bir yoxlama hərəkətidir — **testing** (QC-nin bir hissəsi).
+4. **Qeyd:** (c) testi tez-tez defekt tapırsa, QA-nın işi “niyə?” sualını verib prosesi dəyişməkdir — məsələn, tələbə “minimum məbləğ” qaydası əlavə etmək.
+@növbən
+Restoran əvəzinə avtomobil servisini götür. QA, QC və testing üçün bir misal yaz, sonra bir testing nəticəsinin prosesi (QA-nı) necə dəyişə biləcəyini göstər.
+
+=== c1s3
+@qısa
+İnsan səhv edir (error), bu səhv kodda və ya sənəddə iz qoyur (defect), həmin hissə işə düşəndə istifadəçi yanlış davranış görür (failure). Hər defekt nasazlığa çevrilmir, hər nasazlığın səbəbi də defekt deyil.
+@yadda
+- Zəncir: error → defect → failure.
+- Defekt həm kodda, həm sənəddə ola bilər.
+- Nasazlığı mühit də yarada bilər: dolu disk, kəsilən internet, yanlış konfiqurasiya.
+@dərin
+### Zəncirin hər halqasında nə edirik?
+- **Error** — insanın yanlışlığıdır, onu təlim, review və aydın tələblə azaldırıq.
+- **Defect** — onu test və review ilə tapırıq.
+- **Failure** — istifadəçi gördüyündə artıq gecdir; monitorinq və tez düzəliş lazımdır.
+
+### Root cause — kök səbəb
+Defekt düzəldiləndə yaxşı komanda soruşur: “Bu niyə yarandı?” Səbəb tələsik yazılmış tələb, unudulmuş sərhəd, yeni proqramçının bilmədiyi qayda ola bilər. Kök səbəbi aradan qaldırmaq gələcək eyni tipli defektlərin qarşısını alır — bu, QA-nın işidir.
+
+### Yalançı nəticələr (false positive / false negative)
+- **False positive** — test “defekt var” deyir, amma əslində yoxdur: məsələn, test datası səhvdir və ya mühit qırıqdır.
+- **False negative** — defekt var, amma test onu tutmur: zəif yoxlama, səhv gözlənilən nəticə.
+
+İkisi də təhlükəlidir: birincisi vaxt itirir, ikincisi defekti istifadəçiyə ötürür.
+
+### Tipik yanlış anlama
+“Baq = failure.” Tester ekranda failure görür, bug report-da isə əslində defekti təsvir edir: “harada, hansı şərtdə, nə səhv işləyir”. Kök səbəbi tapmaq çox vaxt proqramçının işidir.
+@nümunə
+**Tapşırıq.** İnternet-mağazada ödəniş edən müştəri bəzən “Sifarişiniz qəbul olundu” əvəzinə ağ səhifə görür. Araşdırma göstərir ki, ödəniş servisi 10 saniyədən gec cavab verəndə proqram gözləmədən səhifəni açır. Kod yazılarkən tələbdə “gecikmə halında nə etməli” yazılmamışdı. Error, defect və failure-ı tap.
+@addımlar
+1. **Error:** tələbi yazan gecikmə halını düşünməyib, proqramçı da soruşmayıb.
+2. **Defect:** kodda gözləmə və xəta emalı yoxdur; tələb sənədində də boşluq var.
+3. **Failure:** müştəri ağ səhifə görür və ödənişin keçib-keçmədiyini bilmir.
+4. **Kök səbəbin həlli:** tələblərə “xarici servis gec cavab verəndə” bəndi əlavə etmək — gələcəkdə oxşar defektlərin qarşısını alır.
+@növbən
+Mobil bankda istifadəçi kartını bloklayır, amma tətbiq hələ də “Aktiv” göstərir; ekranı yeniləyəndə düzəlir. Error, defect və failure üçün ehtimal olunan variantları yaz və bunun false positive olmadığını necə yoxlayacağını izah et.
+
+=== c1s4
+@qısa
+Test pula, reputasiyaya və bəzən insan həyatına qənaət edir. Defekt nə qədər gec tapılsa, düzəlişi o qədər baha olur: tələbdə bir cümlə dəqiqələrə, canlı sistemdə isə itirilmiş pula və müştəriyə başa gəlir.
+@yadda
+- Gec tapılan defekt daha baha düzəlir.
+- Test riskləri azaldır və komandaya qərar üçün məlumat verir.
+- Kritik sahələrdə (tibb, aviasiya, maliyyə) səhvin qiyməti çox yüksəkdir.
+@dərin
+### Niyə gec tapılan defekt bahadır?
+Tələbdəki səhv kodda, testdə, sənəddə və istifadəçinin datasında çoxalır. Canlı sistemdə tapılanda bunların hamısını düzəltmək lazım gəlir: təcili reliz, müştəri dəstəyi, kompensasiya, bəzən qanuni cərimə.
+
+### Daha iki məşhur hadisə
+- **Mars Climate Orbiter (1999):** bir komanda impulsu ingilis vahidləri ilə, digəri metrik vahidlərlə hesablayırdı. Kosmik aparat orbitə düzgün daxil ola bilmədi və itirildi. Bu, klassik inteqrasiya defektidir (Fəsil 5).
+- **Therac-25 (1985–1987):** radioterapiya aparatının proqramında yarış vəziyyəti (race condition) xəstələrə həddən artıq dozanın verilməsinə səbəb oldu. Bu hadisə tibbi proqramlarda ciddi test standartlarının yaranmasına təsir etdi.
+
+### Test “keyfiyyət yaratmır”
+Test keyfiyyəti ölçür və problemləri göstərir. Keyfiyyəti komanda yaradır: aydın tələb, yaxşı kod, düzəlişlər. Tester-in dəyəri riskləri vaxtında və aydın göstərməsindədir.
+
+### Tipik yanlış anlama
+“Vaxt az olanda testi qısaltmaq olar.” Testi qısaltmaq riski yox etmir, sadəcə görünməz edir. Düzgün yanaşma — risklərə görə prioritet vermək (Prinsip 2) və qalan riski komandaya açıq demək.
+@nümunə
+**Tapşırıq.** Kommunal ödəniş tətbiqində “ödəniş iki dəfə çıxılır” defekti var. Onu (a) tələb mərhələsində, (b) test mərhələsində, (c) canlı sistemdə tapmağın nəticələrini müqayisə et.
+@addımlar
+1. **(a) Tələbdə:** tester soruşur: “İstifadəçi düyməni iki dəfə bassa nə olur?” Tələbə bir cümlə əlavə olunur — xərc bir neçə dəqiqədir.
+2. **(b) Testdə:** tester baqı tapır, proqramçı kodu düzəldir, retest və regression aparılır — xərc bir-iki gündür.
+3. **(c) Canlıda:** minlərlə müştəridən pul iki dəfə çıxılıb: geri qaytarma, zənglər, şikayətlər, mediada xəbər — xərc həftələr və reputasiyadır.
+4. **Nəticə:** eyni defektin qiyməti mərhələdən-mərhələyə kəskin artır — buna görə test erkən başlamalıdır.
+@növbən
+Dövlət xidmətləri portalında “ərizə göndərildi” mesajı çıxır, amma ərizə bazaya yazılmır. Bu defektin canlı sistemdə tapılmasının hansı nəticələri ola bilər? Ən azı 4 nəticə yaz və onların hansını test vaxtında qarşısını almaq olardı, izah et.
+
+=== c1s5
+@qısa
+Tester tələbləri təhlil edir, test case yazır, testləri icra edir, defektləri bug report kimi qeyd edir və düzəlişləri yoxlayır. Onun əsas bacarığı “bu necə sına bilər?” sualını sistemli şəkildə verməkdir.
+@yadda
+- Tester-in işi test başlamazdan əvvəl, tələblərdən başlayır.
+- Əsas sual: “Bu necə sına bilər?”
+- Faktlarla, kimisə incitmədən ünsiyyət qurmaq texniki bilik qədər vacibdir.
+@dərin
+### Tester-in düşüncə alətləri
+- **Sərhədlər:** minimum, maksimum, sıfır, boş.
+- **Ardıcıllıq:** addımları tərs etmək, yarıda dayanmaq, geri qayıtmaq.
+- **Eyni vaxtda:** iki tab, iki cihaz, düyməni iki dəfə basmaq.
+- **İstifadəçi rolu:** yeni istifadəçi, admin, qonaq, bloklanmış hesab.
+- **Mühit:** zəif internet, kiçik ekran, fərqli brauzer.
+
+Bu siyahı Fəsil 7 və 9-da sistemli texnikalara çevriləcək.
+
+### Tester-in ünsiyyət qaydaları
+Tester çox vaxt “pis xəbər” daşıyır. Ona görə: problemi faktla və sübutla göstər, şəxsə yox, məhsula fokuslan, prioritet təklif et, amma son qərarı komandaya burax. “Proqramçı səhv edib” yox, “bu ssenaridə gözlənilən X, faktiki Y” de.
+
+### Karyera xətti
+Junior tester → Middle → Senior → QA Lead və ya ixtisaslaşma: avtomatlaşdırma (SDET), performans, təhlükəsizlik, mobil, oyun testi. Hər mərhələdə texniki bacarıqla yanaşı risk görmə və ünsiyyət də böyüməlidir.
+
+### Tipik yanlış anlama
+“Yaxşı tester çox baq tapandır.” Baq sayı yox, tapılan risklərin vacibliyi, report-ların aydınlığı və problemlərin erkən görünməsi dəyərlidir.
+@nümunə
+**Tapşırıq.** Bankomat üçün tester düşüncə tərzi ilə 6 yoxlama ideyası yaz — hər biri fərqli düşüncə alətindən olsun.
+@addımlar
+1. **Sərhəd:** bankomatda olan maksimum məbləği və 1 AZN-i çıxarmağa cəhd et.
+2. **Ardıcıllıq:** PIN yazandan sonra “Ləğv et” bas — kart qaytarılırmı?
+3. **Eyni vaxtda:** pul çıxararkən telefondan eyni kartla onlayn ödəniş et — balans düzgün qalırmı?
+4. **Rol:** bloklanmış kartı daxil et — aydın mesaj çıxırmı, kart saxlanılırmı?
+5. **Mühit:** bankla əlaqə kəsiləndə əməliyyat yarıda qalırsa, pul çıxmadan balansdan silinirmi?
+6. **Vaxt:** kartı vaxtında götürməsən, bankomat onu təhlükəsiz saxlayırmı?
+@növbən
+Mobil telefondakı zəngli saat (alarm) tətbiqi üçün eyni yanaşma ilə 6 yoxlama ideyası yaz: sərhəd, ardıcıllıq, eyni vaxtda, rol və ya ayar, mühit, vaxt.

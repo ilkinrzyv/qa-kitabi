@@ -1,0 +1,360 @@
+=== c16s1
+@qısa
+Relyasion verilənlər bazası məlumatı cədvəllərdə saxlayır: sətir bir qeyd, sütun bir sahədir. Primary key hər sətri unikal tanıdır, foreign key isə başqa cədvələ istinad edərək cədvəlləri əlaqələndirir.
+@yadda
+- Cədvəl → sətir (qeyd) → sütun (sahə).
+- Primary key — unikal, foreign key — istinad.
+- SQL-in əsasları bütün populyar sistemlərdə eynidir.
+@dərin
+### Məhdudiyyətlər (constraints) — keyfiyyətin “qoruyucuları”
+- **NOT NULL:** sahə boş ola bilməz (məsələn, müştərinin adı).
+- **UNIQUE:** təkrar ola bilməz (məsələn, email).
+- **PRIMARY KEY:** unikal və boş olmayan identifikator.
+- **FOREIGN KEY:** istinad edilən qeyd mövcud olmalıdır.
+- **CHECK:** qayda (məsələn, `total >= 0`).
+Bizim məşq bazamızda `orders.customer_id` üçün FOREIGN KEY yoxdur — buna görə 107 nömrəli “yetim” sifariş yarana bildi. Tester belə boşluqları tapanda bu, həm data, həm də dizayn defektidir.
+
+### Əlaqə növləri
+- **Bir-çox (1:N):** bir müştərinin çox sifarişi — ən çox rast gəlinən.
+- **Çox-çox (N:M):** sifariş və məhsullar — aralıq cədvəl (`order_items`) ilə qurulur.
+- **Bir-bir (1:1):** istifadəçi və onun ayarları.
+
+### NoSQL nədir?
+Bəzi sistemlər məlumatı cədvəllərdə yox, sənədlərdə (MongoDB), açar-dəyər cütlərində (Redis) saxlayır. Onların sorğu dili fərqlidir, amma tester-in sualları eynidir: data düzgün saxlanıbmı, tamdırmı, ziddiyyət varmı?
+
+### Tipik yanlış anlama
+“Baza proqramçının işidir, tester-ə lazım deyil.” UI-də görünən hər şeyin “həqiqəti” bazadadır. Bazaya baxa bilən tester defektin səbəbini dəfələrlə tez tapır.
+@nümunə
+**Tapşırıq.** Kitabxana sistemi üçün cədvəlləri planla: oxucular, kitablar və kitab götürmələri. Hər cədvəlin primary key-ini, foreign key-lərini və 2 məhdudiyyətini yaz.
+@addımlar
+1. **readers:** `id` (PK), `name` (NOT NULL), `email` (UNIQUE).
+2. **books:** `id` (PK), `title` (NOT NULL), `isbn` (UNIQUE).
+3. **loans:** `id` (PK), `reader_id` (FK → readers.id), `book_id` (FK → books.id), `taken_at` (NOT NULL), `returned_at` (boş ola bilər — kitab hələ qaytarılmayıb).
+4. **Əlaqələr:** oxucu — götürmələr 1:N; kitab — götürmələr 1:N; oxucu ilə kitab arasında N:M əlaqə `loans` vasitəsilə qurulur.
+5. **Test ideyası:** mövcud olmayan oxucu ilə götürmə yaratmağa cəhd — FK bunu rədd etməlidir.
+@növbən
+Yemək çatdırılması sistemi üçün 3 cədvəl planla (müştərilər, restoranlar, sifarişlər): primary key-lər, foreign key-lər, hər cədvəldə 2 məhdudiyyət və bir FK ilə bağlı test ideyası.
+
+=== c16s2
+@qısa
+Tester SQL-i UI-də edilən əməliyyatın bazaya düzgün yazıldığını yoxlamaq, test datası tapmaq, defektin səbəbini araşdırmaq və data keyfiyyətini yoxlamaq üçün işlədir. Çox vaxt yalnız oxumaq icazəsi olur.
+@yadda
+- UI ↔ baza müqayisəsi — grey box testin əsasıdır.
+- Test datasını SQL ilə tapmaq saatlar qənaət edir.
+- Canlı bazada yalnız icazə ilə və yalnız oxumaq.
+@dərin
+### Tipik tester sorğuları
+- “Statusu `new` olan və 50 AZN-dən baha bir sifariş tap” — test datası.
+- “Bu istifadəçinin son sifarişini göstər” — UI ilə müqayisə.
+- “Eyni email ilə neçə hesab var?” — dublikat yoxlaması.
+- “Ödənişi alınmış, amma statusu `new` qalan sifarişlər” — məntiqi uyğunsuzluq.
+
+### Hansı bazaya qoşulmalı?
+Adətən test mühitinin bazasına; çox vaxt yalnız SELECT icazəsi ilə. Bəzi komandalarda tester üçün ayrıca “read replica” (oxumaq üçün nüsxə) olur. Canlı bazaya giriş — nadir və ciddi nəzarət altında, şəxsi məlumatların qorunması qaydaları ilə.
+
+### Alətlər
+DBeaver (bir çox baza üçün pulsuz), DB Browser for SQLite, pgAdmin (PostgreSQL), MySQL Workbench. Hamısında sorğu yazmaq, nəticəni cədvəl kimi görmək və ixrac etmək olur.
+
+### Tipik yanlış anlama
+“Bazada data düzgündürsə, UI-də problem yoxdur.” Baza düzgün, ekran səhv ola bilər — və əksinə. SQL müqayisə üçün ikinci “oracle”-dır, tək həqiqət mənbəyi yox.
+@nümunə
+**Tapşırıq.** UI-də Aysel Məmmədovanın profilində “Sifarişlər: 2, cəmi 165,50 AZN” yazılıb. Bunu məşq bazası ilə yoxlamaq üçün sorğu yaz və nəticəni şərh et.
+@addımlar
+1. **Lazım olan data:** Ayselin id-si customers-də, sifarişləri orders-də.
+2. **Sorğu:** `SELECT COUNT(*) AS cnt, SUM(o.total) AS total FROM orders o JOIN customers c ON c.id = o.customer_id WHERE c.email = 'aysel@example.com';`
+3. **Nəticə:** `cnt = 2`, `total = 165.5` (45,50 + 120,00).
+4. **Müqayisə:** UI ilə uyğundur — test keçdi. Fərq olsaydı, bug report-a hər iki nəticəni əlavə edərdin.
+5. **Qeyd:** adla yox, email ilə filtr etdik — adlar təkrarlana bilər, email unikaldır.
+@növbən
+UI-də “Bakıdan olan müştərilərin sayı: 3” göstərilir. Məşq bazasında bunu yoxlayan sorğunu yaz, nəticəni tap və UI ilə uyğun olub-olmadığını izah et.
+
+=== c16s3
+@qısa
+Məşq üçün SQLite istifadə edirik: server tələb etmir. DB Browser for SQLite və ya onlayn redaktorda iki cədvəl yaradılır — 5 müştəri və 7 sifariş. Bazada qəsdən bir data defekti var: 107 nömrəli sifarişin müştərisi yoxdur.
+@yadda
+- CREATE TABLE — cədvəl yaradır, INSERT — data əlavə edir.
+- Skripti təkrar işə salmaq üçün əvvəlcə köhnə cədvəlləri sil.
+- Bazada qəsdən qoyulmuş defektlər məşqin bir hissəsidir.
+@dərin
+### Skripti “təkrar işə salına bilən” etmək
+Eyni skripti ikinci dəfə işə salsan, “cədvəl artıq var” xətası alacaqsan. Həll — əvvəldə:
+```sql
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS customers;
+```
+Bu, bazanı hər dəfə təmiz vəziyyətə qaytarır — test datasının “sıfırlanması” anlayışının sadə forması.
+
+### Məlumat tipləri
+SQLite-da əsas tiplər: INTEGER (tam ədəd), REAL (kəsr ədəd), TEXT (mətn), BLOB (fayl). Tarixləri TEXT kimi “YYYY-MM-DD” formatında saxlamaq sıralamanı və müqayisəni düzgün edir — fəslin sonundakı həll olunmuş nümunədə (Leylanın ən son sifarişi) məhz buna görə tarixə görə sıralamaq olur.
+
+### Pul üçün REAL-ın riski
+REAL kəsr ədədləri ikilik sistemdə saxlayır — 0,1 + 0,2 problemi (Fəsil 18) burada da var. Real sistemlərdə pul ya DECIMAL kimi dəqiq tipdə, ya da qəpiklə tam ədəd kimi saxlanır. Məşq bazasında sadəlik üçün REAL götürmüşük — real layihədə bunu sual kimi qeyd et.
+
+### Tipik yanlış anlama
+“Məşq bazası real bazadan çox fərqlidir.” Ölçü fərqlidir, məntiq eynidir: real bazada da cədvəllər, açarlar, “yetim” qeydlər və NULL-lar var.
+@nümunə
+**Tapşırıq.** Məşq bazasına “products” cədvəli əlavə et: id, name, price (mənfi olmasın), stock (boş olmasın). 3 məhsul daxil et və məhdudiyyəti yoxlayan neqativ INSERT yaz.
+@addımlar
+1. **Cədvəl:** `CREATE TABLE products (id INTEGER PRIMARY KEY, name TEXT NOT NULL, price REAL CHECK (price >= 0), stock INTEGER NOT NULL);`
+2. **Data:** `INSERT INTO products (id, name, price, stock) VALUES (1, 'Termos', 19.90, 15), (2, 'Çay dəsti', 45.00, 4), (3, 'Fincan', 6.50, 0);`
+3. **Yoxla:** `SELECT * FROM products;` — 3 sətir.
+4. **Neqativ test:** `INSERT INTO products (id, name, price, stock) VALUES (4, 'Səhv', -5, 1);` — CHECK məhdudiyyəti xəta verməlidir.
+5. **Nəticə:** baza qaydası mənfi qiyməti rədd edir — UI və API-də də eyni qayda olmalıdır.
+@növbən
+Məşq bazasına “reviews” cədvəli əlavə et: id, order_id, rating (1–5), comment. CHECK ilə rating məhdudiyyətini yaz, 2 düzgün və 2 neqativ INSERT hazırla, gözlənilən nəticələri qeyd et.
+
+=== c16s4
+@qısa
+SELECT bazadan məlumat oxuyur və heç nəyi dəyişmir: `SELECT *` bütün sütunları, `SELECT name, city` yalnız seçilən sütunları qaytarır. `--` ilə başlayan mətn şərhdir.
+@yadda
+- SELECT — ən təhlükəsiz əmr, data dəyişmir.
+- `*` yerinə lazım olan sütunları yaz.
+- AS ilə sütuna ləqəb, DISTINCT ilə təkrarsız dəyərlər.
+@dərin
+### Hesablanmış sütunlar və ləqəblər
+```sql
+SELECT id, total, total * 1.18 AS total_with_tax
+FROM orders;
+```
+Sütunda hesablama aparmaq olar; `AS` nəticəyə oxunaqlı ad verir. Tester bunu UI-dəki hesablamaları müqayisə etmək üçün işlədir: “ekrandakı vergili məbləğ düsturla uyğundurmu?”
+
+### DISTINCT — təkrarsız dəyərlər
+```sql
+SELECT DISTINCT status FROM orders;
+```
+Nəticə: `paid`, `shipped`, `cancelled`, `new` — bazada hansı statusların istifadə olunduğunu göstərir. Tələbdə olmayan status (məsələn, `refund_pending`) görünsə, bu, sual üçün siqnaldır.
+
+### Niyə `SELECT *` riskli ola bilər?
+Böyük cədvəldə bütün sütunları çəkmək yavaşdır və həssas data (şifrə xeşləri, şəxsi məlumatlar) ekrana çıxa bilər. Lazım olan sütunları yazmaq həm sürətli, həm də təhlükəsizdir.
+
+### Tipik yanlış anlama
+“SELECT-in nəticəsi həmişə eyni sırada gəlir.” ORDER BY yazılmayıbsa, sıra zəmanətli deyil — müqayisə testlərində həmişə sıralama göstər.
+@nümunə
+**Tapşırıq.** Məşq bazasında sifarişlərin məbləğinə 5% xidmət haqqı əlavə edən hesablanmış sütun yaz və 101 nömrəli sifariş üçün nəticəni yoxla.
+@addımlar
+1. **Sorğu:** `SELECT id, total, ROUND(total * 1.05, 2) AS total_with_fee FROM orders;`
+2. **ROUND niyə lazımdır:** 45,5 × 1,05 = 47,775 — pul iki rəqəmə yuvarlaqlaşdırılmalıdır.
+3. **101 üçün nəticə:** `total = 45.5`, `total_with_fee = 47.77` — halbuki riyazi olaraq 47,775 yuxarı yuvarlaqlaşanda 47,78 alınmalı idi!
+4. **Səbəb:** REAL tipi kəsr ədədi ikilik sistemdə saxlayır və 45,5 × 1,05 əslində 47,77499999… kimi saxlanılır (16.3-dəki REAL riski). UI 47,78, baza isə 47,77 göstərirsə, bu, real “1 qəpik” defektidir. Yuvarlaqlaşdırma qaydası (yuxarı, aşağı, “bankir” qaydası) tələbdə yazılmalıdır.
+5. **Dərs:** SQL ilə müstəqil hesablama UI-nin hesablamasını yoxlamaq üçün ikinci oracle-dır — amma oracle-ın özünün də kəsr ədəd riski var.
+@növbən
+Məşq bazasında hər sifariş üçün “10% endirimli məbləğ” sütunu hesabla (ROUND ilə), sonra DISTINCT ilə müştərilərin hansı şəhərlərdən olduğunu göstər. Hər iki sorğunu və nəticəni yaz.
+
+=== c16s5
+@qısa
+WHERE sətirləri şərtə görə süzür: =, <>, >, <, AND, OR, IN, BETWEEN (sərhədlər daxil), LIKE (şablon) və IS NULL. NULL-u heç vaxt `= NULL` ilə yoxlama — `IS NULL` yaz.
+@yadda
+- BETWEEN sərhədləri daxil edir.
+- LIKE: `%` — istənilən sayda simvol, `_` — bir simvol.
+- NULL “bilinmir” deməkdir — müqayisələrdə xüsusi davranır.
+@dərin
+### NULL-un “üç qiymətli məntiqi”
+NULL ilə istənilən müqayisə nə “doğru”, nə “yalan”, “bilinmir” (UNKNOWN) qaytarır. Buna görə:
+- `WHERE email = NULL` — heç nə qaytarmır.
+- `WHERE email <> 'aysel@example.com'` — NULL emailli Nigarı **qaytarmır**, çünki NULL ilə müqayisə “bilinmir”dir.
+Düzgün: `WHERE email <> 'aysel@example.com' OR email IS NULL`. Bu, testlərdə “gözlənilən sətir niyə gəlmədi?” sualının ən çox rast gəlinən cavabıdır.
+
+### AND və OR-un sırası
+AND OR-dan əvvəl hesablanır. `WHERE status = 'paid' OR status = 'shipped' AND total > 100` əslində “paid (istənilən məbləğ) və ya (shipped və 100-dən çox)” deməkdir. Niyyətini mötərizə ilə aydın yaz: `WHERE (status = 'paid' OR status = 'shipped') AND total > 100`.
+
+### LIKE ilə incəliklər
+- `'%ova'` — “ova” ilə bitən, `'L%'` — L ilə başlayan, `'_u%'` — ikinci hərfi “u” olan.
+- SQLite-da LIKE yalnız latın hərflərində böyük-kiçik hərfi fərqləndirmir: `'ə%'` və `'Ə%'` fərqli nəticə verə bilər.
+
+### Tipik yanlış anlama
+“Şərt düzgün yazılıbsa, nəticə də düzgündür.” NULL-lar və AND/OR sırası gözlənilməz nəticə verə bilər — nəticəni həmişə məntiqlə yoxla: “bu sətir niyə gəldi, o niyə gəlmədi?”
+@nümunə
+**Tapşırıq.** Məşq bazasında “ödənilmiş və ya göndərilmiş, məbləği 50 AZN və çox olan sifarişləri” tap. Mötərizəsiz və mötərizəli variantı müqayisə et.
+@addımlar
+1. **Mötərizəsiz:** `SELECT id FROM orders WHERE status = 'paid' OR status = 'shipped' AND total >= 50;` — nəticə: 101, 102, 104, 106, 107 (paid-lər məbləğsiz gəlir, 101 — 45,50 AZN!).
+2. **Mötərizəli:** `SELECT id FROM orders WHERE (status = 'paid' OR status = 'shipped') AND total >= 50;` — nəticə: 102, 104, 106, 107.
+3. **Fərq:** 101 nömrəli sifariş (paid, 45,50) birinci sorğuya səhvən düşür.
+4. **IN ilə qısa yazılış:** `WHERE status IN ('paid', 'shipped') AND total >= 50` — eyni düzgün nəticə, daha oxunaqlı.
+5. **Dərs:** şərtlər birləşəndə mötərizə və ya IN işlət.
+@növbən
+Məşq bazasında “ləğv edilməmiş və emaili olmayan müştərilərin sifarişləri”ni tapmaq üçün sorğu yaz. NULL-un necə emal olunduğunu izah et və nəticəni yaz (JOIN lazım ola bilər).
+
+=== c16s6
+@qısa
+ORDER BY nəticəni sıralayır: ASC — artan (default), DESC — azalan. LIMIT nəticədəki sətirlərin sayını məhdudlaşdırır; OFFSET ilə səhifələmə qurulur.
+@yadda
+- ORDER BY olmadan sıra zəmanətli deyil.
+- Bir neçə sütunla sıralamaq olar: `ORDER BY city, name`.
+- LIMIT + OFFSET = səhifələmə.
+@dərin
+### Bir neçə sütunla sıralama
+```sql
+SELECT name, city FROM customers ORDER BY city ASC, name ASC;
+```
+Əvvəl şəhərə, eyni şəhər daxilində ada görə sıralanır. UI-də cədvəl sıralamasını yoxlayanda “ikinci səviyyə” sıralamanın da gözlənilən kimi olduğunu yoxla.
+
+### NULL-lar harada düşür?
+SQLite-da artan sıralamada NULL-lar əvvələ düşür; bəzi bazalarda isə sona. `ORDER BY email` nəticəsində emaili olmayan Nigar ilk sətirdə görünə bilər. UI-də “boş dəyərlər harada göstərilir?” sualı bu səbəbdən vacibdir.
+
+### Səhifələmə
+```sql
+SELECT id, total FROM orders ORDER BY id LIMIT 3 OFFSET 3;
+```
+Hər səhifədə 3 sifariş: OFFSET 0 → 101–103, OFFSET 3 → 104–106, OFFSET 6 → 107. Tester API-nin səhifələməsini bazadakı sayla müqayisə edir: elementlər təkrarlanmır və itmir?
+
+### Mətnlərin sıralanması
+Azərbaycan hərfləri ilə sıralama baza ayarlarından (collation) asılıdır. Standart ayarda “Ç”, “Ə”, “Ş” ilə başlayan adlar siyahının sonuna düşə bilər — bu, Fəsil 14-dəki sıralama testinin bazadakı səbəbidir.
+
+### Tipik yanlış anlama
+“LIMIT 1 ən yeni qeydi qaytarır.” Yalnız ORDER BY ilə birlikdə: `ORDER BY order_date DESC LIMIT 1`.
+@nümunə
+**Tapşırıq.** Məşq bazasında ən bahalı 2 sifarişi göstər, sonra sifarişləri tarixə görə 3-lük səhifələrə böl və 2-ci səhifəni göstər.
+@addımlar
+1. **Ən bahalı 2:** `SELECT id, total FROM orders ORDER BY total DESC LIMIT 2;` → 106 (200,0), 102 (120,0).
+2. **Səhifələmə qaydası:** səhifə ölçüsü 3, ikinci səhifə üçün OFFSET = (2 − 1) × 3 = 3.
+3. **2-ci səhifə:** `SELECT id, order_date FROM orders ORDER BY order_date LIMIT 3 OFFSET 3;` → 104 (2026-10-01), 105 (2026-10-05), 106 (2026-10-10).
+4. **Yoxlama:** 1-ci səhifə 101, 102, 103; 3-cü səhifə 107 — cəmi 7, təkrar yoxdur.
+5. **Dərs:** eyni tarixli qeydlər olsa, sıra qeyri-müəyyən olar — ikinci açar (`ORDER BY order_date, id`) əlavə et.
+@növbən
+Məşq bazasında müştəriləri şəhərə, sonra ada görə sırala; sonra sifarişləri məbləğə görə azalan sırada 2-lik səhifələrə böl və 3-cü səhifəni göstər. Sorğuları və nəticələri yaz.
+
+=== c16s7
+@qısa
+Aqreqat funksiyalar bir neçə sətirdən bir nəticə çıxarır: COUNT, SUM, AVG, MIN, MAX. GROUP BY sətirləri qruplaşdırır, HAVING isə qruplar üzərində filtrdir (WHERE sətirlər üzərində).
+@yadda
+- WHERE → GROUP BY → HAVING → ORDER BY.
+- COUNT(*) bütün sətirləri, COUNT(sütun) NULL olmayanları sayır.
+- SUM və AVG NULL-ları nəzərə almır.
+@dərin
+### COUNT(*) və COUNT(sütun) fərqi
+```sql
+SELECT COUNT(*), COUNT(email) FROM customers;
+```
+Nəticə: 5 və 4 — Nigarın emaili NULL olduğu üçün `COUNT(email)` onu saymır. Bu fərq “emaili olmayan müştərilərin sayı = 5 − 4 = 1” kimi data keyfiyyəti yoxlamalarında işlədilir.
+
+### Sorğunun icra sırası
+SQL yazılış sırası ilə icra olunmur. Məntiqi sıra: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT. Buna görə WHERE-də aqreqat (məsələn, `COUNT(*) > 1`) işlətmək olmaz — o, HAVING-in işidir.
+
+### Qruplaşdırmanın qaydası
+SELECT-də aqreqat olmayan hər sütun GROUP BY-da olmalıdır. Bəzi bazalar (SQLite) bu qaydanı pozan sorğuya da cavab verir, amma nəticə gözlənilməz ola bilər. Sərt bazalar (PostgreSQL) xəta qaytarır.
+
+### Tester üçün aqreqatlar
+- Hesabat ekranındakı rəqəmləri yoxlamaq: “günün satışı”, “statuslar üzrə say”.
+- Anomaliya axtarmaq: məbləği 0 olan sifarişlər, eyni gündə 100 sifariş verən müştəri.
+- Dublikatlar: `GROUP BY email HAVING COUNT(*) > 1`.
+
+### Tipik yanlış anlama
+“AVG həmişə bütün sətirlərə bölünür.” AVG NULL dəyərləri nəzərə almır — boş sahələr varsa, orta “şişə” bilər.
+@nümunə
+**Tapşırıq.** Məşq bazasında hər müştəri üçün sifariş sayını və ümumi məbləği göstər; yalnız ümumi məbləği 100 AZN-dən çox olan müştəriləri saxla, böyükdən kiçiyə sırala.
+@addımlar
+1. **Qruplaşdır:** `GROUP BY customer_id` — hər müştəri bir sətir.
+2. **Aqreqatlar:** `COUNT(*) AS orders_count, SUM(total) AS total_sum`.
+3. **Qrup filtri:** `HAVING SUM(total) > 100` — WHERE yox, çünki şərt aqreqat üzərindədir.
+4. **Sorğu:** `SELECT customer_id, COUNT(*) AS orders_count, SUM(total) AS total_sum FROM orders GROUP BY customer_id HAVING SUM(total) > 100 ORDER BY total_sum DESC;`
+5. **Nəticə:** 4 (1 sifariş, 200,0), 1 (2 sifariş, 165,5), 3 (2 sifariş, 110,0).
+@növbən
+Məşq bazasında statuslar üzrə orta sifariş məbləğini hesabla (ROUND ilə 2 rəqəm), yalnız 1-dən çox sifarişi olan statusları göstər. Sorğunu və nəticəni yaz.
+
+=== c16s8
+@qısa
+JOIN cədvəlləri əlaqəli sütun üzrə birləşdirir. INNER JOIN yalnız hər iki tərəfdə uyğunluğu olan sətirləri, LEFT JOIN isə sol cədvəlin bütün sətirlərini qaytarır — uyğunluq yoxdursa, sağ tərəf NULL olur.
+@yadda
+- INNER — kəsişmə, LEFT — sol cədvəl tam.
+- Sifarişi olmayan müştəri — LEFT JOIN + IS NULL.
+- Ləqəblər (c, o) sorğunu oxunaqlı edir.
+@dərin
+### LEFT JOIN-in tələsi: şərt ON-da, yoxsa WHERE-də?
+```sql
+-- Bütün müştərilər və onların ÖDƏNİLMİŞ sifarişləri
+SELECT c.name, o.id
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.id AND o.status = 'paid';
+```
+Şərti `ON`-a yazanda bütün müştərilər qalır (ödənilmiş sifarişi olmayanlarda NULL). Eyni şərti `WHERE o.status = 'paid'`-ə yazsan, NULL sətirlər süzülür və LEFT JOIN faktiki olaraq INNER JOIN-ə çevrilir. Bu, hesabat sorğularında ən çox rast gəlinən səhvlərdəndir.
+
+### Digər JOIN növləri
+- **RIGHT JOIN** — LEFT-in əksi (sağ cədvəl tam).
+- **FULL OUTER JOIN** — hər iki cədvəlin bütün sətirləri.
+SQLite-ın yeni versiyaları (3.39+) bunları dəstəkləyir; köhnə versiyalarda cədvəllərin yerini dəyişib LEFT JOIN yazmaq olar.
+
+### Sətirlərin “çoxalması”
+Bir müştərinin 2 sifarişi varsa, JOIN nəticəsində müştəri 2 dəfə görünür. Bu, səhv deyil — amma müştəri sayını sayanda `COUNT(DISTINCT c.id)` lazımdır. Hesabatdakı “müştəri sayı” ilə “sifariş sayı”nın qarışması tipik defektdir.
+
+### Tipik yanlış anlama
+“INNER JOIN bütün datanı göstərir.” INNER JOIN uyğunluğu olmayanları — sifarişsiz müştəriləri və müştərisiz sifarişləri — səssizcə atır. Data keyfiyyəti yoxlamasında bu, vacib məlumat itkisidir.
+@nümunə
+**Tapşırıq.** Məşq bazasında bütün müştəriləri və onların sifariş sayını göstər — sifarişi olmayanlar da 0 ilə görünsün.
+@addımlar
+1. **JOIN seçimi:** sifarişsiz müştəri də lazımdır — LEFT JOIN (customers solda).
+2. **Saymaq:** `COUNT(o.id)` — NULL-ları saymır, ona görə sifarişsiz müştəri üçün 0 verir (`COUNT(*)` isə 1 verərdi!).
+3. **Sorğu:** `SELECT c.name, COUNT(o.id) AS orders_count FROM customers c LEFT JOIN orders o ON o.customer_id = c.id GROUP BY c.id, c.name ORDER BY orders_count DESC, c.name;`
+4. **Nəticə:** Aysel Məmmədova 2, Leyla Hüseynova 2, Murad Əliyev 1, Orxan Quliyev 1, Nigar Kərimova 0.
+5. **Diqqət:** 107 nömrəli sifariş nəticədə yoxdur — onun müştərisi customers cədvəlində olmadığı üçün LEFT JOIN-in sol tərəfinə düşmür.
+@növbən
+Məşq bazasında bütün müştəriləri və onların yalnız `shipped` statuslu sifarişlərinin sayını göstər (sifarişi olmayanlar 0 ilə). Şərti ON-a yazmağın niyə vacib olduğunu izah et və nəticəni yaz.
+
+=== c16s9
+@qısa
+Data keyfiyyəti yoxlamaları: “yetim” qeydlər (müştərisi olmayan sifariş), dublikatlar, məcburi sahələrdə NULL, mümkün olmayan dəyərlər və məntiqi uyğunsuzluqlar. Boş nəticə də nəticədir — “problem yoxdur” deməkdir.
+@yadda
+- Yetim qeyd: LEFT JOIN + IS NULL.
+- Dublikat: GROUP BY + HAVING COUNT(*) > 1.
+- Məntiqi qaydaları da SQL ilə yoxla: mənfi məbləğ, ziddiyyətli status.
+@dərin
+### Data keyfiyyətinin ölçüləri
+- **Tamlıq:** məcburi sahələr doludurmu? (`WHERE email IS NULL`)
+- **Unikallıq:** təkrar qeydlər varmı?
+- **Etibarlılıq:** dəyərlər icazə verilən aralıqdadırmı? (`WHERE total < 0`)
+- **Ardıcıllıq:** əlaqəli datalar uyğundurmu? (sifarişin statusu `shipped`, amma göndərilmə tarixi yoxdur)
+- **Dəqiqlik:** data real dünyaya uyğundurmu? (bu, çox vaxt SQL-dən kənar yoxlama tələb edir)
+
+### Data miqrasiyasından sonra
+Köhnə sistemdən yeni sistemə data köçürüləndə tester müqayisə sorğuları işlədir: sətirlərin sayı, məbləğlərin cəmi, unikal müştərilərin sayı köhnə və yeni bazada eynidirmi? Bir neçə təsadüfi qeyd sahə-sahə müqayisə olunur.
+
+### Avtomatik yoxlamalar
+Bu sorğuları skript kimi saxlayıb hər gecə işə salmaq olar — boş olmayan nəticə “data defekti” xəbərdarlığıdır. Bəzi komandalarda bu yoxlamalar CI-ın bir hissəsidir.
+
+### Tipik yanlış anlama
+“Data problemi — proqram problemi deyil.” Yetim və ya ziddiyyətli data çox vaxt koddakı defektin (FK-nın yoxluğu, tranzaksiyanın yarımçıq qalması) izidir — ona görə bug report kimi yazılır.
+@nümunə
+**Tapşırıq.** Məşq bazası üçün 3 data keyfiyyəti sorğusu yaz: emaili olmayan müştərilər, mənfi və ya sıfır məbləğli sifarişlər, mövcud olmayan statuslu sifarişlər (icazəli: new, paid, shipped, cancelled).
+@addımlar
+1. **Tamlıq:** `SELECT id, name FROM customers WHERE email IS NULL OR TRIM(email) = '';` → Nigar Kərimova (5).
+2. **Etibarlılıq — məbləğ:** `SELECT id, total FROM orders WHERE total <= 0;` → boş nəticə: problem yoxdur.
+3. **Etibarlılıq — status:** `SELECT id, status FROM orders WHERE status NOT IN ('new', 'paid', 'shipped', 'cancelled') OR status IS NULL;` → boş nəticə.
+4. **NULL-a diqqət:** `NOT IN` NULL statusu tutmur — ona görə `OR status IS NULL` əlavə etdik.
+5. **Nəticə:** bir tamlıq problemi (Nigarın emaili) — tələbə görə email məcburidirsə, bug report; deyilsə, qeyd.
+@növbən
+Məşq bazası üçün 3 data keyfiyyəti sorğusu yaz: (a) eyni ad və şəhərə malik müştəri dublikatları; (b) gələcək tarixli sifarişlər; (c) ləğv edilmiş, amma ödənişi alınmış kimi görünən sifarişlər üçün yoxlama ideyası. Hər birinin nəticəsini şərh et.
+
+=== c16s10
+@qısa
+INSERT data əlavə edir, UPDATE dəyişir, DELETE silir. WHERE-siz UPDATE və DELETE bütün cədvələ təsir edir — əvvəl eyni WHERE ilə SELECT işə sal, canlı bazada heç vaxt test etmə.
+@yadda
+- Əvvəl SELECT, sonra UPDATE/DELETE.
+- Tranzaksiya (BEGIN … ROLLBACK) səhvi geri qaytarmağa imkan verir.
+- Real sistemlər çox vaxt “yumşaq silmə” işlədir.
+@dərin
+### Tranzaksiya — təhlükəsizlik kəməri
+```sql
+BEGIN TRANSACTION;
+UPDATE orders SET status = 'shipped' WHERE id = 105;
+SELECT id, status FROM orders WHERE id = 105;  -- nəticəni yoxla
+ROLLBACK;  -- hər şeyi geri qaytar (və ya COMMIT — təsdiqlə)
+```
+Tranzaksiya daxilindəki dəyişikliklər COMMIT olunana qədər “qəti” deyil. Test datasını müvəqqəti dəyişib nəticəyə baxmaq üçün əla üsuldur.
+
+### Yumşaq silmə (soft delete)
+Bir çox sistem qeydi həqiqətən silmir, `deleted_at` və ya `is_deleted` sahəsini doldurur. Tester yoxlayır: “silinmiş” qeyd UI-də, axtarışda, hesabatlarda görünmür? Amma bazada qalır və bərpa oluna bilir? Bu, tez-tez gözdən qaçan test sahəsidir.
+
+### UPDATE ilə test datası hazırlamaq
+Bəzən ssenari üçün xüsusi vəziyyət lazımdır: “müddəti bitmiş kupon”, “7 gün əvvəl yaradılmış sifariş”. UI ilə bunu yaratmaq mümkün deyil — test bazasında UPDATE ilə tarixi dəyişmək ən sürətli yoldur (komandanın icazəsi ilə).
+
+### Tipik yanlış anlama
+“DELETE-dən sonra data yoxdursa, hər şey qaydasındadır.” Əlaqəli cədvəllərə baxmaq lazımdır: müştəri silinəndə onun sifarişləri nə olur — silinir, qalır (yetim), yoxsa silmə qadağandır?
+@nümunə
+**Tapşırıq.** Test üçün 105 nömrəli sifarişin statusunu müvəqqəti `cancelled` et, nəticəni yoxla və dəyişikliyi geri qaytar.
+@addımlar
+1. **Əvvəl bax:** `SELECT id, status FROM orders WHERE id = 105;` → `new`.
+2. **Tranzaksiya başlat:** `BEGIN TRANSACTION;`
+3. **Dəyiş:** `UPDATE orders SET status = 'cancelled' WHERE id = 105;` — “1 row affected” gözlənilir; daha çox sətir dəyişibsə, dərhal ROLLBACK.
+4. **Yoxla:** `SELECT id, status FROM orders WHERE id = 105;` → `cancelled`; burada UI-də ləğv edilmiş sifarişin necə göstərildiyini test edə bilərsən.
+5. **Geri qaytar:** `ROLLBACK;` → status yenidən `new`.
+@növbən
+Məşq bazasında 103 nömrəli sifarişi silməzdən əvvəl hansı yoxlamaları edərdin? SELECT, tranzaksiya, DELETE və geri qaytarma addımlarını sorğularla yaz və hər addımda gözlənilən nəticəni qeyd et.

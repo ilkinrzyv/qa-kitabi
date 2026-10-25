@@ -1,0 +1,21 @@
+const { setup } = require('./harness');
+(async () => {
+  let { browser, page, errors } = await setup({ w: 1280, h: 900, hash: '#c20' });
+  await page.waitForTimeout(500);
+  await page.evaluate(() => document.querySelector('figure[data-d="gitareas"]').scrollIntoView({ block: 'center' }));
+  await page.waitForTimeout(200); await page.screenshot({ path: 'shots/d-c20-git.png' });
+  await page.evaluate(() => document.getElementById('c20s2').scrollIntoView());
+  await page.waitForTimeout(200); await page.screenshot({ path: 'shots/d-c20s2-top.png' });
+  console.log('desktop errors', errors); await browser.close();
+  ({ browser, page, errors } = await setup({ w: 390, h: 844, mobile: true, dark: true, hash: '#c16' }));
+  await page.waitForTimeout(500);
+  await page.evaluate(() => document.querySelector('figure[data-d="join"]').scrollIntoView({ block: 'start' }));
+  await page.waitForTimeout(200); await page.screenshot({ path: 'shots/m-c16-join-dark.png' });
+  await page.evaluate(() => { const d = document.querySelector('#c16s4 details.mini'); d.open = true; d.scrollIntoView(); });
+  await page.waitForTimeout(200); await page.screenshot({ path: 'shots/m-c16-mini-dark.png' });
+  console.log('mobile dark errors', errors); await browser.close();
+  ({ browser, page, errors } = await setup({ w: 390, h: 844, mobile: true }));
+  await page.waitForTimeout(400); await page.screenshot({ path: 'shots/m-home.png' });
+  await page.click('[data-act="settings"]'); await page.waitForTimeout(250); await page.screenshot({ path: 'shots/m-settings.png' });
+  console.log('home errors', errors); await browser.close();
+})();

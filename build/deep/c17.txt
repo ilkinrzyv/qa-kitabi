@@ -1,0 +1,263 @@
+=== c17s1
+@qısa
+Mobil tətbiqlər əsasən üç növdə olur: native (bir platforma üçün — Kotlin və ya Swift), cross-platform (bir kodla iki platforma — Flutter, React Native) və mobil veb/PWA (brauzerdə açılan, tətbiq kimi quraşdırıla bilən sayt). Növ test strategiyasını dəyişir: nəyi bir dəfə, nəyi hər platformada ayrıca yoxlayırıq.
+@yadda
+- Native — platformanın bütün imkanları, amma hər platforma üçün ayrıca kod.
+- Cross-platform — məntiq ortaqdır, platformaya xas baqlar isə yenə olur.
+- PWA — brauzer testinin bilikləri + quraşdırma və offline rejim.
+@dərin
+### Hibrid tətbiqlər
+Dördüncü, daha köhnə növ də var: hibrid tətbiq. Burada veb səhifə tətbiqin içində “WebView” adlı daxili brauzerdə açılır (Cordova, Ionic). Tester üçün əlamətlər: bəzi ekranlar “sayt kimi” davranır — uzun basanda mətn seçilir, sürüşdürmə fərqli hiss olunur, şəbəkə yavaş olanda ağ ekran görünür.
+
+### Növ testə necə təsir edir?
+- **Native:** iOS və Android versiyalarını çox vaxt ayrı komandalar yazır — eyni funksiya iki platformada fərqli davrana bilər. Hər iki platforma ayrıca və dərindən test olunur.
+- **Cross-platform:** məntiq ortaqdır, ona görə bir platformada tapılan məntiqi defekt çox güman ki, digərində də var. Amma klaviatura, icazələr, geri hərəkəti və bildirişlər kimi platformaya xas hissələr yenə ayrıca yoxlanır.
+- **PWA:** brauzer uyğunluğu (Fəsil 14) + “Ana ekrana əlavə et”, offline rejim və bildirişlər. iOS-da PWA imkanları Android-dəkindən məhduddur.
+
+### Tester bunu necə öyrənir?
+Ən sadə yol — komandadan soruşmaq. Növü bilmək test planındakı “nəyi iki dəfə, nəyi bir dəfə test edirik?” sualına cavab verir və vaxtı düzgün bölməyə kömək edir.
+
+### Tipik yanlış anlama
+“Cross-platform tətbiqi bir platformada test etmək kifayətdir.” Kod ortaq olsa da, iOS və Android-in sistem davranışı fərqlidir: geri jesti, icazə pəncərələri, klaviatura və fon rejimi.
+@nümunə
+**Tapşırıq.** Komanda bildirir: tətbiq Flutter ilə, iOS və Android üçün yazılıb. Test planı üçün “bir platformada dərindən yoxlamaq kifayətdir” və “hər platformada ayrıca yoxla” siyahılarını hazırla.
+@addımlar
+1. **Ortaq məntiq (bir platformada dərindən, digərində smoke):** qiymət hesablaması, form validasiyası, axtarış nəticələri, API ilə iş.
+2. **Platformaya xas hissələr (hər ikisində):** icazə pəncərələri (kamera, bildiriş), geri hərəkəti (Android-də geri düyməsi və jesti, iOS-da ekranın kənarından sürüşdürmə), klaviatura növləri.
+3. **Sistem inteqrasiyası (hər ikisində):** push bildirişlər, deep link, fon rejimindən qayıtma, paylaşma (share) menyusu.
+4. **Görünüş (hər ikisində):** “çentik” (notch) və təhlükəsiz zonalar, qaranlıq rejim, böyük şrift.
+5. **Qərar:** ortaq məntiqi bir platformada dərindən, digərində smoke ilə yoxlamaq vaxta qənaət edir, platforma riskləri isə nəzarətdə qalır.
+@növbən
+Komanda bildirir: tətbiqin iOS versiyası Swift-də, Android versiyası Kotlin-də, iki ayrı komanda tərəfindən yazılıb. Test planı necə dəyişir? “Bir platformada kifayətdir” siyahısı qalırmı? 4–5 bəndlə izah et.
+
+=== c17s2
+@qısa
+Mobil test veb testin üzərinə yeni risklər əlavə edir: yüzlərlə cihaz və OS versiyası, dəyişkən şəbəkə, məhdud batareya və yaddaş, zəng və bildiriş kimi kəsintilər, toxunma jestləri və mağaza qaydaları. Hamısını yoxlamaq mümkün olmadığı üçün seçim data əsasında edilir.
+@yadda
+- Bütün cihazları yoxlamaq mümkün deyil — cihaz matrisi seçilir.
+- İstehsalçı interfeysləri (Samsung, Xiaomi) davranışı dəyişə bilər.
+- Mobil istifadəçi hərəkətdədir: zəif şəbəkə və kəsinti normal haldır.
+@dərin
+### Cihaz matrisi necə seçilir?
+Cihaz matrisi — test üçün seçilmiş cihaz və OS versiyalarının siyahısıdır. Mənbələr:
+- **Analitika:** istifadəçilərin ən çox işlətdiyi modellər və OS versiyaları.
+- **Kənar nöqtələr:** dəstəklənən ən köhnə OS, ən yeni OS, kiçik ekran, planşet.
+- **Zəif cihaz:** az yaddaşlı, köhnə prosessorlu telefon — performans problemlərini ilk o göstərir.
+- **Populyar istehsalçılar:** hər birinin öz interfeysi və öz “xasiyyəti” var.
+
+### İstehsalçı fərqləri
+Android-i hər istehsalçı öz interfeysi ilə dəyişir. Məşhur nümunə: bəzi istehsalçılar batareyaya qənaət üçün fondakı tətbiqləri aqressiv bağlayır — nəticədə bildirişlər gecikir və ya ümumiyyətlə gəlmir. “Bildiriş Pixel-də gəlir, Xiaomi-də gəlmir” tipli baqlar buradan çıxır.
+
+### Mağaza qaydaları
+Google Play və App Store tətbiqi yoxlayır: məxfilik siyasəti, icazələrin əsaslandırılması, ödəniş qaydaları. Qaydaya uymayan versiya rədd edilə bilər — bu, relizi günlərlə gecikdirir. Tester bu tələbləri də reliz yoxlama siyahısına əlavə edir.
+
+### Tipik yanlış anlama
+“Mənim telefonumda işləyirsə, hamıda işləyəcək.” Sənin telefonun — bir model, bir OS versiyası, bir şəbəkə. İstifadəçilərin əksəriyyəti başqa şəraitdədir.
+@nümunə
+**Tapşırıq.** Analitikaya görə tətbiqin istifadəçiləri: Android 70%, iOS 30%. Ən populyar Android cihazları Samsung Galaxy A seriyası və Xiaomi Redmi-dir. Tətbiq Android 10+ və iOS 16+ dəstəkləyir. 6 cihazlıq test matrisi hazırla.
+@addımlar
+1. **Ən çox istifadə olunan:** Samsung Galaxy A seriyasından bir model — orta seqment, One UI interfeysi.
+2. **İkinci populyar istehsalçı:** Xiaomi Redmi — fon rejimi və bildirişlər üçün xüsusilə vacibdir.
+3. **Ən köhnə dəstəklənən Android:** Android 10-lu zəif cihaz — həm köhnə OS, həm də performans riskini əhatə edir.
+4. **Ən yeni Android:** Google Pixel — yeni OS versiyasının dəyişikliklərini ilk görmək üçün.
+5. **iOS:** köhnə versiyada saxlanılan bir iPhone (iOS 16) və son iOS-lu yeni iPhone.
+6. **Əsaslandırma:** 6 cihaz istifadəçilərin çoxunu və kənar nöqtələri (köhnə/yeni OS, zəif cihaz) əhatə edir; qalan konfiqurasiyalar emulyatorda və ya bulud fermasında yoxlanır.
+@növbən
+Yemək çatdırılması tətbiqi üçün 5 cihazlıq matris hazırla: istifadəçilərin 85%-i Android-dədir, tətbiq Android 9+ və iOS 15+ dəstəkləyir, kuryerlər isə köhnə və ucuz telefonlar işlədir. Hər cihaz seçimini əsaslandır.
+
+=== c17s3
+@qısa
+Mobil testin xüsusi sahələri: quraşdırma və yeniləmə, kəsintilər, şəbəkə, fon rejimi, orientasiya, icazələr, jestlər, klaviatura, performans, bildirişlər, görünüş və əlçatanlıq. Hər sahə “real həyatda telefonla nə baş verir?” sualından doğur.
+@yadda
+- Ən çox defekt kəsinti, şəbəkə və fon rejimindən çıxır.
+- İcazə rədd edilsə belə, tətbiq çökməməli və aydın izah verməlidir.
+- Yeniləmədən sonra istifadəçinin datası qorunmalıdır.
+@dərin
+### Vəziyyətin qorunması
+Tətbiq fona keçəndə sistem yaddaşa qənaət üçün onu istənilən vaxt bağlaya bilər. Qayıdanda istifadəçi gözləyir: doldurduğu forma, açıq ekran, səbətdəki məhsullar yerindədir. Android-də Developer options → “Don't keep activities” ayarı bu ssenarini hər dəfə yaradır — vəziyyətin qorunmasını yoxlamaq üçün əla vasitədir.
+
+### Şəbəkənin “ara” vəziyyətləri
+Şəbəkə ya var, ya yox — bu qədər sadə deyil. Ən təhlükəli an sorğunun ortasında kəsilmədir: ödəniş göndərildi, cavab gəlmədi. Tətbiq yenidən cəhd edəndə pul iki dəfə çıxıla bilərmi? Tester “Ödə”yə basıb dərhal uçuş rejimini yandırır, sonra nəticəni həm tətbiqdə, həm də sistemdə (API və ya baza) yoxlayır.
+
+### İcazələrin müasir variantları
+Müasir sistemlərdə istifadəçi “Yalnız bu dəfə” və ya “Yalnız istifadə zamanı” seçə, icazəni sonradan ayarlardan geri ala bilər. Test: tətbiq fondaykən icazəni ayarlardan söndür, sonra tətbiqə qayıt — çökmə olmamalıdır.
+
+### Əlçatanlıq ölçüləri
+Toxunma sahəsi üçün ən azı 48×48 dp (Android) və 44×44 pt (iOS) tövsiyə olunur. Ekran oxuyucu (TalkBack, VoiceOver) hər düymənin mənasını oxumalıdır: sadəcə “Düymə” yox, “Səbətə əlavə et, düymə”.
+
+### Tipik yanlış anlama
+“Kəsinti testi — sadəcə zəng etməkdir.” Kəsinti həm də bildiriş, siqnal, ekranın kilidlənməsi, başqa tətbiqə keçid və batareyanın bitməsidir.
+@nümunə
+**Tapşırıq.** Bank tətbiqinin pul köçürmə ekranı üçün 6 mobil test ideyası yaz — hər biri fərqli sahədən.
+@addımlar
+1. **Kəsinti:** məbləği yazarkən zəng gəlir; zəngdən sonra məbləğ və alıcı yerindədir, köçürmə öz-özünə göndərilmir.
+2. **Şəbəkə:** “Göndər”ə basan kimi uçuş rejimi; şəbəkə qayıdanda köçürmə ya bir dəfə icra olunub, ya da aydın xəta göstərilir — iki dəfə yox.
+3. **Fon rejimi:** ekranı 10 dəqiqə fona sal; təhlükəsizlik üçün sessiya bitibsə, yenidən giriş tələb olunur, data başqasına görünmür.
+4. **Orientasiya:** məbləğ yazılıb, ekranı çevir — dəyər itmir, düzülüş pozulmur.
+5. **Klaviatura:** məbləğ sahəsində rəqəm klaviaturası açılır, klaviatura “Göndər” düyməsini örtmür.
+6. **Əlçatanlıq:** TalkBack/VoiceOver məbləğ sahəsini və düyməni anlaşılan adla oxuyur.
+@növbən
+Qaçış tətbiqinin məşq qeydi ekranı (GPS ilə məsafəni ölçür) üçün 6 mobil test ideyası yaz — hər biri fərqli sahədən: icazələr, fon rejimi (ekran kilidlidir), şəbəkə, kəsinti, batareya və bildirişlər. Hər birinin gözlənilən nəticəsini qeyd et.
+
+=== c17s4
+@qısa
+Emulyator pulsuz və sürətlidir — çoxlu ekran və OS versiyasını tez yoxlamağa imkan verir. Real cihaz isə sensorlar, kəsintilər, performans və batareya üçün yeganə etibarlı mənbədir. Ən yaxşı strategiya ikisini birləşdirməkdir.
+@yadda
+- Emulyator — genişlik, real cihaz — dəqiqlik.
+- Performans və batareya nəticəsini yalnız real cihazda qəbul et.
+- Bulud fermaları yüzlərlə real cihaza uzaqdan çıxış verir.
+@dərin
+### Emulyator və simulyator fərqi
+- **Android emulyatoru** cihazın aparat hissəsini təqlid edir və içində real Android sistemi işləyir.
+- **iOS simulyatoru** isə iOS-un davranışını Mac-in öz prosessorunda “canlandırır” — o, iPhone deyil, iPhone kimi görünən Mac proqramıdır.
+Hər ikisində performans, batareya, kamera və bəzi sensorların nəticəsi real deyil.
+
+### Emulyatorda nələri rahat etmək olar?
+- Müxtəlif ekran ölçüləri və piksel sıxlıqları.
+- Fərqli OS versiyaları — köhnə versiyalı real cihaz tapmaq çətindir.
+- Şəbəkə sürətini və gecikməsini süni şəkildə dəyişmək.
+- GPS koordinatlarını təyin etmək: “Bakıdayam”, “Gəncədəyəm”.
+
+### Bulud cihaz fermaları
+BrowserStack, Sauce Labs, Firebase Test Lab kimi xidmətlər məlumat mərkəzindəki real cihazlara brauzer vasitəsilə çıxış verir. Ofisdə olmayan modeli yoxlamaq üçün əladır, amma zəng, SIM kart və real küçə şəbəkəsi kimi ssenarilər məhduddur.
+
+### Mobil avtomatlaşdırma
+Appium bir API ilə həm Android-i, həm də iOS-u idarə edir. Platformaların öz alətləri də var: Espresso (Android) və XCUITest (iOS) — daha sürətlidir, amma hər biri yalnız bir platforma üçündür.
+
+### Tipik yanlış anlama
+“Emulyatorda keçən test real cihazda da keçəcək.” Emulyator güclü kompüterdə işləyir — zəif telefonda yavaşlıq, qızma və çökmələr ola bilər.
+@nümunə
+**Tapşırıq.** Reliz testində bu yoxlamalar var. Hər biri üçün mühit seç — emulyator, bulud fermasındakı real cihaz və ya əldəki real cihaz: (a) 6 ekran ölçüsündə düzülüş; (b) zəng zamanı video çağırış; (c) kamera ilə QR oxuma; (d) Android 10-da login; (e) 1 saatlıq istifadədə batareya sərfi; (f) GPS ilə “yaxındakı filiallar”; (g) ofisdə olmayan Samsung modelində çökmə; (h) metroda, zəif şəbəkədə mesaj göndərmə.
+@addımlar
+1. **Emulyator:** (a) düzülüş — çoxlu ekranı tez yoxlamaq olur; (d) Android 10 — köhnə sistem şəklini (image) yükləmək kifayətdir.
+2. **Emulyator + son yoxlama:** (f) GPS — koordinatları emulyatorda təyin edib məntiqi yoxla; yekun yoxlamanı real cihazla küçədə et.
+3. **Əldəki real cihaz:** (b) zəng — real SIM və zəng lazımdır; (c) QR — real kamera; (e) batareya — emulyatorun nəticəsi etibarsızdır.
+4. **Bulud fermasında real cihaz:** (g) ofisdə olmayan model — fermadakı eyni modeldə təkrarla, loqları götür.
+5. **Mərhələli yanaşma:** (h) əvvəl emulyatorda süni zəif şəbəkə ilə məntiqi yoxla, sonra real cihazla real şəraitdə (metro, lift) təsdiqlə.
+@növbən
+Oyun studiyası mobil oyun buraxır. Bu yoxlamalar üçün mühit seç və əsaslandır: (a) 10 fərqli ekran nisbətində UI; (b) 30 dəqiqəlik oyunda cihazın qızması və FPS; (c) oyundaxili alış (in-app purchase) axını; (d) köhnə Android versiyasında quraşdırma; (e) oyun zamanı bildiriş və zəng.
+
+=== c17s5
+@qısa
+Android-in “Developer options” bölməsi tester üçün xəzinədir: toxunuşları göstərmək, element sərhədlərini görmək, animasiyaları yavaşlatmaq və USB ilə loqları almaq mümkündür. iOS-da beta versiyalar adətən TestFlight ilə paylaşılır.
+@yadda
+- Developer options: Telefon haqqında → “Build number” üzərinə 7 dəfə bas.
+- Show taps və Pointer location — jest baqları və video üçün.
+- adb logcat — çökmənin səbəbini proqramçıya çatdırır.
+@dərin
+### Developer options-da daha nələr var?
+- **Pointer location:** toxunuşun koordinatlarını və izini göstərir — sürüşdürmə baqları üçün.
+- **Show layout bounds:** elementlərin sərhədlərini çəkir — üst-üstə düşən və ekrandan çıxan elementlər dərhal görünür.
+- **Animator duration scale:** animasiyaları yavaşlat (məsələn, 5x) — sürətli keçidlərdəki vizual xətaları tutmaq üçün.
+- **Don't keep activities:** fona keçən ekranı dərhal məhv edir — vəziyyətin qorunmasını yoxlamaq üçün.
+- **Force RTL layout direction:** sağdan sola düzülüşü (ərəb dili kimi) yoxlamaq üçün.
+- **Stay awake:** şarj zamanı ekran sönmür — uzun testlərdə rahatdır.
+
+### adb ilə əsas əmrlər
+```bash
+adb devices                               # qoşulmuş cihazlar
+adb logcat -c                             # köhnə loqları təmizlə
+adb logcat > log.txt                      # loqları fayla yaz
+adb shell screenrecord /sdcard/bug.mp4    # ekran videosu (standart olaraq 3 dəqiqəyə qədər)
+adb pull /sdcard/bug.mp4                  # videonu kompüterə köçür
+```
+Çökmə loqunda “FATAL EXCEPTION” sətrini axtar — səbəb adətən onun altındakı ilk sətirlərdədir.
+
+### iOS tərəfi
+Beta versiya TestFlight ilə paylaşılır. Çökmə hesabatlarını cihazda Settings → Privacy & Security → Analytics & Improvements → Analytics Data bölməsində tapmaq olar; Mac-də isə “Console” proqramı qoşulmuş cihazın loqlarını göstərir.
+
+### Tipik yanlış anlama
+“Loqlar proqramçının işidir.” Çökmə baqına loq əlavə edən tester baqın həll olunma vaxtını dəfələrlə qısaldır.
+@nümunə
+**Tapşırıq.** Tətbiq “Profil şəkli yüklə” düyməsinə basanda çökür. Android cihazda çökmə loqunu düzgün topla və bug report-a əlavə et.
+@addımlar
+1. **Hazırlıq:** Developer options → USB debugging aktivdir; cihazı kompüterə qoş — `adb devices` cihazı göstərməlidir.
+2. **Təmiz başlanğıc:** `adb logcat -c` — köhnə loqlar yenilərinə qarışmasın.
+3. **Yazmağa başla:** `adb logcat > crash.txt` (ayrıca terminalda işləsin); ekran videosu üçün Show taps aktivdir.
+4. **Təkrarla:** Profil → “Şəkil yüklə” → qalereyadan şəkil seç → çökmə. Sonra loq yazmasını dayandır (Ctrl+C).
+5. **Səbəbi tap:** faylda “FATAL EXCEPTION” axtar; altındakı ilk sətirlər xətanın növünü və tətbiqin hansı hissəsində baş verdiyini göstərir.
+6. **Report:** crash.txt və videonu əlavə et, mətndə FATAL EXCEPTION blokunun ilk 10–15 sətrini göstər və çökmənin vaxtını (saat:dəqiqə) yaz ki, proqramçı loqda yeri tez tapsın.
+@növbən
+Tətbiq fondan qayıdanda bəzən ağ ekran göstərir (10 cəhddən 2-də). Developer options-dakı hansı ayar bu problemi daha tez təkrarlamağa kömək edər? Addımları, loq toplamağı və report-a nələri əlavə edəcəyini yaz.
+
+=== c17s6
+@qısa
+Oyun testi funksional testdən başqa gameplay və balansı, fizika və toqquşmanı, qrafika, performans (FPS), audio, save sistemi, lokalizasiya, uyğunluq və platforma tələblərini yoxlayır. Keyfiyyətin bir hissəsi subyektivdir: oyun həm də “əyləncəli” olmalıdır.
+@yadda
+- Oyunda vəziyyətlərin sayı demək olar ki, sonsuzdur — risk əsaslı seçim vacibdir.
+- Orta FPS kifayət deyil — kadr vaxtındakı sıçrayışlar (stutter) hiss olunur.
+- Softlock və hardlock irəliləyişi bloklayan ən ciddi baqlardır.
+@dərin
+### Oyun QA-nın lüğəti
+- **Hardlock:** oyun tamamilə donur, heç nə cavab vermir.
+- **Softlock:** oyun işləyir, amma oyunçu irəliləyə bilmir (qapı açılmır, personaj çuxurda ilişib qalıb).
+- **Clipping:** model başqa obyektin içindən keçir və ya görünür.
+- **Z-fighting:** iki səth üst-üstə düşüb titrəyir.
+- **OOB (out of bounds):** oyunçu xəritənin icazə verilməyən hissəsinə çıxır.
+- **Exploit:** oyunçunun qaydanı pozan üstünlük əldə etməsi, məsələn, əşyaların təkrarlanması (“dupe”).
+
+### FPS və kadr vaxtı
+60 FPS hər kadra 16,7 ms, 30 FPS isə 33,3 ms deməkdir. Orta FPS 60 olsa belə, hər 2 saniyədən bir 100 ms-lik kadr gəlirsə, oyunçu qırıqlıq (stutter) hiss edir. Ona görə performans testində orta FPS ilə yanaşı ən pis kadrlar da ölçülür (məsələn, “1% low” göstəricisi).
+
+### Xüsusi test növləri
+- **Soak test:** oyunu saatlarla işlək saxlamaq — yaddaş sızmasını üzə çıxarır.
+- **Playtest:** “əyləncəlidirmi, çətinlik düzgündürmü?” — QA testindən fərqli olaraq hiss və rəy toplanır.
+- **Compliance:** konsol platformalarının texniki tələbləri (məsələn, Sony TRC, Xbox XR).
+- **Multiplayer:** gecikmə (lag), desinxronizasiya, bağlantının kəsilməsi və yenidən qoşulma.
+
+### Tipik yanlış anlama
+“Oyun testi — oyun oynamaqdır.” Tester eyni hissəni dəfələrlə və qəsdən “səhv” oynayır: divarlara qaçır, menyuları sürətlə açıb-bağlayır, yüklənmə zamanı düymələrə basır.
+@nümunə
+**Tapşırıq.** Atıcı oyunda 3 silah var, düşmənin canı 100-dür. Hər silah üçün davamlı DPS-i (saniyədə zərər, doldurma daxil) və düşməni öldürmə vaxtını (TTK) hesabla, balans problemi olub-olmadığını qiymətləndir.
+
+| Silah | Zərər | Atəş/san | Daraq | Doldurma |
+| --- | --- | --- | --- | --- |
+| Tapança | 25 | 4 | 12 | 1,5 s |
+| Avtomat | 20 | 10 | 30 | 2,5 s |
+| Snayper | 150 | 0,8 | 5 | 3 s |
+@addımlar
+1. **Düstur:** davamlı DPS = bir daraqdakı zərər ÷ (darağı boşaltma vaxtı + doldurma vaxtı); boşaltma vaxtı ≈ daraq ÷ atəş sürəti.
+2. **Tapança:** 12 × 25 = 300 zərər; 12 ÷ 4 = 3 s + 1,5 s = 4,5 s → **≈ 66,7 DPS**. TTK: 4 atəş lazımdır → 0,75 s (atəşlər 0; 0,25; 0,5; 0,75-ci saniyələrdə).
+3. **Avtomat:** 30 × 20 = 600 zərər; 30 ÷ 10 = 3 s + 2,5 s = 5,5 s → **≈ 109,1 DPS**. TTK: 5 atəş → 0,4 s.
+4. **Snayper:** 5 × 150 = 750 zərər; 5 ÷ 0,8 = 6,25 s + 3 s = 9,25 s → **≈ 81,1 DPS**. TTK: 1 atəş → dərhal; amma qaçırsa, növbəti atəş 1,25 s sonradır.
+5. **Nəticə:** avtomat həm DPS-də, həm də TTK-da tapançanı üstələyir — tapançanın oyunda rolu görünmür (məsələn, sürətli dəyişmə və ya hərəkət sürəti üstünlüyü yoxdursa). Bunu dizaynerə data ilə balans sualı kimi göndər; qərar dizaynerindir.
+@növbən
+Rol oyununda iki qılınc var, düşmənin canı 120-dir: “Yüngül qılınc” — zərər 15, saniyədə 3 zərbə; “Ağır qılınc” — zərər 45, saniyədə 0,8 zərbə və hər 4 zərbədən sonra 2 saniyəlik yorğunluq. Hər ikisinin davamlı DPS-ini və TTK-nı hesabla. Balans haqqında dizaynerə nə yazardın?
+
+=== c17s7
+@qısa
+Oyun bug report-u adi report-un üzərinə yer (səviyyə, koordinat), video, save fayl, təkrarlanma tezliyi və build/platforma məlumatı əlavə edir. Məqsəd proqramçının baqı bir neçə dəqiqəyə öz gözü ilə görə bilməsidir.
+@yadda
+- Yer + video + save fayl = sürətli təkrarlama.
+- Tezliyi rəqəmlə yaz: “10 cəhddən 3-də”.
+- Build nömrəsi və qrafika ayarları mütləqdir.
+@dərin
+### Oyun bug report-unun şablonu
+- **Başlıq:** [Yer] + nə baş verir + nəticə: “[Səviyyə 2 — Liman] Qaçaraq qutuya tullananda personaj döşəmədən düşür”.
+- **Build və platforma:** 1.2.0 (4512), PC, Windows 11, Ultra ayarlar, FPS limiti 144.
+- **Yer:** səviyyə, koordinatlar (debug ekranından), ən yaxın checkpoint.
+- **Personajın vəziyyəti:** səviyyə, tapşırığın mərhələsi, əlindəki əşya — bir çox baq yalnız müəyyən vəziyyətdə olur.
+- **Tezlik:** 4/10.
+- **Əlavələr:** video (vaxt nişanı ilə: “0:42-də”), save fayl, loq və ya crash dump.
+
+### Debug alətləri
+QA build-lərində çox vaxt debug menyusu olur: teleport, ölməzlik (god mode), əşya yaratmaq, tapşırığı müəyyən mərhələyə keçirmək. Bunlar lazımi vəziyyətə tez çatmağa kömək edir. Amma report-da hansı debug əmrini işlətdiyini mütləq yaz — bəzən baqı debug alətinin özü yaradır.
+
+### Ciddilik sinifləri
+Bir çox studiyada baqlar siniflərlə qiymətləndirilir: A — çökmə, irəliləyişin bloklanması, save itkisi; B — ciddi funksional və ya vizual problem; C — kiçik problem; D — kosmetik qüsur və ya təklif. Komandanın öz şkalasını öyrən və ona əməl et.
+
+### Dublikatların yoxlanması
+Böyük oyun layihələrində çoxlu tester işləyir. Report yazmazdan əvvəl açar sözlərlə (yer, obyektin adı) axtarış et. Dublikat tapsan, öz videonu və tezliyini mövcud report-a əlavə et.
+
+### Tipik yanlış anlama
+“Video varsa, addımlar lazım deyil.” Video nəticəni göstərir, amma şəraiti (ayarlar, vəziyyət, ardıcıllıq) yox. Hər ikisi lazımdır.
+@nümunə
+**Tapşırıq.** Exploratory sessiyada belə problem tapdın: 2-ci səviyyədə (Liman) qaçaraq darvazanın yanındakı qutunun üstünə tullananda personaj döşəmədən keçib xəritədən düşür; 10 cəhddən 4-də təkrarlanır. Build 1.2.0 (4512), PC, Ultra, 144 FPS. Tam oyun bug report-u yaz.
+@addımlar
+1. **Başlıq:** “[Səviyyə 2 — Liman] Darvaza yanındakı qutuya qaçaraq tullananda personaj döşəmədən keçib xəritədən düşür”.
+2. **Mühit və yer:** Build 1.2.0 (4512); PC, Windows 11; Ultra ayarlar; FPS limiti 144. Koordinatlar debug ekranından (məsələn, X 1250, Y 40, Z −310); ən yaxın checkpoint — “Liman darvazası”.
+3. **Addımlar:** 1) “Liman darvazası” checkpoint-indən yüklə. 2) Darvazanın sol tərəfindəki qutuya tərəf qaç (Shift). 3) Qutunun kənarına çatanda tullan (Space).
+4. **Faktiki və gözlənilən:** personaj qutunun içindən döşəməyə keçir, xəritədən düşür və 3 saniyə sonra checkpoint-də yenidən doğulur / personaj qutunun üstündə qalmalıdır. Tezlik: qaçaraq — 4/10, yeriyərək — 0/10.
+5. **Əlavələr və qeyd:** video (0:12-də), save fayl, loq. Qeyd: 60 FPS limitində də yoxlanılmalıdır — fizika baqları çox vaxt sürətdən və FPS-dən asılı olur. Ciddilik: B — save itkisi və irəliləyiş bloku yoxdur, amma oyunçu irəliləyişinin bir hissəsini itirir.
+@növbən
+Mobil oyunda belə problem tapdın: mağazada “Al” düyməsinə çox tez iki dəfə basanda bəzən (10 cəhddən 2-də) əşya iki dəfə verilir, pul isə bir dəfə çıxılır. Tam oyun bug report-u yaz: başlıq, mühit, addımlar, faktiki/gözlənilən nəticə, tezlik, əlavələr və ciddilik sinfi (əsaslandır).

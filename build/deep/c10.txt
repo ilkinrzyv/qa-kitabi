@@ -1,0 +1,236 @@
+=== c10s1
+@qısa
+Tələb sistemin nə etməli olduğunu və ya hansı keyfiyyətə malik olmalı olduğunu təsvir edir. Biznes, istifadəçi, funksional və qeyri-funksional tələblər var; mənbələri SRS, user story, maketlər və görüş qeydləridir.
+@yadda
+- Biznes → istifadəçi → funksional: ümumidən konkretə.
+- Qeyri-funksional tələblər “necə yaxşı” sualına cavab verir.
+- Test bazası tələblərdir — onları başa düşmədən test olmaz.
+@dərin
+### Tələblərin “piramidası”
+Bir misalda: **biznes tələbi** — “onlayn sifarişləri 30% artırmaq”; **istifadəçi tələbi** — “alıcı sifarişini izləyə bilməlidir”; **funksional tələb** — “sistem hər status dəyişikliyində SMS göndərir”; **qeyri-funksional** — “SMS status dəyişəndən 1 dəqiqə ərzində çatır”. Aşağı səviyyə yuxarını həyata keçirməlidir — tester bu əlaqəni yoxlayır: “Bu funksiya biznes məqsədinə xidmət edirmi?”
+
+### Yazılmayan tələblər
+Bəzi tələblər heç vaxt yazılmır, amma hamı gözləyir: şifrə ekranda gizli görünür, “Geri” düyməsi işləyir, sayt telefonda açılır. Onlara **gizli** və ya **ümumi qəbul olunmuş** tələblər deyilir. Tester onları da yoxlayır və vacib olanları yazılı tələbə çevirməyi təklif edir.
+
+### Tələblərin dəyişməsi
+Tələblər dəyişir — bu normaldır. Vacib olan dəyişikliyin izlənməsidir: kim, nə vaxt, niyə dəyişdi və hansı test case-lər yenilənməlidir. RTM (10.7) burada kömək edir.
+
+### Tipik yanlış anlama
+“Tələb yalnız SRS sənədidir.” Agile komandada tələb user story, acceptance criteria, maket, Slack mesajı və ya görüşdəki razılaşma ola bilər. Hər birini yazılı mənbəyə bağlamaq tester-in qoruyucu vərdişidir.
+@nümunə
+**Tapşırıq.** Bu cümlələrin hansı tələb növü olduğunu müəyyən et: (a) “Müştəri məmnuniyyətini artırmaq”; (b) “Alıcı məhsulu sevimlilərə əlavə edə bilməlidir”; (c) “Sevimlilərdə maksimum 100 məhsul saxlanır”; (d) “Sevimlilər siyahısı 1 saniyədən tez açılır”; (e) “Şifrə sahəsi simvolları gizli göstərir” (heç yerdə yazılmayıb).
+@addımlar
+1. **(a) Biznes tələbi** — şirkətin məqsədi, ölçüsü dəqiqləşdirilməlidir.
+2. **(b) İstifadəçi tələbi** — istifadəçinin edə bilməli olduğu iş.
+3. **(c) Funksional tələb** — sistemin konkret qaydası (BVA üçün sərhəd: 100, 101).
+4. **(d) Qeyri-funksional tələb** — performans; ölçmə şərtləri (şəbəkə, cihaz) dəqiqləşdirilməlidir.
+5. **(e) Gizli (ümumi qəbul olunmuş) tələb** — test olunur və yazılı tələbə çevrilməsi təklif edilir.
+@növbən
+Taksi tətbiqi üçün hər növdən bir tələb yaz: biznes, istifadəçi, funksional, qeyri-funksional və bir gizli tələb. Sonra funksional tələb üçün bir test ideyası əlavə et.
+
+=== c10s2
+@qısa
+Yaxşı tələb birmənalı, tam, testlənə bilən, ziddiyyətsiz və həyata keçirilə biləndir. “Tez”, “rahat”, “müasir”, “bütün”, “heç vaxt” kimi sözlər qeyri-müəyyənlik siqnalıdır — gördükdə sual yaz.
+@yadda
+- Testlənə bilən tələbdə ölçü var: saniyə, simvol, faiz.
+- Qeyri-müəyyən sözlər = sual siqnalı.
+- Pis tələbi düzəltmək üçün konkret təklif ver.
+@dərin
+### “Testlənə bilən” nə deməkdir?
+Tələb testlənə biləndirsə, onun üçün dəqiq gözlənilən nəticə yazmaq olur. “Sistem tez işləməlidir” üçün gözlənilən nəticə yazmaq mümkün deyil. “Axtarış nəticələri 4G şəbəkədə 2 saniyədən tez görünür” üçün isə mümkündür — ölçmə üsulu ilə birlikdə.
+
+### Tələbin digər keyfiyyətləri
+- **Atomarlıq:** bir tələbdə bir şərt. “Sistem SMS və e-poçt göndərir və hesabat yaradır” — üç tələbdir.
+- **İzlənə bilənlik:** hər tələbin ID-si və mənbəyi var.
+- **Prioritet:** hansı tələb vacibdir (məsələn, MoSCoW: Must, Should, Could, Won't).
+- **Ardıcıl terminologiya:** eyni şey bir yerdə “sifariş”, başqa yerdə “order”, üçüncü yerdə “alış” adlanmamalıdır.
+
+### Qeyri-müəyyənlik növləri
+- **Leksik:** söz iki mənalıdır (“hesab” — account, yoxsa invoice?).
+- **Sintaktik:** cümlə iki cür oxunur (“admin və ya menecer təsdiqlədikdən sonra göndərilir” — hər ikisi, yoxsa biri?).
+- **Natamamlıq:** xəta halı, sərhəd, default dəyər yazılmayıb.
+
+### Tipik yanlış anlama
+“Tələbi düzəltmək tester-in işi deyil.” Yazmaq analitikin işidir, amma problemi tapmaq və konkret düzəliş təklif etmək tester-in ən dəyərli töhfələrindəndir.
+@nümunə
+**Tapşırıq.** Bu tələbi təhlil et və yenidən yaz: “Sistem bütün istifadəçilərə rahat və tez işləyən axtarış təqdim etməlidir, nəticələr düzgün göstərilməlidir.”
+@addımlar
+1. **Qeyri-müəyyən sözlər:** “bütün”, “rahat”, “tez”, “düzgün”.
+2. **Suallar:** “Tez” — neçə saniyə, hansı şəbəkədə? “Düzgün” — hansı sıralama qaydası? “Rahat” — avtotamamlama, səhv yazılışa dözüm? “Bütün” — qonaqlar da daxil?
+3. **Atomlara böl:** cavab müddəti, sıralama, avtotamamlama, səhv yazılış — hər biri ayrıca tələb.
+4. **Yenidən yaz (təklif):** “Axtarış nəticələri 4G-də p95 ≤ 2 san görünür. Nəticələr uyğunluğa, sonra populyarlığa görə sıralanır. 3 simvoldan sonra avtotamamlama işləyir. Azərbaycan hərfləri olmadan yazılış (seker → şəkər) tanınır. Funksiya qonaq və qeydiyyatlı istifadəçilər üçün eynidir.”
+@növbən
+Bu tələbi təhlil et, qeyri-müəyyən sözləri və çatışmayan halları tap, sonra 3–4 atomar, testlənə bilən tələb kimi yenidən yaz: “Tətbiq istifadəçiyə vacib bildirişləri vaxtında göndərməli və onlar gözəl görünməlidir.”
+
+=== c10s3
+@qısa
+User story tələbi istifadəçinin dili ilə yazır: “Bir [rol] kimi, [istək] istəyirəm ki, [fayda].” Kim, nə və niyə — üçüncü hissə tester üçün xüsusilə vacibdir. Yaxşı story INVEST meyarlarına cavab verir.
+@yadda
+- Story = rol + istək + fayda.
+- “Niyə” hissəsi real ssenariləri düşünməyə kömək edir.
+- INVEST-in tester üçün ən vacib hərfi — T (Testable).
+@dərin
+### Story-nin “3C” modeli
+- **Card (kart):** qısa story mətni — xatırlatma.
+- **Conversation (söhbət):** detallar komanda söhbətində aydınlaşır.
+- **Confirmation (təsdiq):** acceptance criteria — story-nin hazır olduğunu necə yoxlayacağımız.
+Tester ən çox ikinci və üçüncü “C”-də iştirak edir.
+
+### Böyük story-ləri bölmək
+Çox böyük story (epic) bir sprintə sığmır və test etmək çətindir. Bölmə yolları: iş axınının addımlarına görə, biznes qaydalarına görə (əvvəl sadə qayda, sonra mürəkkəb), data növlərinə görə (əvvəl kart, sonra digər ödənişlər), əsas yol və xəta halları ayrı.
+
+### Pis story nümunələri
+- “Bir istifadəçi kimi, sistemin yaxşı olmasını istəyirəm” — fayda və istək qeyri-müəyyən.
+- “Bir developer kimi, verilənlər bazasına cədvəl əlavə etmək istəyirəm” — istifadəçi dəyəri yox, texniki tapşırıq (bu, task olmalıdır).
+- “Bir müştəri kimi, ödəniş etmək istəyirəm” — çox böyük, bölmək lazımdır.
+
+### Tipik yanlış anlama
+“Story yazılıbsa, tələb hazırdır.” Story söhbətin başlanğıcıdır; acceptance criteria olmadan onu testə vermək olmaz.
+@nümunə
+**Tapşırıq.** Story: “Bir müştəri kimi, ödəniş etmək istəyirəm.” Onu INVEST-ə uyğun 3 kiçik story-yə böl və hər biri üçün bir test ideyası yaz.
+@addımlar
+1. **Problem:** story çox böyükdür (Small deyil) və faydası yazılmayıb.
+2. **Story 1:** “Bir müştəri kimi, sifarişimi bank kartı ilə ödəmək istəyirəm ki, kuryerə nağd pul verməyim.” Test: düzgün test kartı ilə uğurlu ödəniş.
+3. **Story 2:** “Bir müştəri kimi, kartımı yadda saxlamaq istəyirəm ki, növbəti dəfə yenidən yazmayım.” Test: saxlanmış kartla ödəniş, kartın silinməsi.
+4. **Story 3:** “Bir müştəri kimi, ödəniş rədd ediləndə səbəbini görmək istəyirəm ki, nə edəcəyimi bilim.” Test: balans kifayət etməyən test kartı — aydın mesaj.
+@növbən
+Story: “Bir istifadəçi kimi, profilimi idarə etmək istəyirəm.” Onu 3 kiçik, INVEST-ə uyğun story-yə böl (fayda hissəsi ilə) və hər biri üçün bir test ideyası yaz.
+
+=== c10s4
+@qısa
+Acceptance criteria story-nin “hazır” sayılması üçün konkret şərtlərdir və test case-lər məhz onlardan çıxarılır. İki forması var: siyahı və Given–When–Then (Gherkin).
+@yadda
+- Given — ilkin vəziyyət, When — hərəkət, Then — nəticə.
+- Bir ssenari — bir davranış.
+- Criteria-da xəta halları və sərhədlər də olmalıdır.
+@dərin
+### Yaxşı Gherkin ssenarisinin qaydaları
+- **Deklarativ yaz:** “istifadəçi daxil olur”, “Email sahəsinə klik edir, yazır, Daxil ol basır” yox — detallar test case-ə qalır.
+- **Bir ssenari — bir qayda:** bir neçə qaydanı bir ssenariyə yığma.
+- **Konkret data:** “bəzi məhsullar” yox, “2 məhsul, cəmi 45 AZN”.
+- **Then-də yoxlana bilən nəticə:** “uğurlu olur” yox, “sifariş №-si göstərilir və status ‘Yaradılıb’dır”.
+
+### Scenario Outline — eyni ssenari, fərqli data
+```gherkin
+Scenario Outline: Yaşa görə bilet qiyməti
+  Given istifadəçinin yaşı <yaş>-dır
+  When bilet alır
+  Then qiymət <qiymət> AZN olur
+
+  Examples:
+    | yaş | qiymət |
+    | 6   | 0      |
+    | 7   | 3      |
+    | 18  | 6      |
+```
+Bu, EP və BVA dəyərlərini birbaşa criteria-ya gətirir.
+
+### BDD və avtomatlaşdırma
+Gherkin ssenariləri Cucumber kimi alətlərlə avtomatik testlərə bağlanır (Behavior-Driven Development). Hətta avtomatlaşdırma olmasa belə, ortaq dil olaraq PO, proqramçı və tester arasında anlaşılmazlığı azaldır.
+
+### Tipik yanlış anlama
+“Criteria yalnız xoşbəxt yolu təsvir edir.” Yaxşı criteria dəstində xəta halları (yanlış kod, boş səbət, rədd olunan kart) mütləq olur — defektlərin çoxu oradadır.
+@nümunə
+**Tapşırıq.** Story: “Bir müştəri kimi, promo kod tətbiq etmək istəyirəm ki, endirim alım.” Qaydalar: kod 10% endirim verir, müddəti bitmiş kod qəbul olunmur, bir sifarişə bir kod. 3 Gherkin ssenarisi yaz.
+@addımlar
+1. **Pozitiv:** Given səbətdə 50 AZN-lik məhsul var, When “YAY10” kodunu tətbiq edir, Then cəmi 45 AZN olur And “Endirim: 5 AZN” sətri görünür.
+2. **Müddəti bitmiş:** Given “QIS10” kodunun müddəti bitib, When kodu tətbiq edir, Then “Kodun müddəti bitib” mesajı görünür And cəmi dəyişmir.
+3. **İkinci kod:** Given “YAY10” artıq tətbiq olunub, When “YENI5” kodunu tətbiq edir, Then “Bir sifarişə yalnız bir kod” mesajı görünür And yalnız ilk endirim qalır.
+4. **Sual:** “İkinci kod birincini əvəz etsin, yoxsa rədd olunsun?” — tələbdə yoxdursa, criteria-ya əlavə etdir.
+@növbən
+Story: “Bir istifadəçi kimi, şifrəmi dəyişmək istəyirəm ki, hesabım təhlükəsiz olsun.” Qaydaları özün fərz et (köhnə şifrə tələb olunur, yeni şifrə 8–20 simvol, köhnə ilə eyni ola bilməz) və 3 Gherkin ssenarisi yaz — biri pozitiv, ikisi neqativ.
+
+=== c10s5
+@qısa
+Tələbi təhlil edərkən 10 sual ver: kim, nə, harada, nə vaxt, limitlər, default, xəta halları, əlaqələr, data və mətnlər. Bu suallar tələbdəki boşluqları kod yazılmamış üzə çıxarır.
+@yadda
+- 10 sual: kim, nə, harada, nə vaxt, limit, default, xəta, əlaqə, data, mətn.
+- Ən çox unudulanlar: xəta halları və default dəyərlər.
+- Hər tapılan boşluq bir sual və ya bir test olur.
+@dərin
+### Sualları sənədləşdirmək
+Sualları dağınıq mesajlarla yox, bir yerdə saxla: story-nin şərhlərində və ya ayrıca cədvəldə. Sütunlar: № — tələb/bənd — sual — kimə — cavab — tarix. Cavab gələndə tələbə əlavə olunduğunu yoxla.
+
+### “Nə olmasın?” sualı
+Tələblər adətən nəyin olacağını deyir, nəyin olmamalı olduğunu yox. Bu sual təhlükəsizlik və data riskini tapır: “Silinmiş istifadəçinin sifarişləri hesabatda görünməsin?”, “Admin olmayan bu düyməni görməsin?”
+
+### Maketlə müqayisə
+Tələbi dizayn maketi ilə yan-yana oxu: maketdə olan, tələbdə olmayan (və əksinə) elementlər tez-tez tapılır. Məsələn, maketdə “Sırala” düyməsi var, tələbdə sıralama qaydası yoxdur.
+
+### Tipik yanlış anlama
+“Çox sual vermək peşəkarlıqsızlıqdır.” Yaxşı qruplaşdırılmış, konkret suallar peşəkarlığın göstəricisidir. Pis olan — eyni sualı təkrar-təkrar şifahi verib cavabı yazmamaqdır.
+@nümunə
+**Tapşırıq.** Tələb: “İstifadəçi sifarişə şərh yaza bilər.” 10 sual çərçivəsi ilə təhlil et və ən vacib 6 sualı yaz.
+@addımlar
+1. **Kim?** Yalnız sifarişin sahibi, yoxsa operator da şərh yaza bilər?
+2. **Nə vaxt?** Sifariş göndərildikdən sonra şərh yazmaq və ya dəyişmək olarmı?
+3. **Limitlər?** Maksimum neçə simvol? Emoji və linklər qəbul olunurmu?
+4. **Default və boş halı:** şərh məcburidirmi, boş şərh göndərmək olarmı?
+5. **Əlaqələr:** şərh kuryerə, restorana və ya hər ikisinə görünürmü? Bildiriş gedirmi?
+6. **Xəta halları:** internet kəsiləndə şərh itirmi, sifariş şərhsiz yaranırmı?
+@növbən
+Tələb: “İstifadəçi profilinə ünvan əlavə edə bilər.” 10 sual çərçivəsi ilə təhlil et və ən vacib 6 sualı yaz — ən azı biri “nə olmasın?” tipli olsun.
+
+=== c10s6
+@qısa
+Yaxşı sual harada (sənəd, bənd), nəyin aydın olmadığını və konkret variantı və ya təklifi göstərir. Cavab yazılı saxlanılır və tələbin bir hissəsinə çevrilir.
+@yadda
+- Formul: harada + nə aydın deyil + nümunə/təklif.
+- Bir mesajda bir mövzu, nömrələnmiş suallar.
+- Cavabı yazılı saxla, tələbə əlavə etdir.
+@dərin
+### Sualın tonu
+Sual ittiham kimi səslənməməlidir. “Niyə bunu yazmamısınız?” əvəzinə “Bu halı necə emal edək?” Tester-in məqsədi səhv axtarmaq yox, ortaq anlayış qurmaqdır.
+
+### Qapalı və açıq suallar
+- **Qapalı** (bəli/xeyr, variant seçimi): “18 daxildir?” — tez cavab alınır, qərar üçün idealdır.
+- **Açıq:** “Bu funksiya hansı problemi həll edir?” — kontekst və məqsədi anlamaq üçün.
+Yaxşı tester ikisini də işlədir: əvvəl açıq sualla məqsədi, sonra qapalı suallarla detalları aydınlaşdırır.
+
+### Cavab gəlməyəndə
+1. Sualın kimə getdiyini yoxla — düzgün adamdırmı?
+2. Daily Scrum-da qeyd et: “Bu sual test case-ləri bloklayır.”
+3. Fərziyyə ilə davam et, amma fərziyyəni test case-də açıq yaz: “Fərz: 18 daxildir — təsdiq gözlənilir.”
+
+### Tipik yanlış anlama
+“Yaxşı tester heç nə soruşmadan özü tapır.” Fərziyyə ilə yazılmış test case-lər tələb aydınlaşanda yenidən yazılır — vaxtında verilən sual daha ucuzdur.
+@nümunə
+**Tapşırıq.** Bu pis sualı yaxşı formaya sal: “Salam, endirim məsələsini başa düşmədim, izah edə bilərsən?”
+@addımlar
+1. **Haranı göstər:** “US-34 ‘Sevimli müştəri endirimi’, AC-2.”
+2. **Nəyin aydın olmadığını de:** “Endirimin faizi və hansı müştərinin ‘sevimli’ sayıldığı yazılmayıb.”
+3. **Konkret variant təklif et:** “Təklif: son 6 ayda 5+ sifarişi olan müştəri, endirim 5%. Düzgündürmü?”
+4. **Yekun mesaj:** “Salam! US-34, AC-2 ilə bağlı 2 sual: 1) ‘Sevimli müştəri’ kimdir — son 6 ayda 5+ sifariş? 2) Endirim neçə faizdir — 5%? Cavab test case-lər üçün lazımdır, təşəkkürlər.”
+@növbən
+Bu pis sualı yaxşı formaya sal (harada + nə aydın deyil + təklif): “Bu bildiriş işi nə vaxt işləyəcək? Heç nə başa düşmədim.”
+
+=== c10s7
+@qısa
+RTM hər tələbin hansı test case-lərlə yoxlandığını göstərən cədvəldir. Məqsəd: heç bir tələb testsiz qalmasın, tələb dəyişəndə hansı testlərin yenilənəcəyi bilinsin.
+@yadda
+- RTM: tələb ↔ test case ↔ nəticə.
+- Boş sütun = testsiz tələb.
+- Tələb dəyişəndə təsirlənən testlər dərhal görünür.
+@dərin
+### İki istiqamətli izlənmə
+- **İrəli (forward):** tələbdən testə — “hər tələb test olunubmu?”
+- **Geri (backward):** testdən tələbə — “bu test hansı tələbi yoxlayır?” Heç bir tələbə bağlı olmayan test ya lazımsızdır, ya da yazılmamış tələbi göstərir.
+
+### RTM-in genişləndirilmiş forması
+Sütunlara əlavə olunur: tələbin prioriteti, test case-lərin statusu, açıq defektlər, son icra tarixi. Belə RTM reliz qərarı üçün xülasəyə çevrilir: “Must prioritetli 30 tələbdən 29-u keçdi, 1-də açıq Major defekt var.”
+
+### Alətlərdə RTM
+Jira + Xray/Zephyr və ya TestRail-də test case-i story-yə “link” edəndə RTM avtomatik yaranır. Kiçik layihədə sadə cədvəl də kifayətdir.
+
+### Tipik yanlış anlama
+“Hər tələbin bir testi varsa, əhatə tamdır.” Bir test tələbin yalnız pozitiv halını yoxlaya bilər. RTM-də tələbin qaydaları və xəta halları da əhatə olunmalıdır — say yox, məzmun vacibdir.
+@nümunə
+**Tapşırıq.** 3 tələb var: REQ-1 “Email ilə qeydiyyat”, REQ-2 “Şifrə 8–20 simvol”, REQ-3 “Eyni email ilə ikinci hesab yaradılmır”. 5 test case var: TC-1 (düzgün qeydiyyat), TC-2 (7 simvol şifrə), TC-3 (21 simvol şifrə), TC-4 (20 simvol şifrə), TC-5 (yanlış email formatı). RTM qur və boşluğu tap.
+@addımlar
+1. **REQ-1:** TC-1, TC-5 — pozitiv və format halı var.
+2. **REQ-2:** TC-2, TC-3, TC-4 — 8 simvollu sərhəd yoxdur; TC-6 (8 simvol) əlavə et.
+3. **REQ-3:** test case yoxdur — RTM-də boş sütun kimi görünür.
+4. **Düzəliş:** TC-7 “mövcud email ilə ikinci qeydiyyat — ‘Bu email artıq qeydiyyatdadır’” əlavə et.
+5. **Nəticə:** RTM həm testsiz tələbi (REQ-3), həm də natamam əhatəni (REQ-2) göstərdi.
+@növbən
+Login funksiyası üçün 4 tələb və 6 test case uydur, RTM qur. Bir tələbi qəsdən testsiz, birini natamam əhatəli burax və RTM-də bunların necə göründüyünü izah et.

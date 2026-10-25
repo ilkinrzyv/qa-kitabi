@@ -1,0 +1,17 @@
+{
+  "name": "qa-kitabi-build",
+  "private": true,
+  "description": "Build helpers and Playwright checks for QA Kitabı",
+  "scripts": {
+    "icons": "node make_icons.js",
+    "widgets": "node render.mjs",
+    "test:app": "node t1.js && node t2.js && node t3.js && node t4.js && node t5.js && node t6.js && node t7.js && node t8.js && node t9.js && node t10.js",
+    "test:pwa": "node tp1.js && node tp2.js && node tp3.js && node tp4.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "playwright": "1.63.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

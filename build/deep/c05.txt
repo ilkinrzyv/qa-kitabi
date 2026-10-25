@@ -1,0 +1,167 @@
+=== c5s1
+@qısa
+Unit test kodun ən kiçik hissəsini — bir funksiyanı və ya komponenti — ayrıca, avtomatik yoxlayır. Adətən proqramçı yazır; sürətlidir və defekti ən ucuz mərhələdə tapır.
+@yadda
+- Unit test bir funksiyanı UI, server və bazasız yoxlayır.
+- Millisaniyələrlə işləyir, minlərlə ola bilər.
+- Tester unit testlərin nəyi yoxladığını bilməlidir ki, öz testlərini təkrarlamasın.
+@dərin
+### Unit testi necə “ayırırlar”?
+Funksiya başqa hissələrdən asılıdırsa (baza, e-poçt servisi), test zamanı onların yerinə **test double** — saxta əvəzedici qoyulur:
+- **Stub** — hazır cavab qaytarır (“baza həmişə bu istifadəçini qaytarsın”).
+- **Mock** — çağırışı yoxlayır (“e-poçt funksiyası bir dəfə çağırıldımı?”).
+- **Fake** — sadələşdirilmiş işləyən versiya (yaddaşda saxlanan “baza”).
+
+### Yaxşı unit testin əlamətləri
+Sürətli, müstəqil, təkrarlana bilən, bir şeyi yoxlayan və adı nəyi yoxladığını deyən. Çox vaxt “AAA” quruluşu ilə yazılır: Arrange (hazırla), Act (icra et), Assert (yoxla).
+
+### Kod əhatəsi (coverage)
+Unit testlər kodun neçə faizini işə saldığını alətlər göstərir: JavaScript-də Istanbul (nyc), Java-da JaCoCo. Amma 100% coverage defektsizlik demək deyil (Fəsil 7) — sərhədlər və məntiq ayrıca düşünülməlidir.
+
+### TDD — testi əvvəl yazmaq
+Bəzi komandalar Test-Driven Development tətbiq edir: əvvəl düşən test yazılır, sonra onu keçirən minimal kod, sonra kod səliqəyə salınır (red → green → refactor).
+
+### Tipik yanlış anlama
+“Unit testlər varsa, tester-ə ehtiyac yoxdur.” Unit testlər hissələrin ayrıca işlədiyini göstərir; onların birlikdə və istifadəçi üçün düzgün işlədiyini isə yuxarı səviyyələr yoxlayır.
+@nümunə
+**Tapşırıq.** `isAdult(age)` funksiyası 18 və yuxarı yaş üçün `true` qaytarmalıdır. Bu funksiya üçün unit test ideyalarını AAA quruluşu ilə yaz.
+@addımlar
+1. **Arrange:** test dəyərlərini seç — 17, 18, 19 (sərhəd), 0 və -1 (kənar hallar).
+2. **Act:** hər dəyər üçün `isAdult(dəyər)` çağır.
+3. **Assert:** 17 → false, 18 → true, 19 → true, 0 → false; -1 üçün tələbə görə ya false, ya da xəta gözlənilir — tələbdə yoxdursa, soruş.
+4. **Nəticə:** bu testlər millisaniyələrlə işləyir və proqramçı `>` ilə `>=`-ni qarışdırsa, dərhal düşür.
+@növbən
+`calculateDelivery(total)` funksiyası 50 AZN və yuxarı sifarişdə 0, qalanında 3 AZN qaytarır. AAA quruluşu ilə 4 unit test ideyası yaz (dəyər və gözlənilən nəticə ilə).
+
+=== c5s2
+@qısa
+İnteqrasiya testi modulların və sistemlərin bir-biri ilə əlaqəsini yoxlayır: məlumat düzgün ötürülürmü, format uyğun gəlirmi? Hissələr ayrıca işləyə bilər, amma birləşəndə səhv çıxa bilər.
+@yadda
+- Komponent inteqrasiyası — sistem daxili, sistem inteqrasiyası — xarici servislər.
+- Defektlər çox vaxt “tikiş yerlərində” — format, vahid, ardıcıllıq fərqlərindədir.
+- Stub aşağı modulları, driver yuxarı modulları əvəz edir.
+@dərin
+### Tipik inteqrasiya defektləri
+- **Format:** bir modul tarixi “24.10.2026”, digəri “2026-10-24” gözləyir.
+- **Vahid:** məbləğ qəpiklə göndərilir, manatla oxunur (Mars Climate Orbiter-in yerdəki versiyası).
+- **Kodlaşdırma:** Azərbaycan hərfləri başqa sistemə “?” kimi çatır.
+- **Vaxt:** xarici servis gec cavab verir və ya heç cavab vermir.
+- **Ardıcıllıq:** sifariş ödənişdən əvvəl “göndərildi” statusuna keçir.
+
+### Tester inteqrasiyanı necə yoxlayır?
+API testləri (Fəsil 15) ilə servislərin danışığını birbaşa yoxlayır; UI-də əməliyyat edib bazada nəticəyə baxır (Fəsil 16); xarici servisin “pis günü”nü simulyasiya edir — gecikmə, xəta, boş cavab.
+
+### Contract testing
+Mikroservis arxitekturasında hər servis “müqavilə” ilə işləyir: hansı sorğuya hansı formatda cavab verəcək. Contract testləri (məsələn, Pact aləti ilə) bu müqavilənin pozulmadığını yoxlayır — servislər ayrı-ayrı yenilənəndə xüsusilə faydalıdır.
+
+### Tipik yanlış anlama
+“İnteqrasiya testi yalnız proqramçının işidir.” Sistem inteqrasiyası — ödəniş, SMS, xəritə, dövlət servisləri — tester-in əsas risk sahələrindəndir.
+@nümunə
+**Tapşırıq.** Onlayn mağaza sifarişi anbar sisteminə göndərir. Anbar sistemi isə SMS servisinə “sifariş yola çıxdı” mesajı göndərir. Bu zəncir üçün inteqrasiya test ideyalarını yaz.
+@addımlar
+1. **Mağaza → anbar:** sifarişin məhsul kodları, sayı və ünvanı anbara düzgün çatırmı? Azərbaycan hərfli ünvan pozulmurmu?
+2. **Anbar → SMS:** status “yola çıxdı” olanda SMS göndərilirmi? Nömrə +994 formatında düzgün ötürülürmü?
+3. **Xəta halları:** SMS servisi cavab vermirsə, sifariş statusu itmirmi, mesaj sonra yenidən göndərilirmi?
+4. **Ardıcıllıq:** ləğv edilmiş sifariş üçün “yola çıxdı” SMS-i getməməlidir.
+@növbən
+Taksi tətbiqi ödənişi bank servisinə, qəbzi isə e-poçt servisinə göndərir. Bu zəncir üçün 4 inteqrasiya test ideyası yaz: format, xəta halı, ardıcıllıq və Azərbaycan hərfləri daxil olmaqla.
+
+=== c5s3
+@qısa
+Sistem testi bütöv sistemi istifadəçi gözü ilə, uçdan-uca yoxlayır — həm funksional, həm qeyri-funksional tərəflərini. Production-a mümkün qədər yaxın mühitdə, adətən tester-lər tərəfindən aparılır.
+@yadda
+- Sistem testi bütöv məhsulu tələblərə qarşı yoxlayır.
+- Mühit canlıya nə qədər yaxın olsa, nəticə o qədər etibarlıdır.
+- Manual tester-in işinin əsas hissəsi bu səviyyədədir.
+@dərin
+### Test mühiti niyə vacibdir?
+Sistem testində tapılan problemin bir hissəsi mühitdən qaynaqlanır: köhnə baza, fərqli konfiqurasiya, söndürülmüş xarici servis. Mühitlər adətən zəncir təşkil edir: dev → test/QA → staging → production. Staging canlıya ən yaxın olandır və son yoxlamalar orada aparılır.
+
+### Sistem testinin əhatəsi
+- **Funksional:** bütün istifadəçi ssenariləri, rollar, xəta halları.
+- **Qeyri-funksional:** performans, təhlükəsizlik, uyğunluq, əlçatanlıq.
+- **Məlumat:** UI-də görünənin bazada düzgün saxlanması.
+- **Uçdan-uca (E2E):** bir neçə sistemi keçən real ssenarilər.
+
+### Test datası problemi
+Sistem testi üçün real görünən, amma real olmayan data lazımdır: müxtəlif statuslu sifarişlər, bloklanmış hesablar, uzun adlar. Data əvvəlcədən hazırlanmalı və ya skriptlə yaradılmalıdır — əks halda testin yarısı data axtarmağa gedir.
+
+### Tipik yanlış anlama
+“Sistem testi = hər şeyi yenidən test etmək.” Aşağı səviyyələrdə yoxlananı təkrarlamaq lazım deyil; sistem testi bütövün davranışına və hissələrin birgə işinə fokuslanır.
+@nümunə
+**Tapşırıq.** Yemək çatdırılması tətbiqinin sistem testi üçün bir uçdan-uca ssenari yaz və hər addımda nəyi yoxlayacağını göstər.
+@addımlar
+1. **Qeydiyyat və giriş:** yeni hesab yaradılır, SMS kodu gəlir, giriş uğurludur.
+2. **Seçim və səbət:** restoran seçilir, 3 yemək səbətə əlavə olunur — cəm, çatdırılma haqqı və endirim düzgün hesablanır.
+3. **Ödəniş:** test kartı ilə ödəniş, sifariş yaranır, təsdiq ekranı və bildiriş gəlir.
+4. **İzləmə:** status “hazırlanır → yolda → çatdırıldı” ardıcıllığı ilə dəyişir.
+5. **Yoxlama arxasında:** sifariş tarixçədə görünür, məbləğ bazadakı ilə eynidir, qəbz e-poçtla gəlir.
+@növbən
+Kitabxananın onlayn kitab rezervasiyası sistemi üçün uçdan-uca sistem test ssenarisi yaz: 5 addım və hər addımda nəyin yoxlanacağı.
+
+=== c5s4
+@qısa
+Qəbul testi məhsulun biznes ehtiyacına və istifadəçi gözləntisinə cavab verdiyini, qəbula hazır olduğunu yoxlayır. UAT, alpha, beta, əməliyyat və müqavilə/qanuni qəbul kimi növləri var.
+@yadda
+- UAT-da əsas söz real istifadəçinindir.
+- Alpha — şirkət daxilində, beta — real istifadəçilərin kiçik qrupu.
+- Qəbul testinin məqsədi baq tapmaqdan çox “qəbul edirikmi?” sualına cavabdır.
+@dərin
+### UAT necə təşkil olunur?
+1. Biznes ssenariləri seçilir: istifadəçilərin real gündəlik işi.
+2. İştirakçılar müəyyən olunur: real istifadəçilər və ya onların nümayəndələri.
+3. Tester hazırlığa kömək edir: mühit, data, qısa təlimat, rəy forması.
+4. Nəticə: “qəbul edildi”, “şərtlə qəbul edildi” və ya “qəbul edilmədi”.
+
+### Beta testin “gizli” dəyəri
+Beta istifadəçiləri test komandasının ağlına gəlməyən cihazlarda, şəbəkələrdə və ssenarilərdə işləyir. Mobil tətbiqlərdə beta çox vaxt TestFlight (iOS) və Google Play-in test kanalları ilə paylanır; çökmə hesabatları avtomatik toplanır.
+
+### Əməliyyat qəbulu (OAT)
+Bu, sistemin “gecə saat 3-də” də işləyəcəyini yoxlayır: ehtiyat nüsxə və bərpa, monitorinq və xəbərdarlıqlar, yenidən başlatma, yeniləmə prosedurları. Çox vaxt DevOps və əməliyyat komandası ilə birlikdə aparılır.
+
+### Tipik yanlış anlama
+“Qəbul testində çox baq tapılmalıdır.” Əgər UAT-da çoxlu funksional baq tapılırsa, bu, əvvəlki səviyyələrin zəif olduğunu göstərir. UAT-da əsas müşahidələr “bu, işimizə yarayırmı?” sualı ətrafında olmalıdır.
+@nümunə
+**Tapşırıq.** Kommunal şirkət yeni “sayğac göstəricisini onlayn göndər” xidmətini qəbul edəcək. UAT planının əsas hissələrini yaz.
+@addımlar
+1. **Ssenarilər:** göstəricini göndərmək, yanlış göstəricini düzəltmək, keçən ayın tarixçəsinə baxmaq, borcu ödəmək.
+2. **İştirakçılar:** müxtəlif yaşlı 10 abunəçi və 2 operator.
+3. **Hazırlıq:** test hesabları, real formata uyğun sayğac nömrələri, qısa təlimat və rəy forması.
+4. **Qəbul meyarı:** abunəçilərin ən azı 9-u göstəricini köməksiz göndərə bilir, ciddi problem qalmır.
+5. **Nəticə:** müşahidələr toplanır, qərar “qəbul / şərtlə qəbul / qəbul edilmir” kimi yazılır.
+@növbən
+Məktəb üçün “elektron gündəlik” sistemi qəbul olunacaq. UAT planı yaz: 4 ssenari, iştirakçılar, hazırlıq və ölçülə bilən qəbul meyarı.
+
+=== c5s5
+@qısa
+Dörd səviyyə miqyasa görə düzülür: unit — bir funksiya, inteqrasiya — modulların əlaqəsi, sistem — bütöv məhsul, qəbul — biznes ehtiyacı. Hər səviyyə fərqli defektləri ən ucuz şəkildə tapır.
+@yadda
+- Unit → inteqrasiya → sistem → qəbul: miqyas böyüyür.
+- Hər səviyyənin öz məqsədi, icraçısı və mühiti var.
+- Defekti ən aşağı mümkün səviyyədə tapmaq ən ucuzudur.
+@dərin
+### Hansı defekt harada tutulur?
+| Defekt | Ən yaxşı səviyyə |
+| --- | --- |
+| Endirim düsturunda səhv | Unit |
+| Səbət ödəniş servisinə məbləği qəpiklə göndərir | İnteqrasiya |
+| Ödənişdən sonra təsdiq e-poçtu gəlmir | Sistem (E2E) |
+| Sifariş prosesi mağaza işçilərinin iş qaydasına uyğun deyil | Qəbul |
+
+### Səviyyələrin “sızması”
+Aşağı səviyyədə tutulmayan defekt yuxarıya çıxır və orada daha baha başa gəlir: unitdə 1 dəqiqəlik düzəliş sistem testində saatlıq araşdırmaya çevrilir. Buna görə səviyyələr bir-birini əvəz etmir, tamamlayır.
+
+### ISTQB-də beş səviyyə
+ISTQB-nin yeni proqramında səviyyələr bir az daha dəqiq bölünür: komponent testi, komponent inteqrasiya testi, sistem testi, sistem inteqrasiya testi və qəbul testi. Mənası eynidir — inteqrasiya “daxili” və “xarici” kimi ayrılır.
+
+### Tipik yanlış anlama
+“Səviyyələr ardıcıl icra olunur: əvvəl bütün unitlər, sonra hamısının inteqrasiyası.” Agile komandalarda bütün səviyyələr paralel gedir: unit testlər hər commit-də, sistem testləri hər story-də, qəbul hər sprintin review-da.
+@nümunə
+**Tapşırıq.** Bu defektlərin ən ucuz tutulacağı səviyyəni müəyyən et: (a) parol uzunluğunu yoxlayan funksiya 8 simvolu rədd edir; (b) mobil tətbiq profil şəklini serverə göndərir, server faylı başqa formatda gözləyir; (c) qeydiyyatdan sonra hesab yaranır, amma xoş gəlmisiniz SMS-i gəlmir; (d) bank əməkdaşları deyir ki, yeni kredit forması onların iş prosesinə uyğun deyil.
+@addımlar
+1. **(a) Unit** — tək funksiyanın sərhəd məntiqi.
+2. **(b) İnteqrasiya** — iki hissə arasındakı format uyğunsuzluğu.
+3. **(c) Sistem** — bir neçə komponentdən keçən uçdan-uca ssenari (SMS servisi də daxil).
+4. **(d) Qəbul** — biznes ehtiyacına uyğunluq; texniki defekt olmaya bilər.
+@növbən
+Taksi tətbiqi üçün 4 defekt uydur — hər biri fərqli səviyyədə ən ucuz tutulsun. Hər defektin yanında səviyyəni və səbəbini yaz.

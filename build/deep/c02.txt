@@ -1,0 +1,227 @@
+=== c2s1
+@qısa
+Test yalnız “burada defekt var” deyə bilər. Bütün testlər keçsə belə, bu, defektin olmadığını sübut etmir — sadəcə yoxlanan hallarda problem çıxmadığını göstərir.
+@yadda
+- Keçən testlər defektin yoxluğunu sübut etmir.
+- Hesabatda “defekt yoxdur” yox, “açıq kritik defekt yoxdur” yaz.
+- Test riski azaldır, amma sıfıra endirmir.
+@dərin
+### Niyə sübut etmək mümkün deyil?
+Test həmişə seçilmiş hallarla aparılır: müəyyən data, müəyyən brauzer, müəyyən ardıcıllıq. Yoxlanmayan kombinasiyalar sonsuz qədər çoxdur (Prinsip 2). Ona görə test yalnız seçilmiş nümunələr haqqında danışa bilər. Riyaziyyatdakı kimi: 1000 misalda düzgün çıxan düstur hələ sübut deyil, bir əks-misal isə onu çürütmək üçün kifayətdir.
+
+### Bəs inam haradan gəlir?
+İnam testlərin sayından yox, **əhatəsindən** gəlir: vacib tələblər yoxlanıbmı, risklə sahələr dərindən test olunubmu, müxtəlif texnikalar işlədilibmi? Buna görə hesabatda “nəyi yoxladıq və nəyi yoxlamadıq” açıq yazılır.
+
+### Peşəkar dil
+Pis: “Məhsul tam işləkdir, baq yoxdur.”
+Yaxşı: “Planlaşdırılmış 120 testdən 118-i keçdi; açıq Blocker və Critical defekt yoxdur; ödəniş modulunun yük testi bu relizdə aparılmayıb — risk qalır.”
+
+### Tipik yanlış anlama
+“Test çox olsa, baq qalmaz.” Eyni tipli 1000 test bir yeni ssenaridəki defekti tapmaya bilər. Say yox, müxtəliflik və riskə yönəlmə vacibdir.
+@nümunə
+**Tapşırıq.** Menecer soruşur: “Bütün testlər yaşıldır, müştəriyə ‘tətbiqdə heç bir səhv yoxdur’ yaza bilərik?” Peşəkar cavab hazırla.
+@addımlar
+1. **Prinsipi xatırla:** keçən testlər yalnız yoxlanan hallarda problem olmadığını göstərir.
+2. **Faktı topla:** neçə test icra olunub, hansı modullar əhatə olunub, hansılar yox.
+3. **Riski ayrıca de:** yoxlanmayan və ya az yoxlanan sahələri sadala.
+4. **Cavab:** “Planlaşdırılmış testlərin hamısı keçdi, açıq kritik defekt yoxdur. ‘Heç bir səhv yoxdur’ yazmaq düzgün olmaz — test bunu sübut edə bilmir. Müştəriyə ‘geniş test olunub, məlum kritik problem yoxdur’ yazmağı təklif edirəm.”
+@növbən
+Yeni mobil oyun 2 həftə beta testdən keçdi və heç bir crash qeydə alınmadı. Marketinq “oyun tam sabitdir” yazmaq istəyir. Prinsip 1-ə əsaslanan qısa cavab yaz və hansı sahələrin hələ risk olaraq qala biləcəyini göstər.
+
+=== c2s2
+@qısa
+Bütün girişləri, kombinasiyaları və ardıcıllıqları yoxlamaq mümkün deyil — onların sayı astronomikdir. Ona görə testləri risklərə görə seçirik və test dizayn texnikaları ilə az testlə çox şey yoxlayırıq.
+@yadda
+- Hər şeyi test etmək mümkün deyil.
+- Seçim risklərə və prioritetlərə görə aparılır.
+- Test dizayn texnikaları testlərin sayını ağıllı şəkildə azaldır.
+@dərin
+### Kombinasiyalar necə “partlayır”?
+Hər yeni parametr variantların sayını vurur. Formada 5 sahə varsa və hər sahədə cəmi 10 fərqli dəyər yoxlamaq istəsək, 10 × 10 × 10 × 10 × 10 = 100 000 test alınır. Üstəlik brauzerlər, cihazlar, dillər və ardıcıllıqlar da əlavə olunur.
+
+### Riskə əsaslanan test (risk-based testing)
+Risk = **ehtimal × təsir**. Ehtimal — defektin orada olma şansı (mürəkkəb kod, yeni funksiya, tez-tez dəyişən modul). Təsir — defekt çıxsa, nə qədər zərər verər (pul, təhlükəsizlik, istifadəçi sayı). Yüksək ehtimal və yüksək təsirli sahələr birinci və dərin test olunur.
+
+| Sahə | Ehtimal | Təsir | Prioritet |
+| --- | --- | --- | --- |
+| Ödəniş | Yüksək | Yüksək | 1 |
+| Axtarış | Orta | Orta | 2 |
+| “Haqqımızda” səhifəsi | Aşağı | Aşağı | 3 |
+
+### Texnikalar necə kömək edir?
+Ekvivalent siniflər (Fəsil 8) minlərlə dəyəri bir neçə sinfə endirir, pairwise (Fəsil 9) kombinasiyaları cütlərə endirir. Bunlar “təsadüfi az test” deyil, “ağılla seçilmiş az test”dir.
+
+### Tipik yanlış anlama
+“Hamısını test edə bilmiriksə, test mənasızdır.” Xeyr: məqsəd mükəmməllik yox, ən böyük riskləri vaxtında görməkdir.
+@nümunə
+**Tapşırıq.** Qeydiyyat formasında 3 sahə var: ölkə (195 variant), dil (40 variant), doğum ili (1900–2026). Bütün kombinasiyaların sayını hesabla və onu necə azalda biləcəyini göstər.
+@addımlar
+1. **Doğum ilinin variantları:** 1900-dən 2026-ya qədər 127 il var.
+2. **Bütün kombinasiyalar:** 195 × 40 × 127 = 990 600 test — praktik olaraq mümkün deyil.
+3. **Azaltma:** doğum ili üçün EP və BVA ilə sinifləri və sərhədləri seç (məsələn, 1899, 1900, 1990, 2026, 2027); ölkə və dil üçün risk ən yüksək olanları (əsas bazarlar, sağdan sola yazılan dillər) götür.
+4. **Kombinasiyalar:** qalan parametrləri pairwise ilə birləşdir — yüzlərlə yox, onlarla test kifayət edir.
+@növbən
+Onlayn bilet saytında axtarış üçün 4 parametr var: şəhər (30), tarix (365 gün), sərnişin sayı (1–9), sinif (ekonom, biznes). Bütün kombinasiyaların sayını tap və risklərə görə ən vacib 5 testi seç, seçimini izah et.
+
+=== c2s3
+@qısa
+Tester layihəyə tələblər yazılanda qoşulmalıdır: sənəddəki sualı vaxtında vermək kodu, testi və sənədi yenidən yazmaqdan qat-qat ucuzdur. Bu yanaşma “shift left” adlanır.
+@yadda
+- Erkən tapılan defekt ən ucuz defektdir.
+- Tələbləri və maketləri oxumaq da testdir — statik test.
+- Shift left — testi prosesin əvvəlinə çəkmək.
+@dərin
+### Erkən testin formaları
+- Tələblərin review-su: qeyri-müəyyən sözləri tapmaq, sual vermək (Fəsil 10).
+- Dizayn maketlərinə baxış: boş vəziyyət, xəta mesajı, uzun mətn necə görünür?
+- Acceptance criteria-nı birgə yazmaq — proqramçı, tester və PO bir masada (bəzən “three amigos” adlanır).
+- Unit testləri proqramçı ilə müzakirə etmək: “sərhəd halları da yoxlanırmı?”
+
+### Shift right — əks istiqamət
+Müasir komandalar həm də “shift right” edir: canlı sistemi monitorinq etmək, istifadəçi davranışını izləmək, yeni funksiyanı əvvəl istifadəçilərin kiçik hissəsinə açmaq. Bu, erkən testi əvəz etmir, tamamlayır.
+
+### Niyə komandalar erkən testə müqavimət göstərir?
+“Hələ kod yoxdur, tester nə yoxlasın?” düşüncəsi. Tester-in vəzifəsi dəyərini göstərməkdir: tələbdən tapılan bir ciddi sual bir neçə günlük işi xilas edə bilər. Belə halları qeyd et və retrospektivdə misal kimi göstər.
+
+### Tipik yanlış anlama
+“Erkən test — kodu erkən test etməkdir.” Əsas fikir başqadır: defektin yarandığı ən erkən nöqtədə — çox vaxt sənəddə — onu tutmaq.
+@nümunə
+**Tapşırıq.** Tələb: “İstifadəçi profilində telefon nömrəsini dəyişə bilər.” Kod hələ yazılmayıb. Erkən test kimi 4 sual yaz və hər birinin hansı gələcək problemin qarşısını aldığını göstər.
+@addımlar
+1. **“Yeni nömrə SMS kodu ilə təsdiqlənirmi?”** — kimsə başqasının nömrəsini yazıb hesabı ələ keçirə bilər (təhlükəsizlik).
+2. **“Hansı format qəbul olunur: yalnız +994, yoxsa xarici nömrələr də?”** — validasiya qaydası kodda və testdə fərqli olmasın.
+3. **“Köhnə nömrəyə xəbərdarlıq gedirmi?”** — oğurlanmış hesabı sahibi tez görsün.
+4. **“Nömrə başqa hesabda artıq varsa nə olur?”** — dublikat hesablar və login qarışıqlığı.
+5. **Nəticə:** 4 sual bir neçə dəqiqə çəkdi, amma hər biri kod yazıldıqdan sonra tapılsaydı, yenidən dizayn, kod və test tələb edərdi.
+@növbən
+Tələb: “İstifadəçi sifarişini 1 saat ərzində ləğv edə bilər.” Kod yazılmazdan əvvəl verəcəyin 4 sualı yaz və hər birinin hansı defektin qarşısını ala biləcəyini qeyd et.
+
+=== c2s4
+@qısa
+Defektlərin çoxu az sayda modulda toplanır — adətən ən mürəkkəb, ən çox dəyişən və ya ən yeni hissələrdə. Defekt çox tapılan yerə daha çox test ayırmaq məntiqlidir.
+@yadda
+- Defektlər bərabər paylanmır, qruplaşır.
+- Mürəkkəb, yeni və tez-tez dəyişən modullar daha risklidir.
+- Defekt statistikası testin harada dərinləşəcəyini göstərir.
+@dərin
+### Niyə qruplaşırlar?
+- **Mürəkkəblik:** çox şərtli məntiq (endirimlər, vergilər, statuslar) səhvə daha açıqdır.
+- **Dəyişiklik tezliyi:** hər dəyişiklik yeni risk gətirir.
+- **İnteqrasiya nöqtələri:** ödəniş, SMS, xəritə kimi xarici servislərlə əlaqə.
+- **Texniki borc:** köhnə, sənədsiz, “toxunmağa qorxulan” kod.
+
+### Statistikanı haradan almalı?
+Jira-da baqları modula (Component) görə qruplaşdır: JQL ilə `issuetype = Bug AND created >= -90d` sorğusunu işlət və nəticəni komponentə görə say. Son 3 ayın mənzərəsi testin fokusunu dəyişməyə əsas verir.
+
+### Diqqətli ol: qruplaşma “kor nöqtə” də yarada bilər
+Hamı bir modula baxanda, digər modullardakı defektlər gözdən qaça bilər. Bəzən bir modulda az baq tapılması onun yaxşı olduğunu yox, az test olunduğunu göstərir. Ona görə vaxtın bir hissəsi az yoxlanan sahələrin exploratory testinə ayrılmalıdır.
+
+### Tipik yanlış anlama
+“Bir modulda çox baq tapıldı, deməli, digərləri təmizdir.” Prinsip 1-i xatırla: tapılmayan defekt yox olmuş defekt deyil.
+@nümunə
+**Tapşırıq.** Son relizdə 50 baq tapılıb: Səbət — 22, Ödəniş — 15, Profil — 5, Axtarış — 4, Kataloq — 4. Növbəti relizdə test vaxtını necə bölərdin?
+@addımlar
+1. **Faizləri hesabla:** Səbət 44%, Ödəniş 30%, qalan üç modul birlikdə 26%.
+2. **Qruplaşmanı gör:** baqların təxminən ¾-ü iki moduldadır — Prinsip 4.
+3. **Vaxtı böl:** məsələn, vaxtın 40%-i Səbət, 30%-i Ödəniş, 30%-i qalan modullar və exploratory sessiyalar üçün.
+4. **Kor nöqtəni yoxla:** Profil, Axtarış və Kataloqda az baq tapılması az test olunduğu üçün də ola bilər — hər biri üçün qısa exploratory sessiya planlaşdır.
+@növbən
+Mobil bank tətbiqində son 2 ayın baqları: Köçürmələr — 18, Kartlar — 12, Kommunal ödənişlər — 3, Bildirişlər — 2, Ayarlar — 1. Test vaxtını faizlə necə bölərdin və kor nöqtə riskini necə azaldardın?
+
+=== c2s5
+@qısa
+Eyni testləri təkrar-təkrar icra etdikcə onlar yeni defekt tapmağı dayandırır. Yeni defekt tapmaq üçün testləri yeniləmək, yeni data və ssenarilər əlavə etmək lazımdır; regression isə köhnə funksiyaları qorumaq üçün qalır.
+@yadda
+- Köhnə testlər tapa biləcəklərini artıq tapıb.
+- Yeni defekt üçün yeni ssenari, yeni data, exploratory test lazımdır.
+- Regression testlərinin təkrarı faydalıdır — məqsədi fərqlidir.
+@dərin
+### Niyə “köhnəlir”?
+Proqramçılar tez-tez düşən testlərin yoxladığı sahələri daha diqqətlə yazmağa başlayır. Nəticədə həmin testlər həmişə keçir, amma defektlər yoxlanmayan yerlərə “köçür”. Test dəsti dəyişmirsə, onun tutduğu tor da dəyişmir.
+
+### Testləri necə “təzələmək” olar?
+- **Data dəyişkənliyi:** hər dəfə eyni “test@example.com” yerinə fərqli uzunluqda, simvollu, Azərbaycan hərfli datalar.
+- **Yeni ssenarilər:** son real baqlardan, müştəri şikayətlərindən, analitikadan götürülən yollar.
+- **Texnika dəyişmək:** EP ilə yazılmış dəstə BVA, vəziyyət keçidləri və error guessing əlavə etmək.
+- **Exploratory sessiyalar:** qeydlərlə, məqsədlə (charter), yeni gözlə.
+- **Review:** hər rüb test dəstini nəzərdən keçirib köhnəlmiş və təkrarlanan testləri silmək.
+
+### Regression ilə qarışdırma
+Regression dəsti “sınmadığını təsdiqləmək” üçündür — onun təkrarlanması məqsədəuyğundur. Pestisid paradoksu “yeni defekt tapmaq” məqsədi ilə bağlıdır. İkisi bir-birini istisna etmir.
+
+### Tipik yanlış anlama
+“Testlər keçirsə, test dəsti yaxşıdır.” Həmişə keçən test dəsti ya məhsulun yaxşı olduğunu, ya da testlərin köhnəldiyini göstərir — hansı olduğunu yoxlamaq lazımdır.
+@nümunə
+**Tapşırıq.** Login funksiyası üçün 2 ildir eyni 10 test icra olunur və hamısı keçir. Amma istifadəçilər “şifrəni bərpa etdikdən sonra köhnə şifrə ilə də giriş olur” baqını tapıb. Test dəstini necə yeniləyərdin?
+@addımlar
+1. **Boşluğu tap:** mövcud testlər yalnız login səhifəsinə baxır, “şifrə bərpası → login” ardıcıllığı yoxlanmır.
+2. **Yeni ssenari əlavə et:** şifrəni bərpa et → köhnə şifrə ilə daxil olmağa cəhd et → giriş olmamalıdır.
+3. **Data dəyiş:** böyük hərfli email, Azərbaycan hərfli şifrə, 64 simvollu şifrə.
+4. **Exploratory sessiya planlaşdır:** charter — “Hesab təhlükəsizliyi axınlarını (bərpa, çıxış, sessiya) kəşf et”.
+5. **Regression-a əlavə et:** tapılan baq üçün yazılan test daimi regression dəstinə düşür ki, bir daha qayıtmasın.
+@növbən
+Onlayn mağazanın axtarış funksiyası üçün 1 ildir eyni 8 test icra olunur. Testləri təzələmək üçün 5 konkret dəyişiklik təklif et: yeni data, yeni ssenari, yeni texnika və exploratory charter daxil olmaqla.
+
+=== c2s6
+@qısa
+Hər məhsul üçün fərqli test yanaşması lazımdır: bank tətbiqində təhlükəsizlik və hesablama, oyunda performans və əyləncə, tibbi proqramda etibarlılıq və sənədləşmə önə çıxır. “Universal test planı” yoxdur.
+@yadda
+- Test yanaşması məhsulun riskindən asılıdır.
+- Kontekstə domen, istifadəçilər, qanunlar, komanda və vaxt daxildir.
+- Hər layihədə sual ver: “Burada ən böyük risk nədir?”
+@dərin
+### Kontekst nələrdən ibarətdir?
+- **Domen:** maliyyə, səhiyyə, oyun, e-ticarət, dövlət xidməti.
+- **İstifadəçilər:** gənclər, yaşlılar, peşəkarlar, məhdudiyyətli insanlar.
+- **Qanun və standartlar:** fərdi məlumatların qorunması, əlçatanlıq tələbləri, sənaye standartları.
+- **Texnologiya:** veb, mobil, API, oyun mühərriki, cihaz.
+- **Layihə:** büdcə, vaxt, komandanın təcrübəsi, Agile və ya ardıcıl model.
+
+### Eyni funksiya — fərqli test
+“Login” funksiyasını götürək. Bankda: iki faktorlu doğrulama, bloklanma qaydaları, sessiya vaxtı. Mobil oyunda: Google/Apple hesabı ilə giriş, qonaq rejimi, irəliləyişin itməməsi. Daxili korporativ sistemdə: şirkət hesabı ilə giriş (SSO), rollar.
+
+### Startap və böyük şirkət
+Startapda sürət və öyrənmə vacibdir: exploratory test, kritik yolların avtomatlaşdırılması, az sənəd. Böyük bankda isə audit üçün izlənə bilən test case-lər, RTM və formal hesabatlar tələb olunur. İkisi də “düzgün”dür — öz kontekstində.
+
+### Tipik yanlış anlama
+“Bir layihədə işləyən yaxşı test planı hər yerdə işləyər.” Şablon kömək edə bilər, amma risklər hər dəfə yenidən düşünülməlidir.
+@nümunə
+**Tapşırıq.** İki məhsul: (a) uşaqlar üçün əlifba öyrədən mobil oyun, (b) aptek şəbəkəsinin dərman sifarişi tətbiqi. Hər biri üçün ən vacib 3 test sahəsini seç və səbəbini yaz.
+@addımlar
+1. **(a) Uşaq oyunu:** istifadə rahatlığı (uşaq oxumağı bilmir — böyük düymələr, səs), təhlükəsizlik (uşağın təsadüfən ödəniş etməməsi, reklamların uyğunluğu), cihaz uyğunluğu (köhnə planşetlər).
+2. **(b) Dərman tətbiqi:** məlumatın düzgünlüyü (dərman adı, doza, qiymət), resept tələb edən dərmanlar üçün qaydalar, şəxsi və tibbi məlumatların qorunması.
+3. **Fərqi izah et:** oyunda əsas risk uşağın təcrübəsi və valideynin pulu, dərman tətbiqində — sağlamlıq və qanun. Eyni “sifariş” funksiyası belə fərqli dərinlikdə yoxlanılır.
+@növbən
+Universitet üçün imtahan nəticələrini göstərən portal və musiqi dinləmə tətbiqi üçün ən vacib 3 test sahəsini yaz. Hər seçimi kontekstin bir elementi (domen, istifadəçi, qanun, texnologiya) ilə əsaslandır.
+
+=== c2s7
+@qısa
+Defektsiz proqram hələ uğurlu proqram deyil. Məhsul istifadəçinin real ehtiyacını ödəmirsə və ya istifadəsi çətindirsə, testlərdən keçməsi onu xilas etmir — validation da lazımdır.
+@yadda
+- “Tələbə uyğundur” hələ “istifadəçiyə lazımdır” demək deyil.
+- Defektlərin olmaması yanlış məhsulu düzgün etmir.
+- Tester istifadəçi kimi düşünərək validation suallarını da verir.
+@dərin
+### Yanılmanın mənbəyi
+Komanda yalnız tələbə baxanda, tələbin özünün səhv ola biləcəyini unudur. Tələblər bəzən istifadəçinin yox, şirkətin daxili təsəvvürünü əks etdirir. Nəticə: “mükəmməl işləyən”, amma heç kimin istifadə etmədiyi funksiya.
+
+### Tester bunun qarşısını necə alır?
+- **İstifadəçi ssenariləri:** “Real insan bu funksiyanı hansı məqsədlə, hansı vəziyyətdə işlədəcək?”
+- **Usability yoxlamaları:** yeni istifadəçi köməksiz tapşırığı yerinə yetirə bilirmi?
+- **Rəy kanalları:** beta test, istifadəçi şikayətləri, analitika (hansı düymə heç basılmır?).
+- **Tələbə sual:** “Bu funksiya hansı problemi həll edir? Uğuru nə ilə ölçəcəyik?”
+
+### Prinsip 1 ilə fərq
+Prinsip 1 deyir: “Test defektin yoxluğunu sübut edə bilməz.” Prinsip 7 deyir: “Defekt həqiqətən olmasa belə, məhsul uğursuz ola bilər.” Birincisi testin limiti, ikincisi məhsulun dəyəri haqqındadır.
+
+### Tipik yanlış anlama
+“Validation tester-in işi deyil, biznesin işidir.” Son söz biznesindir, amma tester istifadəçiyə ən yaxın baxan komandaüzvüdür — onun müşahidələri çox dəyərlidir.
+@nümunə
+**Tapşırıq.** Dövlət xidmətləri tətbiqində “arayış sifarişi” funksiyası bütün testlərdən keçib. Amma istifadəçilərin 70%-i ilk addımda — 12 sahəlik formada çıxıb gedir. Tester olaraq nə təklif edərdin?
+@addımlar
+1. **Prinsipi tanı:** defekt yoxdur, amma məhsul məqsədinə çatmır — defektsizlik yanılması.
+2. **Səbəbi araşdır:** hansı sahədə istifadəçilər dayanır? Hansı sahələr artıq sistemdə var (ad, FİN, ünvan) və təkrar soruşulur?
+3. **Validation testi təklif et:** 5 real istifadəçi ilə qısa usability sessiyası — tapşırığı köməksiz yerinə yetirə bilirlərmi?
+4. **Nəticəni komandaya faktla çatdır:** “Forma tələbə uyğundur, amma istifadəçilərin çoxu onu tamamlamır; 12 sahədən 7-si avtomatik doldurula bilər.”
+@növbən
+Fitness tətbiqində yeni “məşq planı yarat” funksiyası səhvsiz işləyir, amma ilk ayda cəmi 2% istifadəçi onu açıb. Prinsip 7-yə əsaslanaraq səbəbləri necə araşdırardın? 4 addımlıq plan yaz.

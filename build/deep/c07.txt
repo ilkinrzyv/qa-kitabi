@@ -1,0 +1,253 @@
+=== c7s1
+@qısa
+Black box testdə sistemin içinə baxmırıq: yalnız girişi veririk və çıxışı gözlənilən nəticə ilə müqayisə edirik. Test ideyaları tələblərdən və spesifikasiyadan gəlir — manual tester-in əsas yanaşması budur.
+@yadda
+- Black box — kodu bilmədən, giriş və çıxışa görə test.
+- Test bazası: tələblər, user story, maketlər.
+- Əsas texnikalar: EP, BVA, qərar cədvəli, vəziyyət keçidləri.
+@dərin
+### Güclü tərəfləri
+- **İstifadəçi baxışı:** istifadəçi də kodu görmür — black box onun təcrübəsini yoxlayır.
+- **Müstəqillik:** tester proqramçının düşüncə “tələsinə” düşmür; kodda olmayan, amma tələbdə olan davranışı da tutur.
+- **Erkən başlamaq olar:** test case-lər kod hazır olmamış tələbdən yazılır.
+
+### Zəif tərəfləri
+- Kodun hansı hissələrinin heç işə düşmədiyini görmək olmur.
+- Gizli məntiq (məsələn, xüsusi bir müştəri ID-si üçün ayrıca qayda) tələbdə yoxdursa, tapılmaya bilər.
+Ona görə black box və white box bir-birini tamamlayır.
+
+### Test bazası olmayanda
+Tələb yazılmayıbsa, tester digər oracle-lardan istifadə edir: köhnə versiya, oxşar məhsul, istifadəçi gözləntisi, ümumi qəbul olunmuş qaydalar (məsələn, “şifrə ekranda gizli görünür”). Amma qeyri-müəyyən halda soruşmaq həmişə daha yaxşıdır.
+
+### Tipik yanlış anlama
+“Black box — sistemsiz, təsadüfi test deməkdir.” Əksinə, black box ən sistemli texnikalara əsaslanır: tələbi təhlil edirsən, sinifləri, sərhədləri, şərtləri və vəziyyətləri ayırırsan.
+@nümunə
+**Tapşırıq.** Valyuta konvertoru: istifadəçi məbləğ və valyuta seçir, nəticə AZN-lə göstərilir. Kodu görmürsən. Black box test ideyalarını yaz.
+@addımlar
+1. **Pozitiv:** 100 USD → kursa görə AZN; nəticəni rəsmi kursla müqayisə et (oracle).
+2. **Sərhəd və xüsusi dəyərlər:** 0, 0,01, çox böyük məbləğ, mənfi ədəd.
+3. **Format:** vergül və nöqtə (12,5 və 12.5), boşluq, hərf.
+4. **Yuvarlaqlaşdırma:** nəticə neçə rəqəmə yuvarlaqlaşdırılır, tələb nə deyir?
+5. **Vaxt:** kurs gün ərzində dəyişəndə köhnə kurs göstərilmirmi?
+@növbən
+Yaş kalkulyatoru: istifadəçi doğum tarixini daxil edir, sistem yaşı hesablayır. Kodu bilmədən 5 black box test ideyası yaz (pozitiv, sərhəd, format, xüsusi tarix, oracle daxil olmaqla).
+
+=== c7s2
+@qısa
+White box testdə kodun içinə baxırıq: testlər kodun yollarını işə salmaq üçün seçilir. Əsas ölçü coverage-dir: statement coverage hər sətrin, branch coverage hər budağın ən azı bir dəfə işə düşdüyünü göstərir.
+@yadda
+- White box — kodu bilərək, daxili yollara görə test.
+- Branch coverage statement coverage-dən güclüdür.
+- 100% coverage defektsizlik demək deyil.
+@dərin
+### Statement və branch fərqi bir misalda
+```javascript
+function bonus(total) {
+  let b = 0;
+  if (total > 100) {
+    b = 10;
+  }
+  return b;
+}
+```
+Yalnız `bonus(150)` testi bütün sətirləri işə salır — **statement coverage 100%**. Amma `if`-in “yalan” yolu (100 və ya az) heç vaxt yoxlanmayıb — **branch coverage 50%**. `bonus(50)` əlavə edəndə branch coverage da 100% olur. Buna görə branch coverage statement coverage-i özündə saxlayır, əksi isə doğru deyil.
+
+### Coverage-in limiti
+Coverage “kodun yazılmış hissəsi işə düşdümü?” sualına cavab verir. Kodda olmayan, amma olmalı olan davranışı (məsələn, unudulmuş sərhəd qaydası) coverage göstərmir. Bu, “yoxluğun” defektidir — onu black box tutur.
+
+### Tester white box-dan necə faydalanır?
+Kod oxumaq bacarığı tələb olunmur, amma coverage hesabatına baxmaq və proqramçıdan “bu şərtin yalan yolu test olunubmu?” soruşmaq faydalıdır. Fəsil 18-də sadə kodları oxumağı öyrənəcəksən.
+
+### Tipik yanlış anlama
+“White box yalnız proqramçının işidir.” Unit testləri adətən proqramçı yazır, amma kod review-da və test strategiyasında tester-in white box düşüncəsi də dəyərlidir.
+@nümunə
+**Tapşırıq.** Kod: `if (age < 18) { return 'uşaq'; } else if (age < 65) { return 'böyük'; } return 'təqaüdçü';` 100% branch coverage verən minimum test dəstini tap və sərhədlərlə gücləndir.
+@addımlar
+1. **Yolları say:** üç nəticə var — `uşaq`, `böyük`, `təqaüdçü`; hər biri ayrıca budaqdır.
+2. **Minimum dəst:** 10 → uşaq, 30 → böyük, 70 → təqaüdçü — 3 test 100% branch coverage verir.
+3. **Sərhədlərlə gücləndir:** 17 → uşaq, 18 → böyük, 64 → böyük, 65 → təqaüdçü.
+4. **Nəticə:** coverage yolları əhatə edir, sərhədlər isə `<` ilə `<=` qarışıqlığını tutur — ikisi birlikdə güclüdür.
+@növbən
+Kod: `if (score >= 50) { if (score >= 90) { return 'əla'; } return 'keçdi'; } return 'kəsildi';` 100% branch coverage verən minimum testləri tap, sonra sərhəd dəyərlərini əlavə et.
+
+=== c7s3
+@qısa
+Grey box qismən biliklə test etməkdir: kodu bilmirsən, amma sistemin quruluşunu — API-ləri, bazanı, logları — bilirsən və bundan istifadə edirsən. Müasir manual tester-lərin çoxu belə işləyir.
+@yadda
+- Grey box — black box + sistemin quruluşu haqqında bilik.
+- Alətlər: DevTools, SQL, API, loglar.
+- Defektin harada olduğunu daha dəqiq göstərməyə imkan verir.
+@dərin
+### Grey box tester nə bilir?
+- Hansı ekranın hansı API-ni çağırdığını (Network paneli).
+- Datanın bazada hansı cədvəldə saxlandığını (SQL).
+- Hansı xidmətlərin bir-biri ilə danışdığını (arxitektura sxemi).
+- Server loglarına harada baxmaq olduğunu.
+
+### Grey box düşüncəsinə misallar
+- Ekranda “Sifariş qəbul olundu” yazılır, amma bazada sifariş yoxdur — tək UI testi bunu görməzdi.
+- Formada maksimum uzunluq 50 simvoldur, API isə 500 qəbul edir — UI-ni keçən sorğu ilə yoxlanır.
+- Keş (cache) səbəbindən köhnə qiymət görünür — tester keşi təmizləyib müqayisə edir.
+
+### Tester üçün dəyəri
+Grey box bug report-u güclü edir: “Düymə basılanda POST /api/orders 500 qaytarır, cavab: ‘null reference’” — proqramçı problemi saatlarla axtarmır. Bu bacarıq junior-u middle-dan ayıran əsas fərqlərdəndir.
+
+### Tipik yanlış anlama
+“Grey box üçün proqramlaşdırma bilmək lazımdır.” DevTools-un Network panelini oxumaq və sadə SQL sorğusu yazmaq kifayətdir — bunları Fəsil 13 və 16-da öyrənəcəksən.
+@nümunə
+**Tapşırıq.** İstifadəçi profilində adını “Leyla” əvəzinə “Leyla Hüseynova” edir, “Yadda saxla” basır, ekranda “Saxlandı” görünür, amma səhifəni yeniləyəndə köhnə ad qayıdır. Grey box yanaşması ilə araşdır.
+@addımlar
+1. **Network-a bax:** “Yadda saxla” basılanda sorğu gedirmi? Hansı status qayıdır?
+2. **Cavabı oxu:** 200 qayıdırsa, cavabda yeni ad varmı?
+3. **Bazanı yoxla:** `SELECT name FROM customers WHERE id = …` — ad bazada dəyişibmi?
+4. **Nəticə çıxar:** sorğu getmirsə — frontend; 200, amma bazada köhnə ad — backend yazmır; bazada yeni ad, ekranda köhnə — keş və ya frontend oxuması.
+@növbən
+Onlayn mağazada endirim kodu tətbiq olunur, ekranda yeni məbləğ görünür, amma sifariş təsdiq e-poçtunda köhnə məbləğ yazılıb. Grey box yanaşması ilə 4 addımlıq araşdırma planı yaz.
+
+=== c7s4
+@qısa
+Statik test proqramı işə salmadan aparılır: tələb, dizayn, sənəd və kod nəzərdən keçirilir. Dinamik test isə proqramı işə salaraq yoxlamaqdır. Statik testin əsas dəyəri defekti çox erkən tapmasıdır.
+@yadda
+- Statik — işə salmadan, dinamik — işə salaraq.
+- Review növləri: informal, walkthrough, technical review, inspection.
+- Statik test failure yox, birbaşa defekt tapır.
+@dərin
+### Statik test nəyi daha yaxşı tapır?
+Dinamik test failure görür və ondan defektə gedir. Statik test isə defekti birbaşa tapır — hətta heç vaxt failure yaratmayacaq olanları belə: ziddiyyətli tələb, unudulmuş xəta halı, oxunmayan kod, təhlükəli parol saxlanması.
+
+### Review prosesi necə gedir?
+1. **Planlaşdırma:** nə nəzərdən keçiriləcək, kim iştirak edəcək.
+2. **Fərdi hazırlıq:** hər iştirakçı sənədi oxuyub qeydlər edir.
+3. **Müzakirə:** tapılan problemlər birlikdə qiymətləndirilir.
+4. **Düzəliş və izləmə:** müəllif düzəldir, nəticə yoxlanılır.
+
+### Rollar (formal review-da)
+Müəllif (author), moderator (görüşü idarə edir), yoxlayanlar (reviewers), protokolçu (scribe). Informal review-da bu rollar olmur — sadəcə həmkarın baxışı.
+
+### Statik analiz alətləri
+ESLint (JavaScript), SonarQube (bir çox dil) kodu avtomatik yoxlayır: istifadə olunmayan dəyişən, mümkün null xətası, təhlükəsizlik nümunələri. Bunlar CI-da işləyir və hər dəyişikliyi yoxlayır.
+
+### Tipik yanlış anlama
+“Review — vaxt itkisidir.” Bir saatlıq tələb review-u günlərlə yenidən yazılan kodun qarşısını ala bilər — bu, ən ucuz test formasıdır.
+@nümunə
+**Tapşırıq.** Bu tələb mətnində statik test (review) apar və tapdığın problemləri yaz: “Qeydiyyat formasında istifadəçi adı, email və şifrə daxil edilir. Şifrə güclü olmalıdır. Qeydiyyatdan sonra istifadəçi ana səhifəyə yönləndirilir. Şifrə ən azı 6 simvol olmalıdır.”
+@addımlar
+1. **Qeyri-müəyyənlik:** “güclü şifrə” nə deməkdir — böyük hərf, rəqəm, simvol tələb olunurmu?
+2. **Ziddiyyət ehtimalı:** “ən azı 6 simvol” başqa sənəddə “8 simvol”dursa? Yoxla və soruş.
+3. **Çatışmayanlar:** istifadəçi adının qaydaları, email-in təsdiqi, artıq mövcud email halı, xəta mesajları yoxdur.
+4. **Axın:** qeydiyyatdan sonra avtomatik daxil olurmu, yoxsa email təsdiqi gözlənilir?
+5. **Nəticə:** bu 4 problem kod yazılmamış tapıldı — dinamik testdə tapılsaydı, kod və test yenidən yazılmalı olardı.
+@növbən
+Bu tələbə review et və ən azı 4 problem tap: “İstifadəçi şəkil yükləyə bilər. Şəkil kiçik olmalıdır. Yüklənəndən sonra şəkil profildə görünür. Böyük şəkillər qəbul olunmur.”
+
+=== c7s5
+@qısa
+Pozitiv test düzgün data ilə sistemin gözlənilən işi gördüyünü, neqativ test isə yanlış data ilə düzgün reaksiya verdiyini yoxlayır: aydın xəta mesajı, çökməmək, məlumatın qorunması. Neqativ testlər adətən daha çox olur.
+@yadda
+- Pozitiv — “düzgün işləyirmi?”, neqativ — “səhvə düzgün reaksiya verirmi?”.
+- Neqativ testin gözlənilən nəticəsi də konkret olmalıdır.
+- Hər neqativ testdə yalnız bir yanlış dəyər olsun.
+@dərin
+### Neqativ testin “düzgün reaksiyası” nədir?
+1. **Rədd et:** yanlış data qəbul olunmur, bazaya yazılmır.
+2. **Aydın mesaj:** nə səhvdir və necə düzəltmək olar — sahənin yanında.
+3. **Sabitlik:** proqram çökmür, ağ səhifə və ya 500 xətası yoxdur.
+4. **Təhlükəsizlik:** xəta mesajı daxili məlumatı (kod, baza adı) açmır.
+5. **Davamlılıq:** düzgün sahələrdəki data itmir — istifadəçi hər şeyi yenidən yazmır.
+
+### Neqativ ideyaların mənbələri
+- **Tip:** ədəd yerinə hərf, tarix yerinə mətn.
+- **Format:** @ olmayan email, 9 rəqəmli telefon.
+- **Aralıq:** limitdən kiçik və böyük.
+- **Boşluq:** boş sahə, yalnız boşluqlar.
+- **Vəziyyət:** bloklanmış hesab, müddəti bitmiş kod.
+- **Vaxt:** sessiya bitəndən sonra əməliyyat.
+
+### Neçə neqativ test kifayətdir?
+Hər mümkün yanlışlığı yox, hər **invalid sinifi** bir dəfə yoxlamaq lazımdır (Fəsil 8). Bu, neqativ testləri sistemli və sayca idarə olunan edir.
+
+### Tipik yanlış anlama
+“Neqativ test — sistemi sındırmaq üçün təsadüfi şeylər yazmaqdır.” Neqativ test də tələbdən çıxır: tələb nə qəbul olunmalıdırsa, qalanı rədd olunmalıdır — və bunun necə olacağı yoxlanılır.
+@nümunə
+**Tapşırıq.** Bank kartı ilə ödəniş formasında kart nömrəsi sahəsi var (16 rəqəm). 3 pozitiv və 6 neqativ test yaz, gözlənilən nəticələrlə.
+@addımlar
+1. **Pozitiv:** düzgün 16 rəqəmli test kartı; boşluqlarla yazılmış nömrə (4111 1111 1111 1111) — avtomatik təmizlənir; yapışdırılmış (paste) nömrə.
+2. **Neqativ — uzunluq:** 15 rəqəm və 17 rəqəm — “Kart nömrəsi 16 rəqəm olmalıdır”.
+3. **Neqativ — tip:** hərf daxil olan nömrə — hərf qəbul olunmur və ya aydın xəta.
+4. **Neqativ — boş:** boş sahə — “Kart nömrəsini daxil edin”.
+5. **Neqativ — yoxlama rəqəmi:** formatca düzgün, amma mövcud olmayan nömrə — “Kart nömrəsi yanlışdır”.
+6. **Neqativ — müddət:** keçmiş tarixli kart — “Kartın müddəti bitib”, ödəniş göndərilmir.
+@növbən
+Uçuş bileti axtarışında “sərnişin sayı” sahəsi var (1–9). 2 pozitiv və 5 neqativ test yaz, hər birinin gözlənilən nəticəsi ilə.
+
+=== c7s6
+@qısa
+Exploratory testdə öyrənmə, test dizaynı və icra eyni vaxtda gedir: tester sistemi kəşf edərək növbəti addımı seçir. Plansız deyil — məqsədi (charter), vaxt limiti (timebox) və qeydləri olur.
+@yadda
+- Charter + timebox + qeydlər = strukturlu exploratory.
+- Ad hoc — plansız, exploratory — idarə olunan kəşf.
+- Yeni, az sənədləşdirilmiş və riskli sahələrdə xüsusilə effektivdir.
+@dərin
+### Sessiyaya əsaslanan test idarəetməsi (SBTM)
+Bu üsulda iş 60–90 dəqiqəlik sessiyalara bölünür. Hər sessiyanın sonunda qısa hesabat yazılır: nə yoxlandı, nə tapıldı, hansı suallar yarandı, vaxtın neçə faizi test, baq yazmaq və qurulmaya getdi. Bu, exploratory testi ölçülə bilən edir.
+
+### Charter necə yazılır?
+Sadə formul: **“[Hədəfi] kəşf et, [resurs/üsulla], [nəyi] tapmaq üçün.”**
+Məsələn: “Səbəti kəşf et, fərqli məhsul sayları və endirim kodları ilə, hesablama xətalarını tapmaq üçün.”
+
+### Faydalı heuristikalar
+- **CRUD:** hər obyekt üçün yarat, oxu, dəyiş, sil — hər addımı yoxla.
+- **Goldilocks:** çox kiçik, çox böyük, tam uyğun dəyər.
+- **Tur (tour) metaforu:** “pul turu” (ən çox istifadə olunan funksiyalar), “arxa küçələr turu” (az istifadə olunan funksiyalar), “pozucu turu” (sistemi bilərəkdən çətin vəziyyətə salmaq).
+
+### Qeydlər niyə vacibdir?
+Qeydsiz exploratory nəticəni təkrarlamağa imkan vermir. Ekran videosu və qısa qeydlər (vaxt, addım, müşahidə) tapılan baqı report-a çevirməyi asanlaşdırır.
+
+### Tipik yanlış anlama
+“Exploratory test test case-lərin əvəzidir.” Onlar bir-birini tamamlayır: test case-lər bilinən riskləri sistemli yoxlayır, exploratory bilinməyənləri tapır.
+@nümunə
+**Tapşırıq.** Mobil bank tətbiqinin “kommunal ödəniş” bölməsi üçün 45 dəqiqəlik exploratory sessiya planla: charter, heuristikalar və qeyd formatı.
+@addımlar
+1. **Charter:** “Kommunal ödənişləri kəşf et, fərqli xidmətlər, məbləğlər və şəbəkə vəziyyətləri ilə, ödəniş və balans uyğunsuzluqlarını tapmaq üçün.”
+2. **Heuristikalar:** Goldilocks (0,01 AZN, böyük borc, tam borc), pozucu tur (ödəniş zamanı tətbiqi fona salmaq, internet kəsmək), CRUD (şablon yarat, dəyiş, sil).
+3. **Qeyd formatı:** vaxt — addım — müşahidə — sual/baq; ekran videosu açıq.
+4. **Sonda hesabat:** tapılan baqlar, suallar, yoxlanmayan sahələr və növbəti sessiya üçün ideyalar.
+@növbən
+Sevdiyin musiqi tətbiqinin “playlist” funksiyası üçün 30 dəqiqəlik exploratory sessiya planla: charter yaz, 3 heuristika seç və qeyd formatını müəyyən et.
+
+=== c7s7
+@qısa
+Manual testi insan, avtomatik testi skript icra edir. Avtomatik test sürətli və təkrarlana biləndir, amma yazmaq və dəstəkləmək xərc tələb edir; manual test isə yeni funksiyalar, usability və exploratory üçün əvəzsizdir.
+@yadda
+- Avtomatlaşdırma təkrarlanan və sabit testlər üçündür.
+- İnsan gözü tələb edən işlər manual qalır.
+- Avtomatlaşdırma manual testi əvəz etmir, onu daha dəyərli işlərə azad edir.
+@dərin
+### Avtomatlaşdırmanın qiyməti nədən ibarətdir?
+- **Yazmaq:** test kodunu hazırlamaq manual icradan dəfələrlə uzun çəkir.
+- **Dəstəkləmək:** UI dəyişəndə testlər sınır və düzəldilməlidir.
+- **İnfrastruktur:** CI, test mühitləri, test datası.
+Ona görə “bu testi neçə dəfə icra edəcəyik?” sualı əsasdır: tez-tez təkrarlanmayan test avtomatlaşdırmanın xərcini qaytarmır.
+
+### Sadə qərar cədvəli
+| Sual | Bəli → | Xeyr → |
+| --- | --- | --- |
+| Test tez-tez təkrarlanacaq? | avtomatlaşdırmağa namizəd | manual |
+| Funksiya sabitdir? | avtomatlaşdır | gözlə, manual saxla |
+| Nəticə dəqiq yoxlana bilir? | avtomatlaşdır | insan qiymətləndirməsi |
+| Çox data/brauzer kombinasiyası var? | avtomatlaşdırma çox faydalıdır | — |
+
+### Avtomatlaşdırmanın tipik səhvləri
+Hər şeyi UI səviyyəsində avtomatlaşdırmaq, sabit gözləmələr, testlərin bir-birindən asılılığı, düşən testlərə baxmamaq. Bu mövzular Fəsil 19-da ətraflı izah olunur.
+
+### Tipik yanlış anlama
+“Avtomatlaşdırma tester-i lazımsız edəcək.” Avtomatik test yalnız ona deyiləni yoxlayır; nəyin yoxlanacağına, riskə və yeni sahələrin kəşfinə insan qərar verir.
+@nümunə
+**Tapşırıq.** Bu testlərdən hansılarını avtomatlaşdırardın: (a) hər build-də 20 addımlıq login + səbət + ödəniş axını; (b) yeni dizaynın gözə xoş görünməsi; (c) 200 fərqli valyuta cütü üçün konvertasiya nəticəsi; (d) bir dəfəlik köhnə müştəri datasının köçürülməsinin yoxlanması.
+@addımlar
+1. **(a) Avtomatlaşdır** — tez-tez təkrarlanır, kritik axındır, nəticə dəqiq yoxlanır (smoke/regression).
+2. **(b) Manual** — insan qiymətləndirməsi tələb edir; avtomatik vizual müqayisə yalnız dəyişikliyi göstərə bilər.
+3. **(c) Avtomatlaşdır** — çox data, eyni ssenari; data-driven test idealdır.
+4. **(d) Manual + skript köməyi** — bir dəfəlikdir; SQL sorğuları ilə müqayisə faydalıdır, tam avtomat test isə xərcini qaytarmaz.
+@növbən
+Bu testlər üçün qərar ver və səbəbini yaz: (a) hər gecə 5 brauzerdə ana səhifənin açılması; (b) yeni funksiyanın ilk exploratory sessiyası; (c) API-nin 50 endpoint-i üçün status kodları; (d) mobil oyunun “əyləncəli olub-olmaması”.

@@ -1,0 +1,371 @@
+=== c21s1
+@qısa
+Junior QA-dan test nəzəriyyəsi, test dizaynı texnikaları, sənədlər (test case, checklist, bug report), əsas alətlər (Jira, DevTools, Postman) və texniki əsaslar (HTTP, JSON, SQL) gözlənilir. Avtomatlaşdırma çox vaxt üstünlükdür, məcburi deyil. Ən çox isə düşüncə tərzi, ünsiyyət və öyrənmə qabiliyyəti qiymətləndirilir.
+@yadda
+- Minimum: nəzəriyyə + test dizaynı + sənədlər + əsas alətlər.
+- Üstünlük: avtomatlaşdırma, Git, SQL-də sərbəstlik, sertifikat.
+- Bilik sübutla göstərilir: portfolio və konkret nümunələr.
+@dərin
+### İşəgötürən əslində nəyi yoxlayır?
+- **Düşüncə tərzi:** sərhədləri, riskləri, “bəs belə olsa?” suallarını görürsənmi?
+- **Ünsiyyət:** bug report-un aydındırmı, fikrini qısa və dəqiq izah edə bilirsənmi?
+- **Öyrənmə sürəti:** yeni aləti və ya sahəni nə qədər tez mənimsəyirsən?
+- **Dürüstlük:** “bilmirəm, amma belə yoxlayardım” deyə bilirsənmi?
+Aləti öyrətmək asandır, düşüncə tərzini öyrətmək isə çətindir — ona görə müsahibədə tez-tez “bunu necə test edərdin?” soruşulur.
+
+### T-formalı bacarıqlar
+“T” hərfinin üfüqi xətti geniş bazadır: nəzəriyyə, sənədlər, API, SQL, avtomatlaşdırmanın əsasları. Şaquli xətti bir sahədə dərinlikdir: məsələn, API testi və ya oyun testi. Junior üçün geniş baza vacibdir, dərinlik isə ilk 1–2 ildə formalaşır.
+
+### Özünü qiymətləndirmə
+Cədvəldəki hər sahəni 0–2 bal ilə qiymətləndir: 0 — bilmirəm, 1 — nəzəri bilirəm, 2 — praktikada etmişəm və sübutu var. “2” üçün sübut — portfolio-da fayl, link və ya nümunədir.
+
+### Tipik yanlış anlama
+“Junior olmaq üçün hər şeyi bilmək lazımdır.” Elanlardakı tələblər çox vaxt “arzu siyahısı”dır. Əsas tələblərin böyük hissəsini qarşılayırsansa və qalanını öyrənməyə hazır olduğunu sübut edə bilirsənsə, müraciət et.
+@nümunə
+**Tapşırıq.** 21.1-dəki cədvəl üzrə özünü qiymətləndirmə nümunəsi: tutaq ki, SQL — 0, Git — 1, qalan sahələr — 1 və ya 2. Ən zəif iki sahə üçün 4 həftəlik plan qur.
+@addımlar
+1. **Qiymətləndir:** hər sahəyə 0, 1 və ya 2 bal ver; ən zəif sahələr — SQL (0) və Git (1).
+2. **Prioritet:** SQL “Minimum” sütunundadır, Git isə “Üstünlük”də — SQL birinci gəlir.
+3. **Həftə 1–2 (SQL):** Fəsil 16-nın sorğularını təkrarla, məşq bazasında 20 öz sorğunu yaz və nəticələri portfolio-dakı SQL repo-suna əlavə et.
+4. **Həftə 3–4 (Git):** Fəsil 20-nin addımlarını et: Playwright layihəsini GitHub-a yüklə, budaq + PR axınını 3 dəfə təkrarla, README yaz.
+5. **Ölçü:** 4 həftənin sonunda hər iki sahədə “2” bal üçün sübut var — linklər CV-yə əlavə olunur.
+@növbən
+Özünü cədvəl üzrə real qiymətləndir: hər sahəyə 0–2 bal ver, ən zəif iki sahəni seç və 4 həftəlik plan qur. Hər həftə üçün konkret tapşırıq və sonda “sübut” kimi nəyin olacağını yaz.
+
+=== c21s2
+@qısa
+Portfolio bacarığın sübutudur: GitHub-da manual test layihəsi, API test layihəsi, avtomatlaşdırma layihəsi və SQL tapşırıqları — hər biri aydın README ilə. İşəgötürən portfolio-ya cəmi bir neçə dəqiqə baxır, ona görə səliqə və aydınlıq həcmdən vacibdir.
+@yadda
+- Hər repo-nun README-si “nə, necə, nəticə” suallarına cavab verir.
+- Keyfiyyət saydan vacibdir: 3 səliqəli layihə 10 yarımçıq layihədən yaxşıdır.
+- Yalnız test üçün açılmış demo saytlarda işlə.
+@dərin
+### Güclü portfolio-nun əlamətləri
+- **Aydın struktur:** `test-cases/`, `bug-reports/`, `tests/`, `pages/` kimi qovluqlar.
+- **Real nəticələr:** tapılmış defektlər (ekran şəkli və addımlarla), hesabatın ekran şəkli, yaşıl CI nişanı.
+- **Test dizaynının izi:** EP/BVA cədvəlləri, qərar cədvəli — “niyə məhz bu testlər?” sualının cavabı.
+- **Təmiz Git tarixçəsi:** mənalı commit mesajları, node_modules yoxdur.
+
+### GitHub profili
+- Ən yaxşı 3–4 repo-nu profildə sabitlə (pin).
+- Profil README-si: 3–4 sətir — kim olduğun, nə öyrəndiyin, əlaqə.
+- Repo adları mənalı olsun: `swaglabs-manual-testing`, `jsonplaceholder-api-tests`, `playwright-swaglabs`.
+
+### Bug report-ları harada saxlamaq?
+Markdown fayllarında (`bug-reports/BUG-001.md`) və ya repo-nun Issues bölməsində. Issues daha real görünür: başlıq, etiketlər (severity), ekran şəkilləri — Jira-ya bənzər iş axını.
+
+### Tipik yanlış anlama
+“Portfolio yalnız avtomatlaşdırma üçündür.” Manual testin keyfiyyətli sənədləri (test planı, case-lər, bug report-lar) junior üçün ən güclü sübutlardandır — çünki gündəlik işin böyük hissəsi məhz budur.
+@nümunə
+**Tapşırıq.** Namizədin repo-su belədir: adı `test123`, README yoxdur, `node_modules` commit olunub, 2 Playwright testi var (biri `waitForTimeout(5000)` işlədir), commit mesajları — “fix”, “asdf”, “final2”. Yaxşılaşdırma planını prioritet sırası ilə yaz.
+@addımlar
+1. **Ən gözə çarpan problem — node_modules:** `.gitignore` əlavə et, `git rm -r --cached node_modules` və commit. İşəgötürən repo-nu açanda minlərlə fayl görməməlidir.
+2. **README:** layihənin məqsədi, alətlər, quraşdırma (`npm ci`, `npx playwright install`), işə salma (`npx playwright test`), hesabatın ekran şəkli.
+3. **Testlərin keyfiyyəti:** `waitForTimeout` əvəzinə `await expect(…)`; testlərin sayını 8–10-a çatdır (pozitiv, neqativ, sərhəd) və POM tətbiq et.
+4. **Ad və tarixçə:** repo-nu `playwright-swaglabs` adlandır; bundan sonra commit mesajlarını “Add…”, “Fix…” formasında yaz.
+5. **Bonus:** GitHub Actions workflow əlavə et və README-yə CI nişanı qoy — layihənin işlədiyinin sübutu.
+@növbən
+Başqa namizədin manual test portfolio-su: bir Word faylında 120 test case, heç bir bug report yoxdur, test dizaynı texnikalarının izi görünmür, README-də isə yalnız “QA project” yazılıb. Yaxşılaşdırma planını prioritet sırası ilə yaz və hər addımın işəgötürənə nəyi göstərəcəyini izah et.
+
+=== c21s3
+@qısa
+CV 1 səhifədir: başlıq (“Junior QA Engineer”), 2–3 cümləlik xülasə, qruplaşdırılmış bacarıqlar, portfolio linkləri ilə layihələr, ötürülə bilən bacarıqları göstərən təcrübə, təhsil, sertifikatlar və dillər. Hər sətir sübuta söykənməlidir.
+@yadda
+- Ümumi sifətlər yox, rəqəmli nəticələr: “30 test case, 6 defekt”.
+- Elanın açar sözlərini dürüst şəkildə CV-yə uyğunlaşdır.
+- Sadə format: ATS sistemləri cədvəl və şəkilləri pis oxuyur.
+@dərin
+### ATS — CV-ni ilk oxuyan proqram
+Bir çox şirkət müraciətləri ATS (Applicant Tracking System) ilə süzür: proqram CV-dəki açar sözləri elanla müqayisə edir. Tövsiyələr:
+- Elandakı terminləri işlət (“API testing”, “Postman”, “SQL”) — əgər həqiqətən bilirsənsə.
+- Sadə tərtibat: standart başlıqlar, cədvəlsiz və şəkilsiz, PDF formatında.
+- Fayl adı: `Ad_Soyad_QA_CV.pdf`.
+
+### Güclü cümlənin formulu
+**Fel + nə etdin + nəticə (rəqəmlə).**
+- Zəif: “Test case-lər yazmışam.”
+- Güclü: “Swag Labs üçün EP və BVA ilə 30 test case hazırladım, 6 defekt tapıb Jira formatında sənədləşdirdim.”
+
+### Əlaqə bölməsi
+Email, telefon, şəhər, LinkedIn və GitHub linkləri. Linklər işləməlidir — göndərmədən əvvəl hər birini yoxla. Peşəkar görünən email ünvanı (məsələn, ad.soyad@…) seç.
+
+### Tipik yanlış anlama
+“CV nə qədər uzun olsa, bir o qədər təsirlidir.” İşə qəbul mütəxəssisi CV-yə ilk baxışda cəmi bir neçə saniyə ayırır. Qısa, aydın və rəqəmli CV daha çox diqqət çəkir.
+@nümunə
+**Tapşırıq.** Namizəd əvvəl bank filialında 3 il müştəri xidmətləri mütəxəssisi olub. CV-sində yazıb: “Məsuliyyətli, çalışqan, komandada işləməyi bacaran. Bankda müştərilərlə işləmişəm.” Xülasəni və təcrübə bəndlərini QA üçün yenidən yaz.
+@addımlar
+1. **Ümumi sözləri at:** “məsuliyyətli, çalışqan” heç nəyi sübut etmir — onları faktlarla əvəz et.
+2. **Ötürülə bilən bacarıqları tap:** müştəri probleminin təfərrüatını aydınlaşdırmaq (≈ baqı təkrarlamaq), prosedurlara dəqiq əməl etmək (≈ test case icrası), problemləri qeydə almaq (≈ bug report), bank sistemləri ilə iş (≈ domen bilikləri).
+3. **Xülasə:** “Bank sektorunda 3 illik müştəri xidməti təcrübəsi olan Junior QA. Test dizaynı (EP, BVA), bug report, Postman ilə API testi və SQL əsaslarını praktik layihələrdə tətbiq etmişəm. Bank və fintech məhsullarında manual testlə başlamaq istəyirəm.”
+4. **Təcrübə bəndləri:** “Gündə 30–40 müştəri müraciətini təhlil edib həll etdim; təkrarlanan sistem xətalarını addım-addım qeydə alıb IT şöbəsinə ötürdüm.” “Yeni əməkdaşlar üçün 2 prosedur təlimatı hazırladım.”
+5. **Yoxla:** hər cümlədə fakt, rəqəm və ya sübut (link) var, ümumi sifət qalmayıb. Rəqəmlər real olmalıdır — müsahibədə mütləq soruşula bilər.
+@növbən
+Namizəd əvvəl 2 il məktəbdə riyaziyyat müəllimi olub. CV-sində yazıb: “Kommunikativ, yaradıcı, stresə davamlı. Məktəbdə dərs demişəm.” Xülasəni və 2–3 təcrübə bəndini QA üçün yenidən yaz; hər bənddə fel, iş və nəticə olsun.
+
+=== c21s4
+@qısa
+İş axtarışı bir neçə kanalla aparılır: LinkedIn profili və aktivliyi, iş elanı saytları və şirkətlərin karyera səhifələri, təcrübə proqramları, crowdtesting platformaları və şəxsi tövsiyələr. Hər müraciəti elana uyğunlaşdırmaq və izləmək nəticəni xeyli artırır.
+@yadda
+- Hər elan üçün CV-ni və müraciət mətnini uyğunlaşdır.
+- Müraciətləri cədvəldə izlə: şirkət, tarix, status, növbəti addım.
+- Tövsiyə (referral) ən effektiv kanallardandır.
+@dərin
+### Elanı oxumaq
+Elanda üç hissəni ayır:
+- **Məcburi tələblər (must have):** əsas bacarıqlar.
+- **Üstünlüklər (nice to have):** olmasa da, müraciət etmək olar.
+- **Gizli siqnallar:** “sürətli dəyişən mühit”, “eyni anda bir neçə layihə” — iş yükü haqqında ipucu.
+Elandakı açar sözləri CV-də və müraciət mətnində dürüst şəkildə əks etdir.
+
+### LinkedIn
+- **Başlıq:** “Junior QA Engineer | Manual & API Testing | Postman, SQL, Playwright”.
+- **Haqqında:** 3–4 cümlə + portfolio linki.
+- **Aktivlik:** öyrəndiklərin haqqında qısa yazılar (“Bu həftə BVA ilə tapdığım baq”) profili görünən edir.
+
+### Müraciətləri izləmək
+Sadə cədvəl: şirkət, vəzifə, tarix, kanal, status (göndərildi / cavab gəldi / müsahibə / imtina), növbəti addım. Cavab gəlməyibsə, 7–10 gün sonra qısa və nəzakətli xatırlatma yazmaq olar.
+
+### Ehtiyatlı olmaq üçün siqnallar
+İşə qəbul üçün səndən pul tələb edən “təlim + iş” təklifləri, real məhsul üzərində həftələrlə ödənişsiz “test tapşırığı” və şirkət haqqında heç bir məlumatın olmaması — diqqətli olmaq üçün səbəbdir.
+
+### Tipik yanlış anlama
+“Nə qədər çox müraciət, o qədər yaxşı.” Eyni CV ilə edilən 100 müraciət çox vaxt 10 uyğunlaşdırılmış müraciətdən az nəticə verir.
+@nümunə
+**Tapşırıq.** Elan: “Junior QA Engineer. Tələblər: test case və bug report yazmaq, Jira, API testi (Postman), SQL əsasları, İngilis dili B1. Üstünlük: Playwright, Git, ISTQB.” Bu elan üçün müraciət hazırla: uyğunluq xəritəsi, CV-də dəyişikliklər və qısa müraciət mətni.
+@addımlar
+1. **Uyğunluq xəritəsi:** hər tələbin qarşısına sübutunu yaz — test case və bug report → Swag Labs portfolio-su; Postman → API repo-su; SQL → SQL repo-su; Jira → kurs layihəsi; İngilis dili → səviyyə.
+2. **Boşluqlar:** “Üstünlük” sütunundan Playwright və Git var, ISTQB isə yoxdur — müraciətdə “imtahana hazırlaşıram” demək olar (əgər doğrudursa).
+3. **CV-ni uyğunlaşdır:** bacarıqlar bölməsində elanın sözlərini işlət: “API testing (Postman)”, “SQL (SELECT, JOIN, GROUP BY)”, “Jira”.
+4. **Müraciət mətni (3–4 cümlə):** kim olduğun → elana uyğun 2 konkret nəticə (linklə) → niyə məhz bu şirkət → müsahibəyə hazır olduğun.
+5. **İzləmə:** müraciəti cədvələ əlavə et — tarix, kanal, status; 7–10 gün sonra cavab yoxdursa, xatırlatma göndər.
+@növbən
+Bu elan üçün uyğunluq xəritəsi qur və 4 cümləlik müraciət mətni yaz: “QA Tester (oyun studiyası). Tələblər: exploratory test, bug report, oyunlarda təcrübə, detallara diqqət. Üstünlük: Jira, mobil oyunlar, performans testi anlayışı.” Hansı sübutların çatışmadığını və onları necə tez əldə edəcəyini də yaz.
+
+=== c21s5
+@qısa
+Müsahibə adətən dörd mərhələdən keçir: HR söhbəti (motivasiya, gözləntilər), texniki müsahibə (nəzəriyyə, test dizaynı), praktik tapşırıq (test etmək, sənəd yazmaq) və final söhbət. Hər mərhələyə ayrıca hazırlaşmaq lazımdır.
+@yadda
+- HR mərhələsində motivasiyanı konkret izah et: niyə QA, niyə bu şirkət.
+- Praktik tapşırıqda keyfiyyət, struktur və fərziyyələr həcmdən vacibdir.
+- Sonda öz suallarını ver — maraq və ciddilik göstərir.
+@dərin
+### HR söhbətinə hazırlıq
+- **“Özün haqqında danış”:** 1–2 dəqiqəlik hekayə — keçmiş → QA-ya keçid → indi nə bacarırsan → nə axtarırsan.
+- **“Niyə QA?”:** ümumi cavab (“IT perspektivlidir”) yox, şəxsi səbəb: “Problem tapmaq və onu aydın izah etmək mənə həmişə maraqlı olub — portfolio-da 15 bug report var.”
+- **Maaş gözləntisi:** bazarı əvvəlcədən araşdır və aralıq de.
+
+### Praktik tapşırığın təhvili
+- Tapşırığı diqqətlə oxu, aydın olmayan yerləri soruş və ya fərziyyəni yaz: “Fərz etdim ki, …”.
+- Vaxtı böl: kəşf → plan → icra → sənədləşmə.
+- Təhvil: səliqəli struktur (checklist və ya test case-lər, bug report-lar, qısa yekun) və oxunaqlı format (PDF, cədvəl və ya GitHub linki).
+
+### Sonda veriləcək suallar
+- “Test prosesi necə qurulub? Bir tester neçə proqramçıya düşür?”
+- “Avtomatlaşdırma hansı səviyyədədir, junior-un orada rolu nə olacaq?”
+- “İlk 3 ayda məndən nə gözləyirsiniz?”
+- “Relizlər hansı tezlikdə olur?”
+
+### Tipik yanlış anlama
+“Praktik tapşırıqda nə qədər çox baq tapsam, o qədər yaxşı.” Rəyçi baqların sayından çox keyfiyyətinə baxır: aydın başlıq, təkrarlana bilən addımlar, düzgün severity və priority. 5 güclü report 30 zəif report-dan yaxşıdır.
+@nümunə
+**Tapşırıq.** Praktik tapşırıq: “Saytın qeydiyyat formasını test et və nəticəni 24 saat ərzində göndər.” Tələb sənədi verilməyib. Necə planlaşdırar və nə təhvil verərsən?
+@addımlar
+1. **Aydınlaşdır:** HR-a qısa sual yaz — format (PDF, cədvəl), hansı brauzer və cihaz, gözlənilən həcm. Cavab gəlməsə, fərziyyələri yaz: “Chrome (desktop) və bir mobil brauzer; tələb sənədi olmadığı üçün ümumi qəbul olunmuş qaydaları əsas götürdüm.”
+2. **Vaxtı böl (təxminən 4 saat):** 30 dəq — kəşf (exploratory); 45 dəq — EP və BVA ilə checklist; 2 saat — icra; 45 dəq — bug report-lar və yekun.
+3. **Test sahələri:** məcburi sahələr, email formatı, parol qaydaları, uzunluq sərhədləri, dublikat email, xəta mesajlarının aydınlığı, mobil görünüş, əlçatanlığın əsasları.
+4. **Təhvil paketi:** 1) fərziyyələr; 2) statuslu checklist; 3) 3–7 bug report (severity və priority ilə); 4) yarım səhifəlik yekun: nə yoxlandı, nə yoxlanmadı, əsas risklər.
+5. **Son yoxlama:** hər bug report-u yenidən təkrarla, yazı səhvlərini düzəlt, faylları aydın adlandır və vaxtında göndər.
+@növbən
+Texniki müsahibəyə 3 gün qalıb. Şirkət e-ticarət platformasıdır, vakansiya — Junior QA (manual + API). Hazırlıq planı qur: hər gün üçün mövzular, təkrar ediləcək fəsillər, “Özün haqqında danış” cavabının planı və sonda verəcəyin 3 sual.
+
+=== c21s6
+@qısa
+Texniki müsahibədə nəzəriyyə (QA/QC, severity/priority, retest/regression, smoke/sanity), proseslər (bug life cycle), test dizaynı (EP, BVA) və texniki əsaslar (HTTP, status kodları) soruşulur. Yaxşı cavabın quruluşu: tərif → misal → öz təcrübəndən nümunə.
+@yadda
+- Cavab formulu: tərif → misal → öz təcrübən.
+- Bilmədiyini etiraf et, amma necə düşündüyünü göstər.
+- Ssenari suallarında: faktlar → təsir → məlumatlandırma → qərar.
+@dərin
+### Cavabın strukturu
+1. **Qısa tərif** — bir cümlə.
+2. **Misal** — konkret, gündəlik həyatdan və ya proqramdan.
+3. **Öz təcrübən** — “Portfolio layihəmdə …”.
+Məsələn: “Retest düzəldilmiş konkret defektin yenidən yoxlanmasıdır. Misal: login xətası düzəldilib, eyni addımlarla yenidən yoxlayıram. Swag Labs layihəmdə 3 defekt üçün retest etdim, birini yenidən açdım (Reopened).”
+
+### Daha çox soruşulan suallar
+- **Verification və validation fərqi?** Verification — “məhsulu düzgün qururuqmu?” (tələbə uyğunluq); validation — “düzgün məhsulu qururuqmu?” (istifadəçinin real ehtiyacı).
+- **Test planı və test strategiyası fərqi?** Strategiya — ümumi yanaşma və prinsiplər; plan — konkret layihə üçün nə, kim, nə vaxt və necə test edəcək.
+- **Testi nə vaxt dayandırırsan?** Çıxış meyarları ödənəndə: kritik ssenarilər keçib, açıq kritik defekt yoxdur, qalan risklər komandaya bildirilib.
+- **İdempotentlik nədir?** Eyni sorğunu bir neçə dəfə göndərmək serverdə eyni nəticəni yaradır (GET, PUT, DELETE); POST adətən idempotent deyil.
+
+### Ssenari sualları
+“Relizə 1 saat qalmış kritik baq tapsan?” tipli suallarda düzgün cavab qəhrəmanlıq yox, prosesdir: faktları topla, təsiri qiymətləndir, məsul şəxslərə dərhal xəbər ver, variantları təqdim et — qərarı isə komanda (PO, lead) verir.
+
+### Tipik yanlış anlama
+“Tərifləri əzbərləmək kifayətdir.” Müsahib çox vaxt əzbər cavabdan sonra “misal gətir” və ya “sən necə edərdin?” soruşur. Anlamadan əzbərlənmiş tərif ilk əlavə sualda dağılır.
+@nümunə
+**Tapşırıq.** Müsahibə sualı: “Relizə 1 saat qalıb və sən ödəniş səhifəsində kritik baq tapdın: bəzi kartlarla ödəniş iki dəfə çəkilir. Nə edərsən?” Strukturlu cavab hazırla.
+@addımlar
+1. **Faktları təsdiqlə:** baqı bir daha təkrarla, şərtləri dəqiqləşdir (hansı kartlar, hansı brauzer, tezlik), sübut topla (video, ödəniş sisteminin loqu, bazadakı qeyd).
+2. **Təsiri qiymətləndir:** müştəridən pul iki dəfə çəkilir — maliyyə və reputasiya riski; severity: Critical.
+3. **Dərhal xəbər ver:** bug report-u yaz və eyni anda komanda rəhbərinə, PO-ya və proqramçıya şəxsən bildir — relizə 1 saat qalmış yalnız Jira-ya yazmaq kifayət deyil.
+4. **Variantları təqdim et:** reliz təxirə salınsın; və ya yeni ödəniş axını bayraqla (feature flag) söndürülsün; və ya sürətli düzəliş + yalnız ödəniş sahəsinin retest və regression-u.
+5. **Qərar və sonrası:** qərarı PO və komanda verir, mən riskləri açıq deyirəm; sonra retrospektivdə “bu baq niyə gec tapıldı?” sualını qaldırıram.
+@növbən
+Müsahibə sualına strukturlu cavab hazırla: “Proqramçı sənin bug report-unu ‘Cannot reproduce’ ilə bağladı, amma sən baqı hər dəfə təkrarlaya bilirsən. Nə edərsən?” Cavabı addımlarla qur və hər addımda niyə belə etdiyini izah et.
+
+=== c21s7
+@qısa
+“Bu qələmi (lifti, kofe aparatını) test et” sualı düşüncə tərzini yoxlayır. Strukturlu cavab: əvvəl suallar, sonra funksional, sərhəd və neqativ hallar, təhlükəsizlik, qeyri-funksional testlər və nəhayət prioritet. Məqsəd hər şeyi sadalamaq yox, sistemli düşünməyi göstərməkdir.
+@yadda
+- Əvvəl soruş: kim istifadə edir, məqsəd və tələblər nədir?
+- Kateqoriyalarla düşün: funksional → sərhəd/neqativ → təhlükəsizlik → qeyri-funksional.
+- Sonda prioritet ver və səbəbini de.
+@dərin
+### Niyə əvvəl sual vermək?
+“Qələm” uşaq, kosmonavt və ya imza mərasimi üçün ola bilər — hər birinin tələbləri fərqlidir. Sual vermək göstərir ki, sən testə tələbdən başlayırsan. Bu, real işdə ən vacib vərdişdir.
+
+### Kateqoriyalar üçün köməkçi siyahı
+- **Funksional:** əsas iş, alternativ yollar.
+- **Sərhəd və neqativ:** minimum və maksimum, yanlış istifadə, sui-istifadə.
+- **Təhlükəsizlik:** insanlara zərər, icazəsiz istifadə.
+- **Etibarlılıq:** uzunmüddətli istifadə, enerji kəsilməsi.
+- **İstifadə rahatlığı və əlçatanlıq.**
+- **Mühit:** temperatur, rütubət, fərqli şəraitlər.
+- **Performans:** sürət, tutum.
+
+### Müsahib nəyə baxır?
+Struktur, prioritet və ünsiyyət. 5 dəqiqəlik cavabda 50 test sadalamaq lazım deyil: hər kateqoriyadan 2–3 güclü misal və aydın prioritet daha yaxşı təəssürat yaradır. Ucadan düşün — müsahib məntiqini eşitməlidir.
+
+### Tipik yanlış anlama
+“Bu sualın bir düzgün cavabı var.” Yoxdur. Müsahib sənin necə düşündüyünü, nəyi soruşduğunu və nəyi birinci yoxlamaq istədiyini qiymətləndirir.
+@nümunə
+**Tapşırıq.** “Ofisin girişindəki kartla açılan turniketi test et” sualına strukturlu cavab hazırla.
+@addımlar
+1. **Aydınlaşdırıcı suallar:** Neçə nəfər istifadə edir, pik saatlarda axın nə qədərdir? Hansı kart növləri var (işçi, qonaq)? Enerji kəsiləndə və yanğın zamanı nə baş verməlidir? Əlil arabası üçün keçid varmı?
+2. **Funksional:** etibarlı kartla açılır və bir nəfər keçəndən sonra bağlanır; etibarsız, bloklanmış və müddəti bitmiş kartla açılmır; qonaq kartı yalnız icazəli saatlarda işləyir; giriş və çıxış qeydə alınır.
+3. **Sərhəd və neqativ:** kartı çox tez-tez oxutmaq; iki nəfərin bir kartla keçmə cəhdi; kartın oxuyucuya yarımçıq yaxınlaşdırılması; bir kartla eyni anda iki turniketdən keçmə cəhdi.
+4. **Təhlükəsizlik və etibarlılıq:** yanğın siqnalında turniket açıq qalır; enerji kəsiləndə təhlükəsiz rejim; şəbəkə kəsiləndə offline rejimdə nə baş verir; insanı sıxmamaq üçün sensor.
+5. **Qeyri-funksional və prioritet:** açılma sürəti, pik saatda tutum, səs və işıq siqnallarının aydınlığı, əlçatanlıq. Prioritet: əvvəl təhlükəsizlik (yanğın, sıxılma), sonra icazə məntiqi (kim keçə bilir), sonra rahatlıq və sürət.
+@növbən
+“Ağıllı saatdakı addım sayğacını test et” sualına bu bölmədəki strukturla cavab hazırla: aydınlaşdırıcı suallar, funksional, sərhəd və neqativ hallar, etibarlılıq, qeyri-funksional testlər və prioritet.
+
+=== c21s8
+@qısa
+Davranış suallarına (“çətin vəziyyəti necə həll etdin?”) STAR metodu ilə cavab verilir: Situation — vəziyyət, Task — sənin vəzifən, Action — konkret hərəkətlərin, Result — nəticə, mümkünsə rəqəmlə. Cavab 1–2 dəqiqəlik, konkret və “mən” formasında olur.
+@yadda
+- Action ən uzun hissədir: sən nə etdin?
+- Nəticəni rəqəmlə və ya konkret faktla göstər.
+- 5–6 hekayə hazırla — onları müxtəlif suallara uyğunlaşdırmaq olar.
+@dərin
+### Tez-tez soruşulan davranış sualları
+- Komanda yoldaşı ilə fikir ayrılığını necə həll etdin?
+- Səhv etdiyin bir vəziyyəti danış — nə öyrəndin?
+- Vaxt çatmayanda nə etdin?
+- Yeni bir şeyi çox qısa müddətdə öyrənməli olduğun hal.
+- Öz təşəbbüsünlə bir prosesi yaxşılaşdırdığın hal.
+
+### Hekayə bankı
+5–6 real hekayə yaz: kursdan, əvvəlki işdən, könüllü layihədən. Bir hekayə bir neçə suala uyğun gələ bilər: “vaxt çatmırdı” hekayəsi həm “təzyiq altında iş”, həm də “prioritetləşdirmə” sualına cavabdır.
+
+### Tələlər
+- **“Biz” sözü:** müsahib sənin rolunu bilmək istəyir — “mən” de.
+- **Günahlandırma:** başqalarını pis göstərmək mənfi təəssürat yaradır.
+- **Nəticəsiz hekayə:** “… və sonra layihə bitdi” — nə dəyişdi, nə öyrəndin?
+- **Uydurma hekayə:** əlavə suallarda tez üzə çıxır.
+
+### Səhv haqqında sual
+“Səhvini danış” sualında məqsəd səhvin özü yox, ondan nə öyrəndiyindir. Kiçik, real səhv seç; məsuliyyəti qəbul et; onu düzəltmək üçün nə etdiyini və indi nəyi fərqli etdiyini göstər.
+
+### Tipik yanlış anlama
+“İş təcrübəm yoxdursa, STAR hekayəm də yoxdur.” Kurs layihəsi, universitet, könüllülük, əvvəlki qeyri-IT iş — hamısı hekayə mənbəyidir. Vacib olan sənin hərəkətlərin və nəticədir.
+@nümunə
+**Tapşırıq.** Namizədin cavabı: “Bir dəfə proqramçı ilə mübahisəmiz oldu, o, baqı qəbul etmirdi. Sonra hər şey düzəldi.” Bu cavabı STAR ilə yenidən qur.
+@addımlar
+1. **S — Situation:** “Kursdakı komanda layihəsində onlayn mağaza tətbiqini test edirdik. Səbətdə endirimin iki dəfə tətbiq olunduğunu tapdım.”
+2. **T — Task:** “Proqramçı bunu ‘gözlənilən davranış’ adlandırıb report-u bağladı. Mənim vəzifəm baqın real olub-olmadığını faktlarla aydınlaşdırmaq idi.”
+3. **A — Action:** “Tələb sənədində endirim qaydasını tapdım, iki ssenarini videoya çəkdim və hesablamanı cədvəldə göstərdim. Proqramçıya 10 dəqiqəlik görüş təklif etdim, birlikdə baxdıq; tələbin özündə qeyri-müəyyənlik olduğu üçün PO-nu da cəlb etdik.”
+4. **R — Result:** “PO tələbi dəqiqləşdirdi, baq düzəldildi və bu ssenari üçün 3 test case əlavə olundu. Növbəti sprintdə oxşar endirim problemi yaranmadı.”
+5. **Dərs (yekun cümlə):** “O vaxtdan mübahisəli baqlarda report-a həmişə tələbin linkini əlavə edirəm.”
+@növbən
+“Səhv etdiyin bir vəziyyəti danış” sualına STAR ilə cavab yaz — real həyatından və ya kurs təcrübəndən. Action hissəsini ən ətraflı et və sonda bu səhvdən sonra nəyi fərqli etdiyini bir cümlə ilə əlavə et.
+
+=== c21s9
+@qısa
+ISTQB Certified Tester Foundation Level (CTFL) tester-lər üçün ən tanınan beynəlxalq sertifikatdır. Junior üçün məcburi deyil, amma CV-də üstünlük verir və nəzəriyyəni sistemləşdirir. Kitabın I–IV hissələri onun əsas mövzularını əhatə edir.
+@yadda
+- CTFL v4.0 imtahanı: 40 sual, keçid balı 26 (65%), 60 dəqiqə.
+- İmtahanı ana dilində verməyənlər üçün vaxt 25% artırılır (75 dəqiqə).
+- Sertifikat bilikləri təsdiqləyir, praktik bacarığı isə portfolio sübut edir.
+@dərin
+### Sillabusun quruluşu
+CTFL v4.0 sillabusu 6 fəsildən ibarətdir:
+1. Testin əsasları.
+2. Proqram təminatının həyat dövrü boyu test.
+3. Statik test.
+4. Test analizi və dizaynı.
+5. Test fəaliyyətlərinin idarə olunması.
+6. Test alətləri.
+Suallar bilik səviyyələrinə (K-səviyyələr) bölünür: K1 — xatırlamaq, K2 — anlamaq, K3 — tətbiq etmək. K3 suallarında, məsələn, verilmiş tələb üçün BVA dəyərlərini hesablamaq lazım gəlir.
+
+### Hazırlıq
+- Rəsmi sillabusu və nümunə imtahanları ISTQB saytından yüklə — terminlər məhz sillabusdakı kimi soruşulur.
+- Hər fəsildən sonra nümunə suallar həll et və səhvlərinin səbəbini yaz.
+- İmtahandan 1–2 həftə əvvəl vaxta qarşı tam nümunə imtahanları et.
+İmtahan adətən onlayn (nəzarətçi ilə) və ya imtahan mərkəzində verilir; qiymət və qeydiyyat qaydaları təşkilatçıdan asılıdır.
+
+### Sonrakı addımlar
+Foundation-dan sonra ixtisaslaşma modulları var: Advanced Level Test Automation Engineering, Mobile Application Testing, Game Testing (CT-GaMe), Performance Testing və başqaları. Onları təcrübə qazandıqdan sonra seçmək daha mənalıdır.
+
+### Tipik yanlış anlama
+“Sertifikat iş tapmağın açarıdır.” Sertifikat nəzəri bilikləri təsdiqləyir, işəgötürən isə əsasən praktik bacarığa baxır. Ən güclü birləşmə: sertifikat + portfolio.
+@nümunə
+**Tapşırıq.** CTFL imtahanına 6 həftə qalıb. Keçid balı üçün nə qədər səhv etmək olar? Sillabusun fəsillərini kitabın fəsillərinə uyğunlaşdır və həftəlik plan qur.
+@addımlar
+1. **Hesab:** 40 sualdan 26 düzgün cavab lazımdır — deməli, ən çoxu 14 səhv etmək olar. Nümunə imtahanlarda hədəf 30+ olsun ki, ehtiyat payı qalsın.
+2. **Uyğunlaşdırma:** sillabusun 1-ci fəsli → kitabın Fəsil 1–2; 2-ci → Fəsil 3–6; 3-cü → Fəsil 7.4 (statik test və review); 4-cü → Fəsil 7–10 (yanaşmalar, dizayn texnikaları, user story və acceptance criteria); 5-ci → Fəsil 11–12 (plan, risk, defektlərin idarə olunması); 6-cı → Fəsil 12 və 19 (alətlər, avtomatlaşdırma).
+3. **Həftə 1–4:** hər həftə 1–2 sillabus fəsli: sillabusu oxu → kitabın uyğun fəslini təkrarla → 20–30 nümunə sual həll et → səhvlərin siyahısını yaz.
+4. **Həftə 5:** 4-cü fəslin K3 tapşırıqlarına (EP, BVA, qərar cədvəli, vəziyyət keçidləri) əlavə vaxt ayır — burada hesablama tələb olunur.
+5. **Həftə 6:** vaxta qarşı 2–3 tam nümunə imtahan və hər birinin səhv analizi; nəticə 30-dan aşağıdırsa, zəif fəsilləri yenidən təkrarla.
+@növbən
+İmtahana 4 həftə qalıb və nümunə imtahanda 22/40 nəticə almısan. Səhvlərin bölgüsü: 1-ci fəsil — 2, 2-ci — 3, 3-cü — 2, 4-cü — 7, 5-ci — 3, 6-cı — 1. Keçid balına çatmaq üçün neçə əlavə düzgün cavab lazımdır? Prioritetləri və 4 həftəlik planı yaz.
+
+=== c21s10
+@qısa
+Kitabdan sonra portfolio-nu tamamla və mütəmadi yenilə, bir avtomatlaşdırma alətində dərinləş, ixtisaslaşma seç (performans, mobil, təhlükəsizlik, oyun testi) və ingilis dilini inkişaf etdir. Öyrənmə ilk işdən sonra da davam edir.
+@yadda
+- Hər həftə portfolio-ya kiçik də olsa nəsə əlavə et.
+- Bir aləti dərindən bil, digərlərini tanı.
+- İlk işdə ilk 90 gün — öyrənmək, sual vermək və etibar qazanmaq.
+@dərin
+### İxtisaslaşma yolları
+| İstiqamət | Nə öyrənməli | İlk layihə ideyası |
+| --- | --- | --- |
+| Avtomatlaşdırma | TypeScript, Playwright-ı dərindən, CI | Swag Labs üçün POM və CI ilə tam test dəsti |
+| Performans | k6 və ya JMeter, metriklər (gecikmə, saniyədəki sorğular) | Demo API üçün yük testi və hesabat |
+| Mobil | Appium, Android Studio, adb | Demo tətbiq üçün test planı və 5 avtomatik test |
+| Təhlükəsizlik əsasları | OWASP Top 10, HTTP-nin dərin bilikləri | Təlim üçün qəsdən zəif hazırlanmış tətbiqdə (məsələn, OWASP Juice Shop) məşq |
+| Oyun testi | Oyun QA lüğəti, performans (FPS), compliance | Sevdiyin oyun üçün test planı və 10 oyun bug report-u |
+
+### Oxumağa dəyər kitablar
+- “Lessons Learned in Software Testing” — Cem Kaner, James Bach, Bret Pettichord: praktik məsləhətlər toplusu.
+- “Explore It!” — Elisabeth Hendrickson: exploratory test texnikaları.
+- “Agile Testing” — Lisa Crispin, Janet Gregory: agile komandada tester-in rolu.
+
+### İlk işdə ilk 90 gün
+- **1–30 gün:** məhsulu, domeni və prosesləri öyrən; sual ver; mövcud test sənədlərini oxu.
+- **31–60 gün:** müstəqil tapşırıqlar götür, keyfiyyətli bug report-larla etibar qazan.
+- **61–90 gün:** bir yaxşılaşdırma təklif et (məsələn, checklist, smoke dəsti, avtomatik test) və nəticəsini göstər.
+
+### Tipik yanlış anlama
+“İş tapdım — öyrənmə bitdi.” Texnologiyalar və alətlər tez dəyişir. Davamlı öyrənən tester bir neçə il ərzində junior-dan güclü mütəxəssisə çevrilir.
+@nümunə
+**Tapşırıq.** Kitabı bitirdin və ixtisaslaşma kimi API testini seçdin. 8 həftəlik öyrənmə planı qur — hər mərhələnin sonunda portfolio-ya əlavə olunacaq nəticə olsun.
+@addımlar
+1. **Həftə 1–2 — baza:** HTTP və REST-i təkrarla (Fəsil 13, 15); JSONPlaceholder üçün Postman kolleksiyasını 30 sorğuya çatdır. Nəticə: kolleksiya və Newman hesabatı GitHub-da.
+2. **Həftə 3–4 — kodla API testi:** Playwright-ın `request` imkanı ilə 15 API testi (status, cavabın quruluşu, zəncirvari sorğular). Nəticə: ayrıca repo və README.
+3. **Həftə 5 — CI:** API testlərini GitHub Actions-a qoş, gecə icrası və hesabatın artifact kimi saxlanması. Nəticə: yaşıl CI nişanı.
+4. **Həftə 6–7 — dərinlik:** autentifikasiya (token), neqativ və sərhəd testləri, k6 ilə sadə yük testi. Nəticə: qısa “API test strategiyası” sənədi.
+5. **Həftə 8 — təqdimat:** README-ləri yenilə, LinkedIn-də layihə haqqında qısa yazı paylaş, CV-nin “Layihələr” bölməsini yenilə.
+@növbən
+Özün üçün ixtisaslaşma seç (avtomatlaşdırma, performans, mobil, təhlükəsizlik əsasları və ya oyun testi) və 8 həftəlik plan qur: hər mərhələ üçün öyrənmə mövzusu və portfolio-ya əlavə olunacaq konkret nəticəni yaz.

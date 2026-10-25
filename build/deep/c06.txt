@@ -1,0 +1,140 @@
+=== c6s1
+@qısa
+Funksional test sistemin NƏ etdiyini yoxlayır: tələbdə yazılan davranış düzgün işləyirmi? Login, qeydiyyat, axtarış, səbət, ödəniş — hamısı funksional testin obyektidir.
+@yadda
+- Funksional test — “sistem nə edir?” sualı.
+- Mənbə: tələblər, user story-lər, acceptance criteria.
+- Pozitiv yollarla yanaşı xəta halları da funksional testə aiddir.
+@dərin
+### Funksional testin qatları
+- **Biznes qaydaları:** endirim, vergi, limitlər, statuslar.
+- **Məlumatın emalı:** daxil edilən data düzgün saxlanır, göstərilir, hesablanır.
+- **İstifadəçi axınları:** addımların ardıcıllığı, geri qayıtmaq, prosesin yarımçıq qalması.
+- **Xəta emalı:** yanlış data, boş sahə, xarici servisin xətası — sistem düzgün reaksiya verirmi?
+- **İcazələr:** hər rol yalnız ona açıq olanı görür və edir.
+
+### Funksional, amma “görünməz”
+Bəzi funksional davranışlar ekranda görünmür: e-poçtun göndərilməsi, bazaya yazılma, gecə işləyən hesabat skripti. Onları yoxlamaq üçün loglara, bazaya (SQL) və ya API-yə baxmaq lazımdır.
+
+### Funksional uyğunluq və düzgünlük
+ISO/IEC 25010 keyfiyyət modelində funksional keyfiyyətin üç tərəfi var: **tamlıq** (lazım olan funksiyalar varmı), **düzgünlük** (nəticələr dəqiqdirmi) və **uyğunluq** (funksiyalar istifadəçinin məqsədinə xidmət edirmi).
+
+### Tipik yanlış anlama
+“Funksional test = düymələri basmaq.” Əsl funksional test qaydanı başa düşüb onu sistemli yoxlamaqdır: “10% endirim 99,99 AZN-ə necə tətbiq olunur və yuvarlaqlaşdırma necədir?”
+@nümunə
+**Tapşırıq.** Tələb: “Kitab mağazasında 3 və daha çox kitab alana 10% endirim verilir.” Bu qayda üçün funksional test ideyalarını yaz.
+@addımlar
+1. **Pozitiv:** 3 kitab — endirim tətbiq olunur; 5 kitab — yenə 10%.
+2. **Sərhəd:** 2 kitab — endirim yoxdur; 3 kitab — endirim var.
+3. **Hesablama:** endirim məbləği qəpiyə qədər düzgün yuvarlaqlaşdırılırmı (məsələn, 3 × 12,35 = 37,05 → endirim 3,71 və ya 3,70)? Tələbdə qayda yoxdursa, soruş.
+4. **Axın:** səbətdən bir kitab silinəndə (3 → 2) endirim avtomatik götürülürmü?
+5. **Görünməz nəticə:** sifarişin bazada saxlanan məbləği ekrandakı ilə eynidirmi?
+@növbən
+Tələb: “Gecə 23:00-dan sonra taksi qiymətinə 20% əlavə olunur.” Bu qayda üçün 5 funksional test ideyası yaz: pozitiv, sərhəd, hesablama, axın və görünməz nəticə.
+
+=== c6s2
+@qısa
+Qeyri-funksional test sistemin NECƏ işlədiyini yoxlayır: sürət, etibarlılıq, təhlükəsizlik, uyğunluq, rahatlıq, əlçatanlıq. Funksiya işləsə belə, yavaş və ya təhlükəlidirsə, məhsul uğursuz ola bilər.
+@yadda
+- Qeyri-funksional — “necə yaxşı işləyir?” sualı.
+- Performans testinin 4 növü: load, stress, spike, endurance.
+- Qeyri-funksional tələblər də ölçülə bilən olmalıdır.
+@dərin
+### Performans metrikləri
+- **Cavab müddəti (response time):** orta yox, faizlərlə ölçülür. Məsələn, p95 = 2 san — sorğuların 95%-i 2 saniyədən tez cavab alır.
+- **Ötürmə qabiliyyəti (throughput):** saniyədə emal olunan sorğu sayı.
+- **Xəta faizi:** yük artanda xətaların payı.
+- **Resurslar:** server CPU-su, yaddaş, baza bağlantıları.
+
+### Niyə “orta” aldadıcıdır?
+10 sorğudan 9-u 1 saniyə, 1-i 30 saniyə çəksə, orta 3,9 saniyədir — “normal” görünür. Amma hər 10 istifadəçidən biri 30 saniyə gözləyir. Ona görə p95/p99 göstəriciləri daha dürüstdür.
+
+### Digər qeyri-funksional növlər
+- **Təhlükəsizlik:** icazələr, şifrələmə, sessiyalar (Fəsil 14).
+- **Uyğunluq:** brauzerlər, OS-lər, cihazlar, ekran ölçüləri.
+- **Etibarlılıq:** uzun müddət işləmə, nasazlıqdan bərpa.
+- **Dəstəklənə bilmə və köçürülə bilmə:** sistemin asan yenilənməsi, başqa mühitə keçirilməsi.
+
+### Tipik yanlış anlama
+“Performans testi yalnız böyük şirkətlərə lazımdır.” Kampaniya günü 10 dəqiqəlik yavaşlama kiçik mağaza üçün də ciddi itkidir. Ən sadə yoxlama belə — DevTools-da Network panelinə baxmaq — faydalıdır.
+@nümunə
+**Tapşırıq.** Bilet satışı saytı üçün qeyri-funksional tələb: “Satış açılanda sayt 5 000 eyni anda istifadəçiyə xidmət etməlidir, səhifələr 3 saniyədən tez açılmalıdır.” Bu tələbi test etmək üçün plan yaz.
+@addımlar
+1. **Tələbi dəqiqləşdir:** “3 saniyə” hansı faizdə? Təklif: p95 ≤ 3 san; xəta faizi ≤ 1%.
+2. **Load test:** 5 000 virtual istifadəçi ilə 30 dəqiqə — cavab müddəti və xətalar ölçülür.
+3. **Spike test:** satış açılan an 500-dən 5 000-ə qədər 1 dəqiqədə sıçrayış.
+4. **Stress test:** 7 500, 10 000 istifadəçi — sistem harada və necə sınır, sonra bərpa olunurmu?
+5. **Nəticə:** hesabatda p95, xəta faizi, sınma nöqtəsi və darboğaz (baza, server) göstərilir.
+@növbən
+Universitetin qəbul nəticələri saytı nəticələr elan olunan gün çox yüklənir. 3 ölçülə bilən qeyri-funksional tələb yaz və hər biri üçün uyğun performans testi növünü seç.
+
+=== c6s3
+@qısa
+Dəyişiklikdən sonra dörd test növü işə düşür: smoke (build ümumiyyətlə işləyirmi), sanity (dəyişən sahə məntiqli işləyirmi), retest (bu baq düzəlibmi) və regression (başqa yer sınmayıbmı).
+@yadda
+- Smoke — geniş və dayaz, sanity — dar və dərin.
+- Retest — konkret defekt, regression — ətraf funksiyalar.
+- Regression ən çox avtomatlaşdırılan növdür.
+@dərin
+### Regression əhatəsini necə seçmək?
+Hər dəyişiklikdən sonra bütün testləri icra etmək çox vaxt mümkün deyil. Seçim üçün suallar:
+- **Dəyişiklik harada olub?** Həmin modul və ondan asılı modullar.
+- **Hansı sahələr kritikdir?** Ödəniş, login, data saxlanması — həmişə.
+- **Keçmişdə harada baq olub?** Defekt qruplaşması (Prinsip 4).
+- **Avtomatik dəst varmı?** Avtomatik testlər hər build-də tam işləyə bilər, manual isə seçmə aparılır.
+
+### Impact analysis — təsir təhlili
+Proqramçıdan soruş: “Bu düzəliş hansı funksiyalara toxunur?” Pull request-də dəyişən fayllara baxmaq da kömək edir (Fəsil 20). Bu, regression-u “hər şey” yox, “ağıllı seçmə” edir.
+
+### Smoke testin avtomatlaşdırılması
+Smoke dəsti adətən 10–30 testdir və hər build-dən sonra CI-da avtomatik işləyir. Düşərsə, build test mühitinə ötürülmür və heç kim vaxtını qırıq versiyaya sərf etmir.
+
+### Terminlər komandadan-komandaya dəyişir
+Bəzi komandalar “sanity”-ni smoke mənasında işlədir, bəziləri “confirmation testing” deyir retest əvəzinə. Yeni komandaya qoşulanda terminləri razılaşdır — mübahisə sözlər üstündə olmasın.
+
+### Tipik yanlış anlama
+“Retest keçdisə, regression lazım deyil.” Retest yalnız baqın düzəldiyini göstərir; düzəlişin yan təsirlərini regression tapır.
+@nümunə
+**Tapşırıq.** Bank tətbiqində “köçürmə limiti 5000 əvəzinə 500 AZN yoxlanır” baqı düzəldildi. Yeni build-də hansı testləri hansı sırayla edərdin?
+@addımlar
+1. **Smoke:** tətbiq açılır, login, balans görünür, köçürmə ekranı açılır.
+2. **Retest:** bug report-dakı addımlar — 1000 AZN köçürmək indi mümkündür.
+3. **Sanity:** limitin sərhədləri — 5000 AZN keçir, 5000,01 AZN rədd olunur; aylıq limitlə əlaqə.
+4. **Regression:** köçürmələrə toxunan yerlər — komissiya hesabı, tarixçə, kart-kart köçürmə, bildirişlər; sonra planlı regression dəsti.
+5. **Qeyd:** bu baq üçün yazılan test daimi regression dəstinə əlavə olunur.
+@növbən
+Onlayn mağazada “səbətdə məhsul sayını 0 edəndə məhsul silinmir” baqı düzəldildi. Smoke, retest, sanity və regression üçün hər birinə 2 test yaz.
+
+=== c6s4
+@qısa
+Digər növlər arasında end-to-end (bir neçə sistemi keçən real ssenari), installation (quraşdırma, yeniləmə, silmə) və recovery (nasazlıqdan bərpa) testləri var. Onlar xüsusi risklərə yönəlir.
+@yadda
+- E2E — real istifadəçi yolu bütün sistemlər boyu.
+- Installation — quraşdırma, yeniləmə və silmədə data itmir.
+- Recovery — nasazlıqdan sonra sistem və data bərpa olunur.
+@dərin
+### Daha bir neçə növ
+- **Lokalizasiya (l10n) və beynəlmiləlləşmə (i18n):** dil, tarix, valyuta formatları; mətnlərin sığması.
+- **Data miqrasiyası testi:** köhnə sistemdən yenisinə keçəndə məlumatın tam və düzgün köçməsi.
+- **A/B test:** iki versiyanı fərqli istifadəçi qruplarına göstərib hansının daha yaxşı işlədiyini ölçmək (bu, daha çox biznes eksperimentidir).
+- **Uyğunluq (compliance) testi:** qanun və standartlara uyğunluq — fərdi məlumatlar, əlçatanlıq.
+- **Chaos testing:** qəsdən nasazlıq yaratmaq (serveri söndürmək) və sistemin necə dözdüyünü görmək.
+
+### Recovery testində nəyə baxılır?
+- Server yenidən başlayanda yarımçıq əməliyyatlar nə olur?
+- Ehtiyat nüsxədən bərpa neçə dəqiqə çəkir?
+- Hansı data itə bilər (məsələn, son 5 dəqiqə)?
+Bu suallar biznes üçün “nə qədər itkiyə dözə bilərik?” sualına çevrilir.
+
+### Tipik yanlış anlama
+“Bu növlər nadir lazımdır.” Mobil tətbiqin yeniləməsində data itməsi və ya ödəniş zamanı server çöküşü real həyatda tez-tez baş verir — installation və recovery testləri məhz bunları tutur.
+@nümunə
+**Tapşırıq.** Mobil qeyd dəftəri tətbiqinin yeni versiyası çıxır. Installation və recovery baxımından 5 test ideyası yaz.
+@addımlar
+1. **Yeniləmə:** köhnə versiyada 20 qeyd yarat, tətbiqi yenilə — qeydlər yerindədir, sırası pozulmayıb.
+2. **Təmiz quraşdırma:** tətbiqi sil və yenidən quraşdır — hesabla daxil olanda qeydlər buluddan qayıdır.
+3. **Yer az olanda:** cihazın yaddaşı dolu ikən yeniləmə — aydın mesaj, tətbiq korlanmır.
+4. **Recovery:** qeyd yazılarkən tətbiqi məcburi bağla — yenidən açanda yarımçıq mətn itmir və ya qaralama kimi saxlanır.
+5. **Şəbəkə:** sinxronlaşma zamanı internet kəsilir — sonradan tam sinxronlaşır, dublikat yaranmır.
+@növbən
+Kompüter üçün yeni mühasibat proqramının versiyası çıxır. Installation, data miqrasiyası və recovery baxımından 5 test ideyası yaz.

@@ -1,0 +1,56 @@
+{
+ "batch": [
+  {
+   "$lid": "w",
+   "engine": "widget",
+   "object": "node",
+   "payload": {
+    "code": "export default () => { const W = 196, H = 44, ink = 'var(--cds-text-primary)', quiet = 'var(--cds-text-secondary)', edge = 'var(--cds-chart-axis)', accent = 'var(--cds-chart-categorical-1)'; const box = (cx, cy, kind) => <rect x={cx - W / 2} y={cy - H / 2} width={W} height={H} rx='8' fill={kind === 'test' ? accent : kind === 'code' ? 'var(--cds-chart-reference-tint)' : 'none'} fillOpacity={kind === 'test' ? 0.12 : 1} stroke={kind === 'test' ? accent : edge} strokeWidth={kind === 'test' ? 2 : 1.25}/>; return <svg viewBox='0 0 760 428' role='img' aria-label='Hər inkişaf mərhələsinin qarşısında öz test səviyyəsi dayanır' fontSize='15'><defs><marker id='vmodel-arrow' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='6' markerHeight='6' orient='auto-start-reverse'><path d='M0 0L10 5L0 10z' fill={edge}/></marker></defs><text data-claude-text-id='title' x='24' y='30' fontSize='16' fontWeight='600' fill={ink}>Hər inkişaf mərhələsinin qarşısında öz test səviyyəsi dayanır</text><text data-claude-text-id='col-dev' x='130' y='62' textAnchor='middle' fontSize='13' fill={quiet}>İnkişaf</text><text data-claude-text-id='col-test' x='630' y='62' textAnchor='middle' fontSize='13' fill={quiet}>Test</text><g data-claude-anchor='connectors' fill='none' stroke={edge} strokeWidth='1.25'><path d='M130 122L165 148' markerEnd='url(#vmodel-arrow)'/><path d='M165 192L200 218' markerEnd='url(#vmodel-arrow)'/><path d='M200 262L235 288' markerEnd='url(#vmodel-arrow)'/><path d='M235 332L320 358' markerEnd='url(#vmodel-arrow)'/><path d='M440 358L525 332' markerEnd='url(#vmodel-arrow)'/><path d='M525 288L560 262' markerEnd='url(#vmodel-arrow)'/><path d='M560 218L595 192' markerEnd='url(#vmodel-arrow)'/><path d='M595 148L630 122' markerEnd='url(#vmodel-arrow)'/></g><g data-claude-anchor='pairs' fill='none' stroke={edge} strokeWidth='1' strokeDasharray='5 5'><path d='M228 100H532'/><path d='M263 170H497'/><path d='M298 240H462'/><path d='M333 310H427'/></g><text data-claude-text-id='pair-note' x='380' y='92' textAnchor='middle' fontSize='12' fill={quiet}>testlər bu mərhələdə hazırlanır</text><g data-claude-anchor='dev-business'>{box(130, 100, 'dev')}<text data-claude-text-id='dev-business' x='130' y='105' textAnchor='middle' fill={ink}>Biznes tələbləri</text></g><g data-claude-anchor='dev-system'>{box(165, 170, 'dev')}<text data-claude-text-id='dev-system' x='165' y='175' textAnchor='middle' fill={ink}>Sistem tələbləri</text></g><g data-claude-anchor='dev-arch'>{box(200, 240, 'dev')}<text data-claude-text-id='dev-arch' x='200' y='245' textAnchor='middle' fill={ink}>Arxitektura</text></g><g data-claude-anchor='dev-module'>{box(235, 310, 'dev')}<text data-claude-text-id='dev-module' x='235' y='315' textAnchor='middle' fill={ink}>Modul dizaynı</text></g><g data-claude-anchor='coding'>{box(380, 380, 'code')}<text data-claude-text-id='coding' x='380' y='385' textAnchor='middle' fontWeight='600' fill={ink}>Kodlaşdırma</text></g><g data-claude-anchor='test-unit'>{box(525, 310, 'test')}<text data-claude-text-id='test-unit' x='525' y='315' textAnchor='middle' fill={ink}>Unit test</text></g><g data-claude-anchor='test-integration'>{box(560, 240, 'test')}<text data-claude-text-id='test-integration' x='560' y='245' textAnchor='middle' fill={ink}>İnteqrasiya testi</text></g><g data-claude-anchor='test-system'>{box(595, 170, 'test')}<text data-claude-text-id='test-system' x='595' y='175' textAnchor='middle' fill={ink}>Sistem testi</text></g><g data-claude-anchor='test-acceptance'>{box(630, 100, 'test')}<text data-claude-text-id='test-acceptance' x='630' y='105' textAnchor='middle' fill={ink}>Qəbul testi</text></g></svg>; };",
+    "parent": {
+     "id": "22c4a5c1-d004",
+     "object": "file"
+    }
+   },
+   "verb": "create"
+  },
+  {
+   "engine": "prose",
+   "payload": {
+    "ops": [
+     {
+      "op": "replace",
+      "target": {
+       "ids": [
+        "m5tdd94vfpe.17148"
+       ],
+       "kind": "blocks"
+      },
+      "with": {
+       "as": "markdown",
+       "blocks": {
+        "dia": {
+         "caption": "V-model · 4 inkişaf mərhələsi və 4 test səviyyəsi",
+         "ref": "node/$lid:w",
+         "type": "embed"
+        }
+       },
+       "from": {
+        "content": "<?claude block dia?>\n\nSol qol yuxarıdan aşağı inkişaf mərhələləridir, sağ qol aşağıdan yuxarı test səviyyələri; kəsik xətlər hər cütü birləşdirir.",
+        "kind": "inline"
+       }
+      }
+     }
+    ]
+   },
+   "ref": {
+    "id": "83d09a4c-01c1",
+    "object": "node"
+   },
+   "verb": "update"
+  }
+ ],
+ "container": {
+  "id": "64e53f95-53fa-4dc2-9cb8-57243323baa5",
+  "kind": "project"
+ }
+}

@@ -1,0 +1,282 @@
+=== c11s1
+@qısa
+Test sənədləri ümumidən konkretə düzülür: strategiya → plan → ssenari → test case və ya checklist → test data. Yuxarı səviyyə “niyə və nə”, aşağı səviyyə “necə və hansı data ilə” sualına cavab verir.
+@yadda
+- Strategiya — şirkət, plan — layihə, ssenari — “nə”, case — “necə”.
+- Sənədin dərinliyi kontekstə uyğun seçilir.
+- Hər aşağı səviyyə yuxarıdakına bağlı olmalıdır.
+@dərin
+### Strategiya ilə plan fərqi
+**Test strategiyası** uzunömürlüdür: şirkət və ya məhsul üçün ümumi yanaşma — hansı səviyyələr, avtomatlaşdırma hədəfləri, alətlər, mühitlər. **Test planı** konkret relizə və ya layihəyə aiddir: bu dəfə nə, kim, nə vaxt. Strategiya “necə işləyirik”, plan “bu dəfə nə edirik” deyir.
+
+### Ssenari, case, checklist — hansını seçmək?
+| Vəziyyət | Uyğun sənəd |
+| --- | --- |
+| Yeni komanda üzvü testi icra edəcək | Ətraflı test case |
+| Təcrübəli komanda, tez dəyişən məhsul | Checklist |
+| Audit və ya qanuni tələb var | Test case + RTM |
+| Erkən mərhələ, tələb tam hazır deyil | Test ssenariləri |
+| Kəşf məqsədi | Exploratory charter |
+
+### Sənədlər “canlı” olmalıdır
+Köhnəlmiş test case-lər yanlış inam yaradır. Hər relizdən sonra dəyişən funksiyaların test case-lərini yenilə, lazımsızları arxivə köçür.
+
+### Tipik yanlış anlama
+“Daha çox sənəd — daha yaxşı keyfiyyət.” Sənəd vasitədir: komandanın ehtiyacından artıq sənəd oxunmur və köhnəlir, az sənəd isə təkrarlanmanı və ötürməni çətinləşdirir.
+@nümunə
+**Tapşırıq.** Onlayn mağazanın “Səbət” funksiyası üçün sənəd iyerarxiyasının hər səviyyəsinə bir misal yaz.
+@addımlar
+1. **Strategiya:** “Kritik axınlar (səbət, ödəniş) hər build-də avtomatik smoke ilə yoxlanır; yeni funksiyalar manual + exploratory.”
+2. **Plan:** “Reliz 4.2: səbət endirimləri yenidən yazılıb; 3 gün test, 2 tester, Chrome və Safari.”
+3. **Ssenari:** “Səbətdə məhsul sayının dəyişdirilməsini yoxla.”
+4. **Test case:** “TC-CART-007: məhsul sayı 1-dən 3-ə artırılanda cəm 3 dəfə artır” — addımlar və gözlənilən nəticə ilə.
+5. **Test data:** “Məhsul ‘Çay dəsti’, qiymət 12,50 AZN; test hesabı cart.user@example.com.”
+@növbən
+Mobil bankın “kartdan karta köçürmə” funksiyası üçün strategiya, plan, ssenari, test case və test data səviyyələrinin hər birinə bir misal yaz.
+
+=== c11s2
+@qısa
+Test planı “nəyi, necə, kim, nə vaxt və nə ilə test edəcəyik?” suallarına cavab verir: məqsəd, scope, yanaşma, mühit, rollar, cədvəl, meyarlar, risklər və nəticə sənədləri. Adətən QA lead yazır, junior isə ona uyğun işləyir.
+@yadda
+- Scope-da “nə test olunmur” da yazılır.
+- Risklər ehtiyat planı ilə birlikdə yazılır.
+- Plan dəyişəndə yenilənir — statik sənəd deyil.
+@dərin
+### Scope-un iki tərəfi
+“Daxil” və “xaric” siyahıları eyni dərəcədə vacibdir. “Xaric” siyahısı gözləntiləri idarə edir: “Bu relizdə yük testi aparılmır” yazılıbsa, sonradan “niyə yük testi edilmədi?” sualı yaranmır — qərar əvvəlcədən verilib.
+
+### Risklərin iki növü
+- **Məhsul riskləri:** məhsulda nə səhv ola bilər — ödəniş xətası, data itkisi. Testin fokusunu müəyyən edir.
+- **Layihə riskləri:** test işinə nə mane ola bilər — mühit gec hazır olar, tester xəstələnər, tələblər dəyişər. Ehtiyat planı ilə idarə olunur.
+
+### IEEE 829 və ISO/IEC/IEEE 29119
+Test sənədlərinin standart şablonları bu standartlarda təsvir olunub. Real şirkətlər onları sadələşdirir, amma bölmələrin məntiqi eynidir. Müsahibədə adlarını bilmək faydalıdır.
+
+### Junior plana necə töhfə verir?
+Planı oxuyub suallar verir: “Mühit siyahısında iOS 18 yoxdur, istifadəçilərin 30%-i iOS-dadır — əlavə edək?” Belə müşahidələr junior-u tez fərqləndirir.
+
+### Tipik yanlış anlama
+“Plan bir dəfə yazılır və rəfə qoyulur.” Plan razılaşmanın qeydidir; scope, cədvəl və ya risklər dəyişəndə yenilənməlidir.
+@nümunə
+**Tapşırıq.** Kiçik restoranın onlayn rezervasiya saytı üçün bir səhifəlik test planının əsas bölmələrini doldur.
+@addımlar
+1. **Məqsəd və scope:** “Rezervasiya saytının 1.0 versiyası. Daxil: masa seçimi, tarix/saat, SMS təsdiqi, ləğv. Xaric: admin paneli, yük testi.”
+2. **Yanaşma və mühit:** sistem testi, exploratory sessiyalar, EP/BVA (qonaq sayı 1–12, tarix); Chrome, Safari, Android və iOS telefonlar.
+3. **Rollar və cədvəl:** 1 tester; test dizaynı — 1 gün, icra — 2 gün, regression — yarım gün.
+4. **Meyarlar:** giriş — build smoke-dan keçib; çıxış — açıq Critical yoxdur, test case-lərin 95%-i keçib.
+5. **Risklər:** SMS servisi test mühitində məhdud → ehtiyat: test nömrələri və servis loglarının yoxlanması.
+@növbən
+Sevdiyin bir mobil tətbiqin növbəti yeniləməsi üçün bir səhifəlik test planı yaz: məqsəd, scope (daxil/xaric), mühit, cədvəl, 2 meyar və 2 risk (biri məhsul, biri layihə riski).
+
+=== c11s3
+@qısa
+Checklist yoxlanılacaq ideyaların qısa siyahısıdır: tez yazılır və asan yenilənir, amma addımlar yazılmadığı üçün iki tester eyni bəndi fərqli icra edə bilər. Təcrübəli komandalar və tez dəyişən məhsullar üçün idealdır.
+@yadda
+- Checklist — “nəyi”, test case — “necə”.
+- Hər bənd bir yoxlama ideyası olmalıdır.
+- Kateqoriyalar (funksional, UI, təhlükəsizlik…) heç nəyin unudulmamasına kömək edir.
+@dərin
+### Yaxşı checklist bəndi necə olur?
+- **Yoxlana bilən:** “Email böyük-kiçik hərfə həssas deyil” — yaxşı; “Email yaxşı işləyir” — pis.
+- **Atomar:** bir bənd — bir ideya.
+- **Neytral fel:** “… işləyir”, “… göstərilir”, “… qəbul olunmur”.
+
+### Checklist-in statusu
+Checklist də icra olunur: hər bəndin yanına Passed/Failed və qeyd yazılır. Failed bəndə bug report linki əlavə olunur. Beləcə checklist yüngül test case-ə çevrilir.
+
+### Checklist növləri
+- **Funksiya checklist-i:** login, axtarış, fayl yükləmə (Əlavə B-də hazır nümunələr var).
+- **Reliz checklist-i:** canlıya çıxmazdan əvvəl yoxlanılacaqlar — konfiqurasiya, monitorinq, geri qaytarma planı.
+- **Review checklist-i:** tələb və ya test case review-unda nəyə baxmaq lazımdır.
+
+### Checklist-i nə vaxt test case-ə çevirmək?
+Bənd tez-tez səhv başa düşülürsə, yeni tester-lər onu fərqli icra edirsə və ya audit tələb olunursa — həmin bənd üçün ətraflı test case yaz.
+
+### Tipik yanlış anlama
+“Checklist — tənbəllər üçün test case-dir.” Yaxşı checklist təcrübəli tester-in biliyini sıxılmış formada saxlayır və exploratory testə istiqamət verir.
+@nümunə
+**Tapşırıq.** “Şifrəni unutdum” funksiyası üçün kateqoriyalar üzrə 10 bəndlik checklist yaz.
+@addımlar
+1. **Funksional:** qeydiyyatlı email-ə bərpa linki gəlir; qeydiyyatsız email üçün eyni ümumi mesaj göstərilir; linklə yeni şifrə təyin olunur.
+2. **Sərhəd və müddət:** link 1 saatdan sonra işləmir; link bir dəfə istifadə olunandan sonra işləmir.
+3. **Təhlükəsizlik:** yeni şifrədən sonra köhnə şifrə ilə giriş mümkün deyil; digər cihazlardakı sessiyalar bağlanır; çoxsaylı sorğuda limit (captcha) var.
+4. **UI və mətn:** e-poçt mətni Azərbaycan dilində düzgün göstərilir; bütün mesajlar aydındır.
+5. **Qeyd:** hər bənd yoxlana biləndir və icra zamanı Passed/Failed alacaq.
+@növbən
+Onlayn mağazada “sevimlilər” funksiyası üçün kateqoriyalar üzrə (funksional, sərhəd, UI, təhlükəsizlik, mobil) ən azı 10 bəndlik checklist yaz.
+
+=== c11s4
+@qısa
+Test case konkret yoxlamanın ətraflı təsviridir: ID, başlıq, ilkin şərtlər, test data, addımlar, gözlənilən nəticə, faktiki nəticə, status və tələbə istinad. Yaxşı test case-i layihəni ilk dəfə görən tester də eyni cür icra edə bilir.
+@yadda
+- Test case təkrarlana bilən yoxlamadır.
+- İlkin şərt + addımlar + gözlənilən nəticə = əsas üçlük.
+- Tələbə istinad RTM-i mümkün edir.
+@dərin
+### Sahələrin rolu
+- **ID:** izləmək və istinad üçün (TC-LOGIN-001).
+- **Prioritet:** vaxt az olanda hansı testlərin əvvəl icra ediləcəyini müəyyən edir.
+- **İlkin şərtlər:** testi müstəqil edir — əvvəlki testə ehtiyac qalmır.
+- **Postcondition (son şərt):** testdən sonra sistemi hansı vəziyyətə qaytarmaq lazımdır (məsələn, yaradılan hesabı silmək).
+
+### Gözlənilən nəticə hər addımda, yoxsa sonda?
+İki üslub var: hər addımın yanında gözlənilən nəticə (uzun, amma dəqiq) və yalnız sonda ümumi nəticə (qısa). Vacib aralıq yoxlamalar varsa (məsələn, “təsdiq ekranında məbləğ düzgündür”), onları addımların yanında yazmaq daha yaxşıdır.
+
+### Məntiqi və konkret test case
+- **Məntiqi (high-level):** “Düzgün məlumatla giriş” — data göstərilmir.
+- **Konkret (low-level):** “test.user@example.com / Test1234! ilə giriş” — data dəqiqdir.
+Erkən mərhələdə məntiqi case-lər yazılır, icra yaxınlaşanda konkretləşdirilir.
+
+### Tipik yanlış anlama
+“Test case nə qədər uzundursa, o qədər yaxşıdır.” Lazımsız detallar (hər klikin təsviri) oxumağı çətinləşdirir. Hədəf: başqa tester sual vermədən icra edə bilsin — nə az, nə çox.
+@nümunə
+**Tapşırıq.** “Səbətə məhsul əlavə etmək” üçün tam formada bir test case yaz.
+@addımlar
+1. **ID və başlıq:** TC-CART-001 — “Səbət: kataloqdan məhsul əlavə edildikdə səbət sayğacı 1 olur”.
+2. **İlkin şərtlər:** istifadəçi daxil olub (cart.user@example.com); səbət boşdur; kataloqda “Termos 0,5 L” (19,90 AZN) var.
+3. **Addımlar:** 1) Kataloqu aç. 2) “Termos 0,5 L” kartında “Səbətə əlavə et” bas. 3) Səbət ikonuna bax.
+4. **Gözlənilən nəticə:** səbət ikonunda “1” görünür; səbətdə “Termos 0,5 L”, say 1, cəmi 19,90 AZN; düymə “Səbətdədir” vəziyyətinə keçir.
+5. **Prioritet və istinad:** High; US-05. Son şərt: səbəti boşalt.
+@növbən
+“Sifariş tarixçəsindən sifarişi təkrarlamaq” funksiyası üçün tam formada bir test case yaz: ID, başlıq, ilkin şərtlər, data, addımlar, gözlənilən nəticə, prioritet və son şərt.
+
+=== c11s5
+@qısa
+Yaxşı test case-in 7 qaydası: aydın başlıq, bir məqsəd, hər addımda bir hərəkət, konkret gözlənilən nəticə, konkret data, müstəqillik və başqasının icra edə bilməsi.
+@yadda
+- Başlıq nəyi yoxladığını deyir.
+- Gözlənilən nəticə konkret və yoxlana biləndir.
+- Test case müstəqildir və hər kəs tərəfindən icra oluna bilir.
+@dərin
+### Başlıq üçün formul
+**[Modul]: [şərt/hərəkət] [nəticə]** — məsələn, “Login: bloklanmış hesabla giriş cəhdində ‘Hesab bloklanıb’ mesajı göstərilir”. Başlığı oxuyan addımları açmadan testin mahiyyətini anlayır.
+
+### Test case review checklist-i
+- Başlıq unikal və informativdirmi?
+- İlkin şərtlər testi müstəqil edirmi?
+- Hər addım bir hərəkətdirmi, yoxlama addımlara qarışmayıb?
+- Gözlənilən nəticə tələbə istinad edirmi?
+- Data konkretdirmi, real şəxsi məlumat yoxdur?
+- Test case tələbə bağlıdırmı?
+
+### Dil və üslub
+Addımlar əmr formasında: “Yaz”, “Bas”, “Seç”. Gözlənilən nəticə indiki zamanda: “Mesaj görünür”, “Sifariş yaranır”. Eyni elementi hər yerdə eyni adla çağır (“Daxil ol” düyməsi — ekrandakı mətn ilə eyni).
+
+### Tipik yanlış anlama
+“Gözlənilən nəticəni tester özü uydurur.” Gözlənilən nəticə tələbdən, maketdən və ya razılaşmadan gəlir. Mənbə yoxdursa, bu, sual üçün siqnaldır.
+@nümunə
+**Tapşırıq.** Bu test case-in problemlərini tap və düzəlt: “Başlıq: Profil testi. Addımlar: Profilə gir, adı dəyiş, saxla və yoxla ki, hər şey düzgündür, sonra şəkli dəyiş. Gözlənilən: işləyir.”
+@addımlar
+1. **Problemlər:** başlıq qeyri-informativdir; iki məqsəd (ad və şəkil); yoxlama addımlara qarışıb; “işləyir” yoxlana bilmir; data və ilkin şərt yoxdur.
+2. **Böl:** iki test case — ad dəyişikliyi və şəkil dəyişikliyi ayrı.
+3. **Düzəldilmiş başlıq:** “Profil: adın dəyişdirilməsi saxlanır və səhifə yeniləndikdən sonra görünür”.
+4. **Addımlar və data:** ilkin şərt — istifadəçi daxil olub, ad “Aysel”; addımlar: Profil → Ad sahəsinə “Aysel Məmmədova” yaz → “Yadda saxla” bas → səhifəni yenilə.
+5. **Gözlənilən nəticə:** “Saxlandı” mesajı görünür; yenilənmədən sonra ad sahəsində “Aysel Məmmədova” göstərilir; başlıqdakı salamlama yeni adla yazılır.
+@növbən
+Bu test case-in problemlərini tap və onu 7 qaydaya uyğun yenidən yaz: “Başlıq: Axtarış. Addımlar: bir şey axtar və nəticələrə bax, filtr də yoxla. Gözlənilən: nəticələr düzgündür.”
+
+=== c11s6
+@qısa
+Pis test case qeyri-müəyyəndir: nə yazılacağı, nəyin yoxlanacağı və ilkin vəziyyət bəlli deyil. Yaxşı test case konkret ilkin şərt, data, addımlar və yoxlana bilən nəticə ilə hər icrada eyni nəticəni verir.
+@yadda
+- “İşləyir” gözlənilən nəticə deyil.
+- Data konkret olmalıdır: dəqiq məhsul adı, dəqiq dəyər.
+- Bir neçə yoxlanan nəticəni nömrələ.
+@dərin
+### Pis test case-in tipik əlamətləri
+- Qeyri-müəyyən fellər: “yoxla”, “bax”, “test et”.
+- Qiymətləndirici sözlər: “düzgün”, “normal”, “yaxşı”.
+- Gizli asılılıq: “əvvəlki testdə yaradılan istifadəçi ilə daxil ol”.
+- Mühitə bağlılıq: “mənim kompüterimdə”, “dünənki build-də”.
+- Müvəqqəti data: “bugünkü tarix” — sabah test fərqli nəticə verir.
+
+### Nəticəni necə “ölçülə bilən” etməli?
+“Nəticələr düzgündür” əvəzinə: nəticələrin sayı, sırası, ilk elementin adı, başlıqdakı mətn, URL-in dəyişməsi. Əgər nəticə dəyişkəndirsə (məsələn, axtarış nəticələrinin sayı), test datanı nəzarətdə saxla: test mühitində xüsusi məhsullar yarat.
+
+### Test case-də şəkil və link
+Maketə link, gözlənilən ekranın şəkli və ya API cavabının nümunəsi gözlənilən nəticəni daha dəqiq edir — xüsusilə UI testlərində.
+
+### Tipik yanlış anlama
+“Təcrübəli tester üçün qısa test case kifayətdir.” Test case yalnız sənin üçün deyil: məzuniyyətdə olanda, komanda dəyişəndə, avtomatlaşdırma yazılanda onu başqaları oxuyacaq.
+@nümunə
+**Tapşırıq.** Pis test case: “Başlıq: Filtr. Addımlar: Telefonlar kateqoriyasında qiymət filtrini işlət. Gözlənilən: düzgün məhsullar çıxır.” Onu yaxşı formaya sal.
+@addımlar
+1. **Başlıq:** “Kataloq: qiymət filtri 300–500 AZN yalnız həmin aralıqdakı telefonları göstərir”.
+2. **İlkin şərtlər:** test mühitində “Telefonlar” kateqoriyasında 6 məhsul var: 250, 299,99, 300, 450, 500, 500,01 AZN.
+3. **Addımlar:** 1) “Telefonlar” kateqoriyasını aç. 2) Qiymət filtrində “300”–“500” yaz. 3) “Tətbiq et” bas.
+4. **Gözlənilən nəticə:** 1) 3 məhsul görünür: 300, 450, 500 AZN. 2) 250, 299,99 və 500,01 AZN-lik məhsullar görünmür. 3) Başlıqda “3 məhsul” yazılır.
+5. **Qeyd:** test datası BVA ilə seçildi — sərhədlərin daxil olub-olmaması tələbdən təsdiqlənməlidir.
+@növbən
+Pis test case: “Başlıq: Bildirişlər. Addımlar: bildirişləri yandır və yoxla. Gözlənilən: bildirişlər gəlir.” Onu yaxşı formaya sal: konkret ilkin şərt, data, addımlar və nömrələnmiş gözlənilən nəticə ilə.
+
+=== c11s7
+@qısa
+Test suite əlaqəli test case-lərin qrupudur: “Smoke dəsti”, “Login regression”, “Ödəniş — tam dəst”. Test data testlərdə işlədilən məlumatdır və əvvəlcədən hazır, saxta (real şəxsi məlumatsız) və təmizlənə bilən olmalıdır.
+@yadda
+- Suite — məqsədə görə qruplaşdırılmış test case-lər.
+- Real şəxsi data işlətmə — test hesabları və saxta data.
+- Data hazırlığı test vaxtının böyük hissəsini ala bilər — planla.
+@dərin
+### Suite-ləri necə qruplaşdırmaq?
+- **Məqsədə görə:** smoke, sanity, regression, reliz yoxlaması.
+- **Funksiyaya görə:** login, səbət, ödəniş.
+- **Prioritetə görə:** kritik (hər build), yüksək (hər reliz), orta (rübdə bir).
+Bir test case bir neçə suite-də ola bilər (məsələn, həm “Ödəniş”, həm “Smoke”).
+
+### Test data növləri
+- **Statik:** dəyişməyən istinad datası — ölkə siyahısı, məhsul kateqoriyaları.
+- **Konfiqurasiya:** test hesabları, rollar, ayarlar.
+- **İcra datası:** testin özünün yaratdığı — sifariş, ödəniş.
+- **Sərhəd datası:** EP/BVA ilə seçilmiş dəyərlər.
+
+### Data yaratmağın yolları
+Əl ilə (UI-dən), SQL skripti ilə (Fəsil 16), API ilə (Fəsil 15), xüsusi generatorlarla (saxta ad, ünvan, telefon). Avtomatlaşdırmada hər test öz datasını yaradıb sonda silirsə, testlər bir-birinə mane olmur.
+
+### Məxfilik
+Canlı bazanın nüsxəsi test mühitinə köçürülürsə, şəxsi məlumatlar maskalanmalıdır (anonimləşdirmə). Real kart nömrəsi, FİN, telefon test mühitində olmamalıdır — həm qanun, həm etik baxımından.
+
+### Tipik yanlış anlama
+“Test datası test zamanı tapılır.” Hazır olmayan data testi bloklayır və ya tester-i “uyğun” data axtarmağa məcbur edir — bu, saatlarla vaxt itkisidir.
+@nümunə
+**Tapşırıq.** Bank tətbiqində köçürmə funksiyasının regression suite-i üçün lazım olan test datanın siyahısını hazırla.
+@addımlar
+1. **Hesablar:** adi müştəri (balans 1 000 AZN), sıfır balanslı müştəri, bloklanmış hesab, limiti dolmuş müştəri.
+2. **Kartlar:** aktiv test kartı, müddəti bitmiş kart, başqa bankın test kartı.
+3. **Sərhəd məbləğləri:** 0,01, limitin özü (5 000), limitdən bir qəpik çox (5 000,01).
+4. **Alıcılar:** düzgün kart nömrəsi, mövcud olmayan nömrə, öz kartına köçürmə.
+5. **Qayda:** hamısı saxta datadır, test başlamazdan əvvəl hazırlanır, test sonunda balanslar ilkin vəziyyətə qaytarılır.
+@növbən
+Onlayn mağazanın “sifariş və qaytarma” regression suite-i üçün test datanın siyahısını hazırla: hesablar, məhsullar, sərhəd dəyərləri və təmizləmə qaydası daxil olmaqla.
+
+=== c11s8
+@qısa
+Başlanğıc üçün Google Sheets və ya Excel kifayətdir. Şirkətlərdə TestRail, Qase, Zephyr və Xray kimi test idarəetmə alətləri işlədilir — hamısında test case-lər, dəstlər, icra nəticələri və hesabatlar var.
+@yadda
+- Alət məntiqi dəyişmir: case → suite → run → nəticə.
+- Jira ilə inteqrasiya RTM və bug linklərini avtomatik edir.
+- İlk işdə alət öyrənmək asandır — məntiqi bilmək vacibdir.
+@dərin
+### Test idarəetmə alətinin əsas anlayışları
+- **Test case repository:** bütün test case-lərin anbarı, qovluqlarla.
+- **Test run / cycle:** müəyyən relizdə icra olunacaq test case-lərin dəsti.
+- **Execution:** hər case üçün status, faktiki nəticə, sübut, bug linki.
+- **Report:** keçid faizi, defektlər, əhatə.
+
+### Spreadsheet-də sadə sistem qurmaq
+Vərəqlər: “Test case-lər” (ID, başlıq, ilkin şərt, addımlar, gözlənilən, prioritet, istinad), “İcra — Reliz 1.2” (ID, status, tarix, tester, bug linki), “RTM”. Şərti formatlaşdırma ilə Failed — qırmızı, Passed — yaşıl. Bu, portfolio üçün də əla nümunədir.
+
+### Alət seçimində nəyə baxılır?
+Jira ilə inteqrasiya, avtomatik test nəticələrinin idxalı (CI-dan), hesabatlar, qiymət, komandanın ölçüsü. Junior bunu seçmir, amma müsahibədə “hansı alətlə işləmisən?” sualına “Sheets-də öz sistemimi qurmuşam, TestRail-in məntiqini bilirəm” cavabı yaxşı təsir bağışlayır.
+
+### Tipik yanlış anlama
+“Bahalı alət keyfiyyətli test deməkdir.” Alət yalnız saxlayır və göstərir; test case-lərin keyfiyyəti tester-dən asılıdır.
+@nümunə
+**Tapşırıq.** Google Sheets-də login funksiyası üçün sadə test idarəetmə sistemi qur: hansı vərəqlər və sütunlar olacaq?
+@addımlar
+1. **Vərəq “Test case-lər”:** ID, Başlıq, Modul, Prioritet, İlkin şərtlər, Addımlar, Gözlənilən nəticə, Tələb.
+2. **Vərəq “İcra 1.0”:** ID (case-ə istinad), Status (açılan siyahı: Passed/Failed/Blocked/Not run), Tarix, Tester, Faktiki nəticə, Bug linki.
+3. **Vərəq “RTM”:** Tələb, Təsvir, Test case-lər, Ümumi status.
+4. **Xülasə:** COUNTIF ilə statusların sayı və pass rate düsturu; şərti formatlaşdırma ilə rənglər.
+5. **Nəticə:** bu struktur TestRail-in məntiqini təkrarlayır və portfolio-ya qoyula bilər.
+@növbən
+Spreadsheet-də “Axtarış” funksiyası üçün test idarəetmə sistemi planla: vərəqləri, sütunları, status siyahısını və pass rate-i hesablayan düsturun məntiqini yaz.

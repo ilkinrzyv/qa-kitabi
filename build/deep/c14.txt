@@ -1,0 +1,317 @@
+=== c14s1
+@qısa
+Formalar defektlərin ən çox olduğu yerdir: məcburi sahələr, validasiya, xəta mesajları, boşluqlar, kopyala-yapışdır, klaviatura, ikiqat göndərmə, avtodoldurma və “Geri” düyməsi yoxlanılır. Əsas validasiya serverdə olmalıdır.
+@yadda
+- Client validasiyası rahatlıq üçün, server validasiyası təhlükəsizlik üçündür.
+- Xəta mesajı sahənin yanında, aydın və düzələndə yox olmalıdır.
+- İkiqat göndərmə dublikat yaratmamalıdır.
+@dərin
+### Xəta mesajının keyfiyyəti
+Yaxşı xəta mesajı: **nə** səhvdir, **necə** düzəltmək olar, **harada** — sahənin yanında. Pis: “Xəta baş verdi”, “Invalid input”, ya da yalnız qırmızı haşiyə. Yoxla: mesaj nə vaxt çıxır — yazarkən, sahədən çıxanda, yoxsa göndərəndə? Tələb bunu deməlidir.
+
+### Data itkisinin qarşısı
+Uzun formada bir sahə səhv olduqda qalan məlumat silinməməlidir. Şifrə sahəsi təhlükəsizlik üçün təmizlənə bilər, amma ad, ünvan, telefon qalmalıdır. Səhifəni təsadüfən yeniləmək və ya “Geri” basmaq da böyük formada qaralama itkisinə səbəb olmamalıdır — tələbdə qayda varmı, yoxla.
+
+### Server validasiyasını necə yoxlamaq olar?
+Öz test mühitində:
+- DevTools → Elements-də `maxlength`, `required`, `pattern` atributunu sil və göndər.
+- Network-dan sorğunu “Copy as cURL” edib Postman-da dəyişdirərək göndər (Fəsil 15).
+Server yanlış datanı qəbul edirsə, bu, təhlükəsizlik və data keyfiyyəti defektidir.
+
+### Tipik yanlış anlama
+“Forma göndərildi — test keçdi.” Göndərilən datanın düzgün saxlandığını (baza, e-poçt, profil) yoxlamadan forma testi yarımçıqdır.
+@nümunə
+**Tapşırıq.** Çatdırılma ünvanı formasında sahələr: ad, telefon, şəhər (siyahı), küçə, mənzil (məcburi deyil). 6 test ideyası yaz — xəta mesajı, data itkisi və server validasiyası daxil olmaqla.
+@addımlar
+1. **Məcburi sahələr:** boş göndər — ad, telefon, şəhər və küçə üçün ayrı-ayrı mesajlar; mənzil üçün mesaj yoxdur.
+2. **Format:** telefon “050 123 45 67” boşluqlarla yapışdırılır — qəbul olunur və vahid formata salınır.
+3. **Data itkisi:** telefonu səhv yaz, göndər — xəta çıxır, amma ad, şəhər və küçə qalır.
+4. **Boşluqlar:** adın əvvəlində və sonunda boşluq — saxlananda təmizlənir (trim).
+5. **İkiqat göndərmə:** “Yadda saxla” düyməsini tez iki dəfə bas — bir ünvan yaranır.
+6. **Server validasiyası:** test mühitində telefon sahəsinin `pattern` atributunu silib hərflərlə göndər — server rədd edir.
+@növbən
+İş elanına müraciət formasında sahələr: ad, email, telefon, CV faylı, motivasiya məktubu (maks. 1000 simvol). 6 test ideyası yaz — xəta mesajı, data itkisi, sərhəd və server validasiyası daxil olmaqla.
+
+=== c14s2
+@qısa
+Naviqasiyada bütün linklərin işlədiyi, loqonun ana səhifəyə apardığı, “Geri”/“İrəli” düymələrinin düzgün işlədiyi, xarici linklərin yeni tabda açıldığı, breadcrumbs-un və 404 səhifəsinin səliqəli olduğu yoxlanılır.
+@yadda
+- Qırıq link — 404 və ya yanlış səhifə.
+- “Geri” düyməsi istifadəçinin gözlədiyi yerə qaytarmalıdır.
+- 404 səhifəsi istifadəçini “dalana” salmamalıdır.
+@dərin
+### Naviqasiyanın gizli problemləri
+- **Dərin linklər:** sayt daxilindəki səhifənin URL-ini yeni tabda açanda səhifə düzgün yüklənirmi, yoxsa ana səhifəyə atır?
+- **Filtrlərin vəziyyəti:** filtr seçib məhsula keç, “Geri” bas — filtrlər qalırmı?
+- **Yönləndirmə dövrəsi:** login-dən sonra əvvəlki səhifəyə qayıdırmı, yoxsa həmişə ana səhifəyə?
+- **Hash və tablar:** SPA saytlarında “Geri” düyməsi tabları dəyişirmi, yoxsa saytdan çıxarır?
+
+### Linkləri toplu yoxlamaq
+Böyük saytda yüzlərlə link var. Alətlər (link checker-lər, Lighthouse-un SEO bölməsi) qırıq linkləri avtomatik tapır. Tester əsas menyuları və kritik yolları əl ilə, qalanını alətlə yoxlayır.
+
+### Səhv səhifələri
+- **404:** sayt dizaynında, axtarış və ana səhifə linki ilə.
+- **500:** texniki detal göstərmədən, “bir az sonra yenidən cəhd edin” mesajı ilə.
+- **Texniki işlər (maintenance):** planlı dayanma zamanı aydın məlumat.
+
+### Tipik yanlış anlama
+“Naviqasiya — sadə şeydir, test etməyə dəyməz.” İstifadəçi “Geri” basanda ödəniş formasının ikinci dəfə göndərilməsi kimi ciddi problemlər məhz naviqasiyada çıxır.
+@nümunə
+**Tapşırıq.** Onlayn mağazada “Kateqoriya → məhsul siyahısı (filtrlərlə) → məhsul səhifəsi → səbət” yolu üçün 5 naviqasiya testi yaz.
+@addımlar
+1. **Breadcrumbs:** məhsul səhifəsində “Ana səhifə > Elektronika > Telefonlar” görünür və hər link işləyir.
+2. **Geri və filtrlər:** “Qiymət 300–500” filtrini seç, məhsula keç, “Geri” bas — filtr və səhifə nömrəsi qalır.
+3. **Dərin link:** məhsul səhifəsinin URL-ini yeni tabda aç — eyni məhsul açılır.
+4. **Səbətdən geri:** səbətdən “Alış-verişə davam et” — sonuncu baxılan kateqoriyaya qaytarır (tələbə görə).
+5. **404:** URL-də məhsul ID-sini mövcud olmayana dəyiş — saytın dizaynında 404 səhifəsi, axtarış sahəsi ilə.
+@növbən
+Xəbər saytında “ana səhifə → kateqoriya → xəbər → müəllifin digər xəbərləri” yolu üçün 5 naviqasiya testi yaz — “Geri” düyməsi, dərin link və 404 daxil olmaqla.
+
+=== c14s3
+@qısa
+UI yoxlamasında elementlərin düzülüşü, maketə uyğunluq, uzun mətnlərin sığması, şəkillər və hover/aktiv/deaktiv vəziyyətlər yoxlanılır. Azərbaycan dilində mətnlər ingiliscədən uzun olur — bu, xüsusi diqqət tələb edir.
+@yadda
+- Maket — UI testinin oracle-ıdır.
+- Uzun mətn, boş vəziyyət və çox data halını yoxla.
+- Hər interaktiv elementin vəziyyətləri fərqlənməlidir.
+@dərin
+### Vəziyyətlər (states) siyahısı
+Hər ekran yalnız “normal” vəziyyətdə deyil:
+- **Boş vəziyyət:** səbət boşdur, axtarış nəticə vermədi — nə göstərilir?
+- **Yüklənmə:** loader və ya skeleton görünürmü?
+- **Xəta:** server cavab vermədi — səliqəli mesaj?
+- **Çox data:** 1000 sifarişlik tarixçə — səhifələmə, performans.
+- **Qismən data:** şəkli olmayan məhsul, təsviri olmayan məhsul.
+
+### Vizual regression
+Avtomatlaşdırmada ekranın şəkli əvvəlki “etalon” şəkillə müqayisə olunur; fərq çıxanda insan baxır: bu, gözlənilən dəyişiklikdir, yoxsa baq? Playwright-da `toHaveScreenshot()` bu işi görür. Bu, kiçik CSS dəyişikliyinin başqa səhifəni pozmasını tutur.
+
+### Piksel dəqiqliyi lazımdırmı?
+Maketlə 1–2 piksel fərq çox vaxt baq deyil. Fokus: düzülüşün pozulması, üst-üstə düşmə, kəsilmiş mətn, yanlış rəng (xüsusən statuslar), yanlış şrift ölçüsü. Kiçik fərqləri dizaynerlə razılaşdırılmış qaydaya görə qiymətləndir.
+
+### Tipik yanlış anlama
+“UI baqları vacib deyil.” Kəsilmiş “Ödə” düyməsi və ya oxunmayan qiymət birbaşa biznesə təsir edir; UI həm də brendin üzüdür.
+@nümunə
+**Tapşırıq.** Məhsul kartı (şəkil, ad, qiymət, “Səbətə əlavə et” düyməsi) üçün vəziyyətlərə əsaslanan 5 UI testi yaz.
+@addımlar
+1. **Uzun ad:** “Elektrik çaydanı Vito 1,7 L paslanmayan poladdan, işıqlı göstərici ilə” — 2 sətrə bölünür, kart pozulmur.
+2. **Şəkil yoxdur:** placeholder şəkil göstərilir, boş yer və ya qırıq ikon yox.
+3. **Endirimli qiymət:** köhnə qiymət üstündən xətlə, yeni qiymət vurğulanır; uzun məbləğ (12 345,99 AZN) sığır.
+4. **Düymə vəziyyətləri:** hover, basılma, “Stokda yoxdur” — deaktiv və vizual fərqli.
+5. **Boş kateqoriya:** heç bir məhsul yoxdursa, “Bu kateqoriyada məhsul yoxdur” mesajı.
+@növbən
+İstifadəçi profili səhifəsi (avatar, ad, email, “Redaktə et” düyməsi, son sifarişlər) üçün 5 UI testi yaz — boş vəziyyət, uzun mətn və yüklənmə vəziyyəti daxil olmaqla.
+
+=== c14s4
+@qısa
+Yerli layihələrdə Azərbaycan dilinə xas yoxlamalar çox defekt tapır: ə, ğ, ı, İ, ö, ü, ç, ş hərfləri; İ/i və I/ı çevrilməsi; əlifba sıralaması; tarix, valyuta və +994 telefon formatları.
+@yadda
+- “İ”-nin kiçiyi “i”, “I”-nın kiçiyi “ı”-dır.
+- Sıralama: C → Ç, E → Ə, S → Ş.
+- Axtarış hərfsiz yazılışı (seker → şəkər) tanımalıdır.
+@dərin
+### Kodlaşdırma (encoding) problemləri
+Hərflər yanlış kodlaşdırmada “?” və ya “Ã™” kimi görünür. Harada yoxlamalı: e-poçt mövzusu və mətni, SMS, PDF qəbz, Excel ixracı, fayl adları, bildirişlər. Bir sistemdə düzgün görünən mətn digərinə ötürüləndə pozula bilər (inteqrasiya defekti).
+
+### Sıralama nümunəsi
+Düzgün sıra: Aysel, Cavid, Çingiz, Elvin, Əli, Səbinə, Şahin. Proqram simvolların kompüter kodlarına görə (ingilis qaydası ilə) sıralayanda “Ç”, “Ə” və “Ş” ilə başlayan adlar siyahının sonuna düşə bilər. Proqramçılar bunu `localeCompare(…, 'az')` kimi funksiyalarla həll edir.
+
+### Formatlar
+- **Tarix:** 24.10.2026; həftə bazar ertəsi başlayır.
+- **Vaxt:** 24 saatlıq format (14:30).
+- **Valyuta:** 12,50 AZN və ya 12,50 ₼; simvol bəzi şriftlərdə görünməyə bilər — yoxla.
+- **Ədəd:** minliklər boşluqla (12 345,50).
+- **Telefon:** +994 50 123 45 67; istifadəçi 050… və ya 994… da yaza bilər.
+
+### Tipik yanlış anlama
+“Tərcümə düzgündürsə, lokalizasiya hazırdır.” Lokalizasiya dil, format, sıralama, kodlaşdırma və mətnlərin sığması deməkdir — tərcümə onun yalnız bir hissəsidir.
+@nümunə
+**Tapşırıq.** Kitab mağazasının axtarış və müəllif siyahısı funksiyaları üçün Azərbaycan dilinə xas 6 test yaz.
+@addımlar
+1. **Hərflər:** “Əli Kərimov” axtarışı — nəticə tapılır, adlar düzgün göstərilir.
+2. **İ/i:** “İLHAM” və “ilham” axtarışı eyni nəticəni verir.
+3. **I/ı:** “QIZIL” və “qızıl” axtarışı eyni nəticəni verir; ingilis qaydası ilə “QIZIL” kiçildiləndə “qizil” alınır və heç nə tapılmır.
+4. **Hərfsiz yazılış:** “Seyx” → “Şeyx” və ya “Kemale” → “Kəmalə” üçün nəticə və ya “Bunu nəzərdə tuturdunuz?” təklifi.
+5. **Sıralama:** müəlliflər siyahısında “Çingiz” “Cəlil”-dən sonra, “Şəhriyar” “Səməd”-dən sonra gəlir.
+6. **Kodlaşdırma:** sifariş təsdiq e-poçtunda kitab adı “Əsrin əfsanəsi” pozulmadan görünür.
+@növbən
+Şəhər seçimi açılan siyahısı və ünvan axtarışı olan çatdırılma formasında Azərbaycan dilinə xas 6 test yaz: hərflər, böyük-kiçik hərf, sıralama, hərfsiz yazılış və kodlaşdırma daxil olmaqla.
+
+=== c14s5
+@qısa
+Sayt Chrome, Firefox, Safari və Edge-də eyni işləməlidir; hər brauzerin öz mühərriki var. Hansı brauzerlərin yoxlanacağını analitika göstərir; cihaz yoxdursa, BrowserStack kimi bulud xidmətləri kömək edir.
+@yadda
+- Mühərriklər: Chromium (Chrome, Edge), Gecko (Firefox), WebKit (Safari).
+- Brauzer seçimi analitikaya və riskə əsaslanır.
+- iPhone-da brauzerlərin çoxu WebKit üzərində işləyir.
+@dərin
+### iOS-un xüsusiyyəti
+Uzun illər Apple iPhone və iPad-də bütün brauzerləri WebKit mühərrikindən istifadə etməyə məcbur edib (2024-cü ildən Avropa İttifaqında istisnalara icazə verilir). Yəni çox halda iPhone-dakı Chrome daxildə Safari kimi davranır. Mobil Safari-də tapılan problem çox vaxt iPhone-dakı bütün brauzerlərdə olur.
+
+### Brauzer matrisi necə qurulur?
+1. Analitikadan brauzer və versiya paylarını götür.
+2. Trafikin böyük hissəsini (məsələn, 95%) əhatə edən birləşmələri seç.
+3. Kritik ssenariləri (login, ödəniş) hamısında, qalanını əsas brauzerdə test et.
+4. Kombinasiyalar çoxdursa, pairwise tətbiq et (Fəsil 9).
+
+### Tipik cross-browser problemləri
+- Tarix və vaxt seçicisinin fərqli görünüşü və davranışı.
+- CSS xüsusiyyətlərinin dəstəyindəki fərqlər (yeni xüsusiyyətlər köhnə versiyalarda işləmir).
+- Şriftlərin fərqli çəkilməsi, mətnin sətirdən çıxması.
+- Fayl yükləmə, kopyala-yapışdır, autofill fərqləri.
+- Safari-də üçüncü tərəf cookie-lərin məhdudlaşdırılması.
+
+### Tipik yanlış anlama
+“Chrome-da işləyirsə, Edge-də də işləyəcək.” Mühərrik eynidir, amma versiyalar, ayarlar və əlavələr fərqlənə bilər. Kritik ssenarilər hər hədəf brauzerdə yoxlanmalıdır.
+@nümunə
+**Tapşırıq.** Analitika: Chrome 62%, Safari (iOS) 21%, Edge 8%, Firefox 5%, Samsung Internet 3%, digər 1%. Brauzer matrisi qur və test strategiyasını yaz.
+@addımlar
+1. **Əhatə:** Chrome + Safari + Edge + Firefox = 96% — əsas matris.
+2. **Prioritet:** Chrome və iOS Safari — bütün kritik və əsas ssenarilər; Edge və Firefox — kritik ssenarilər və smoke.
+3. **Samsung Internet (3%):** Android-də mobil smoke; Chromium əsaslıdır, risk aşağıdır.
+4. **Cihazlar:** iOS Safari üçün real iPhone (və ya bulud cihaz), qalanları üçün kompüter və emulyasiya.
+5. **Qeyd:** analitika hər rüb yenidən yoxlanır — matris statik deyil.
+@növbən
+Analitika: Chrome 55%, Safari (iOS) 30%, Safari (macOS) 6%, Firefox 5%, Edge 4%. Brauzer matrisi qur, prioritetləri yaz və iOS-un xüsusiyyətini nəzərə al.
+
+=== c14s6
+@qısa
+Responsive dizayn saytın ekran ölçüsünə uyğunlaşmasıdır. 360, 390–430, 768–1024, 1280–1440 və 1920 px enlərində yoxlanılır: burger menyu, üfüqi sürüşmənin olmaması, barmaqla basılacaq düymələr, ekranı çevirmək.
+@yadda
+- Üfüqi sürüşmə (horizontal scroll) adətən baqdır.
+- Düymələr barmaq üçün ən azı ~44 px olmalıdır.
+- DevTools emulyasiyası kömək edir, son yoxlama real cihazdadır.
+@dərin
+### Breakpoint-lər
+CSS-də “media query”lərlə müəyyən enlərdə düzülüş dəyişir (məsələn, 768 px-dən kiçikdə menyu burgerə çevrilir). Defektlər çox vaxt breakpoint-in tam sərhədində olur: 767 və 768 px — BVA burada da işləyir!
+
+### Telefon klaviaturası və ekran
+- Klaviatura açılanda forma sahəsi və “Göndər” düyməsi görünür qalırmı?
+- `type="tel"` sahədə rəqəm klaviaturası açılırmı?
+- Ekranın yuxarı “çentik” hissəsi (notch) məzmunu örtmürmü?
+- Telefonu yan çevirəndə (landscape) daxil edilən data itmirmi?
+
+### Toxunma hədəfləri
+Kiçik və bir-birinə yaxın linklər səhv basılmaya səbəb olur. WCAG və platforma qaydaları minimum toxunma ölçüsü tövsiyə edir (adətən 44–48 px). Lighthouse bunu “Tap targets” kimi yoxlayır.
+
+### Tipik yanlış anlama
+“Responsive — sadəcə hər şeyin kiçilməsidir.” Mobil versiya çox vaxt başqa düzülüş, başqa naviqasiya və bəzən başqa funksionallıq deməkdir — hər biri ayrıca test olunmalıdır.
+@nümunə
+**Tapşırıq.** Ödəniş səhifəsi üçün responsive testlər yaz: hansı enlərdə və nəyi yoxlayarsan?
+@addımlar
+1. **360 px:** forma tək sütundadır, üfüqi sürüşmə yoxdur, “Ödə” düyməsi tam görünür.
+2. **767 və 768 px (breakpoint sərhədi):** düzülüş düzgün dəyişir, elementlər “yarımçıq” vəziyyətdə ilişmir.
+3. **Klaviatura:** kart nömrəsi sahəsində rəqəm klaviaturası açılır, sahə klaviaturanın altında qalmır.
+4. **Landscape:** telefonu yan çevir — daxil edilən kart datası itmir, düzülüş pozulmur.
+5. **1440 px:** sifariş xülasəsi yan sütunda, mətnlər çox geniş uzanmır.
+@növbən
+Restoran menyusu səhifəsi (kateqoriyalar, şəkilli məhsul kartları, səbət düyməsi) üçün 5 responsive test yaz — breakpoint sərhədi, landscape və toxunma hədəfi daxil olmaqla.
+
+=== c14s7
+@qısa
+Əlçatanlıq saytın görmə, eşitmə, hərəkət və idrak məhdudiyyəti olan insanlar üçün də yararlı olmasıdır. Standart WCAG-dır: klaviatura ilə idarə, alt mətnlər, label-lər, rəng kontrastı (4,5:1), yalnız rəngə güvənməmək, 200% böyütmə.
+@yadda
+- WCAG-ın 4 prinsipi: qavranıla bilən, idarə oluna bilən, anlaşıla bilən, möhkəm.
+- Hər funksiya yalnız klaviatura ilə də işləməlidir.
+- Avtomatik alətlər problemlərin yalnız bir hissəsini tapır.
+@dərin
+### POUR prinsipləri
+- **Perceivable (qavranıla bilən):** şəkillərin alt mətni, videoların subtitrləri, kontrast.
+- **Operable (idarə oluna bilən):** klaviatura, kifayət qədər vaxt, tələ (trap) olmaması.
+- **Understandable (anlaşıla bilən):** aydın mətn, gözlənilən davranış, xəta izahı.
+- **Robust (möhkəm):** ekran oxuyucu və digər köməkçi texnologiyalarla uyğunluq.
+
+### Klaviatura testinin addımları
+1. Siçanı kənara qoy.
+2. Tab ilə irəli, Shift + Tab ilə geri get — sıra məntiqlidirmi?
+3. Fokus görünürmü (çərçivə, rəng)?
+4. Enter və Space düymələri aktivləşdirirmi?
+5. Açılan pəncərədən Esc ilə çıxmaq olurmu, fokus “tələyə” düşmürmü?
+
+### Qanunlar
+Bir çox ölkədə əlçatanlıq qanuni tələbdir. Məsələn, Avropa İttifaqında Avropa Əlçatanlıq Aktı 2025-ci ilin iyunundan bir çox rəqəmsal xidmətə tətbiq olunur. Beynəlxalq bazara çıxan məhsullar üçün bu, ciddi risk sahəsidir.
+
+### Tipik yanlış anlama
+“Lighthouse 100 bal verdi — sayt əlçatandır.” Alətlər kontrast və alt mətnin varlığını yoxlayır, amma alt mətnin mənalı olub-olmamasını və klaviatura axınının məntiqini insan yoxlamalıdır.
+@nümunə
+**Tapşırıq.** Qeydiyyat forması üçün 6 əlçatanlıq testi yaz.
+@addımlar
+1. **Klaviatura:** yalnız Tab, Shift + Tab, Enter ilə formanı doldur və göndər.
+2. **Fokus:** hər sahədə fokus aydın görünür.
+3. **Label:** hər sahənin label-i var; ekran oxuyucu (NVDA) sahəni adı ilə oxuyur, yalnız placeholder yox.
+4. **Xəta:** səhv email-də mesaj mətnlə göstərilir və ekran oxuyucu onu oxuyur — yalnız qırmızı haşiyə yox.
+5. **Kontrast:** mətn və düymələr 4,5:1 nisbətinə cavab verir (DevTools-da yoxla).
+6. **Böyütmə:** 200%-də forma istifadə oluna bilir, mətnlər üst-üstə düşmür.
+@növbən
+Onlayn bank tətbiqinin “köçürmə” ekranı üçün 6 əlçatanlıq testi yaz: klaviatura, fokus, ekran oxuyucu, xəta mesajı, kontrast və vaxt məhdudiyyəti (sessiya) daxil olmaqla.
+
+=== c14s8
+@qısa
+Hər tester sadə təhlükəsizlik yoxlamalarını bilməlidir: giriş icazələri (URL-də ID dəyişmək), rollar, sessiya, şifrənin gizlədilməsi, xəta mesajlarının həddən artıq məlumat verməməsi və xüsusi simvolların düzgün emalı. Bunları yalnız icazə verilmiş test mühitində et.
+@yadda
+- Yalnız öz layihənin test mühitində və icazə ilə.
+- Başqasının datasının görünməsi — Critical.
+- Şübhəli nəticəni təhlükəsizlik komandasına bildir, özün “dərinləşmə”.
+@dərin
+### OWASP Top 10 nədir?
+OWASP — veb təhlükəsizliyi üzrə açıq icma. Onun “Top 10” siyahısı ən geniş yayılmış risk kateqoriyalarını toplayır. Siyahının başında uzun müddətdir **pozulmuş giriş nəzarəti** (Broken Access Control) dayanır — yəni istifadəçinin icazəsi olmayan şeyə çatması. Tester-in URL-də ID dəyişməsi məhz bu kateqoriyanı yoxlayır.
+
+### Tester səviyyəsində təhlükəsizlik yoxlamaları
+- **Rollar matrisi:** hər rol (qonaq, istifadəçi, menecer, admin) hər səhifəni və API-ni çağıranda nə baş verir? Cədvəl kimi yoxla.
+- **Data sızması:** API cavabında ekranda göstərilməyən, amma lazımsız həssas sahələr (başqasının telefonu, daxili qeydlər) varmı?
+- **Şifrə siyasəti:** zəif şifrələr rədd olunurmu, şifrə URL-də və loglarda görünmürmü?
+- **Xəta mesajları:** “bu email qeydiyyatda yoxdur” kimi mesajlar hesabların mövcudluğunu açırmı?
+- **Brute force:** çoxsaylı səhv login cəhdi bloklanırmı və ya captcha istənirmi?
+
+### Etik qaydalar
+Tapdığın zəifliyi istismar etmə, başqa istifadəçilərin datasına baxmağa davam etmə, sübutu minimal saxla və dərhal məsul şəxsə bildir. Canlı sistemdə və icazəsiz sistemdə heç bir yoxlama aparma.
+
+### Tipik yanlış anlama
+“Təhlükəsizlik — yalnız pentester-lərin işidir.” Dərin testi onlar aparır, amma icazə səhvlərinin çoxu adi funksional testdə, düzgün sual verən tester tərəfindən tapılır.
+@nümunə
+**Tapşırıq.** Onlayn mağazanın test mühitində “Sifarişlərim” funksiyası üçün icazələrlə bağlı 5 yoxlama yaz.
+@addımlar
+1. **ID dəyişmək:** öz sifarişin `/orders/5001`-dir; `/orders/5002`-ni aç — başqasının sifarişi görünməməlidir (403 və ya 404).
+2. **API səviyyəsi:** eyni yoxlamanı API sorğusu ilə et — UI gizlətsə də, API data qaytarmamalıdır.
+3. **Qonaq:** login olmadan `/orders` — login səhifəsinə yönləndirmə.
+4. **Rol:** adi istifadəçi `/admin/orders`-i birbaşa açır — 403.
+5. **Cavabda artıq data:** sifariş API cavabında kuryerin şəxsi telefonu və ya daxili qeydlər varmı? Varsa — bildir.
+@növbən
+Test mühitində “Profilim” funksiyası (ad, telefon, ünvan, şifrəni dəyişmək) üçün icazə, sessiya və xəta mesajları ilə bağlı 5 təhlükəsizlik yoxlaması yaz.
+
+=== c14s9
+@qısa
+Performansın əsas yoxlamaları: Lighthouse auditi, Network panelində yüklənmə vaxtı və ən ağır fayllar, throttling ilə yavaş şəbəkədə istifadə. Yavaş şəbəkədə loader görünməli və sayt istifadə oluna bilməlidir.
+@yadda
+- Lighthouse — sürətli ilkin audit.
+- Ağır şəkillər ən çox rast gəlinən səbəbdir.
+- Yavaş şəbəkədə istifadəçiyə proses göstərilməlidir.
+@dərin
+### Core Web Vitals
+Google istifadəçi təcrübəsini üç əsas göstərici ilə ölçür:
+- **LCP (Largest Contentful Paint):** əsas məzmunun görünmə vaxtı — yaxşı hesab olunan hədd təxminən 2,5 saniyədir.
+- **INP (Interaction to Next Paint):** klikə reaksiyanın sürəti.
+- **CLS (Cumulative Layout Shift):** səhifənin “atılması” — oxuyarkən elementlərin yerdəyişməsi.
+Lighthouse və PageSpeed Insights bunları göstərir; CLS xüsusilə tester-in gördüyü “düymə qaçdı və səhv yerə basdım” problemidir.
+
+### Manual tester üçün sadə performans müşahidələri
+- Eyni əməliyyat müxtəlif vaxtlarda nə qədər çəkir?
+- Hansı sorğu ən uzun çəkir (Network → Time)?
+- Səhifədə neçə sorğu var, eyni sorğu təkrar gedirmi?
+- Siyahı uzandıqca (100, 1000 element) sürət necə dəyişir?
+
+### Nəticəni necə yazmalı?
+“Yavaşdır” yox: “Kataloq səhifəsi Slow 4G-də 9,8 saniyəyə açılır (Lighthouse LCP 7,1 san); ən ağır fayl — 3,2 MB-lıq banner şəkli.” Rəqəm və mühit həmişə göstərilir.
+
+### Tipik yanlış anlama
+“Mənim sürətli internetimdə tez açılır — problem yoxdur.” İstifadəçilərin çoxu mobil şəbəkədədir; throttling ilə yoxlamadan performans haqqında nəticə çıxarma.
+@nümunə
+**Tapşırıq.** Ana səhifənin performansı haqqında şikayətlər var. 5 addımlıq yoxlama planı yaz və nəticəni necə qeyd edəcəyini göstər.
+@addımlar
+1. **Mühit:** gizli pəncərə, Network → “Disable cache”, throttling “Slow 4G”.
+2. **Ölçmə:** səhifəni 3 dəfə yüklə, “Load” vaxtını qeyd et — orta və ən pis nəticə.
+3. **Ən ağır fayllar:** Size-a görə sırala — 1 MB-dan böyük şəkillər, böyük JS faylları.
+4. **Lighthouse:** Performance balı, LCP, CLS — ekran şəkli ilə.
+5. **Qeyd:** “Ana səhifə Slow 4G-də orta 8,4 san (3 ölçmə); LCP 6,2 san; 2,8 MB-lıq hero şəkli; CLS 0,25 — banner gec yüklənəndə məzmun aşağı sürüşür.”
+@növbən
+Məhsul axtarışı nəticələr səhifəsinin performansını yoxlamaq üçün 5 addımlıq plan yaz və nəticəni rəqəmlərlə necə təqdim edəcəyini bir nümunə cümlə ilə göstər.

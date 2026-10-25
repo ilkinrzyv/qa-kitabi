@@ -1,0 +1,173 @@
+=== c8s1
+@qısa
+Bütün dəyərləri yoxlamaq mümkün deyil, ona görə hansı dəyərləri seçəcəyimizi sistemli müəyyən edirik. EP testlərin sayını azaldır, BVA isə defektlərin ən çox gizləndiyi sərhədləri yoxlayır.
+@yadda
+- Məqsəd: az testlə maksimum defekt.
+- EP — “hansı qruplar var?”, BVA — “qrupların kənarında nə olur?”.
+- Texnika təsadüfi seçimi sistemli seçimlə əvəz edir.
+@dərin
+### Test dizayn texnikalarının üç ailəsi
+1. **Black box (spesifikasiyaya əsaslanan):** EP, BVA, qərar cədvəli, vəziyyət keçidləri, pairwise, use case.
+2. **White box (struktura əsaslanan):** statement və branch coverage.
+3. **Təcrübəyə əsaslanan:** error guessing, exploratory, checklist.
+
+Bu fəsil birinci ailənin ən çox işlədilən iki texnikasını öyrədir.
+
+### Niyə “təsadüfi dəyərlər” pisdir?
+Təsadüfi seçimdə bəzi siniflər iki dəfə yoxlanır, bəziləri heç yoxlanmır, sərhədlər isə demək olar ki, heç vaxt seçilmir. Texnika isə hər sinfin və hər sərhədin ən azı bir dəfə əhatə olunmasını təmin edir və bunu ölçmək olur: “6 sinifdən 6-sı, 4 sərhəddən 4-ü əhatə olunub”.
+
+### Texnika test case-in özünü yox, dəyərləri seçir
+EP və BVA “hansı data ilə test edək?” sualına cavab verir. Bu dəyərlər sonra test case-lərə yerləşdirilir (Fəsil 11): ilkin şərt, addımlar və gözlənilən nəticə ilə.
+
+### Tipik yanlış anlama
+“Texnikalar yalnız rəqəm sahələri üçündür.” EP və BVA mətn uzunluğuna, tarixlərə, fayl ölçüsünə, siyahılara və hətta vəziyyətlərə də tətbiq olunur.
+@nümunə
+**Tapşırıq.** “Səbətdə məhsul sayı 1–10 ola bilər.” Təsadüfi seçilmiş 5 dəyər (3, 4, 5, 6, 7) ilə texnika ilə seçilmiş dəyərləri müqayisə et.
+@addımlar
+1. **Təsadüfi dəst:** 3, 4, 5, 6, 7 — hamısı eyni valid sinifdəndir; invalid siniflər və sərhədlər heç yoxlanmır.
+2. **EP ilə:** valid sinif (1–10) — 5; invalid: 0-dan kiçik və ya 0, 10-dan böyük — 0 və 11; tip — “iki”.
+3. **BVA ilə:** 0, 1, 10, 11 (2 dəyərli).
+4. **Nəticə:** texnika ilə 6–7 dəyər bütün sinifləri və sərhədləri əhatə edir; təsadüfi 5 dəyər isə yalnız bir sinfi.
+@növbən
+“Kupon kodu 6–12 simvol olmalıdır.” Təsadüfi seçilmiş 4 dəyərlə texnika (EP + BVA) ilə seçilmiş dəyərləri müqayisə et və texnikanın üstünlüyünü 2 cümlə ilə izah et.
+
+=== c8s2
+@qısa
+EP girişləri sistemin eyni cür emal etdiyi qruplara bölür və hər qrupdan bir nümayəndə seçir. Valid siniflər qəbul olunmalı, invalid siniflər aydın xəta ilə rədd olunmalıdır. Bir testdə yalnız bir invalid dəyər olur.
+@yadda
+- Bir sinfin hər dəyəri eyni nəticəni verir — biri kifayətdir.
+- Invalid siniflər: aralıqdan kənar, yanlış tip, boş, yanlış format.
+- Bir testdə bir invalid dəyər — defect masking olmasın.
+@dərin
+### Sinifləri harada axtarmalı?
+- **Aralıqlar:** 18–60 → üç sinif (kiçik, daxil, böyük).
+- **Siyahılar:** ödəniş üsulu {kart, nağd, hədiyyə kartı} → hər biri ayrıca sinif, üstəlik “siyahıda olmayan”.
+- **Formatlar:** email, telefon, tarix — düzgün və yanlış formatlar.
+- **Çıxış dəyərləri:** nəticənin fərqli olduğu qruplar da sinifdir (məsələn, endirim 0%, 5%, 10%).
+- **Gizli siniflər:** proqramın daxilində fərqli emal — məsələn, 0 məbləğ, mənfi ədəd, çox böyük ədəd.
+
+### EP əhatəsi (coverage)
+EP-də əhatə belə ölçülür: yoxlanılan siniflər / bütün siniflər × 100. Valid sinifləri bir testdə birləşdirmək olar (məsələn, düzgün ad + düzgün yaş + düzgün email), invalid sinifləri isə yox — hər biri ayrıca test.
+
+### Defect masking niyə olur?
+Formada iki sahə səhvdirsə, sistem çox vaxt yalnız birincisi üçün xəta göstərir. İkinci sahənin yoxlaması ümumiyyətlə işləmirsə, sən bunu görməyəcəksən — birinci xəta onu “gizlədir”.
+
+### Tipik yanlış anlama
+“Nümayəndə kimi sərhədi seçmək daha yaxşıdır.” EP nümayəndəsi sinfin “adi” ortasından seçilir; sərhədlər BVA-nın işidir. İkisini qarışdıranda hansı defektin harada olduğunu anlamaq çətinləşir.
+@nümunə
+**Tapşırıq.** Tələb: “Hədiyyə kartının balansına 10–500 AZN arası tam məbləğ yükləmək olar; ödəniş yalnız Visa və Mastercard ilə.” EP siniflərini tap və testləri yaz.
+@addımlar
+1. **Məbləğ — valid:** 10–500 → nümayəndə 200.
+2. **Məbləğ — invalid:** 10-dan kiçik (5), 500-dən böyük (700), kəsr (25,5), hərf (“yüz”), boş.
+3. **Kart növü — valid:** Visa, Mastercard — hər biri ayrıca sinif, çünki fərqli emal oluna bilər.
+4. **Kart növü — invalid:** dəstəklənməyən kart (məsələn, başqa ödəniş sistemi).
+5. **Testlər:** valid kombinasiyalar — 200 + Visa, 200 + Mastercard; hər invalid sinif üçün ayrıca test, digər sahələr valid saxlanır (məsələn, 700 + Visa).
+@növbən
+Tələb: “Kinoteatrda bir sifarişdə 1–8 bilet almaq olar; oturacaq növü: adi, VIP.” EP siniflərini (valid və invalid) tap və testləri yaz — hər invalid test yalnız bir səhv dəyər daşısın.
+
+=== c8s3
+@qısa
+BVA siniflərin sərhədlərini və qonşu dəyərlərini yoxlayır, çünki proqramçılar `<` ilə `<=`-ni tez-tez qarışdırır. 2 dəyərli BVA sərhədi və kənar qonşunu, 3 dəyərli BVA sərhədi və hər iki qonşunu götürür.
+@yadda
+- Defektlər sərhəddə yığılır: `>` ilə `>=` qarışıqlığı.
+- Addımı düzgün seç: tam ədəd — 1, pul — 0,01, mətn — 1 simvol.
+- 2 dəyərli: sərhəd + kənar qonşu; 3 dəyərli: hər iki qonşu da.
+@dərin
+### 3 dəyərli BVA nə vaxt lazımdır?
+2 dəyərli BVA `>` / `>=` səhvini tutur. Amma proqramçı sərhədi tamamilə səhv yazıbsa (məsələn, `age >= 18` əvəzinə `age == 18`), 19 dəyəri bunu üzə çıxarır. Riskli sahələrdə (pul, təhlükəsizlik) 3 dəyərli BVA daha etibarlıdır.
+
+### Gizli sərhədlər
+Tələbdə yazılmayan, amma sistemdə olan sərhədlər:
+- Bazadakı sahənin maksimum uzunluğu (məsələn, 255 simvol).
+- Tarix sərhədləri: ayın 1-i və son günü, 29 fevral, ilin sonu, gecə yarısı (00:00).
+- Fayl ölçüsü: 5 MB = 5 000 000 bayt, yoxsa 5 242 880 bayt?
+- Ədəd tipinin limiti (çox böyük ədəd).
+- Vaxt zonası: Bakı vaxtı ilə 23:59 serverdə artıq növbəti gündür?
+
+### Açıq və qapalı aralıqlar
+“18-dən 60-a qədər” ifadəsində sərhədlərin daxil olub-olmaması həlledicidir: [18, 60] — hər ikisi daxil, (18, 60) — heç biri. Tələbdə bu aydın deyilsə, BVA-ya başlamazdan əvvəl soruş (8.5).
+
+### Tipik yanlış anlama
+“BVA yalnız rəqəmlər üçündür.” Mətn uzunluğu, siyahıdakı element sayı, səhifələmə (1-ci və sonuncu səhifə) da sərhəddir.
+@nümunə
+**Tapşırıq.** Tələb: “Şifrə 8–16 simvol olmalıdır.” Proqramçı kodu səhvən `length > 8 && length < 16` yazıb. 2 dəyərli və 3 dəyərli BVA dəyərlərini tap və hansı testlərin defekti tutacağını göstər.
+@addımlar
+1. **Sərhədlər:** 8 (minimum), 16 (maksimum), addım — 1 simvol.
+2. **2 dəyərli BVA:** 7, 8, 16, 17.
+3. **3 dəyərli BVA:** 7, 8, 9, 15, 16, 17.
+4. **Kodla müqayisə:** səhv kodda 8 və 16 rədd olunur — gözlənilən isə qəbuldur. Deməli, **8 və 16 testləri düşür** və defekti tutur; 9 və 15 keçir.
+5. **Nəticə:** sərhədin özünü yoxlamamış dəst (məsələn, yalnız 10 və 20) bu defekti heç vaxt tapmazdı.
+@növbən
+Tələb: “Kredit məbləği 500,00–20 000,00 AZN.” Addımı müəyyən et, 3 dəyərli BVA dəyərlərini yaz və proqramçı `amount > 500` yazıbsa, hansı testin düşəcəyini göstər.
+
+=== c8s4
+@qısa
+Praktikada EP və BVA birlikdə işlədilir: əvvəl siniflər, sonra sərhədlər. BVA-nın kənar dəyərləri invalid sinifləri də təmsil etdiyi üçün test dəsti kiçik, amma tam olur.
+@yadda
+- Əvvəl EP ilə siniflər, sonra BVA ilə sərhədlər.
+- BVA-nın kənar dəyərləri (17, 61) invalid sinifləri də əhatə edir.
+- Tip və format yoxlamalarını ayrıca əlavə et: kəsr, hərf, boş.
+@dərin
+### Birləşdirmənin addımları
+1. Tələbdən şərtləri çıxar.
+2. Hər şərt üçün valid və invalid sinifləri yaz.
+3. Hər aralıqlı sinfin sərhədlərini və addımı müəyyən et.
+4. BVA dəyərlərini seç; onların hansı sinifləri artıq əhatə etdiyini qeyd et.
+5. Əhatə olunmayan siniflər üçün EP nümayəndəsi əlavə et (tip, format, boş).
+6. Dublikatları sil və hər dəyərə gözlənilən nəticə yaz.
+
+### Bir neçə sahəli formada
+Hər sahə ayrıca təhlil olunur, sonra testlər birləşdirilir: valid dəyərlər bir testdə yığıla bilər, invalid dəyərlər isə hər biri ayrıca testdə, digər sahələr valid saxlanılmaqla. Çox sahə və kombinasiya olanda pairwise kömək edir (Fəsil 9).
+
+### Test dəstini cədvəl kimi saxla
+Sütunlar: dəyər, haradan gəlir (EP/BVA), sinif, gözlənilən nəticə. Belə cədvəl həm test case-ə çevrilir, həm də avtomatlaşdırmada “data-driven” testin datası olur.
+
+### Tipik yanlış anlama
+“Daha çox test — daha yaxşı.” EP+BVA-nın gücü az, amma əsaslandırılmış testdədir. Hər dəyərin yanında “bu niyə buradadır?” sualına cavab olmalıdır.
+@nümunə
+**Tapşırıq.** Tələb: “Otel rezervasiyasında gecə sayı 1–14 ola bilər (tam ədəd).” EP və BVA-nı birləşdirib yekun test dəstini cədvəl kimi yaz.
+@addımlar
+1. **EP:** valid 1–14; invalid — 1-dən kiçik, 14-dən böyük, kəsr, hərf, boş.
+2. **BVA (2 dəyərli):** 0, 1, 14, 15.
+3. **Əhatə yoxlaması:** 0 “1-dən kiçik”, 15 “14-dən böyük” sinfini əhatə edir; valid sinif üçün ortadan 7 əlavə et.
+4. **Tip və format:** 2,5 (kəsr), “iki” (hərf), boş.
+5. **Yekun dəst:** 0 → xəta; 1 → qəbul; 7 → qəbul; 14 → qəbul; 15 → xəta; 2,5 → xəta; “iki” → xəta; boş → “Gecə sayını daxil edin”. Cəmi 8 test.
+@növbən
+Tələb: “Onlayn kursa yaşı 16–70 olan şəxslər yazıla bilər.” EP və BVA-nı birləşdir və yekun test dəstini cədvəl şəklində yaz: dəyər, mənbə (EP/BVA), gözlənilən nəticə.
+
+=== c8s5
+@qısa
+“18 yaşdan yuxarı”, “60-a qədər” kimi ifadələrdə sərhədin daxil olub-olmaması aydın deyil. Tester təxmin etmir — nümunəli sual verir: “18 yaşlı istifadəçi qeydiyyatdan keçə bilərmi?”
+@yadda
+- Qeyri-müəyyən sərhəd — BVA-dan əvvəl sual.
+- Sualı konkret nümunə ilə ver.
+- Cavabı yazılı saxla və tələbə əlavə etdir.
+@dərin
+### Təhlükəli ifadələr
+| İfadə | Sual |
+| --- | --- |
+| “18 yaşdan yuxarı” | 18 daxildirmi? |
+| “60-a qədər” | 60 daxildirmi? |
+| “1000 AZN-dən çox” | Düz 1000 AZN nə olur? |
+| “Həftə sonu” | Yalnız şənbə və bazar? Bazar günü saat 23:59-da verilən sifariş? |
+| “24 saat ərzində” | Sifarişdən, yoxsa ödənişdən sonra? |
+| “Böyük fayllar” | Neçə MB-dan başlayaraq? |
+
+### Gündəlik dil ilə proqram məntiqi fərqlidir
+Gündəlik danışıqda “18 yaşdan yuxarı” çox vaxt “18 və yuxarı” kimi başa düşülür, riyazi olaraq isə 18 daxil deyil. Qanunda, bankda, sığortada bu fərq ciddi nəticə verə bilər — yanlış insana xidmət göstərmək və ya düzgün insanı rədd etmək.
+
+### Sualı necə verməli?
+Formul: harada + nə aydın deyil + konkret nümunə + təklif. Məsələn: “US-14-də ‘18 yaşdan yuxarı’ yazılıb. 18 yaşı tamam olan istifadəçi qeydiyyatdan keçə bilərmi? Təklif: ‘18 və yuxarı’ kimi dəqiqləşdirək.”
+
+### Tipik yanlış anlama
+“Proqramçı necə yazıbsa, elə də düzgündür.” Proqramçı da tələbi təxmin edib ola bilər. Düzgün cavab yalnız tələbin sahibindən (PO, analitik) gəlir.
+@nümunə
+**Tapşırıq.** Tələb: “Gecə tarifi saat 23:00-dan 06:00-a qədər tətbiq olunur.” Qeyri-müəyyən yerləri tap, suallar yaz və cavabdan asılı BVA dəyərlərini göstər.
+@addımlar
+1. **Qeyri-müəyyənlik 1:** 23:00 daxildirmi? Sifariş 23:00:00-da verilsə gecə tarifidir?
+2. **Qeyri-müəyyənlik 2:** 06:00 daxildirmi? 06:00:00-da hansı tarif?
+3. **Qeyri-müəyyənlik 3:** vaxt nə ilə ölçülür — sifariş anı, yoxsa gedişin başlanğıcı? Hansı vaxt zonası?
+4. **Sual:** “Gecə tarifi 23:00:00–05:59:59 aralığıdır? Vaxt sifarişin yarandığı anla ölçülür? Təklif: tələbdə dəqiq yazaq.”
+5. **BVA (cavabdan sonra):** 22:59:59, 23:00:00, 05:59:59, 06:00:00 — gözlənilən nəticələr cavaba görə yazılır.
+@növbən
+Tələb: “Həftə sonları çatdırılma pulsuzdur.” Ən azı 3 qeyri-müəyyən yeri tap, hər biri üçün nümunəli sual yaz və cavabdan asılı test dəyərlərini göstər.

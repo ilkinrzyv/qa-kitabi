@@ -1,0 +1,174 @@
+=== c4s1
+@qısa
+STLC test işinin altı mərhələsidir: tələblərin analizi, planlaşdırma, test dizaynı, mühitin hazırlanması, icra və bağlanış. Hər mərhələnin giriş şərti, əsas işləri və nəticəsi var.
+@yadda
+- Analiz → plan → dizayn → mühit → icra → bağlanış.
+- Hər mərhələnin nəticəsi növbətinin girişidir.
+- Mühit smoke test ilə yoxlanmadan icraya başlanmır.
+@dərin
+### Hər mərhələnin “məhsulu” (deliverable)
+| Mərhələ | Nəticə sənədi |
+| --- | --- |
+| Analiz | Suallar siyahısı, test olunacaq tələblər, ilkin risklər |
+| Planlaşdırma | Test planı, qiymətləndirmə (nə qədər vaxt) |
+| Dizayn | Test case-lər, checklist-lər, test data, RTM |
+| Mühit | Hazır server, hesablar, cihazlar; smoke test nəticəsi |
+| İcra | Nəticələr, bug report-lar, retest və regression qeydləri |
+| Bağlanış | Yekun hesabat, metriklər, alınan dərslər |
+
+### Mərhələlər paralel gedə bilər
+Mühit hazırlanarkən test dizaynı davam edə bilər; icra zamanı yeni tələb gələrsə, analiz yenidən başlayır. STLC xətti siyahı deyil, işin məntiqi sırasıdır.
+
+### Test qiymətləndirməsi (estimation)
+Planlaşdırmada “nə qədər vaxt lazımdır?” sualı verilir. Sadə üsul: test case-lərin sayı × orta icra vaxtı + retest və regression üçün ehtiyat (adətən 20–30%) + mühit problemləri üçün ehtiyat. Tester keçmiş relizlərin rəqəmlərinə baxaraq qiyməti dəqiqləşdirir.
+
+### Tipik yanlış anlama
+“Bağlanış mərhələsi formallıqdır.” Alınan dərslər (lessons learned) növbəti layihədə eyni səhvlərin qarşısını alır — bu, QA-nın ən dəyərli işlərindəndir.
+@nümunə
+**Tapşırıq.** 60 test case planlaşdırılıb, hər birinin orta icra vaxtı 10 dəqiqədir. Retest və regression üçün 25% ehtiyat, mühit problemləri üçün əlavə 1 iş günü (8 saat) götür. Ümumi test icrası vaxtını qiymətləndir.
+@addımlar
+1. **Əsas icra:** 60 × 10 = 600 dəqiqə = 10 saat.
+2. **Retest və regression ehtiyatı:** 10 saat × 25% = 2,5 saat.
+3. **Mühit ehtiyatı:** 8 saat.
+4. **Cəmi:** 10 + 2,5 + 8 = 20,5 saat — təxminən 2,5 iş günü. Bunu planda gün kimi göstər və fərziyyələri yaz ki, dəyişəndə yenidən hesablana bilsin.
+@növbən
+45 test case var, orta icra vaxtı 12 dəqiqədir. Retest üçün 30% ehtiyat və mühit üçün yarım iş günü (4 saat) əlavə et. Ümumi vaxtı saat və iş günü ilə hesabla, fərziyyələrini yaz.
+
+=== c4s2
+@qısa
+Giriş meyarı mərhələyə başlamaq üçün nəyin hazır olmalı olduğunu, çıxış meyarı isə mərhələnin nə vaxt bitmiş sayıldığını deyir. Meyarlar ölçülə bilən olmalıdır: faiz, say, ciddilik.
+@yadda
+- Entry — “başlaya bilərikmi?”, exit — “bitirə bilərikmi?”.
+- “Bütün baqlar düzəlib” real meyar deyil.
+- Meyarlar planda əvvəlcədən razılaşdırılır, sonda yox.
+@dərin
+### Yaxşı meyarın xüsusiyyətləri
+- **Ölçülə bilən:** “95% test keçib”, “açıq Critical defekt yoxdur”.
+- **Əvvəlcədən razılaşdırılmış:** test planında yazılır və PO təsdiqləyir.
+- **Realist:** riskə və vaxta uyğundur.
+
+### Giriş meyarı nümunələri (icra üçün)
+- Build test mühitinə yerləşdirilib və smoke testdən keçib.
+- Test case-lər review olunub.
+- Test hesabları və data hazırdır.
+- Release notes (nə dəyişib) mövcuddur.
+
+### Meyar ödənməyəndə nə olur?
+Bu, avtomatik “reliz yoxdur” demək deyil. Tester faktı və riski göstərir, qərarı isə məsul şəxs (PO, menecer) verir: məsələn, “2 açıq Major defekt var, workaround mövcuddur — reliz riskini qəbul edirik.” Bu qərar yazılı qeyd olunmalıdır.
+
+### Suspension və resumption
+Test planlarında bəzən “dayandırma” (suspension) və “davam etmə” (resumption) meyarları da olur: məsələn, smoke test düşərsə icra dayandırılır, yeni build gələndə davam edir. Bu, vaxtı qırıq build-ə sərf etməyin qarşısını alır.
+
+### Tipik yanlış anlama
+“Çıxış meyarı ödənməyibsə, tester relizi qadağan edir.” Tester məlumat verir və tövsiyə edir; reliz qərarı biznesindir.
+@nümunə
+**Tapşırıq.** Mobil tətbiqin icra mərhələsi üçün çıxış meyarları: (1) planlaşdırılan test case-lərin 100%-i icra olunub; (2) ən azı 95%-i keçib; (3) açıq Blocker/Critical yoxdur. Faktiki vəziyyət: 200 test case-dən 200-ü icra olunub, 188-i keçib, 1 açıq Critical var. Meyarları yoxla və tövsiyə yaz.
+@addımlar
+1. **Meyar 1:** 200/200 = 100% icra — ödənib.
+2. **Meyar 2:** 188/200 = 94% — 95%-dən aşağıdır, ödənməyib.
+3. **Meyar 3:** 1 açıq Critical var — ödənməyib.
+4. **Tövsiyə:** “Çıxış meyarlarından ikisi ödənməyib. Critical defekt (ödəniş zamanı çökmə) düzəlməmiş relizi tövsiyə etmirik. Düzəliş + retest + qısa regression üçün 1 gün lazımdır.” Qərarı PO verir, tester riski aydın göstərir.
+@növbən
+Veb saytın icra mərhələsi üçün 3 ölçülə bilən giriş meyarı və 3 çıxış meyarı yaz. Sonra çıxış meyarlarından birinin ödənmədiyi bir vəziyyət uydur və tövsiyəni yaz.
+
+=== c4s3
+@qısa
+Test statusları icranın nəticəsini göstərir: Passed — gözlənilən nəticə alındı, Failed — fərq var, Blocked — test icra oluna bilmir, Skipped/Not run — qəsdən buraxılıb və ya növbəsi çatmayıb.
+@yadda
+- Failed — yoxlanan funksiyada defekt var.
+- Blocked — başqa problem testin özünə mane olur.
+- Hər Failed testin yanında bug report linki olmalıdır.
+@dərin
+### Statusların düzgün qeyd olunması niyə vacibdir?
+Statuslar metriklərə çevrilir: pass rate, icra faizi. Blocked testi Failed yazsan, defekt sayı süni şəkildə artır və proqramçılar mövcud olmayan defekti axtarır. Failed testi Passed yazsan, isə risk gizlənir.
+
+### Əlavə statuslar
+Bəzi alətlərdə əlavə statuslar var: **Retest** (düzəlişdən sonra yenidən yoxlanacaq), **In Progress** (icra olunur), **N/A** (bu mühitə aid deyil). Komandanın istifadə etdiyi statusların mənasını əvvəlcədən razılaşdırmaq lazımdır.
+
+### Blocked olanda nə etməli?
+1. Bloklayan problemi müəyyən et (məsələn, login işləmir).
+2. Ona ayrıca bug report yaz və ya mövcud olanı tap.
+3. Bloklanan testlərin yanında həmin baqın linkini qeyd et.
+4. Baq düzələndə bloklanan testləri dərhal icra et.
+
+### Flaky nəticə
+Eyni test bəzən keçir, bəzən düşürsə, “Passed” yazıb keçmə. Bu, ya aralıq (intermittent) defektdir, ya da test/mühit problemidir — hər iki halda araşdırma və qeyd lazımdır.
+
+### Tipik yanlış anlama
+“Test düşdü — deməli, proqramda baq var.” Bəzən səbəb test datası, mühit və ya köhnəlmiş gözlənilən nəticədir. Bug report yazmazdan əvvəl təkrarla və səbəbi yoxla.
+@nümunə
+**Tapşırıq.** Bu nəticələrə status ver: (a) “Səbətə əlavə et” basılır, səbət boş qalır; (b) ödəniş testi üçün test kartı işləmir, ödəniş səhifəsinə çatmaq mümkün deyil; (c) bu relizdə “hədiyyə kartı” funksiyası söndürülüb; (d) axtarış düzgün nəticə qaytarır.
+@addımlar
+1. **(a) Failed** — yoxlanan funksiya gözləniləndən fərqli işləyir; bug report yazılır.
+2. **(b) Blocked** — problem ödəniş funksiyasında yox, test kartındadır; bloklayan problem ayrıca qeyd olunur.
+3. **(c) Skipped / Not run** — funksiya qəsdən bu relizdən çıxarılıb; səbəb yazılır.
+4. **(d) Passed** — faktiki nəticə gözlənilənə uyğundur.
+@növbən
+Bu hallara status ver və hər birinin yanında nə qeyd edəcəyini yaz: (a) mobil tətbiq iOS 17-də açılmır, Android testləri isə gözləyir; (b) qeydiyyat formasında xəta mesajı səhv dildə çıxır; (c) test serveri 2 saat söndürülüb; (d) eyni test 5 cəhddən 2-də düşür.
+
+=== c4s4
+@qısa
+Metriklər keyfiyyəti rəqəmlərlə göstərir: icra faizi (icra olunan / planlaşdırılan), pass rate (keçən / icra olunan) və ciddiliyə görə defekt sayı. Rəqəm kontekstsiz yanıltıcı ola bilər — onu həmişə izahla ver.
+@yadda
+- İcra faizi = icra olunan / planlaşdırılan × 100.
+- Pass rate = keçən / icra olunan × 100.
+- Bir rəqəm yox, rəqəmlər + izah qərar üçün əsasdır.
+@dərin
+### Daha bir neçə faydalı metrik
+- **Defect density** — defektlərin modulun ölçüsünə nisbəti (məsələn, hər 10 test case-ə düşən defekt). Hansı modulun riskli olduğunu göstərir.
+- **Defect leakage** — testdən “qaçıb” canlıda tapılan defektlərin payı. Məsələn, testdə 45, canlıda 5 defekt tapılıbsa, leakage = 5 / (45 + 5) = 10%. Test prosesinin effektivliyini ölçür.
+- **Reopen rate** — yenidən açılan defektlərin payı; düzəlişlərin keyfiyyətini göstərir.
+- **Açıq defektlərin yaşı** — neçə gündür düzəlmir.
+
+### Metrik oyunlarından qoru
+Metrik məqsədə çevriləndə yanıldır. Məsələn, “tester başına baq sayı” ölçülsə, bir problem 5 baq kimi yazılmağa başlayar; “pass rate 100% olmalıdır” deyilsə, çətin testlər yazılmaz. Metrik komandanın vəziyyətini görmək üçündür, insanları cəzalandırmaq üçün yox.
+
+### Rəqəmi necə təqdim etməli?
+“Pass rate 94,7%” — tək başına az şey deyir. Daha yaxşı: “114 testdən 108-i keçdi (94,7%). Düşən 6 testin 4-ü bir defektlə bağlıdır (ödəniş xətası, Critical, düzəliş gözlənilir), 2-si Minor-dur.”
+
+### Tipik yanlış anlama
+“Pass rate yüksəkdirsə, məhsul keyfiyyətlidir.” Asan testlərdən ibarət dəst həmişə yüksək pass rate verir. Testlərin əhatəsi və vacibliyi rəqəmdən daha önəmlidir.
+@nümunə
+**Tapşırıq.** Reliz üzrə məlumat: 150 test case planlaşdırılıb, 135-i icra olunub, 121-i keçib. Testdə 36 defekt tapılıb, relizdən sonra müştərilər daha 4 defekt tapıb. İcra faizi, pass rate və defect leakage-i hesabla, qısa şərh yaz.
+@addımlar
+1. **İcra faizi:** 135 / 150 = 90%.
+2. **Pass rate:** 121 / 135 ≈ 89,6%.
+3. **Defect leakage:** 4 / (36 + 4) = 10%.
+4. **Şərh:** “Testlərin 10%-i icra olunmayıb — hansılar olduğunu və riskini yazmaq lazımdır. Pass rate 90%-ə yaxındır. Canlıya keçən 4 defektin kök səbəbi araşdırılmalıdır: niyə testdə tutulmadılar?”
+@növbən
+Reliz məlumatı: 80 test case planlaşdırılıb, 76-sı icra olunub, 70-i keçib; testdə 18, canlıda 2 defekt tapılıb. Üç metriki hesabla və rəhbərə 3 cümləlik izah yaz.
+
+=== c4s5
+@qısa
+Scrum-da STLC-nin 6 mərhələsi hər sprintdə kiçik miqyasda təkrarlanır: planning-də analiz və planlaşdırma, sprint boyu dizayn və icra, retrospektivdə bağlanış və dərslər. Mərhələlər qısalır və bir-birinə qarışır, məntiq isə qalır.
+@yadda
+- Hər story öz mini-STLC-sindən keçir.
+- Test planı ağır sənəd yox, sprint səviyyəsində qısa razılaşmadır.
+- Regression-un avtomatlaşdırılması Agile-da xüsusilə vacibdir.
+@dərin
+### Story səviyyəsində STLC
+1. **Analiz:** refinement-də acceptance criteria-nı birgə yazmaq.
+2. **Planlaşdırma:** sprint planning-də test işini qiymətləndirmək.
+3. **Dizayn:** proqramçı kod yazarkən test ideyaları və data hazırlamaq.
+4. **Mühit:** feature branch üçün test mühiti və ya preview linki.
+5. **İcra:** story hazır olan kimi test, baqları dərhal komandaya bildirmək.
+6. **Bağlanış:** DoD yoxlanılır, story “Done” olur; retrospektivdə dərslər.
+
+### Sprint və reliz səviyyəsində
+Hər story ayrıca test olunsa da, reliz öncəsi bütün story-lərin birlikdə işlədiyini göstərən regression və bəzən ayrıca “hardening” günləri olur. Agile komandalarda yekun hesabat çox vaxt qısa formadadır: nə test olundu, nə açıq qaldı, risklər.
+
+### Agile-da sənədləşmə
+Ağır test planı əvəzinə: komanda səviyyəsində “test strategiyası” (bir dəfə), story-də acceptance criteria və checklist, avtomatik testlərin nəticələri (CI hesabatları). Sənəd az, amma məqsədyönlü olur.
+
+### Tipik yanlış anlama
+“Agile-da STLC yoxdur.” Mərhələlər adları ilə görünməyə bilər, amma hər story-də analiz, dizayn, icra və bağlanış yenə də baş verir.
+@nümunə
+**Tapşırıq.** Story: “İstifadəçi sifarişlər tarixçəsini tarixə görə süzə bilər.” 2 həftəlik sprintdə bu story üçün STLC-nin hər mərhələsində tester-in bir işini yaz.
+@addımlar
+1. **Analiz (refinement):** “Tarix aralığı maksimum neçə gün ola bilər? Gələcək tarix seçmək olarmı?” sualları; acceptance criteria-ya əlavə.
+2. **Planlaşdırma (planning):** test işini qiymətləndirmək — fərqli tarixli test sifarişləri yaratmaq vaxt aparır.
+3. **Dizayn:** BVA ilə tarixlər (aralığın sərhədləri, ilin sonu, 29 fevral), boş nəticə ssenarisi.
+4. **Mühit:** test hesabında müxtəlif tarixli 20 sifarişin hazırlanması.
+5. **İcra və bağlanış:** story hazır olan kimi test, tapılan baqların həlli, DoD yoxlanışı; retrospektivdə “test datası hazırlamaq çox vaxt aldı — skript yazaq” dərsi.
+@növbən
+Story: “İstifadəçi profil şəklini dəyişə bilər.” Bu story üçün sprint daxilində STLC-nin 6 mərhələsinin hər birində bir konkret iş yaz.

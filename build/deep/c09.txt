@@ -1,0 +1,206 @@
+=== c9s1
+@qısa
+Qərar cədvəli bir neçə şərtin birləşməsi nəticəni dəyişəndə işlədilir: şərtlər yuxarıda, nəticələr aşağıda, hər sütun bir qayda və bir testdir. n şərt 2ⁿ kombinasiya verir, “—” işarəsi ilə cədvəl sadələşdirilir.
+@yadda
+- Kombinasiyaların sayı: 2ⁿ.
+- “—” — bu qaydada şərtin nəticəyə təsiri yoxdur.
+- Hər sütun = bir test case.
+@dərin
+### Cədvəl tələbdəki boşluqları üzə çıxarır
+Cədvəli doldurarkən elə kombinasiyalar çıxır ki, tələbdə onların nəticəsi yazılmayıb. Məsələn: “Premium üzvə endirim, kupona endirim” — bəs ikisi birlikdə olanda? Toplanır, böyüyü seçilir, yoxsa yalnız biri? Bu sual cədvəlsiz çox vaxt unudulur. Bəzən cədvəlin ən böyük faydası testlər yox, tələbə verilən suallardır.
+
+### Mümkün olmayan kombinasiyalar
+Bəzi kombinasiyalar real həyatda baş verə bilməz (məsələn, “qeydiyyatda deyil” + “hesab bloklanıb”). Onları “mümkün deyil” kimi işarələ və test etmə — amma bunu qeyd et ki, sonradan sual yaranmasın.
+
+### Bəli/Xeyr olmayan şərtlər
+Şərtin ikidən çox variantı ola bilər (məsələn, müştəri növü: adi, gümüş, qızıl). Onda kombinasiyalar vurulur: 3 × 2 × 2 = 12. Belə şərtlər üçün də eyni məntiq işləyir.
+
+### Sadələşdirmənin qaydası
+İki sütun yalnız bir şərtdə fərqlənirsə və nəticələri eynidirsə, onları birləşdir və həmin şərtə “—” qoy. Sadələşdirilmiş cədvəlin hər sütunu yenə də bir test olur.
+
+### Tipik yanlış anlama
+“Sadələşdirmə risklidir, bütün 2ⁿ-i test edək.” Sadələşdirmə yalnız nəticəyə təsir etməyən şərtlər üçündür. Amma şübhə varsa (məsələn, “—” şərti proqramda ayrıca emal oluna bilər), həmin kombinasiyanı ayrıca test kimi saxlamaq olar.
+@nümunə
+**Tapşırıq.** Kitab mağazasının qaydaları: “Tələbəyə 10% endirim. Kupon 15% endirim verir. Endirimlər toplanmır — böyüyü tətbiq olunur. Kitab artıq kampaniyadadırsa, heç bir endirim tətbiq olunmur.” Qərar cədvəlini qur və sadələşdir.
+@addımlar
+1. **Şərtlər:** Tələbədir? Kupon var? Kampaniyadadır? — 3 şərt, 2³ = 8 kombinasiya.
+2. **Nəticələr:** kampaniyada — həmişə 0%; kampaniyada deyilsə: tələbə + kupon → 15%, yalnız kupon → 15%, yalnız tələbə → 10%, heç biri → 0%.
+3. **Sadələşdir:** kampaniya “Bəli” olan 4 sütun eyni nəticə verir (0%) → bir sütun: “—, —, Bəli → 0%”.
+4. **Yekun cədvəl:** 5 qayda — kampaniya (0%); tələbə + kupon (15%); yalnız kupon (15%); yalnız tələbə (10%); heç biri (0%).
+5. **Sual:** “Tələbə + kupon” üçün tələb “böyüyü” deyir — 15%; bunu proqramçıya nümunə ilə təsdiqlət ki, ikisi toplanmasın (25%).
+@növbən
+Taksi tətbiqinin qaydaları: “Gecə (23:00–06:00) +20%. Yağışlı havada +10%. Promokod −15%. Əlavələr toplanır, promokod sonda tətbiq olunur.” Şərtləri və kombinasiyaları yaz, cədvəli qur və hər sütun üçün nəticəni hesabla (baza qiymət 10 AZN).
+
+=== c9s2
+@qısa
+Vəziyyət keçidləri texnikası sistemin davranışı hazırkı vəziyyətindən asılı olanda işlədilir: eyni hərəkət müxtəlif vəziyyətlərdə fərqli nəticə verir. Həm etibarlı, həm də etibarsız keçidlər yoxlanılır.
+@yadda
+- Elementlər: vəziyyət, hadisə, keçid, nəticə.
+- Ən çox defekt etibarsız keçidlərdə tapılır.
+- Vəziyyət cədvəli “olmamalı” keçidləri görünən edir.
+@dərin
+### Əhatə səviyyələri
+- **Bütün vəziyyətlər:** hər vəziyyətə ən azı bir dəfə çatmaq — ən zəif səviyyə.
+- **Bütün etibarlı keçidlər:** diaqramdakı hər oxu ən azı bir dəfə keçmək — ən çox işlədilən səviyyə.
+- **Bütün keçidlər (etibarsız da daxil):** cədvəldəki hər xananı yoxlamaq — ən güclü səviyyə.
+
+### Keçid ardıcıllıqları
+Bəzi defektlər yalnız ardıcıllıqda görünür: “Ödənilib → Ləğv edilib → (yenidən) Ödəniş” və ya “bloklanma → blokun açılması → yenidən səhv şifrə — sayğac sıfırdan başlayırmı?” Bu cür iki-üç addımlıq yollar ayrıca test kimi yazılır.
+
+### Harada işlədilir?
+Sifariş statusları, ödəniş prosesi, hesab bloklanması, abunəlik (aktiv → dayandırılıb → bitib), oyun vəziyyətləri (menyu → oyun → pauza → oyun sonu), cihazlar (bankomat, svetofor). Jira-dakı baqın həyat dövrü də vəziyyət diaqramıdır.
+
+### Tipik yanlış anlama
+“Diaqramdakı bütün oxları keçdik — kifayətdir.” Oxlar yalnız icazə verilən keçidləri göstərir. “Çatdırılıb → Ləğv et” kimi diaqramda olmayan, amma istifadəçinin cəhd edə biləcəyi hərəkətlər ayrıca yoxlanılmalıdır.
+@nümunə
+**Tapşırıq.** Abunəlik sistemi: Sınaq (14 gün) → Aktiv (ödəniş edildi) → Dayandırılıb (ödəniş alınmadı) → Aktiv (ödəniş alındı) və ya Bitib (30 gün ödənişsiz). Etibarlı və etibarsız keçidləri yaz.
+@addımlar
+1. **Vəziyyətlər:** Sınaq, Aktiv, Dayandırılıb, Bitib.
+2. **Etibarlı keçidlər:** Sınaq → Aktiv (ödəniş); Aktiv → Dayandırılıb (ödəniş alınmadı); Dayandırılıb → Aktiv (ödəniş alındı); Dayandırılıb → Bitib (30 gün keçdi).
+3. **Etibarsız keçidlər:** Bitib → Aktiv (köhnə abunəliyi ödənişsiz bərpa); Sınaq → Sınaq (ikinci dəfə pulsuz sınaq); Dayandırılıb vəziyyətində premium məzmuna giriş.
+4. **Ardıcıllıq testi:** Aktiv → Dayandırılıb → Aktiv → yenə ödəniş alınmadı — 30 günlük sayğac sıfırdan başlayırmı?
+@növbən
+Paket çatdırılma izləmə sistemi: Qəbul edildi → Anbarda → Yolda → Çatdırıldı; istənilən mərhələdə “Geri qaytarıldı” ola bilər, amma “Çatdırıldı”dan sonra yox. Vəziyyətləri, 4 etibarlı və 3 etibarsız keçidi yaz.
+
+=== c9s3
+@qısa
+Pairwise bütün kombinasiyalar yerinə hər iki parametrin bütün cütlərini əhatə edir, çünki defektlərin çoxu bir parametrdən və ya iki parametrin birləşməsindən yaranır. Testlərin sayı kəskin azalır.
+@yadda
+- Fərziyyə: defektlərin çoxu 1–2 parametrin birləşməsindən yaranır.
+- Hər iki parametrin hər cütü ən azı bir dəfə görünməlidir.
+- Kritik kombinasiyaları ayrıca əlavə et.
+@dərin
+### Minimum test sayı necə tapılır?
+Pairwise dəstində testlərin sayı ən azı ən böyük iki parametrin variantlarının hasili qədərdir. Məsələn, 4 brauzer × 3 OS × 2 dil üçün minimum 4 × 3 = 12 test lazımdır — bütün kombinasiyalar isə 24-dür. Parametr çoxaldıqca fərq daha da böyüyür: 10 parametrin hər birində 3 variant varsa, bütün kombinasiyalar 59 049-dur, pairwise isə təxminən 15–20 testlə kifayətlənir.
+
+### Alətlər
+Böyük cədvəlləri əllə qurmaq çətindir. Microsoft-un pulsuz **PICT** aləti parametrləri mətn faylından oxuyub pairwise dəsti yaradır; məhdudiyyətlər də yazmaq olar (məsələn, “Safari yalnız macOS-da”).
+
+### Pairwise-ın limiti
+Üç parametrin birlikdə yaratdığı defekt (məsələn, yalnız Safari + iOS + qaranlıq rejimdə) pairwise dəstinə düşməyə bilər. Riskli sahələrdə “3-wise” (üçlü kombinasiyalar) və ya kritik kombinasiyaların əl ilə əlavəsi tövsiyə olunur.
+
+### Məhdudiyyətlər
+Bəzi cütlər mümkün deyil: Safari Windows-da işləmir, iOS-da Chrome başqa mühərriklə işləyir. Belə cütləri cədvəldən çıxarmaq lazımdır — əks halda test planı real olmayan testlərlə dolar.
+
+### Tipik yanlış anlama
+“Pairwise bütün defektləri tapır.” O, yalnız cütlərin yaratdığı defektləri sistemli əhatə edir. Üçlü və daha mürəkkəb əlaqələr üçün risk əsaslı əlavələr lazımdır.
+@nümunə
+**Tapşırıq.** Parametrlər: Ödəniş üsulu (Kart, Nağd), Çatdırılma (Kuryer, Özün götür), Müştəri (Yeni, Daimi). Bütün kombinasiyaların sayını tap və pairwise dəstini qur.
+@addımlar
+1. **Bütün kombinasiyalar:** 2 × 2 × 2 = 8.
+2. **Minimum:** ən böyük iki parametr 2 × 2 = 4 test.
+3. **Dəst:** 1) Kart, Kuryer, Yeni; 2) Kart, Özün götür, Daimi; 3) Nağd, Kuryer, Daimi; 4) Nağd, Özün götür, Yeni.
+4. **Yoxlama:** Ödəniş × Çatdırılma — 4 cüt var; Ödəniş × Müştəri — Kart+Yeni, Kart+Daimi, Nağd+Daimi, Nağd+Yeni; Çatdırılma × Müştəri — Kuryer+Yeni, Özün götür+Daimi, Kuryer+Daimi, Özün götür+Yeni. Bütün cütlər var.
+5. **Nəticə:** 8 əvəzinə 4 test; riskli bir kombinasiya varsa (məsələn, Nağd + Kuryer + Yeni), onu ayrıca əlavə et.
+@növbən
+Parametrlər: Cihaz (Telefon, Planşet, Kompüter), Brauzer (Chrome, Safari), Dil (AZ, EN). Bütün kombinasiyaların sayını tap, minimum pairwise test sayını müəyyən et, dəsti qur və bir mümkün olmayan cütü qeyd et.
+
+=== c9s4
+@qısa
+Error guessing tester-in təcrübəsinə və tipik səhvlər haqqında biliyinə əsaslanır: boş sahələr, xüsusi simvollar, iki dəfə basılan düymə, yarımçıq proses. Digər texnikaları tamamlayır.
+@yadda
+- Təcrübə + tipik səhvlər siyahısı = error guessing.
+- Ən effektiv forması — fault attack: səhv siyahısına görə sistemli hücum.
+- Tapılan hər baq siyahını zənginləşdirir.
+@dərin
+### Fault attack — sistemli error guessing
+Tester əvvəlcədən mümkün səhvlərin siyahısını hazırlayır (keçmiş baqlar, ümumi səhv növləri) və onların hər birini sistemə “hücum” kimi tətbiq edir. Bu, “ağlıma gələni yoxlayıram”dan daha nəticəlidir.
+
+### Siyahını haradan toplamalı?
+- Komandanın keçmiş bug report-ları (Jira).
+- Canlıdan gələn müştəri şikayətləri.
+- Oxşar məhsulların məlum problemləri.
+- Ümumi siyahılar: tarix və vaxt, mətn və kodlaşdırma, şəbəkə, eyni anda giriş, sessiya.
+
+### Azərbaycan kontekstində tipik səhvlər
+- İ/i və I/ı çevrilməsi (axtarışda, sıralamada).
+- “ə” hərfinin bəzi şriftlərdə kvadrat görünməsi.
+- Vergül və nöqtə ilə kəsr (12,50 və 12.50).
+- +994 nömrələrinin müxtəlif yazılışı (050…, +99450…, 994 50…).
+- AZN və ₼ simvolu, məbləğin formatı.
+
+### Tipik yanlış anlama
+“Error guessing yalnız təcrübəli tester-lər üçündür.” Yeni başlayan üçün də işləyir — əgər yazılı siyahıdan istifadə edirsə. Təcrübə siyahını zamanla böyüdür.
+@nümunə
+**Tapşırıq.** Bank tətbiqində “dostuna pul göndər” funksiyası üçün error guessing ilə 6 test ideyası yaz — hər biri fərqli tipik səhvə əsaslansın.
+@addımlar
+1. **İki dəfə basmaq:** “Göndər” düyməsini sürətlə iki dəfə bas — pul iki dəfə getmirmi?
+2. **Format:** alıcı nömrəsini “050 123 45 67”, “+994501234567” və “994501234567” kimi yaz — hamısı tanınırmı?
+3. **Kəsr:** məbləğ “10,5” və “10.5” — eyni nəticə?
+4. **Yarımçıq proses:** təsdiq ekranında “Geri” bas və ya tətbiqi bağla — pul “asılı” qalmırmı?
+5. **Eyni anda:** iki cihazdan eyni anda göndər — balans mənfiyə düşmürmü?
+6. **Sessiya:** 15 dəqiqə gözlə, sonra “Göndər” — təhlükəsiz şəkildə yenidən təsdiq istənirmi?
+@növbən
+Onlayn bilet saytında “oturacaq seçimi” funksiyası üçün error guessing ilə 6 test ideyası yaz: eyni anda seçim, yarımçıq proses, sessiya və Azərbaycan kontekstinə aid ən azı bir ideya daxil olmaqla.
+
+=== c9s5
+@qısa
+Use case istifadəçinin sistemlə qarşılıqlı əlaqəsini addım-addım təsvir edir: əsas axın, alternativ axınlar və istisnalar. Hər axın ən azı bir test olur — beləcə real istifadəçi yolları sistemli əhatə olunur.
+@yadda
+- Əsas axın — hər şey normal gedəndə.
+- Alternativ axın — başqa, amma düzgün yol.
+- İstisna — xəta və ya gözlənilməz vəziyyət.
+@dərin
+### Use case-in tam quruluşu
+- **Aktor:** kim istifadə edir (müştəri, admin, xarici sistem).
+- **İlkin şərt:** başlamazdan əvvəl nə doğru olmalıdır (kartın aktiv olması).
+- **Əsas axın:** nömrələnmiş addımlar.
+- **Alternativ axınlar:** hansı addımdan ayrılır və harada birləşir.
+- **İstisnalar:** xəta halları və sistemin reaksiyası.
+- **Son şərt:** uğurlu nəticədən sonra sistemin vəziyyəti (balans azalıb, qəbz verilib).
+
+### Use case və user story
+User story qısadır və “niyə”yə fokuslanır (Fəsil 10); use case isə addımları və alternativləri ətraflı yazır. Agile komandalar çox vaxt story yazır, amma mürəkkəb proseslər üçün use case-ə bənzər ssenarilər istifadə edir.
+
+### Testə çevirmək
+Hər axın ayrıca test ssenarisi olur. Alternativ və istisna axınları tez-tez unudulur — halbuki defektlərin çoxu orada olur. İstisnaların gözlənilən nəticəsi tələbdə yoxdursa, bu, sual üçün siqnaldır.
+
+### Tipik yanlış anlama
+“Əsas axın işləyirsə, use case test olunub.” Əsas axın adətən ən çox yoxlanan və ən az defektli yoldur; alternativlər və istisnalar daha risklidir.
+@nümunə
+**Tapşırıq.** “Onlayn mağazada sifariş vermək” use case-i üçün əsas axını, 2 alternativ axını və 3 istisnanı yaz.
+@addımlar
+1. **Əsas axın:** məhsulu səbətə əlavə et → səbətə keç → ünvanı yaz → kartla ödə → təsdiq və e-poçt.
+2. **Alternativ 1:** saxlanmış ünvanı seç (yeni ünvan yazmadan).
+3. **Alternativ 2:** nağd ödəniş seç — kart addımı keçilir, təsdiq yenə gəlir.
+4. **İstisnalar:** məhsul ödəniş zamanı stokda bitir; kart rədd olunur; ödəniş zamanı internet kəsilir.
+5. **Testlər:** 1 + 2 + 3 = 6 test ssenarisi; istisnaların gözlənilən nəticəsini tələbdən götür, yoxdursa soruş.
+@növbən
+“Kitabxanadan kitab götürmək” (özünəxidmət terminalı ilə) use case-i üçün aktoru, ilkin şərti, əsas axını, 2 alternativ axını və 3 istisnanı yaz.
+
+=== c9s6
+@qısa
+Texnika problemin quruluşuna görə seçilir: dəyər aralığı — EP+BVA, şərtlərin birləşməsi — qərar cədvəli, vəziyyətdən asılı davranış — vəziyyət keçidləri, çox parametr — pairwise, proses — use case. Error guessing hər yerdə əlavə olunur.
+@yadda
+- Əvvəl tələbin “formasını” müəyyən et, sonra texnikanı seç.
+- Bir funksiyaya bir neçə texnika tətbiq olunur.
+- Error guessing digər texnikaların üstünə əlavə olunur.
+@dərin
+### Tələbdəki işarələr
+| Tələbdə görürsən | Texnika |
+| --- | --- |
+| “arasında”, “ən azı”, “maksimum” | EP + BVA |
+| “əgər … və …, onda …” | Qərar cədvəli |
+| status, mərhələ, “… olduqdan sonra” | Vəziyyət keçidləri |
+| brauzer, cihaz, dil, ayar siyahıları | Pairwise |
+| addım-addım istifadəçi prosesi | Use case |
+| hər yerdə | Error guessing və exploratory |
+
+### Texnikaların birləşməsi
+Bir funksiyada çox vaxt bir neçə texnika işləyir. Məsələn, “kredit müraciəti”: yaş və məbləğ üçün EP+BVA, təsdiq qaydaları üçün qərar cədvəli, müraciətin statusları üçün vəziyyət keçidləri, müraciət prosesi üçün use case.
+
+### Vaxt azdırsa
+Riskə görə prioritet ver: ən çox defekt verən sahələrdə ən güclü texnika (məsələn, ödənişdə qərar cədvəli + BVA), az riskli sahələrdə checklist və qısa exploratory.
+
+### Tipik yanlış anlama
+“Bir texnikanı yaxşı bilmək kifayətdir.” Hər texnika defektlərin bir növünü tutur; tək texnika ilə qurulan dəst digər növləri buraxır.
+@nümunə
+**Tapşırıq.** “Onlayn kredit müraciəti” funksiyası: yaş 21–65, məbləğ 500–20 000 AZN; təsdiq gəlir və kredit tarixçəsinə görə verilir; müraciət statusları: Göndərildi → Baxılır → Təsdiqləndi/Rədd edildi. Hər hissə üçün texnika seç.
+@addımlar
+1. **Yaş və məbləğ:** EP + BVA — 20, 21, 65, 66 və 499,99, 500,00, 20 000,00, 20 000,01.
+2. **Təsdiq qaydaları:** qərar cədvəli — şərtlər “gəlir kifayətdir?”, “tarixçə müsbətdir?”.
+3. **Statuslar:** vəziyyət keçidləri — etibarsız keçid: “Rədd edildi → Təsdiqləndi”.
+4. **Proses:** use case — əsas axın və istisnalar (sənəd yüklənmir, sessiya bitir).
+5. **Əlavə:** error guessing — iki dəfə göndərmə, Azərbaycan hərfli ad, vergüllü məbləğ.
+@növbən
+“Aviabilet sifarişi” funksiyası üçün 4 hissə müəyyən et (məsələn, sərnişin sayı, endirim qaydaları, bilet statusları, sifariş prosesi) və hər birinə uyğun texnikanı seçib səbəbini yaz.

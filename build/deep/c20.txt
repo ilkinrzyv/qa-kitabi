@@ -1,0 +1,374 @@
+=== c20s1
+@qısa
+Git versiya nəzarət sistemidir: layihədəki faylların hər dəyişikliyini tarixçə kimi saxlayır. İstənilən vaxt əvvəlki vəziyyətə qayıtmaq, kimin nəyi dəyişdiyini görmək və budaqlarla paralel işləmək olur. GitHub isə Git repo-larını saxlayan və komanda işini təşkil edən platformadır.
+@yadda
+- Git — kompüterindəki alət, GitHub — internetdəki platforma.
+- Commit — layihənin “şəkli”, budaq — paralel iş xətti.
+- Conflict iki nəfər eyni sətri fərqli dəyişəndə yaranır və əl ilə həll olunur.
+@dərin
+### Git və GitHub fərqi
+Git kompüterində işləyən proqramdır — internet olmadan da commit etmək olar. GitHub (eləcə də GitLab, Bitbucket) repo-ların uzaq nüsxəsini saxlayır və üzərinə komanda alətləri əlavə edir: pull request, code review, issue-lar, Actions (CI).
+
+### Commit nədən ibarətdir?
+Hər commit-in unikal identifikatoru (hash, məsələn, `a1b2c3d`), müəllifi, tarixi, mesajı və əvvəlki commit-ə istinadı var. Bu zəncir layihənin tam tarixçəsidir: “bu sətri kim, nə vaxt və niyə dəyişib?” sualının cavabı oradadır.
+
+### Conflict necə görünür?
+```text
+<<<<<<< HEAD
+await expect(badge).toHaveText('1');
+=======
+await expect(badge).toHaveText('2');
+>>>>>>> feature/two-products
+```
+`<<<<<<<` ilə `=======` arası sənin cari budağının versiyası, `=======` ilə `>>>>>>>` arası isə birləşdirilən budağın versiyasıdır. Düzgün variantı saxla, işarələri sil, sonra `git add` və `git commit` et. Conflict qorxulu deyil — Git sadəcə “hansını saxlayım?” deyə soruşur.
+
+### Tipik yanlış anlama
+“Git yalnız proqramçılar üçündür.” Avtomatlaşdırma kodu, Markdown formatında test sənədləri, hətta test datası da Git-də saxlanır. Tester üçün Git komanda ilə eyni “dildə” işləmək deməkdir.
+@nümunə
+**Tapşırıq.** `feature/two-products` budağını main-ə birləşdirəndə `tests/cart.spec.js` faylında conflict yarandı. Budaqdakı dəyişiklik testə ikinci məhsulun əlavə edilməsi addımını da gətirib (o hissə conflict-siz birləşib). Conflict-i addım-addım həll et.
+
+```text
+<<<<<<< HEAD
+  await expect(cartBadge).toHaveText('1');
+=======
+  await expect(cartBadge).toHaveText('2');
+>>>>>>> feature/two-products
+```
+@addımlar
+1. **Vəziyyəti gör:** `git status` → “both modified: tests/cart.spec.js” — conflict bu fayldadır.
+2. **Konteksti anla:** faylın yuxarısına bax — budaqdan gələn ikinci `addToCart('Sauce Labs Bike Light')` addımı artıq testdədir; deməli, səbətdə 2 məhsul olacaq.
+3. **Qərar ver:** düzgün variant `'2'`-dir. Budağın sətrini saxla, `<<<<<<<`, `=======`, `>>>>>>>` işarələrini və köhnə sətri sil. Əmin deyilsənsə, budağın müəllifindən soruş — təxminlə seçmə.
+4. **Yoxla:** `npx playwright test tests/cart.spec.js` — conflict həllindən sonra test mütləq işə salınır; test keçir.
+5. **Tamamla:** `git add tests/cart.spec.js` və `git commit -m "Merge feature/two-products"`.
+@növbən
+Conflict test adında yaranıb: HEAD-də `test('səbətə məhsul əlavə olunur', …)`, birləşdirilən budaqda isə `test('istifadəçi məhsulu səbətə əlavə edir və nişanda 1 görür', …)`. Hansını saxlayarsan və niyə? Həll üçün əmrləri ardıcıllıqla yaz və həlldən sonra nəyi yoxlayacağını qeyd et.
+
+=== c20s2
+@qısa
+Gündəlik iş bir neçə əmrlə görülür: `git status` (nə dəyişib), `git add` (commit-ə hazırla), `git commit -m` (yadda saxla), `git push` və `git pull` (serverlə mübadilə), `git switch` (budaqlar arasında keçid), `git log` və `git diff` (tarixçə və fərqlər).
+@yadda
+- Faylın yolu: işçi qovluq → staging → commit → GitHub.
+- `git status` — hər addımdan əvvəl və sonra.
+- Commit etməzdən əvvəl `git diff` ilə dəyişikliyə bax.
+@dərin
+### Səhvləri geri qaytarmaq
+| Vəziyyət | Əmr |
+| --- | --- |
+| Fayldakı commit olunmamış dəyişikliyi ləğv et | `git restore fayl.js` |
+| Səhvən staging-ə əlavə etdiyin faylı çıxar | `git restore --staged fayl.js` |
+| Son commit-in mesajını düzəlt (hələ push olunmayıb) | `git commit --amend -m "Yeni mesaj"` |
+| Push olunmuş commit-i ləğv et | `git revert <hash>` — ləğvedici yeni commit yaradır |
+Push olunmuş tarixçəni yenidən yazmaq (məsələn, `git reset --hard` və `git push --force`) komanda yoldaşlarının işini poza bilər — komandanın razılığı olmadan etmə.
+
+### Müvəqqəti saxlama: stash
+`git stash` yarımçıq dəyişiklikləri kənara qoyur ki, başqa budağa keçə biləsən; `git stash pop` onları geri qaytarır. Yarımçıq iş zamanı təcili baq yoxlamasına keçəndə çox rahatdır.
+
+### Tarixçəni araşdırmaq
+- `git log --oneline --graph` — budaqlarla birlikdə qısa tarixçə.
+- `git show a1b2c3d` — bir commit-in tam dəyişikliyi.
+- `git blame tests/cart.spec.js` — hər sətri kim və hansı commit-də dəyişib.
+
+### Tipik yanlış anlama
+“`git add .` həmişə təhlükəsizdir.” Bu əmr bütün dəyişiklikləri əlavə edir — təsadüfi fayllar, loqlar, hətta şifrə faylı da commit-ə düşə bilər. Əvvəl `git status`, sonra lazım olan faylları adları ilə əlavə et.
+@nümunə
+**Tapşırıq.** `tests/login.spec.js` faylında iki dəyişiklik etdin: testi düzəltdin və debug üçün `console.log` sətri əlavə etdin; bir də səhvən `notes.txt` faylı yaratdın. Yalnız test düzəlişini commit et.
+@addımlar
+1. **Bax:** `git status` → `modified: tests/login.spec.js` və `Untracked files: notes.txt`.
+2. **Fərqi yoxla:** `git diff tests/login.spec.js` — həm düzəliş, həm də `console.log` sətri görünür.
+3. **Təmizlə:** faylda `console.log` sətrini sil və `git diff` ilə yenidən yoxla — yalnız düzəliş qalıb.
+4. **Hazırla və saxla:** `git add tests/login.spec.js` (nöqtə ilə yox, faylın adı ilə) → `git commit -m "Fix locked user error assertion"`.
+5. **Son yoxlama:** `git status` → `notes.txt` hələ “untracked”-dir və commit-ə düşməyib; lazım deyilsə, sil və ya `.gitignore`-a əlavə et.
+@növbən
+Səhvən `git add .` etdin və staging-ə üç fayl düşdü: `tests/cart.spec.js` (lazımdır), `debug.log` və `.env` (lazım deyil). Hələ commit etməmisən. Hansı əmrlərlə lazımsız faylları staging-dən çıxarar, yalnız lazım olanı commit edər və gələcəkdə bu halın qarşısını alarsan?
+
+=== c20s3
+@qısa
+`.gitignore` faylı Git-ə hansı fayl və qovluqlara baxmamağı deyir: yüklənmiş paketlər (node_modules), test nəticələri, hesabatlar və şifrələr (.env). Playwright quraşdırılanda bu faylı özü yaradır, amma onu layihəyə uyğun yoxlamaq və tamamlamaq lazımdır.
+@yadda
+- Yenidən yüklənə və ya yaradıla bilən hər şey — `.gitignore`-a.
+- `.env` və şifrələr heç vaxt repo-ya düşməməlidir.
+- Artıq commit olunmuş fayl `.gitignore`-a əlavə ediləndə avtomatik çıxmır.
+@dərin
+### Şablon qaydaları
+```text
+node_modules/      # bu adlı qovluq, harada olursa olsun
+/test-results/     # yalnız layihənin kökündəki qovluq
+*.log              # bütün .log faylları
+.env*              # .env, .env.local və s.
+!.env.example      # istisna: nümunə faylını saxla
+```
+`!` istisna yaradır. `.env.example` faylında dəyişənlərin adları (dəyərsiz) saxlanılır ki, komanda hansı dəyişənlərin lazım olduğunu bilsin.
+
+### Artıq izlənən faylı necə çıxarmaq?
+Fayl əvvəllər commit olunubsa, `.gitignore` onu avtomatik çıxarmır — Git onu izləməyə davam edir. Əmr: `git rm --cached debug.log` — fayl kompüterdə qalır, Git isə onu izləməyi dayandırır. Sonra dəyişikliyi commit et.
+
+### Şifrə repo-ya düşübsə
+Faylı silib yeni commit etmək kifayət deyil — şifrə tarixçədə qalır və repo-ya çıxışı olan hər kəs onu tapa bilər. İlk addım: şifrəni (tokeni) dərhal dəyiş və ya ləğv et, sonra komandaya xəbər ver. Tarixçəni təmizləmək ayrıca və mürəkkəb prosesdir.
+
+### Tipik yanlış anlama
+“Repo private-dirsə, şifrəni yükləmək olar.” Private repo-ya da çox adam çıxış əldə edə bilər, repo gələcəkdə public edilə bilər, nüsxələr başqa kompüterlərə düşür. Şifrələr həmişə mühit dəyişənlərində və ya CI-ın “Secrets” bölməsində saxlanılır.
+@nümunə
+**Tapşırıq.** Playwright layihəsinin qovluğunda bunlar var: `tests/`, `pages/`, `node_modules/`, `test-results/`, `playwright-report/`, `playwright.config.js`, `package.json`, `package-lock.json`, `.env`, `.env.example`, `debug.log`. Hansıları repo-ya düşməlidir? `.gitignore` yaz və nəticəni yoxla.
+@addımlar
+1. **Repo-ya düşür:** `tests/`, `pages/`, `playwright.config.js`, `package.json`, `package-lock.json` (hamıda eyni paket versiyaları olsun deyə), `.env.example`.
+2. **Yenidən yaradıla bilənlər — ignore:** `node_modules/` (`npm ci` ilə qurulur), `test-results/` və `playwright-report/` (hər icrada yenidən yaranır).
+3. **Həssas və lazımsız — ignore:** `.env` (şifrələr), `*.log` (loqlar).
+4. **`.gitignore` faylı:** hər qayda ayrıca sətirdə — `node_modules/`, `/test-results/`, `/playwright-report/`, `.env`, `*.log`.
+5. **Yoxla:** `git status` — ignore edilən fayllar siyahıda görünmür, `.env.example` isə görünür (çünki `.env` qaydası yalnız dəqiq `.env` adlı fayla aiddir).
+@növbən
+Komanda yoldaşın xəbər verir: `debug.log` faylı hər dəfə dəyişikliklər siyahısında görünür, halbuki `*.log` artıq `.gitignore`-dadır. Bunun səbəbini izah et və problemi həll edən əmrləri ardıcıllıqla yaz.
+
+=== c20s4
+@qısa
+main budağı həmişə işlək vəziyyətdə saxlanılır. Hər tapşırıq üçün ayrıca budaq açılır, iş bitəndə pull request yaradılır, komanda yoldaşı kodu nəzərdən keçirir və CI testləri keçəndən sonra PR main-ə birləşdirilir.
+@yadda
+- Bir tapşırıq — bir budaq — bir PR.
+- Kiçik PR tez və keyfiyyətli review alır.
+- Commit mesajı “nə və niyə” sualına cavab verir.
+@dərin
+### Yaxşı pull request
+- **Başlıq:** nə edir — “Add negative login tests”.
+- **Təsvir:** niyə və necə; hansı tapşırığa aiddir (Jira linki); necə yoxlamaq olar.
+- **Ölçü:** kiçik — bir neçə yüz sətirlik dəyişiklik diqqətli review alır, 2000 sətir isə çox vaxt “baxdım, OK” ilə keçir.
+- **Sübut:** test nəticəsi, ekran şəkli.
+
+### Code review-da tester nəyə baxır?
+- Test həqiqətən yoxlayırmı — mənalı `expect` varmı?
+- Lokatorlar sabitdirmi, sabit gözləmə varmı?
+- Test adı aydındırmı, test müstəqildirmi?
+Şərh hörmətli və konkret yazılır: “Bu `waitForTimeout(3000)` əvəzinə `await expect(badge).toBeVisible()` yaza bilərikmi?” — əmr yox, təklif.
+
+### Commit mesajı qaydaları
+- Qısa başlıq (təxminən 50 simvol), əmr formasında: “Add…”, “Fix…”, “Remove…”.
+- Bəzi komandalar prefikslər işlədir (Conventional Commits): `test: add locked user login test`, `fix: stabilize cart badge assertion`.
+
+### Qorunan budaq
+GitHub-da main üçün qaydalar qurmaq olar: birbaşa push qadağandır, PR üçün ən azı bir təsdiq və uğurlu CI tələb olunur. Bu, “qırmızı” kodun main-ə düşməsinin qarşısını alır.
+
+### Tipik yanlış anlama
+“Review — tənqiddir.” Review birgə keyfiyyət yoxlamasıdır: məqsəd kodu yaxşılaşdırmaq və bilik paylaşmaqdır, müəllifi qiymətləndirmək yox.
+@nümunə
+**Tapşırıq.** Komanda yoldaşının PR-ı belədir: başlıq — “changes”, təsvir — boş, 37 fayl dəyişib (POM-a keçid + yeni checkout testləri bir yerdə), commit mesajları — “fix”, “fix2”, “asdf”, “final”, “final2”. Hörmətli review rəyi yaz və daha yaxşı struktur təklif et.
+@addımlar
+1. **Başlıq:** “changes” heç nə demir → təklif: “Add CartPage object and checkout tests”.
+2. **Təsvir:** təklif et ki, əlavə olunsun — niyə (hansı tapşırıq, link), nə dəyişib, necə yoxlamaq olar (`npx playwright test tests/checkout.spec.js`), test nəticəsinin ekran şəkli.
+3. **Ölçü:** 37 fayl bir PR üçün çoxdur → iki PR-a böl: (1) POM-a keçid — davranış dəyişmir, mövcud testlər keçməlidir; (2) yeni checkout testləri.
+4. **Commit-lər:** mənalı mesajlarla yenidən qruplaşdır: “Add CartPage object”, “Move login tests to LoginPage”, “Add checkout happy path test”.
+5. **Ton:** rəyi təklif formasında yaz: “Bu PR-ı iki hissəyə bölsək, review daha tez və diqqətli olar. Kömək lazımdırsa, birlikdə baxa bilərik.”
+@növbən
+Sən yeni “Checkout validasiyası” testləri yazdın: 3 test və 1 yeni page class. Bu iş üçün budaq adı, 3 commit mesajı, PR başlığı və PR təsvirini (niyə, nə dəyişdi, necə yoxlamaq olar) yaz.
+
+=== c20s5
+@qısa
+Tester Git-dən avtomatlaşdırma kodunu saxlamaq və paylaşmaq, portfolio qurmaq, proqramçıların PR-larına baxıb test sahələrini müəyyən etmək və defektin hansı dəyişiklikdən sonra yarandığını tapmaq üçün istifadə edir.
+@yadda
+- PR-da dəyişən fayllar test fokusu üçün xəritədir.
+- `git log` və `git blame` — “nə vaxt və niyə dəyişdi?” sualının cavabı.
+- `git bisect` defekti yaradan commit-i ikili axtarışla tapır.
+@dərin
+### PR-dan test ideyası çıxarmaq
+Proqramçının PR-ında hansı fayllar dəyişib? `CartService.js` və `discount.js` dəyişibsə, səbət və endirim ssenariləri birinci yoxlanır. PR təsvirində “refactor” yazılıbsa, davranış dəyişməməlidir — regression testləri xüsusilə vacibdir. Dəyişiklik kiçik görünsə də, ortaq funksiyaya (məsələn, qiymət formatlaması) toxunursa, təsir sahəsi genişdir.
+
+### git bisect — defektin “doğum günü”
+Test dünən keçirdi, bu gün düşür, arada 64 commit var. Hamısını bir-bir yoxlamaq əvəzinə Git ikili axtarış edir: ortadakı commit-i yoxlayırsan, Git qalan hissənin yarısını atır. 64 commit üçün cəmi 6 yoxlama kifayətdir (2⁶ = 64).
+```bash
+git bisect start
+git bisect bad              # indiki vəziyyət — test düşür
+git bisect good a1b2c3d     # dünənki commit — test keçirdi
+# Git ortadakı commit-ə keçir: testi işə sal və nəticəni bildir
+git bisect good             # və ya: git bisect bad
+# ... bir neçə dəfə təkrar ...
+git bisect reset            # sonda əvvəlki vəziyyətə qayıt
+```
+Sonda Git “first bad commit” göstərir. Bug report-a həmin commit-in linkini əlavə etmək proqramçının işini xeyli asanlaşdırır.
+
+### Tipik yanlış anlama
+“Kodun tarixçəsi tester-ə lazım deyil.” “Nə dəyişdi?” sualı defekt araşdırmasının ən güclü sualıdır, cavabı isə Git tarixçəsindədir.
+@nümunə
+**Tapşırıq.** `cart.spec.js` testi 1.4.0 relizində keçirdi, indi main-də düşür. Arada 40 commit var. `git bisect` ilə defekti yaradan commit-i tap.
+@addımlar
+1. **Başlat:** `git bisect start`, sonra `git bisect bad` (main — düşür) və `git bisect good v1.4.0` (reliz teqi — keçirdi).
+2. **Yoxlama sayını hesabla:** 40 commit üçün ən çoxu 6 addım lazımdır, çünki 2⁵ = 32 < 40 ≤ 64 = 2⁶.
+3. **Hər addımda:** Git ortadakı commit-ə keçir → `npx playwright test tests/cart.spec.js` → nəticəyə görə `git bisect good` və ya `git bisect bad`.
+4. **Avtomatlaşdır (istəyə görə):** `git bisect run npx playwright test tests/cart.spec.js` — Git hər addımda testi özü işə salır və nəticəni özü qeyd edir.
+5. **Nəticə:** Git “first bad commit” göstərir, məsələn, `e4f5a6b Refactor price formatting`. `git show e4f5a6b` ilə dəyişikliyə bax, `git bisect reset` ilə qayıt və bug report-a commit linkini əlavə et.
+@növbən
+Proqramçının PR-ında dəyişən fayllar: `src/utils/formatPrice.js`, `src/pages/Checkout.jsx`, `src/api/orders.js`. PR təsviri: “Qiymətlərin formatı yeniləndi”. Bu məlumata əsasən 6 test ideyası yaz, prioritetini göstər və hansı sahələrin gözlənilmədən təsirlənə biləcəyini izah et.
+
+=== c20s6
+@qısa
+GitHub-da boş repo yaradılır, sonra layihə qovluğunda `git init`, `git add`, `git commit`, `git branch -M main`, `git remote add origin …` və `git push -u origin main` əmrləri işə salınır. İlk push zamanı GitHub hesabı ilə icazə verilir.
+@yadda
+- Push-dan əvvəl `.gitignore`-u yoxla: node_modules repo-ya düşməməlidir.
+- İlk commit-dən əvvəl Git-ə adını və emailini tanıt.
+- Xəta mesajları adətən həll yolunu da göstərir — diqqətlə oxu.
+@dərin
+### İlk dəfə: ad və email
+```bash
+git config --global user.name "Ad Soyad"
+git config --global user.email "email@example.com"
+```
+Bu məlumat hər commit-ə yazılır. Təyin olunmayıbsa, Git ilk commit-də “Please tell me who you are” xətası verir.
+
+### Tez-tez rast gəlinən xətalar
+| Xəta | Səbəb | Həll |
+| --- | --- | --- |
+| `src refspec main does not match any` | Hələ commit yoxdur və ya budağın adı fərqlidir | Əvvəl commit et; `git branch` ilə adı yoxla |
+| `remote origin already exists` | Remote artıq əlavə olunub | `git remote -v` ilə bax; lazım olsa, `git remote set-url origin <URL>` |
+| `rejected … (fetch first)` | GitHub-da lokalda olmayan commit var (məsələn, README) | `git pull --rebase origin main`, sonra `git push` |
+| `Authentication failed` | Giriş məlumatı səhv və ya köhnədir | Yenidən giriş et; şifrə əvəzinə token və ya Credential Manager |
+
+### README — repo-nun vitrini
+Layihəni yüklədikdən sonra README əlavə et: layihə nə edir, necə qurulur (`npm ci`, `npx playwright install`), necə işə salınır (`npx playwright test`) və nəticə nümunəsi (hesabatın ekran şəkli). İşəgötürən repo-nu açanda ilk bunu oxuyur (Fəsil 21).
+
+### Tipik yanlış anlama
+“Repo-da fayl çox olsa, daha təsirli görünür.” node_modules ilə yüklənmiş repo minlərlə lazımsız fayl deməkdir və təcrübəsizlik əlamətidir. Təmiz repo və aydın README daha güclü təəssürat yaradır.
+@nümunə
+**Tapşırıq.** GitHub-da repo yaradanda səhvən “Add a README file” seçildi. İndi `git push -u origin main` bu xətanı verir: `! [rejected] main -> main (fetch first)`. Səbəbi izah et və problemi həll et.
+@addımlar
+1. **Səbəb:** GitHub-dakı repo-da README commit-i var, lokal repo-da isə yoxdur. Tarixçələr fərqlidir və Git kiminsə işi itməsin deyə push-u rədd edir.
+2. **Uzaq dəyişikliyi al:** `git pull --rebase origin main` — README commit-i gətirilir, sənin commit-lərin onun üstünə düzülür.
+3. **Conflict olarsa:** eyni fayl hər iki tərəfdə varsa (məsələn, ikisində də README), faylı düzəlt, `git add README.md`, sonra `git rebase --continue`.
+4. **Yenidən göndər:** `git push -u origin main` — bu dəfə uğurlu olur.
+5. **Yoxla:** GitHub-da repo səhifəsini yenilə — həm README, həm də test faylları görünür, `node_modules` isə yoxdur.
+@növbən
+Push zamanı `error: src refspec main does not match any` xətası çıxdı, `git status` isə “No commits yet” göstərir. Səbəbi izah et, düzgün əmr ardıcıllığını yaz və push-dan əvvəl nələri yoxlayacağını qeyd et.
+
+=== c20s7
+@qısa
+CI (davamlı inteqrasiya) hər push və PR-dan sonra kodu avtomatik yığır və testləri işə salır. CD (davamlı çatdırılma və ya yerləşdirmə) testlərdən keçən versiyanı avtomatik olaraq mühitlərə çatdırır. Məqsəd problemi dəyişiklikdən dərhal sonra, ən ucuz olduğu vaxt görməkdir.
+@yadda
+- CI — hər dəyişiklikdə avtomatik yoxlama.
+- Continuous Delivery — relizə hazır, son addım təsdiqlə; Deployment — canlıya da avtomatik.
+- Pipeline piramida kimi düzülür: əvvəl sürətli testlər.
+@dərin
+### Tipik pipeline
+1. **Build:** kod yığılır, paketlər qurulur.
+2. **Sürətli yoxlamalar:** linter və unit testlər — bir neçə dəqiqə.
+3. **API və inteqrasiya testləri.**
+4. **Test və ya staging mühitinə deploy.**
+5. **E2E və smoke testlər** — real mühitdə.
+6. **Production-a deploy** — avtomatik (Continuous Deployment) və ya təsdiqlə (Continuous Delivery).
+Hər mərhələ “keyfiyyət qapısı”dır (quality gate): mərhələ düşərsə, növbətisinə keçid olmur.
+
+### Sürətli rəyin dəyəri
+Pipeline 10 dəqiqə çəkirsə, proqramçı hələ mövzunun içindədir və səhvi dərhal düzəldir. 2 saat çəkirsə, o, artıq başqa işə keçib — səhvə qayıtmaq bahadır. Ona görə uzun testlər paralel işə salınır və ya gecə icrasına (nightly) keçirilir.
+
+### Feature flag və geri qaytarma
+Bəzi komandalar yeni funksiyanı “bayraq” arxasında canlıya çıxarır: kod production-dadır, amma funksiya yalnız seçilmiş istifadəçilərə açıqdır. Problem olanda bayraq söndürülür. Deploy-dan sonra problem çıxarsa, əvvəlki versiyaya qayıtmaq (rollback) planı da hazır olmalıdır.
+
+### Tipik yanlış anlama
+“CI varsa, manual testə ehtiyac yoxdur.” CI yazılmış yoxlamaları avtomatik təkrarlayır. Yeni funksiyanın exploratory testi, usability və “bu, istifadəçiyə həqiqətən lazımdırmı?” sualı yenə insanın işidir.
+@nümunə
+**Tapşırıq.** Komandanın testləri: 400 unit test (2 dəq), 60 API testi (5 dəq), 120 E2E test (40 dəq), 15 smoke test (3 dəq). Hər PR-ın nəticəsi 15 dəqiqədən gec gəlməməlidir. Pipeline-ı təşkil et.
+@addımlar
+1. **Ardıcıl variantı hesabla:** 2 + 5 + 40 = 47 dəqiqə — limitdən xeyli uzundur.
+2. **E2E-ni böl:** 120 E2E testi 4 paralel maşına payla (Playwright-da `--shard=1/4` … `--shard=4/4`) → təxminən 40 ÷ 4 = 10 dəqiqə, üstəgəl quraşdırma vaxtı.
+3. **Mərhələləri paralel işə sal:** unit, API və 4 E2E hissəsi eyni anda başlayır → ümumi vaxt ən uzun hissə qədərdir, ≈ 10–12 dəqiqə — limitə sığır.
+4. **Gecə icrası:** tam dəst hər gecə də işə düşür — sabitliyi və flaky testləri izləmək üçün.
+5. **Deploy-dan sonra:** staging və production-da 15 smoke test (3 dəq) avtomatik işə düşür; düşərsə, rollback qərarı verilir.
+@növbən
+Komandanın pipeline-ı 55 dəqiqə çəkir və proqramçılar nəticəni gözləmədən PR-ları birləşdirməyə başlayıblar. Testlər: 800 unit (4 dəq), 150 API (12 dəq), 200 E2E (39 dəq), hamısı ardıcıl işləyir. Pipeline-ı 15 dəqiqəyə endirmək üçün plan qur və hər qərarın riskini qeyd et.
+
+=== c20s8
+@qısa
+GitHub Actions workflow-u `.github/workflows/` qovluğundakı YAML faylıdır: `on` — nə vaxt işə düşür, `runs-on` — hansı maşında, `steps` — ardıcıl addımlar. Playwright testləri hər push və PR-da avtomatik işə düşür, hesabat isə artifact kimi saxlanılır.
+@yadda
+- YAML-da girinti (boşluqlar) mənalıdır — tab işlətmə.
+- `if: always()` — testlər düşsə belə hesabatı saxla.
+- Şifrələr faylda yox, `secrets`-də saxlanılır.
+@dərin
+### Əlavə tətiklər
+```yaml
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:        # Actions tabında “Run workflow” düyməsi
+  schedule:
+    - cron: '0 3 * * *'     # hər gün 03:00 UTC (Bakı vaxtı ilə 07:00)
+```
+`schedule` vaxtı UTC ilə yazılır, Bakı vaxtı isə UTC+4-dür. Planlı icra yalnız əsas budaqdakı workflow faylı ilə işləyir və yüklü saatlarda bir qədər gecikə bilər.
+
+### Şifrələrin istifadəsi
+Repo → Settings → Secrets and variables → Actions bölməsində `TEST_PASSWORD` yaradılır, workflow-da isə belə ötürülür:
+```yaml
+      - name: Testləri işə sal
+        run: npx playwright test
+        env:
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+```
+Testdə dəyər `process.env.TEST_PASSWORD` ilə oxunur. GitHub loqlarda secret dəyərini `***` ilə gizlədir.
+
+### Brauzerlər üçün matris
+```yaml
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox, webkit]
+    steps:
+      # ... checkout, setup-node, npm ci, brauzerlərin quraşdırılması ...
+      - run: npx playwright test --project=${{ matrix.project }}
+```
+Üç ayrı iş (job) paralel işləyir; `fail-fast: false` biri düşəndə digərlərini dayandırmır.
+
+### Tipik yanlış anlama
+“Lokalda keçən test CI-da da keçəcək.” CI maşını fərqlidir: Linux, ekransız (headless) rejim, fərqli vaxt zonası, daha zəif resurslar. CI-da düşən testi oxuyanda mühit fərqlərini də nəzərə al.
+@nümunə
+**Tapşırıq.** Kitabdakı workflow-a iki dəyişiklik et: (1) testlər hər iş günü səhər 08:00-da (Bakı vaxtı) da işə düşsün; (2) login testi şifrəni `TEST_PASSWORD` secret-indən götürsün.
+@addımlar
+1. **Vaxtı çevir:** Bakı vaxtı 08:00 = 04:00 UTC (UTC+4).
+2. **Cron yaz:** `on` bölməsinə `schedule:` və altında `- cron: '0 4 * * 1-5'` əlavə et — dəqiqə 0, saat 4, hər gün, hər ay, bazar ertəsi–cümə (1–5).
+3. **Secret yarat:** Repo → Settings → Secrets and variables → Actions → New repository secret → ad: `TEST_PASSWORD`, dəyər: şifrə.
+4. **Workflow-a ötür:** “Testləri işə sal” addımına `env:` bölməsi əlavə et: `TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}`; testdə isə `fill(process.env.TEST_PASSWORD)` yaz.
+5. **Yoxla:** `workflow_dispatch` tətiyini də əlavə et və Actions tabından əl ilə işə sal — test keçir, loqda şifrə `***` kimi görünür.
+@növbən
+Workflow-u elə dəyişdir ki: (1) testlər yalnız `main`-ə açılan PR-larda və hər bazar günü 22:00-da (Bakı vaxtı) işə düşsün; (2) testlər chromium və firefox üçün paralel işləsin; (3) hesabat hər brauzer üçün ayrıca adla saxlanılsın. YAML hissələrini yaz və hər dəyişikliyi izah et.
+
+=== c20s9
+@qısa
+Tester qırmızı pipeline-ı oxuyur: hansı test, hansı addımda, hansı xəta ilə düşüb. Sonra səbəbi təsnif edir — məhsul defekti, köhnəlmiş test, mühit problemi və ya flaky test — və uyğun addım atır. Deploy-dan sonra smoke testlərin işə düşməsini də o təmin edir.
+@yadda
+- Qırmızı CI — dərhal baxılan siqnaldır, “sonra baxarıq” yox.
+- Dörd ehtimal: məhsul, test, mühit, flaky.
+- Hesabat, trace və ekran şəkli diaqnozun əsas sübutlarıdır.
+@dərin
+### Qırmızı pipeline-ı oxumaq — addım-addım
+1. Actions tabında düşən işi (job) aç və qırmızı addımı genişləndir.
+2. Test adını, faylı və sətri tap: `tests/cart.spec.js:12`.
+3. Xəta mesajını oxu: gözlənilən (Expected) və alınan (Received) dəyərlər.
+4. Artifacts bölməsindən HTML hesabatı yüklə və trace-i aç.
+5. Son commit-lərə bax: problem hansı dəyişiklikdən sonra başlayıb?
+
+### Təsnifat və addımlar
+| Səbəb | Əlamət | Addım |
+| --- | --- | --- |
+| Məhsul defekti | Lokalda da düşür, UI-də problem görünür | Bug report + CI linki |
+| Köhnəlmiş test | Funksiya qəsdən dəyişib (yeni mətn, yeni lokator) | Testi yenilə, PR aç |
+| Mühit | Çox test eyni anda düşür, timeout, 502/503 | Mühitin sahibinə xəbər ver, yenidən işə sal |
+| Flaky | Yenidən işə salanda keçir | Flaky siyahısına əlavə et, səbəbini araşdır |
+
+### Keyfiyyət qapıları və hesabatlar
+Tester komanda ilə razılaşdırır: hansı testlər PR-ı bloklayır, hansılar yalnız xəbərdarlıq edir. Gündəlik və ya həftəlik test hesabatı (keçən və düşən testlər, flaky siyahısı, icra müddəti) komandaya keyfiyyətin trendini göstərir.
+
+### Tipik yanlış anlama
+“Testi yenidən işə saldım, keçdi — problem yoxdur.” Bu, flaky testin əlamətidir və səbəb yerində qalır. Ən azı qeydə alınmalı və izlənməlidir.
+@nümunə
+**Tapşırıq.** CI-da bu xəta var. Səbəbi necə təsnif edərsən və hansı addımları atarsan?
+
+```text
+1) [chromium] › tests/cart.spec.js:12:5 › məhsul səbətə əlavə olunur
+Error: Timed out 5000ms waiting for expect(locator).toHaveText(expected)
+Locator: locator('.shopping_cart_badge')
+Expected string: "1"
+Received: <element(s) not found>
+```
+@addımlar
+1. **Mesajı oxu:** element ümumiyyətlə tapılmayıb — ya səbətə əlavə işləmir (məhsul problemi), ya da nişanın lokatoru dəyişib (test problemi).
+2. **Trace-ə bax:** klikdən sonrakı ekran şəklində nişan görünür və “1” göstərir, amma DOM-da başqa class ilə (məsələn, `.cart-badge`) — UI dəyişib, funksiya isə işləyir.
+3. **Səbəbi təsdiqlə:** `git log` — son commit-lərdə “Redesign header” var; dəyişiklik qəsdəndir.
+4. **Təsnifat:** köhnəlmiş test, məhsul defekti deyil. Testi daha sabit lokatorla yenilə (məsələn, test ID) və PR aç.
+5. **Komandaya təklif:** proqramçılarla razılaş ki, vacib UI elementlərinə `data-test` atributları qoyulsun — dizayn dəyişikliyi testləri sındırmasın.
+@növbən
+Gecə icrasında 120 E2E testdən 47-si eyni anda düşüb, hamısında xəta `page.goto: net::ERR_CONNECTION_REFUSED`-dur. Səhər yenidən işə salanda hamısı keçir. Səbəbi təsnif et, nəyi yoxlayacağını və komandaya hansı mesajı yazacağını göstər.

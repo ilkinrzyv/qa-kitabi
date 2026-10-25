@@ -1,0 +1,56 @@
+{
+ "batch": [
+  {
+   "$lid": "w",
+   "engine": "widget",
+   "object": "node",
+   "payload": {
+    "code": "export default () => { const ink = 'var(--cds-text-primary)', quiet = 'var(--cds-text-secondary)', edge = 'var(--cds-chart-axis)', accent = 'var(--cds-chart-categorical-1)'; return <svg viewBox='0 0 760 404' role='img' aria-label='Testlərin çoxu aşağıda, sürətli və ucuz səviyyədə olmalıdır' fontSize='15'><defs><marker id='pyr-arrow' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='6' markerHeight='6' orient='auto-start-reverse'><path d='M0 0L10 5L0 10z' fill={edge}/></marker></defs><text data-claude-text-id='title' x='24' y='32' fontSize='16' fontWeight='600' fill={ink}>Testlərin çoxu aşağıda, sürətli və ucuz səviyyədə olmalıdır</text><g data-claude-anchor='layer-ui'><polygon points='300,80 380,180 220,180' fill={accent} fillOpacity='0.08' stroke={accent} strokeWidth='1.25'/><text data-claude-text-id='ui-name' x='300' y='152' textAnchor='middle' fontWeight='600' fill={ink}>UI / E2E</text><text data-claude-text-id='ui-sub' x='300' y='171' textAnchor='middle' fontSize='12' fill={quiet}>az sayıda</text></g><g data-claude-anchor='layer-api'><polygon points='220,180 380,180 460,280 140,280' fill={accent} fillOpacity='0.18' stroke={accent} strokeWidth='1.25'/><text data-claude-text-id='api-name' x='300' y='228' textAnchor='middle' fontWeight='600' fill={ink}>İnteqrasiya / API</text><text data-claude-text-id='api-sub' x='300' y='250' textAnchor='middle' fontSize='12' fill={quiet}>orta sayıda</text></g><g data-claude-anchor='layer-unit'><polygon points='140,280 460,280 540,380 60,380' fill={accent} fillOpacity='0.3' stroke={accent} strokeWidth='1.25'/><text data-claude-text-id='unit-name' x='300' y='326' textAnchor='middle' fontWeight='600' fill={ink}>Unit testlər</text><text data-claude-text-id='unit-sub' x='300' y='348' textAnchor='middle' fontSize='12' fill={quiet}>çox sayıda</text></g><g data-claude-anchor='cost-axis'><line x1='590' y1='96' x2='590' y2='364' stroke={edge} strokeWidth='1.25' markerStart='url(#pyr-arrow)' markerEnd='url(#pyr-arrow)'/><text data-claude-text-id='axis-top' x='604' y='104' fontSize='13' fill={ink}>Yavaş və baha</text><text data-claude-text-id='axis-bottom' x='604' y='368' fontSize='13' fill={ink}>Sürətli və ucuz</text></g></svg>; };",
+    "parent": {
+     "id": "22c4a5c1-d004",
+     "object": "file"
+    }
+   },
+   "verb": "create"
+  },
+  {
+   "engine": "prose",
+   "payload": {
+    "ops": [
+     {
+      "op": "replace",
+      "target": {
+       "ids": [
+        "m5tdd94vfpe.136254"
+       ],
+       "kind": "blocks"
+      },
+      "with": {
+       "as": "markdown",
+       "blocks": {
+        "dia": {
+         "caption": "test piramidası · 3 səviyyə",
+         "ref": "node/$lid:w",
+         "type": "embed"
+        }
+       },
+       "from": {
+        "content": "<?claude block dia?>\n\nAşağı səviyyədə testlər çox, sürətli və ucuzdur; yuxarıya qalxdıqca testlər azalır, yavaşlayır və bahalaşır.",
+        "kind": "inline"
+       }
+      }
+     }
+    ]
+   },
+   "ref": {
+    "id": "83d09a4c-01c1",
+    "object": "node"
+   },
+   "verb": "update"
+  }
+ ],
+ "container": {
+  "id": "64e53f95-53fa-4dc2-9cb8-57243323baa5",
+  "kind": "project"
+ }
+}
