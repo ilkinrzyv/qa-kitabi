@@ -84,7 +84,9 @@ const ICONS = {
   phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M11 18.5h2"/>',
   eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   cart: '<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.6 12.2a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.5L21.5 8H6.2"/>',
-  print: '<path d="M7 9V3h10v6"/><path d="M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7z"/>'
+  print: '<path d="M7 9V3h10v6"/><path d="M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7z"/>',
+  camera: '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>',
+  bug: '<rect x="7" y="7" width="10" height="13" rx="5"/><path d="M9 7a3 3 0 0 1 6 0M12 11v9M3 13h4M17 13h4M4 8l3 2M20 8l-3 2M4 19l3-2M20 19l-3-2"/>'
 };
 const icon = (n, cls) => `<svg class="i${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
@@ -1077,8 +1079,10 @@ const money = n => '$' + n.toFixed(2);
 const tcName = id => id.replace(/^tc/, 'TC-');
 const smFresh = s0 => ({ page: s0.page, user: s0.user || '', cart: (s0.cart || []).slice(), sort: 'az', order: 'az', err: '', menu: false, f: { user: '', pass: '', first: '', last: '', zip: '' } });
 function smStart(id) {
-  const sc = scById[id] || null;
-  Object.assign(SM, { id: sc ? id : null, sc, done: 0, off: false, snap: null, fb: null, ans: '', status: '', title: '', touched: {}, st: smFresh(sc ? sc.start : { page: 'login' }) });
+  const sc = scById[id] || null, nid = sc ? id : null;
+  // a restart keeps the open bug report: reproducing the bug again is how its frequency (3/3) is measured
+  Object.assign(SM, { id: nid, sc, done: 0, off: false, snap: null, fb: null, ans: '', status: '', title: '', touched: {}, st: smFresh(sc ? sc.start : { page: 'login' }),
+    rep: SM.id === nid ? SM.rep : null });
 }
 function smOrder(st) {
   const name = (a, b) => a.name.localeCompare(b.name, 'en');
@@ -1104,9 +1108,9 @@ function smApply(st, e, found) {
       if (!st.err) Object.assign(st, { user: u, page: 'products' });
       break;
     }
-    case 'add': if (prob && SM_BUG.noAdd.includes(e.item)) found.add = 1; else if (!st.cart.includes(e.item)) st.cart.push(e.item); break;
-    case 'remove': if (prob && e.where === 'products' && SM_BUG.noRemove.includes(e.item)) found.remove = 1; else st.cart = st.cart.filter(x => x !== e.item); break;
-    case 'sort': st.sort = e.v; if (!prob) st.order = e.v; else if (e.v !== 'az') found.sort = 1; break;
+    case 'add': if (prob && SM_BUG.noAdd.includes(e.item)) found.add = (found.add || 0) + 1; else if (!st.cart.includes(e.item)) st.cart.push(e.item); break;
+    case 'remove': if (prob && e.where === 'products' && SM_BUG.noRemove.includes(e.item)) found.remove = (found.remove || 0) + 1; else st.cart = st.cart.filter(x => x !== e.item); break;
+    case 'sort': st.sort = e.v; if (!prob) st.order = e.v; else if (e.v !== 'az') found.sort = (found.sort || 0) + 1; break;
     case 'cart': Object.assign(st, { page: 'cart', menu: false }); break;
     case 'shop': Object.assign(st, { page: 'products', menu: false }); break;
     case 'checkout': Object.assign(st, { page: 'info', err: '' }); Object.assign(st.f, { first: '', last: '', zip: '' }); break;
@@ -1146,7 +1150,7 @@ function smType(t) {
   const st = SM.st, f = t.dataset.smF;
   SM.touched[f] = true;
   if (f === 'last' && st.user === 'problem_user' && t.value) { // planted bug: Last Name's letters land in First Name
-    st.f.first = t.value.slice(-1); st.f.last = ''; t.value = ''; SM.found.last = 1;
+    st.f.first = t.value.slice(-1); st.f.last = ''; t.value = ''; SM.found.last = (SM.found.last || 0) + 1;
     const fi = $('#sm-dev [data-sm-f="first"]'); if (fi) fi.value = st.f.first;
   } else st.f[f] = t.value;
   smEvent({ ev: 'type', f, v: st.f[f] });
@@ -1222,6 +1226,7 @@ function smCheck() {
   SM.fb = { rows, truth, sw: swFind(SM.ans, false), bug, good };
   if (good) SM.passed[sc.id] = 1;
   const el = $('#sm-fb'); if (el) el.innerHTML = smFbHTML();
+  if (SM.rep) brRedraw();
 }
 const smMark = ok => ok === true ? `<span class="sm-ok">${icon('check')}</span>` : ok === 'near' ? '<span class="sm-near">≈</span>' : `<span class="sm-no">${icon('x')}</span>`;
 function smFbHTML() {
@@ -1234,7 +1239,8 @@ function smFbHTML() {
     <div class="sm-st ${stOk ? 'ok' : 'no'}">${smMark(stOk)}<div><b>Status: ${f.truth}</b> — ${f.truth === 'Passed' ? 'faktiki nəticə gözlənilənlə üst-üstə düşür.' : `faktiki nəticə gözləniləndən fərqlidir. ${esc(diff.join('; '))}.`}${stOk ? '' : ` Sən ${SM.status} seçmisən.`}</div></div>
     ${b ? `<div class="sm-bug"><div class="sm-fb-h">Bug başlığı: [harada] + [nə baş verir] + [hansı şərtdə]</div>
       ${b.empty ? '<p class="muted">Başlıq yazılmayıb.</p>' : `<ul class="sm-rows">${b.parts.map(([n, ok]) => `<li>${smMark(ok)}<div><b>${n}</b>${ok ? '' : ' — başlıqda yoxdur'}</div></li>`).join('')}</ul>`}
-      ${b.sw.length ? `<div class="swc">${swList(b.sw)}</div>` : ''}</div>` : ''}
+      ${b.sw.length ? `<div class="swc">${swList(b.sw)}</div>` : ''}
+      ${SM.rep ? '' : `<div class="row" style="margin-top:10px"><button class="btn" data-act="br-open" data-b="${sc.bug.r}">${icon('bug')}Tam bug report yaz</button></div>`}</div>` : ''}
     ${f.good ? `<div class="sm-good">${icon('check')}Əla — faktiki nəticə ekranla, status gözlənilənlə uyğundur.</div>` : ''}
     <details class="cmp-why sm-model"><summary>${icon('eye')}Ekranda nə vardı? (nümunə cavab)</summary><p>${esc(smList(SM.snap))}.</p>
       ${sc.bug && f.truth === 'Failed' ? `<p><b>Bug başlığı:</b> ${esc(sc.bug.model)}</p>` : ''}</details>`;
@@ -1270,7 +1276,7 @@ function smCaseHTML() {
   if (!sc) {
     const ids = Object.keys(STORE.bugs), got = ids.filter(k => SM.found[k]);
     return `<div class="card sm-case"><div class="sm-id">Exploratory testing</div><h2 class="sm-t">${esc(STORE.free.title)}</h2><p class="sm-p">${esc(STORE.free.charter)}</p>
-      <div class="sm-state${got.length === ids.length ? ' ok' : ''}">Tapılan bug-lar: <b>${got.length}/${ids.length}</b>${got.length ? `<ul class="sm-found">${got.map(k => `<li>${icon('check')}<span>${esc(STORE.bugs[k])}</span></li>`).join('')}</ul>` : '<br>Bug tapanda burada görünəcək. Hər tapıntı üçün bug report başlığını 12.2-dəki formula ilə yaz.'}</div>
+      <div class="sm-state${got.length === ids.length ? ' ok' : ''}">Tapılan bug-lar: <b>${got.length}/${ids.length}</b>${got.length ? `<ul class="sm-found">${got.map(k => `<li>${icon('check')}<div><span>${esc(STORE.bugs[k])}</span>${SM.rep && SM.rep.bid === k ? '' : `<button class="btn sm" data-act="br-open" data-b="${k}">${icon('bug')}Bug report yaz</button>`}</div></li>`).join('')}</ul>` : '<br>Bug tapanda burada görünəcək. Hər tapıntı üçün tam bug report yaz: başlıq 12.2-dəki formula ilə.'}</div>
       <div class="row" style="margin-top:10px"><button class="btn sm ghost" data-act="sm-restart">${icon('refresh')}Mağazanı sıfırla</button></div></div>`;
   }
   const n = sc.steps.length;
@@ -1307,8 +1313,113 @@ function vStore(v) {
     .concat(STORE.scenarios.map(x => `<button class="chip${x === sc ? ' acc' : SM.passed[x.id] ? ' pass' : ''}" data-act="sm-open" data-sc="${x.id}">${SM.passed[x.id] ? icon('check') : ''}${tcName(x.id)}</button>`)).join('');
   v.innerHTML = `<p class="muted sm-intro">Mini Store — saucedemo.com-dakı mağazaya bənzəyən sadələşdirilmiş model (real sayt deyil). Test case-in addımlarını burada icra et, faktiki nəticəni yaz: kitab onu ekranda olanla tutuşdurur.</p>
     <div class="sm-pick">${pick}</div><div id="sm-case">${smCaseHTML()}</div><div class="sm-dev" id="sm-dev">${smDevHTML()}</div>
-    ${sc ? `<div class="card sm-res">${smResHTML()}</div>` : ''}`;
+    ${sc ? `<div class="card sm-res">${smResHTML()}</div>` : ''}<div id="br">${brHTML()}</div>`;
 }
+/* full bug report (store.json "reports"): every field of 12.1 for one planted bug, checked field by field. The screenshot
+   is the shop's screen at that moment, so it proves the bug only after the bug happened, on the page where it shows ---------- */
+const REP = STORE.reports;
+const BR_SEV = ['Blocker', 'Critical', 'Major', 'Minor', 'Trivial'], BR_PRI = ['High', 'Medium', 'Low'];
+const BR_F = { title: 'Başlıq (Summary)', env: 'Mühit (Environment)', sev: 'Severity', pri: 'Priority (təklif)', pre: 'İlkin şərtlər',
+  steps: 'Təkrarlama addımları', exp: 'Gözlənilən nəticə', act: 'Faktiki nəticə', freq: 'Təkrarlanma tezliyi', shot: 'Əlavələr (sübut)' };
+const BR_SEEN = { add: st => st.page === 'products', remove: st => st.page === 'products' && st.cart.includes('bikelight'),
+  sort: st => st.page === 'products' && st.sort !== 'az', last: st => st.page === 'info' && !st.f.last };
+const BR_ENV = /(chrome|firefox|safari|edge|opera|yandex|brauzer|windows|android|ios|iphone|ipad|macos|mac os|linux)/;
+function brOpen(bid) {
+  const sc = !!(SM.sc && SM.sc.bug && SM.sc.bug.r === bid);
+  SM.rep = { bid, sc, f: { title: sc ? SM.title : '', env: '', sev: '', pri: '', pre: '', steps: '', exp: '', act: '', freq: '' }, shot: null, fb: null };
+}
+const brSteps = t => String(t || '').split(/\n+|\s+(?=\d+[).]\s)/).map(x => x.replace(/^\s*\d+[).]\s*/, '').trim()).filter(Boolean);
+const brMiss = (T, groups) => groups.filter(g => !g.k.some(k => smHas(T, k))).map(g => g.l);
+function uaEnv() {
+  const u = navigator.userAgent, v = re => (u.match(re) || [])[1];
+  const b = v(/Edg\/(\d+)/) ? 'Edge ' + v(/Edg\/(\d+)/) : v(/OPR\/(\d+)/) ? 'Opera ' + v(/OPR\/(\d+)/) : v(/Firefox\/(\d+)/) ? 'Firefox ' + v(/Firefox\/(\d+)/)
+    : v(/Chrome\/(\d+)/) ? 'Chrome ' + v(/Chrome\/(\d+)/) : v(/Version\/(\d+)[^]*Safari/) ? 'Safari ' + v(/Version\/(\d+)[^]*Safari/) : '';
+  const os = /Android/.test(u) ? 'Android' : /iPhone|iPad/.test(u) ? 'iOS' : /Windows/.test(u) ? 'Windows' : /Mac OS X/.test(u) ? 'macOS' : /Linux/.test(u) ? 'Linux' : '';
+  return [os, b].filter(Boolean).join(', ') || 'ƏS və brauzer';
+}
+function brShot() {
+  const r = SM.rep, st = JSON.parse(JSON.stringify(SM.st));
+  const d = new Date();
+  r.shot = { st, ok: !!SM.found[r.bid] && st.user === 'problem_user' && BR_SEEN[r.bid](st), at: [d.getHours(), d.getMinutes(), d.getSeconds()].map(pad2).join(':') };
+}
+function brCheck() {
+  const r = SM.rep, R = REP[r.bid], f = r.f, rows = [];
+  const row = (k, ok, note) => rows.push({ k, ok: !!ok, note: note || '' });
+  const T = k => fz(f[k]);
+  // title: the formula of 12.2, facts without emotion (12.7)
+  const parts = smBugParts(f.title, R).filter(p => !p[1]).map(p => p[0].toLowerCase());
+  const emo = /!{2,}/.test(f.title) || /(tecili|dehset|berbad|rezil|biabir)/.test(T('title'));
+  row('title', f.title.trim() && !parts.length && !emo, !f.title.trim() ? 'Başlıq yazılmayıb.' : emo ? 'Emosiya yox, fakt yaz: “!!!”, “təcili” kimi sözləri çıxar (12.7).'
+    : parts.length ? `Formulda çatışmır: ${parts.join(', ')}. Formul: [harada] + [nə baş verir] + [hansı şərtdə].` : '');
+  const envOk = BR_ENV.test(T('env'));
+  row('env', envOk, !envOk ? `Brauzeri və əməliyyat sistemini yaz. Sənin mühitin: ${uaEnv()}.` : !/\d/.test(f.env) ? 'Versiyanı da yaz: Chrome-da chrome://version, Firefox-da about:support.' : '');
+  row('sev', R.sev.includes(f.sev), f.sev ? R.sevWhy : 'Severity seç.');
+  row('pri', R.pri.includes(f.pri), f.pri ? R.priWhy : 'Priority seç: tester təklif verir, qərarı adətən Product Owner verir.');
+  const preMiss = brMiss(T('pre'), R.pre);
+  row('pre', !preMiss.length, preMiss.length ? `İlkin şərtlərdə yoxdur: ${preMiss.join(', ')}.` : '');
+  const steps = brSteps(f.steps), needMiss = brMiss(T('pre') + ' ' + T('steps'), R.need), vague = /(nese|bir sey|ve s\.|ve sair|filan)/.test(T('steps'));
+  row('steps', steps.length && !needMiss.length && !vague, !steps.length ? 'Addımları yaz: hər sətirdə bir hərəkət.' : needMiss.length ? `Addımlarda yoxdur: ${needMiss.join(', ')}.`
+    : vague ? '“nəsə”, “və s.” yox — konkret hərəkət yaz.' : steps.length > R.model.steps.length + 3 ? 'Defekti təkrarlamaq üçün lazım olmayan addımları çıxar (12.7).' : '');
+  const act = r.sc ? SM.ans : f.act, expMiss = brMiss(T('exp'), R.exp), same = T('exp') && T('exp') === fz(act);
+  row('exp', T('exp') && !expMiss.length && !same, !T('exp') ? 'Gözlənilən nəticəni yaz: tələbə görə nə olmalı idi.' : same ? 'Gözlənilən və faktiki nəticə eynidir — onda baq yoxdur.'
+    : expMiss.length ? `Gözlənilən nəticədə yoxdur: ${expMiss.join(', ')}.` : '');
+  let sw = swFind(f.title, false);
+  if (r.sc) {
+    const ok = !!(SM.fb && SM.fb.rows.every(x => x.ok === true));
+    row('act', ok, !SM.fb ? 'Faktiki nəticəni yuxarıda yaz və “Yoxla” bas.' : ok ? 'Yuxarıda ekranla tutuşdurulub.' : 'Yuxarıdakı faktiki nəticə ekranla tam uyğun deyil — orada düzəlt və yenidən yoxla.');
+  } else {
+    const actMiss = brMiss(T('act'), R.act), s2 = swFind(f.act, false);
+    sw = sw.concat(s2);
+    row('act', T('act') && !actMiss.length && !s2.length, !T('act') ? 'Faktiki nəticəni yaz: ekranda əslində nə görünür?' : actMiss.length ? `Faktiki nəticədə yoxdur: ${actMiss.join(', ')}.`
+      : s2.length ? 'Rəy və ya çıxarış sözü var — ekranda görünəni yaz.' : '');
+  }
+  const m = f.freq.match(/(\d+)\s*\/\s*(\d+)/), n = SM.found[r.bid] || 0;
+  const freqOk = m && +m[2] > 0 && +m[1] <= +m[2] && +m[1] <= n;
+  row('freq', freqOk, !m ? 'Tezliyi “3/3” kimi yaz: neçə cəhddən neçəsində təkrarlandı.' : +m[1] > +m[2] ? 'Birinci ədəd cəhdlərin sayından çox ola bilməz.'
+    : +m[1] > n ? `Baq bu sessiyada ${n} dəfə baş verdi, sən ${m[1]} yazmısan. Neçə dəfə təkrarlamısansa, onu yaz.` : n === 1 ? 'Bir dəfə azdır: 2–3 dəfə təkrarla ki, baqın sabit olduğu görünsün.' : '');
+  row('shot', r.shot && r.shot.ok, !r.shot ? 'Baq ekranda görünəndə “Ekran şəkli” bas.' : r.shot.ok ? '' : 'Ekran şəkli baqı göstərmir: baq baş verəndən sonra, onun göründüyü səhifədə çək.');
+  r.fb = { rows, sw };
+}
+function brMd() {
+  const r = SM.rep, f = r.f, cell = s => String(s || '—').replace(/\|/g, '\\|').replace(/\s*\n+\s*/g, ' ');
+  const rows = [['Başlıq', f.title], ['Mühit', f.env], ['Severity', f.sev], ['Priority', f.pri && f.pri + ' (təklif)'], ['İlkin şərtlər', f.pre],
+    ['Addımlar', brSteps(f.steps).map((s, i) => `${i + 1}) ${s}`).join(' ')], ['Gözlənilən nəticə', f.exp], ['Faktiki nəticə', r.sc ? SM.ans : f.act],
+    ['Təkrarlanma', f.freq], ['Əlavələr', r.shot ? 'Ekran şəkli' : '']];
+  return '| Sahə | Dəyər |\n| --- | --- |\n' + rows.map(([a, b]) => `| ${a} | ${cell(b)} |`).join('\n');
+}
+function brFbHTML() {
+  const r = SM.rep, b = r && r.fb; if (!b) return '';
+  const m = REP[r.bid].model, n = b.rows.filter(x => x.ok).length;
+  const model = [['Başlıq', m.title], ['Mühit', `${uaEnv()}; Mini Store (kitabdakı model)`], ['Severity', m.sev], ['Priority', m.pri + ' (təklif)'], ['İlkin şərtlər', m.pre],
+    ['Addımlar', m.steps.map((s, i) => `${i + 1}) ${s}`).join(' ')], ['Gözlənilən nəticə', m.exp], ['Faktiki nəticə', m.act], ['Təkrarlanma', m.freq], ['Əlavələr', 'Baq görünən ekranın şəkli']];
+  return `<div class="sm-fb-h">Hesabat yoxlandı: ${n}/${b.rows.length} sahə qaydasındadır</div>
+    <ul class="sm-rows">${b.rows.map(x => `<li>${smMark(x.ok)}<div><b>${BR_F[x.k]}</b>${x.note ? `<div class="sm-note${x.ok ? ' i' : ''}">${esc(x.note)}</div>` : ''}</div></li>`).join('')}</ul>
+    ${b.sw.length ? `<div class="swc">${swList(b.sw)}</div>` : ''}
+    ${n === b.rows.length ? `<div class="sm-good">${icon('check')}Əla — proqramçı bu report ilə defekti səndən heç nə soruşmadan təkrarlaya bilər.</div>` : ''}
+    <details class="cmp-why sm-model br-model"><summary>${icon('eye')}Nümunə hesabat</summary><div class="tbl"><table><tbody>${model.map(([a, v]) => `<tr><td>${a}</td><td>${esc(v)}</td></tr>`).join('')}</tbody></table></div></details>`;
+}
+function brHTML() {
+  const r = SM.rep; if (!r) return '';
+  const f = r.f;
+  const fld = (k, ctl) => `<label class="br-f"><span class="br-l">${BR_F[k]}</span>${ctl}</label>`;
+  const inp = (k, ph) => fld(k, `<input class="field br-in" data-br-f="${k}" value="${esc(f[k])}" placeholder="${esc(ph)}" autocomplete="off" spellcheck="false">`);
+  const ta = (k, ph, n) => fld(k, `<textarea class="field br-ta" data-br-f="${k}" rows="${n}" placeholder="${esc(ph)}">${esc(f[k])}</textarea>`);
+  const sel = (k, opts) => fld(k, `<select class="field br-sel" data-br-f="${k}"><option value="">— seç —</option>${opts.map(o => `<option${f[k] === o ? ' selected' : ''}>${o}</option>`).join('')}</select>`);
+  const act = r.sc ? `<div class="br-f"><span class="br-l">${BR_F.act}</span><div class="br-ro">${SM.ans.trim() ? esc(SM.ans) : '<span class="muted">Yuxarıdakı “Faktiki nəticə” sahəsində yaz.</span>'}</div></div>`
+    : ta('act', 'Ekranda əslində nə görünür', 2);
+  const shot = r.shot ? `<div class="br-shot${r.shot.ok ? '' : ' bad'}"><div class="br-shot-img" inert aria-hidden="true"><div class="sm-dev">${smDevHTML(r.shot.st)}</div></div>
+    <div class="br-shot-m">${icon('camera')}Ekran şəkli · ${esc(r.shot.at)}</div></div>` : '';
+  return `<div class="card br"><div class="br-h">${icon('bug')}<div><div class="sm-id">Bug report${r.sc ? ' · ' + tcName(SM.sc.id) : ' · kəşfiyyat'}</div>
+      <p class="sm-p">Proqramçı defekti səndən heç nə soruşmadan təkrarlaya bilməlidir (12.1). Hər sahəni doldur, sonra yoxla.</p></div></div>
+    ${inp('title', '[harada] + [nə baş verir] + [hansı şərtdə]')}${inp('env', 'Məsələn: Windows 11, Chrome 141, Mini Store')}
+    <div class="br-two">${sel('sev', BR_SEV)}${sel('pri', BR_PRI)}</div>
+    ${ta('pre', 'Hansı istifadəçi ilə, hansı səhifədə, səbətdə nə var', 2)}${ta('steps', '1) …\n2) …\nHər sətirdə bir hərəkət', 4)}
+    ${ta('exp', 'Tələbə görə nə olmalı idi', 2)}${act}${inp('freq', 'Neçə cəhddən neçəsində: məsələn, 3/3')}
+    <div class="br-f"><span class="br-l">${BR_F.shot}</span><div class="row"><button class="btn sm" data-act="br-shot">${icon('camera')}Ekran şəkli</button><span class="muted br-hint">Mağaza ekranını olduğu kimi çəkir</span></div>${shot}</div>
+    <div class="row br-acts"><button class="btn primary" data-act="br-check">${icon('check')}Hesabatı yoxla</button><button class="btn" data-act="br-copy">${icon('copy')}Markdown kimi kopyala</button><button class="btn ghost" data-act="br-close">Bağla</button></div>
+    <div id="br-fb" class="sm-fb" aria-live="polite">${brFbHTML()}</div></div>`;
+}
+function brRedraw() { const el = $('#br'); if (el) el.innerHTML = brHTML(); }
 const simHTML = s => s.sim ? `<div class="sm-link"><div class="srt-k">${icon('play')}Məşq mağazası</div><p class="srt-hint">Bu test case-ləri mağaza modelində icra et və faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur.</p>
   <div class="sm-links">${s.sim.map(id => id === 'free' ? `<button class="btn sm" data-act="sm-open" data-sc="">${icon('search')}${esc(STORE.free.title)}</button>`
     : `<button class="btn sm" data-act="sm-open" data-sc="${id}"><b>${tcName(id)}</b> ${esc(scById[id].title)}</button>`).join('')}</div></div>` : '';
@@ -1412,7 +1523,7 @@ function vPractice(v) {
   <section class="block"><div class="block-h"><h2>Fəsil testləri</h2><span class="muted" style="font-size:13px">${o.quizDone}/21 · orta ${o.avg}%</span></div>
     <div class="qgrid">${cells}</div></section>
   <section class="block"><div class="block-h"><h2>Məşq mağazası</h2><span class="muted" style="font-size:13px">${Object.keys(SM.passed).length}/${STORE.scenarios.length} test case</span></div>
-    <div class="card"><div class="muted" style="font-size:13.5px">saucedemo.com-a bənzəyən kiçik mağaza modeli. Test case-in addımlarını icra et, faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur. problem_user-də gizli bug-lar var.</div>
+    <div class="card"><div class="muted" style="font-size:13.5px">saucedemo.com-a bənzəyən kiçik mağaza modeli. Test case-in addımlarını icra et, faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur. problem_user-də gizli bug-lar var: tapdığın hər biri üçün tam bug report yaz.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sm-open" data-sc="tc01">${icon('play')}Test case-lərlə başla</button><button class="btn" data-act="sm-open" data-sc="">${icon('search')}Kəşfiyyat sessiyası</button></div></div></section>
   <section class="block"><div class="block-h"><h2>Kod izləyicisi</h2><span class="muted" style="font-size:13px">${TR_LIST.length} proqram</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">JavaScript kodunu sətir-sətir icra et və dəyişənlərin dəyərini gör. Playwright testində lokator, hərəkət və yoxlamanı ayırd et.</div>
@@ -2299,6 +2410,22 @@ document.addEventListener('click', ev => {
       break;
     }
     case 'sm-check': smCheck(); break;
+    case 'br-open': {
+      brOpen(d.b); brRedraw();
+      const fb = $('#sm-fb'); if (fb && SM.fb) fb.innerHTML = smFbHTML();
+      const cs = $('#sm-case'); if (cs && !SM.sc) cs.innerHTML = smCaseHTML();
+      const br = $('#br'); if (br) br.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      break;
+    }
+    case 'br-shot': if (SM.rep) { brShot(); brRedraw(); toast(SM.rep.shot.ok ? 'Ekran şəkli əlavə olundu' : 'Ekran şəkli əlavə olundu — amma baq bu ekranda görünmür'); } break;
+    case 'br-check': if (SM.rep) { brCheck(); const el = $('#br-fb'); if (el) el.innerHTML = brFbHTML(); } break;
+    case 'br-copy': if (SM.rep) { try { navigator.clipboard.writeText(brMd()).then(() => toast('Bug report kopyalandı — Jira-ya və ya README-yə yapışdır.'), () => toast('Kopyalamaq alınmadı')); } catch (e) { toast('Kopyalamaq alınmadı'); } } break;
+    case 'br-close': {
+      SM.rep = null; brRedraw();
+      const fb = $('#sm-fb'); if (fb && SM.fb) fb.innerHTML = smFbHTML();
+      const cs = $('#sm-case'); if (cs && !SM.sc) cs.innerHTML = smCaseHTML();
+      break;
+    }
     case 'tr': { const N = trLast(trById[d.tr]), i = Math.min(TR[d.tr] || 0, N); TR[d.tr] = d.d === '0' ? 0 : d.d === 'end' ? N : clamp(i + +d.d, 0, N); trRedraw(d.tr); break; }
     case 'kon-quiz': if (AI.state === 'on') aiForKonspekt(d.ch); break;
     case 'ch-lesson': if (AI.state === 'on') aiForChapterLesson(d.ch); break;
@@ -2478,6 +2605,7 @@ document.addEventListener('input', ev => {
   } else if (t.dataset.smF) smType(t);
   else if (t.dataset.smAns !== undefined) SM.ans = t.value;
   else if (t.dataset.smTitle !== undefined) SM.title = t.value;
+  else if (t.dataset.brF && SM.rep) SM.rep.f[t.dataset.brF] = t.value;
   else if (t.id === 'glq') { S.glq = t.value; drawGlossary(); }
   else if (t.id === 'sq') { doSearch(t.value); }
   else if (t.id === 'tin' || t.id === 'shin' || t.id === 'rpin') autoGrow(t);
