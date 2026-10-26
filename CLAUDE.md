@@ -29,6 +29,8 @@ Screenshots land in `build/shots/` (gitignored).
   `@addımlar` (3–6 steps), `@növbən`.
 - `build/interview.json` — “Müsahibədə belə de” line for every glossary term, keyed by the English term; `parse_book.py`
   counts a missing or unknown term as an error. Shown in the term sheet, the glossary (folded) and on flipped flashcards.
+- `build/compare.json` — good / bad writing cards keyed by section id (`tag`, `bad`, `good`, `why`); `parse_book.py`
+  attaches them as `sec.cmp` and `cmpHTML()` renders them after the section text.
 - `build/quiz_*.json` — chapter quizzes. `build/diagrams.py` — SVG diagrams registered with `reg(slug, sid, anchor, cap, d)`,
   drawn with `svgkit.py` (text measured with the vendored fonts in `fonts/`, overlap and overflow checks).
 - `build/app.js` — the whole UI in one IIFE, no framework. `PWA = window.QA_PWA` exists only in the offline build:
@@ -36,6 +38,9 @@ Screenshots land in `build/shots/` (gitignored).
 - Offline app without a key: `claudeGate()` opens the artifact at `#<id>-<action>` (`#c3s4-simple`, `#c3-lesson`,
   `#c3-konspekt`, `#g12-term`); `routeHash()` there starts that action once. Only book ids travel in the link — typed
   text goes to the clipboard. The handoff needs the artifact republished from the same `app.js`.
+- Screen-words hint (`SW_RULES` in `app.js`): answers to items that ask for written results (`SW_TASK`) get an offline
+  hint for opinion, ability, inference, "-malıdır", description-instead-of-value and bare-negation words; quoted text
+  is skipped because it is copied from the screen.
 - `build/pwa.js` — offline layer: service-worker registration, install prompt, Claude through the reader's own Anthropic
   API key (Messages API, streamed SSE, `anthropic-dangerous-direct-browser-access`, default model `claude-opus-5-5`,
   `output_config.effort`), progress export/import. Its `sample()` keeps the artifact runtime's contract

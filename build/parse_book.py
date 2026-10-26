@@ -419,6 +419,17 @@ for g in glossary:
         g['say'] = say[g['en']].strip()
 for k in set(say) - {g['en'] for g in glossary}:
     print('ERR interview line for unknown term', k, file=sys.stderr); errors += 1
+# ---------- 6a. good / bad comparison cards (compare.json, keyed by section id) ----------
+cmp_count = 0
+for sid, cards in json.load(open(os.path.join(BASE, 'compare.json'), encoding='utf-8')).items():
+    sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+    if not sec:
+        print('ERR compare section not found', sid, file=sys.stderr); errors += 1; continue
+    for k in cards:
+        if set(k) != {'tag', 'bad', 'good', 'why'} or not all(isinstance(v, str) and v.strip() for v in k.values()):
+            print('ERR compare card fields', sid, k, file=sys.stderr); errors += 1
+    sec['cmp'] = cards
+    cmp_count += len(cards)
 # ---------- 6b. new narrow diagrams (diagrams.py) ----------
 sys.path.insert(0, BASE)
 from diagrams import ALL as NEW_DIAGRAMS
@@ -553,5 +564,5 @@ for ch in chapters:
             extra += f" k{len(s['items'])}"
     print(f"  {ch['id']:4} {ch['kind']:9} {str(ch['num']):5} secs={len(ch['sections']):2} {kinds} {extra} | {ch['title'][:50]}")
 print('deep layers', deep_count, 'missing', len(deep_missing))
-print('total sections', tot_sec, 'glossary', len(glossary), 'quiz chapters', len(quizzes), 'quiz q', sum(len(v) for v in quizzes.values()), 'interview lines', sum(1 for g in glossary if g.get('say')), 'errors', errors)
+print('total sections', tot_sec, 'glossary', len(glossary), 'quiz chapters', len(quizzes), 'quiz q', sum(len(v) for v in quizzes.values()), 'compare cards', cmp_count, 'interview lines', sum(1 for g in glossary if g.get('say')), 'errors', errors)
 print('json bytes', os.path.getsize(OUT))

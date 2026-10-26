@@ -1,0 +1,78 @@
+{
+  "c11s6": [
+    {
+      "tag": "Test data (test məlumatı)",
+      "bad": "Test data: düzgün username və parol",
+      "good": "Test data: username = standard_user, parol = secret_sauce",
+      "why": "“Düzgün” təsvirdir — testi icra edən nə yazacağını bilmir. Yoxlama sualı: xanadakı yazını olduğu kimi klaviaturada yaza bilirsənmi? “Düzgün parol” yazsan, parol yanlış olur."
+    },
+    {
+      "tag": "Bir xanada bir dəyər",
+      "bad": "Username: standard_user, locked_out_user, problem_user",
+      "good": "Üç ayrı test case: TC-LOGIN-001 — standard_user; TC-LOGIN-002 — locked_out_user; TC-LOGIN-003 — problem_user",
+      "why": "Hər istifadəçinin nəticəsi fərqlidir: biri daxil olur, biri bloklanır, birində səhifə xətalıdır. Bir xanada üç dəyər olanda biri düşsə, hansının düşdüyü görünmür və Pass/Fail yazmaq olmur."
+    },
+    {
+      "tag": "Addımlar (steps)",
+      "bad": "Addımlar: Səbətə məhsul at və yoxla.",
+      "good": "Addımlar: 1) “Sauce Labs Backpack” üçün “Add to cart” düyməsinə bas. 2) Yuxarıdakı səbət ikonuna bas.",
+      "why": "“Məhsul at” — hansı məhsulu, necə? “Yoxla” addım deyil, gözlənilən nəticənin işidir. Hər addım bir hərəkətdir və elementin ekrandakı adı ilə yazılır."
+    },
+    {
+      "tag": "Gözlənilən nəticə (expected result)",
+      "bad": "Gözlənilən nəticə: səbət düzgün işləyir.",
+      "good": "Gözlənilən nəticə: “Your Cart” səhifəsi açılır; siyahıda “Sauce Labs Backpack” görünür; səbət nişanında 1 yazılır.",
+      "why": "“Düzgün işləyir” rəydir: iki tester eyni ekrana baxıb fərqli qərar verə bilər. Ekranda görünənləri ayrı-ayrı yaz — hər biri ayrıca yoxlanır."
+    },
+    {
+      "tag": "Uğurlu halı ayıran nəticə",
+      "bad": "Gözlənilən nəticə: “Swag Labs” yazısı görünür.",
+      "good": "Gözlənilən nəticə: “Products” səhifəsi açılır.",
+      "why": "“Swag Labs” həm giriş səhifəsində, həm də məhsullar səhifəsində yazılıb — giriş alınmasa da bu test Pass görünərdi. Gözlənilən nəticə uğurlu halı uğursuzdan ayıran şeyi göstərməlidir."
+    },
+    {
+      "tag": "Dəqiq mətn",
+      "bad": "Gözlənilən nəticə: xəta mesajı çıxır.",
+      "good": "Gözlənilən nəticə: “Epic sadface: Username is required” mesajı çıxır.",
+      "why": "Hansı xəta? Mesajın mətni də səhv ola bilər və bu da defektdir. Tələbdəki və ya ekrandakı mətni sözbəsöz köçür, öz sözlərinlə yazma."
+    }
+  ],
+  "c12s1": [
+    {
+      "tag": "Faktiki nəticə (actual result): çıxarış",
+      "bad": "Faktiki nəticə: məhsul səbətə əlavə olunmadı.",
+      "good": "Faktiki nəticə: səbət nişanı görünmür; düymənin yazısı “Add to cart” olaraq qalır.",
+      "why": "“Əlavə olunmadı” nəticə çıxarışıdır — proqramçı bunu nədən gördüyünü bilmir. Ekranda nəyə baxdınsa, onu yaz: nişan, düymənin yazısı, siyahı."
+    },
+    {
+      "tag": "Faktiki nəticə: tək inkar",
+      "bad": "Faktiki nəticə: “Continue” düyməsi işləmir.",
+      "good": "Faktiki nəticə: “Checkout: Your Information” səhifəsində qalır; heç bir xəta mesajı çıxmır.",
+      "why": "“İşləmir” və “açılmır” nəyin olmadığını deyir, ekranda nəyin olduğunu yox. Ekranda qalan səhifəni və gözlənilən, amma çıxmayan mesajı ayrıca yaz."
+    },
+    {
+      "tag": "Gözlənilən nəticə: bacarıq yox, davranış",
+      "bad": "Gözlənilən nəticə: Products səhifəsinə qayıda bilirəm.",
+      "good": "Gözlənilən nəticə: “Continue Shopping” basılanda “Products” səhifəsi açılır.",
+      "why": "“Qayıda bilirəm” sənin bacarığındır, sistemin davranışı deyil. Hansı hərəkətdən sonra ekranda nə açılır — onu yaz."
+    },
+    {
+      "tag": "Gözlənilən nəticə: konkret rəqəm",
+      "bad": "Gözlənilən nəticə: endirim tətbiq olunmalıdır.",
+      "good": "Gözlənilən nəticə: ümumi məbləğ 90 AZN olur (tələb: “TEST10 kodu 10% endirim verir”, səbət 100 AZN).",
+      "why": "“-malıdır” nə olmalı olduğunu deyir, amma nə qədər? Tələbdən hesabla və konkret rəqəm yaz — onda Pass və ya Fail mübahisəsiz olur."
+    },
+    {
+      "tag": "Təkrarlama addımları (steps to reproduce)",
+      "bad": "Addımlar: Login ol, səbətə get, sil.",
+      "good": "Addımlar: 1) standard_user / secret_sauce ilə daxil ol. 2) “Sauce Labs Backpack” üçün “Add to cart” bas. 3) Səbət ikonuna bas. 4) “Your Cart” səhifəsində Backpack-in “Remove” düyməsinə bas.",
+      "why": "Proqramçı səndən heç nə soruşmadan təkrarlaya bilməlidir: hansı istifadəçi, hansı məhsul, hansı düymə. “Sil” — nəyi, harada?"
+    },
+    {
+      "tag": "Bir hesabat — bir defekt",
+      "bad": "Faktiki nəticə: şəkillər eynidir, sıralama işləmir, Last Name sahəsi yazılmır.",
+      "good": "Üç ayrı bug report, məsələn: 1) problem_user: bütün məhsullarda eyni şəkil görünür. 2) problem_user: “Name (Z to A)” seçiləndə siyahının sırası dəyişmir. 3) problem_user: Last Name sahəsinə yazılan mətn First Name sahəsində görünür.",
+      "why": "Hər defekt ayrıca düzəlir, ayrıca yoxlanır (retest) və ayrıca bağlanır. Bir hesabatda üç defekt olanda biri düzələndə hesabatı bağlamaq olmur."
+    }
+  ]
+}
