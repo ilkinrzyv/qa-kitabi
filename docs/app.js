@@ -608,13 +608,105 @@ function cmpHTML(s) {
       <details class="cmp-why" data-open="${o}"${OPEN[o] ? ' open' : ''}><summary>${icon('help')}Niyə?</summary><p>${esc(k.why)}</p></details></div>`;
   }).join('')}</div>`;
 }
+/* sorting exercises (sorting.json): put the steps in order or sort cards into groups. Drag with a mouse or a finger
+   (pointer events, so it works on phones), or tap a card and then a group; ▲▼ move a step without dragging. */
+const SRT = {};
+function srtState(k) {
+  if (SRT[k]) return SRT[k];
+  const [sid, i] = k.split(':'), ex = secById[sid].srt[+i], idx = ex.items.map((_, j) => j);
+  let order = shuffle(idx); while (order.every((v, p) => v === p)) order = shuffle(idx);
+  return (SRT[k] = ex.type === 'order' ? { order, checked: false } : { seq: order, at: idx.map(() => -1), pick: null, checked: false });
+}
+function srtInner(k) {
+  const [sid, i] = k.split(':'), ex = secById[sid].srt[+i], st = srtState(k), G = ex.groups || [];
+  const ok = j => ex.type === 'order' ? st.order.indexOf(j) === j : st.at[j] === G.indexOf(ex.items[j].g);
+  const mark = j => st.checked ? (ok(j) ? ' ok' : ' bad') : '';
+  const why = j => st.checked ? `<span class="srt-why">${ok(j) ? '' : ex.type === 'order' ? `Düzgün yeri: ${j + 1}. ` : `Düzgün qrup: ${esc(ex.items[j].g)}. `}${esc(ex.items[j].why)}</span>` : '';
+  let body;
+  if (ex.type === 'order') {
+    body = `<ol class="srt-list">${st.order.map((j, p) => `<li class="srt-item${mark(j)}" data-j="${j}">
+      <span class="srt-grip" data-drag="${j}" aria-hidden="true">⠿</span><span class="srt-n">${p + 1}</span>
+      <span class="srt-t">${esc(ex.items[j].t)}${why(j)}</span>
+      <span class="srt-move"><button class="ibtn" data-act="srt-move" data-k="${k}" data-p="${p}" data-d="-1" aria-label="Yuxarı"${p ? '' : ' disabled'}>▲</button><button class="ibtn" data-act="srt-move" data-k="${k}" data-p="${p}" data-d="1" aria-label="Aşağı"${p < st.order.length - 1 ? '' : ' disabled'}>▼</button></span></li>`).join('')}</ol>`;
+  } else {
+    const chip = j => `<button class="srt-chip${mark(j)}${st.pick === j ? ' picked' : ''}" data-act="srt-pick" data-k="${k}" data-j="${j}" data-drag="${j}" aria-pressed="${st.pick === j}">${esc(ex.items[j].t)}${why(j)}</button>`;
+    const pool = st.seq.filter(j => st.at[j] === -1);
+    body = `<div class="srt-pool srt-zone" data-act="srt-put" data-k="${k}" data-g="-1">${pool.length ? pool.map(chip).join('') : '<span class="muted">Bütün kartlar yerləşdirilib.</span>'}</div>
+      <div class="srt-groups">${G.map((g, gi) => `<div class="srt-group srt-zone" data-act="srt-put" data-k="${k}" data-g="${gi}"><div class="srt-gh">${esc(g)}</div>${st.seq.filter(j => st.at[j] === gi).map(chip).join('')}</div>`).join('')}</div>`;
+  }
+  const n = ex.items.length, good = ex.items.filter((_, j) => ok(j)).length;
+  return `<div class="srt-k">${icon('target')}Sürüklə-burax · ${esc(ex.title)}</div><p class="srt-hint">${esc(ex.hint || '')}</p>${body}
+    <div class="row srt-ctl"><button class="btn sm primary" data-act="srt-check" data-k="${k}">${icon('check')}Yoxla</button><button class="btn sm ghost" data-act="srt-reset" data-k="${k}">${icon('refresh')}Yenidən qarışdır</button>
+    ${st.checked ? `<span class="srt-score${good === n ? ' all' : ''}">${good}/${n} düzdür${good === n ? ' — əla!' : ''}</span>` : ''}</div>`;
+}
+const srtHTML = s => s.srt ? s.srt.map((ex, i) => `<div class="srt" data-srt="${s.id}:${i}" data-type="${ex.type}">${srtInner(s.id + ':' + i)}</div>`).join('') : '';
+function srtRedraw(k) { const el = document.querySelector(`[data-srt="${k}"]`); if (el) el.innerHTML = srtInner(k); }
+function srtDrop(k, j, to) { // order: to = new position; group: to = group index or -1 (back to the pool)
+  const st = srtState(k);
+  if ('order' in st) { const o = st.order.filter(v => v !== j); o.splice(to, 0, j); st.order = o; }
+  else { st.at[j] = to; st.seq = st.seq.filter(v => v !== j).concat(j); st.pick = null; }
+  st.checked = false; srtRedraw(k);
+}
+let DRAG = null;
+document.addEventListener('pointerdown', ev => {
+  const h = ev.target.closest('.srt [data-drag]'); if (!h || ev.button > 0) return;
+  const card = h.closest('.srt-item, .srt-chip'), r = card.getBoundingClientRect();
+  DRAG = { k: h.closest('.srt').dataset.srt, j: +h.dataset.drag, card, x: ev.clientX, y: ev.clientY, dx: ev.clientX - r.left, dy: ev.clientY - r.top, w: r.width, ghost: null };
+});
+function srtTarget(ev) {
+  const el = document.elementFromPoint(ev.clientX, ev.clientY), box = el && el.closest(`[data-srt="${DRAG.k}"]`);
+  if (!box) return null;
+  if (box.dataset.type === 'order') { // new position = how many other steps sit above the pointer
+    const items = [...box.querySelectorAll('.srt-item')].filter(e => +e.dataset.j !== DRAG.j);
+    const to = items.filter(e => { const r = e.getBoundingClientRect(); return r.top + r.height / 2 < ev.clientY; }).length;
+    return { to, el: items[Math.min(to, items.length - 1)] };
+  }
+  const z = el.closest('.srt-zone'); return z ? { to: +z.dataset.g, el: z } : null;
+}
+// while a card is held near the top or bottom edge the page scrolls, so a group below the screen can be reached
+function srtAutoScroll() {
+  if (!DRAG || !DRAG.ghost) return;
+  const y = DRAG.cy, v = y < 90 ? -14 : y > window.innerHeight - 110 ? 14 : 0;
+  if (v) window.scrollBy(0, v);
+  requestAnimationFrame(srtAutoScroll);
+}
+document.addEventListener('pointermove', ev => {
+  if (!DRAG) return;
+  DRAG.cy = ev.clientY;
+  if (!DRAG.ghost) {
+    if (Math.hypot(ev.clientX - DRAG.x, ev.clientY - DRAG.y) < 6) return;
+    DRAG.ghost = DRAG.card.cloneNode(true); DRAG.ghost.classList.add('srt-ghost'); DRAG.ghost.style.width = DRAG.w + 'px';
+    document.body.appendChild(DRAG.ghost); DRAG.card.classList.add('srt-lift');
+    requestAnimationFrame(srtAutoScroll);
+  }
+  ev.preventDefault();
+  DRAG.ghost.style.transform = `translate(${ev.clientX - DRAG.dx}px,${ev.clientY - DRAG.dy}px)`;
+  $$('.srt-over').forEach(e => e.classList.remove('srt-over'));
+  const t = srtTarget(ev); if (t && t.el) t.el.classList.add('srt-over');
+}, { passive: false });
+function srtEnd(ev, drop) {
+  if (!DRAG) return;
+  const d = DRAG; let t = null;
+  if (d.ghost && drop) t = srtTarget(ev);
+  DRAG = null;
+  if (d.ghost) {
+    d.ghost.remove(); d.card.classList.remove('srt-lift'); $$('.srt-over').forEach(e => e.classList.remove('srt-over'));
+    // swallow only the click that the browser sends right after this pointerup, not the next real tap
+    const stop = e => { e.stopPropagation(); e.preventDefault(); };
+    window.addEventListener('click', stop, { capture: true, once: true });
+    setTimeout(() => window.removeEventListener('click', stop, { capture: true }), 0);
+  }
+  if (t) srtDrop(d.k, d.j, t.to);
+}
+document.addEventListener('pointerup', ev => srtEnd(ev, true));
+document.addEventListener('pointercancel', ev => srtEnd(ev, false));
 function textBody(c, s) {
   const lv = lvlOf(s.id);
   if (lv === 'short') {
-    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${keysHTML(s.x)}
+    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${keysHTML(s.x)}
       <button class="btn sm ghost more" data-act="lvl" data-sec="${s.id}" data-v="std">${icon('book')}Tam mətni oxu</button>${miniHTML(c, s, false)}`;
   }
-  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
+  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
 }
 function fbHTML(a) {
   let h = '';
@@ -701,7 +793,7 @@ function secHTML(c, s) {
   else if (s.kind === 'selfcheck') body = selfHTML(c, s);
   else if (s.kind === 'checklist') body = checklistHTML(s);
   else if (s.x) body = textBody(c, s);
-  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}`;
+  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}`;
   return `<section class="sec${learned ? ' learned' : ''}" id="${s.id}" data-sec="${s.id}" data-kind="${s.kind}">
     <header class="sec-h"><span class="sec-num">${esc(s.num || kindTag(s).toLocaleUpperCase('az'))}</span><h2>${esc(s.title)}</h2>${s.x ? lvlCtl(s.id, lvlOf(s.id)) : ''}</header>
     ${body}${footerHTML(c, s)}</section>`;
@@ -1656,6 +1748,17 @@ document.addEventListener('click', ev => {
   const d = el.dataset;
   switch (act) {
     case 'tab': goTab(d.tab); break;
+    case 'srt-pick': {
+      const st = srtState(d.k); st.pick = st.pick === +d.j ? null : +d.j; srtRedraw(d.k); break;
+    }
+    case 'srt-put': { const st = srtState(d.k); if (st.pick != null) srtDrop(d.k, st.pick, +d.g); break; }
+    case 'srt-move': { const st = srtState(d.k), p = +d.p, q = p + +d.d; if (q >= 0 && q < st.order.length) srtDrop(d.k, st.order[p], q); break; }
+    case 'srt-check': {
+      const st = srtState(d.k);
+      if ('at' in st && st.at.some(g => g < 0)) { toast('Əvvəlcə bütün kartları qruplara yerləşdir.'); break; }
+      st.checked = true; srtRedraw(d.k); break;
+    }
+    case 'srt-reset': delete SRT[d.k]; srtRedraw(d.k); break;
     case 'back': back(); break;
     case 'open-ch': closeSheet(); go('reader', { ch: d.ch }, { tab: d.ch === 'gb' && S.tab === 'practice' ? 'practice' : (S.tab === 'practice' || S.tab === 'progress' ? S.tab : 'book') }); break;
     case 'continue': { const l = P().last; if (l) go('reader', { ch: l.ch, sec: l.sec }, { tab: 'book' }); break; }

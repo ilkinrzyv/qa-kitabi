@@ -430,6 +430,22 @@ for sid, cards in json.load(open(os.path.join(BASE, 'compare.json'), encoding='u
             print('ERR compare card fields', sid, k, file=sys.stderr); errors += 1
     sec['cmp'] = cards
     cmp_count += len(cards)
+# ---------- 6d. sorting exercises (sorting.json, keyed by section id): order the steps or sort items into groups ----------
+srt_count = 0
+for sid, exs in json.load(open(os.path.join(BASE, 'sorting.json'), encoding='utf-8')).items():
+    sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+    if not sec:
+        print('ERR sorting section not found', sid, file=sys.stderr); errors += 1; continue
+    for ex in exs:
+        bad = ex.get('type') not in ('order', 'group') or not ex.get('title') or len(ex.get('items', [])) < 3 \
+            or any(not (it.get('t') and it.get('why')) for it in ex['items'])
+        if ex.get('type') == 'group':
+            bad = bad or len(ex.get('groups', [])) < 2 or any(it.get('g') not in ex['groups'] for it in ex['items']) \
+                or any(not any(it['g'] == g for it in ex['items']) for g in ex['groups'])
+        if bad:
+            print('ERR sorting exercise', sid, ex.get('title'), file=sys.stderr); errors += 1
+    sec['srt'] = exs
+    srt_count += len(exs)
 # ---------- 6b. new narrow diagrams (diagrams.py) ----------
 sys.path.insert(0, BASE)
 from diagrams import ALL as NEW_DIAGRAMS
@@ -564,5 +580,5 @@ for ch in chapters:
             extra += f" k{len(s['items'])}"
     print(f"  {ch['id']:4} {ch['kind']:9} {str(ch['num']):5} secs={len(ch['sections']):2} {kinds} {extra} | {ch['title'][:50]}")
 print('deep layers', deep_count, 'missing', len(deep_missing))
-print('total sections', tot_sec, 'glossary', len(glossary), 'quiz chapters', len(quizzes), 'quiz q', sum(len(v) for v in quizzes.values()), 'compare cards', cmp_count, 'interview lines', sum(1 for g in glossary if g.get('say')), 'errors', errors)
+print('total sections', tot_sec, 'glossary', len(glossary), 'quiz chapters', len(quizzes), 'quiz q', sum(len(v) for v in quizzes.values()), 'compare cards', cmp_count, 'sorting', srt_count, 'interview lines', sum(1 for g in glossary if g.get('say')), 'errors', errors)
 print('json bytes', os.path.getsize(OUT))

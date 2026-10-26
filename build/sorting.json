@@ -1,0 +1,55 @@
+{
+  "c4s1": [
+    {
+      "type": "order",
+      "title": "STLC mərhələlərini sıraya düz",
+      "hint": "Əzbərləmə, zəncirlə qur: hər mərhələ üçün soruş — “bunun üçün əvvəl nə lazımdır?”",
+      "items": [
+        { "t": "Tələblərin analizi (Requirement Analysis)", "why": "Hər şey tələbdən başlayır: nəyi test edəcəyini bilmədən plan qurmaq olmur." },
+        { "t": "Test planlaşdırması (Test Planning)", "why": "Plan üçün təhlil olunmuş tələblər lazımdır: scope və risklər onlardan çıxır." },
+        { "t": "Test dizaynı (Test Case Development)", "why": "Test case yazmaq üçün plan lazımdır: nəyin, hansı yanaşma ilə test olunacağı orada qərara alınıb." },
+        { "t": "Test mühitinin hazırlanması (Test Environment Setup)", "why": "Mühit plana görə hazırlanır: hansı brauzer, cihaz, hesab lazımdır. İcradan əvvəl hazır olmalı və smoke testdən keçməlidir." },
+        { "t": "Testin icrası (Test Execution)", "why": "İcra üçün iki şey lazımdır: hazır test case-lər və smoke testdən keçmiş mühit." },
+        { "t": "Testin bağlanması (Test Closure)", "why": "Yekun hesabat yalnız icra bitəndən və çıxış meyarları ödənəndən sonra yazılır." }
+      ]
+    }
+  ],
+  "c6s3": [
+    {
+      "type": "group",
+      "title": "Hansı test növüdür?",
+      "hint": "Hər vəziyyəti uyğun qrupa sürüklə (və ya karta, sonra qrupa toxun). Sual ver: obyekt nədir — build, dəyişən sahə, konkret baq, yoxsa başqa yerlər?",
+      "groups": ["Smoke", "Sanity", "Retest", "Regression"],
+      "items": [
+        { "t": "Yeni build test mühitinə gəldi: sayt açılır, giriş olur, kataloq görünür, məhsul səbətə düşür.", "g": "Smoke", "why": "Geniş, amma dayaz yoxlama: build ümumiyyətlə test üçün yararlıdırmı?" },
+        { "t": "Yeni build-də giriş səhifəsi ümumiyyətlə açılmır — build geri qaytarılır.", "g": "Smoke", "why": "Smoke uğursuz olanda dərin testə keçilmir: build test üçün qəbul olunmur." },
+        { "t": "BUG-17 “Fixed” oldu: bug report-dakı eyni addımlarla “Your Cart” səhifəsində Backpack-in “Remove” düyməsinə basırsan.", "g": "Retest", "why": "Bug report-un eyni ssenarisi və eyni data — obyekt konkret defektdir." },
+        { "t": "“Last Name boş qalanda xəta çıxmır” baqı düzəlib: eyni dəyərlərlə (First Name = Ali, Postal Code = 1000, Last Name boş) “Continue” basırsan.", "g": "Retest", "why": "Bug-ın tam ssenarisi eyni dəyərlərlə təkrarlanır — bu, retest-dir." },
+        { "t": "BUG-17 düzəldikdən sonra səbətdə iki məhsul olanda “Remove” düyməsinin yalnız birini çıxardığını və qonşu düymələri qısa yoxlayırsan.", "g": "Sanity", "why": "Dəyişən sahəyə dar, amma dərin baxış: bug-ın öz ssenarisi deyil, onun ətrafı." },
+        { "t": "Axtarış filtrinə yeni “Qiymət aralığı” əlavə olunub: filtrin özünü və yaxın filtrləri qısa yoxlayırsan.", "g": "Sanity", "why": "Kiçik dəyişiklikdən sonra həmin sahə məntiqli işləyirmi — dar və dərin." },
+        { "t": "Səbətdəki düzəlişdən sonra “Checkout: Overview” səhifəsində “Item total” düzgün hesablanırmı, yoxlayırsan.", "g": "Regression", "why": "Başqa səhifədir, amma dəyişiklikdən təsirlənə bilər. Sual: “developer nəyi dəyişdi, bu başqa nəyi sındıra bilər?”" },
+        { "t": "Endirim kodundakı baq düzəlib: çatdırılma haqqı və vergi hələ düzgün hesablanırmı?", "g": "Regression", "why": "Düzəliş əvvəl işləyən hesablamaları sındırmayıb? — başqa yerlərə baxış." },
+        { "t": "Relizdən əvvəl bütün əsas funksiyaların avtomat test dəsti işə salınır.", "g": "Regression", "why": "Geniş, sistemli yoxlama; ən çox avtomatlaşdırılan növ." }
+      ]
+    }
+  ],
+  "c12s1": [
+    {
+      "type": "group",
+      "title": "Faktiki nəticə: fakt, çıxarış, yoxsa rəy?",
+      "hint": "Faktiki nəticəyə yalnız “Fakt” qrupundakılar yazılır. Yoxlama sualı: bunu ekranda birbaşa görmək olarmı?",
+      "groups": ["Fakt (ekranda görünür)", "Çıxarış", "Rəy"],
+      "items": [
+        { "t": "Səbət nişanında 1 görünür.", "g": "Fakt (ekranda görünür)", "why": "Ekranda birbaşa görünür — faktiki nəticəyə yazılır." },
+        { "t": "Düymənin yazısı “Add to cart”-dan “Remove”-a dəyişdi.", "g": "Fakt (ekranda görünür)", "why": "Görünən mətn dəyişikliyi — fakt." },
+        { "t": "“Epic sadface: Username is required” mesajı çıxır.", "g": "Fakt (ekranda görünür)", "why": "Ekrandakı mesaj sözbəsöz köçürülüb — fakt." },
+        { "t": "“Checkout: Your Information” səhifəsində qalır.", "g": "Fakt (ekranda görünür)", "why": "Hansı səhifənin açıq olduğu görünür — fakt." },
+        { "t": "Məhsul səbətə əlavə olundu.", "g": "Çıxarış", "why": "Bunu nişandan və düymədən nəticə çıxarırsan — ekranda gördüyünü yaz." },
+        { "t": "Sistem böyük hərfləri qəbul etdi.", "g": "Çıxarış", "why": "“Qəbul etdi” görünmür; görünən — hansı səhifənin açıldığı və hansı mesajın çıxdığıdır." },
+        { "t": "Səbət sıfırlandı.", "g": "Çıxarış", "why": "Ekranda görünən: nişan yox olur, siyahı boşdur. “Sıfırlandı” — nəticə çıxarışı." },
+        { "t": "Səbət düzgün işləyir.", "g": "Rəy", "why": "Qiymətləndirmədir — iki tester eyni ekranda fərqli qərar verə bilər." },
+        { "t": "Forma normal işlədi, problem yoxdur.", "g": "Rəy", "why": "Rəydir, oxuyan nəyə baxacağını bilmir." }
+      ]
+    }
+  ]
+}
