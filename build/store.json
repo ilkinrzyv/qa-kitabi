@@ -1,0 +1,141 @@
+{
+  "password": "secret_sauce",
+  "users": ["standard_user", "locked_out_user", "problem_user"],
+  "products": [
+    { "id": "backpack", "name": "Backpack", "price": 29.99 },
+    { "id": "bikelight", "name": "Bike Light", "price": 9.99 },
+    { "id": "bolt", "name": "Bolt T-Shirt", "price": 15.99 },
+    { "id": "fleece", "name": "Fleece Jacket", "price": 49.99 },
+    { "id": "onesie", "name": "Onesie", "price": 7.99 },
+    { "id": "redshirt", "name": "T-Shirt (Red)", "price": 15.99 }
+  ],
+  "bugs": {
+    "add": "Products: Bolt T-Shirt və Fleece Jacket üçün “Add to cart” basanda düymə də, səbət nişanı da dəyişmir.",
+    "remove": "Products: Bike Light üçün “Remove” basanda düymə “Remove” olaraq qalır, səbət nişanındakı rəqəm azalmır.",
+    "sort": "Products: sıralama seçimi dəyişəndə məhsulların sırası dəyişmir.",
+    "last": "Checkout: Your Information: Last Name sahəsinə yazılan hərf First Name sahəsinə düşür, Last Name boş qalır."
+  },
+  "free": {
+    "title": "Kəşfiyyat sessiyası: problem_user",
+    "charter": "Charter: mağazanı problem_user ilə kəşf et, məqsəd — gizli bug-ları tapmaq. Timebox: 15 dəqiqə. Oracle: eyni hərəkəti standard_user ilə də et və nəticələri müqayisə et."
+  },
+  "scenarios": [
+    {
+      "id": "tc01", "title": "Login: standard_user ilə uğurlu giriş", "result": "Passed",
+      "start": { "page": "login" }, "pre": "Login səhifəsi açıqdır.",
+      "data": [["Username", "standard_user"], ["Password", "secret_sauce"]],
+      "steps": [
+        { "t": "Username sahəsinə standard_user yaz.", "on": { "ev": "type", "f": "user", "v": "standard_user" } },
+        { "t": "Password sahəsinə secret_sauce yaz.", "on": { "ev": "type", "f": "pass", "v": "secret_sauce" } },
+        { "t": "“Login” düyməsini bas.", "on": { "ev": "login", "user": "standard_user", "pass": "secret_sauce" } }
+      ],
+      "expect": { "title": "Products" }
+    },
+    {
+      "id": "tc02", "title": "Login: bloklanmış istifadəçi ilə giriş", "result": "Passed",
+      "start": { "page": "login" }, "pre": "Login səhifəsi açıqdır.",
+      "data": [["Username", "locked_out_user"], ["Password", "secret_sauce"]],
+      "steps": [
+        { "t": "Username sahəsinə locked_out_user yaz.", "on": { "ev": "type", "f": "user", "v": "locked_out_user" } },
+        { "t": "Password sahəsinə secret_sauce yaz.", "on": { "ev": "type", "f": "pass", "v": "secret_sauce" } },
+        { "t": "“Login” düyməsini bas.", "on": { "ev": "login", "user": "locked_out_user", "pass": "secret_sauce" } }
+      ],
+      "expect": { "error": "Epic sadface: Sorry, this user has been locked out." }
+    },
+    {
+      "id": "tc03", "title": "Login: yanlış şifrə ilə giriş (neqativ)", "result": "Passed",
+      "start": { "page": "login" }, "pre": "Login səhifəsi açıqdır.",
+      "data": [["Username", "standard_user"], ["Password", "secret"]],
+      "steps": [
+        { "t": "Username sahəsinə standard_user yaz.", "on": { "ev": "type", "f": "user", "v": "standard_user" } },
+        { "t": "Password sahəsinə secret yaz.", "on": { "ev": "type", "f": "pass", "v": "secret" } },
+        { "t": "“Login” düyməsini bas.", "on": { "ev": "login", "user": "standard_user", "pass": "secret" } }
+      ],
+      "expect": { "error": "Epic sadface: Username and password do not match any user in this service" }
+    },
+    {
+      "id": "tc04", "title": "Products: məhsulu səbətə əlavə etmək", "result": "Passed",
+      "start": { "page": "products", "user": "standard_user" }, "pre": "standard_user ilə daxil olmusan, Products səhifəsi açıqdır, səbət boşdur.",
+      "data": [],
+      "steps": [{ "t": "Backpack məhsulunun “Add to cart” düyməsini bas.", "on": { "ev": "add", "item": "backpack" } }],
+      "expect": { "badge": 1, "btn:backpack": "Remove" }
+    },
+    {
+      "id": "tc05", "title": "Səbət: əlavə olunan məhsul səbət səhifəsində", "result": "Passed",
+      "start": { "page": "products", "user": "standard_user", "cart": ["backpack"] }, "pre": "standard_user ilə daxil olmusan, Products səhifəsi açıqdır, səbətdə Backpack var.",
+      "data": [],
+      "steps": [{ "t": "Yuxarı sağdakı səbət ikonuna bas.", "on": { "ev": "cart" } }],
+      "expect": { "title": "Your Cart", "item:backpack": true }
+    },
+    {
+      "id": "tc06", "title": "Səbət: məhsulu səbətdən silmək", "result": "Passed",
+      "start": { "page": "cart", "user": "standard_user", "cart": ["backpack"] }, "pre": "standard_user ilə daxil olmusan, Your Cart səhifəsi açıqdır, səbətdə yalnız Backpack var.",
+      "data": [],
+      "steps": [{ "t": "Backpack-in “Remove” düyməsini bas.", "on": { "ev": "remove", "item": "backpack", "where": "cart" } }],
+      "expect": { "item:backpack": false, "badge": 0 }
+    },
+    {
+      "id": "tc07", "title": "Checkout: Last Name boş qalanda (neqativ)", "result": "Passed",
+      "start": { "page": "info", "user": "standard_user", "cart": ["backpack"] }, "pre": "standard_user ilə daxil olmusan, səbətdə Backpack var, Checkout: Your Information səhifəsi açıqdır.",
+      "data": [["First Name", "Ali"], ["Last Name", "(boş)"], ["Zip/Postal Code", "1000"]],
+      "steps": [
+        { "t": "First Name sahəsinə Ali yaz.", "on": { "ev": "type", "f": "first", "v": "Ali" } },
+        { "t": "Zip/Postal Code sahəsinə 1000 yaz.", "on": { "ev": "type", "f": "zip", "v": "1000" } },
+        { "t": "“Continue” düyməsini bas.", "on": { "ev": "continue", "first": "Ali", "last": "", "zip": "1000" } }
+      ],
+      "expect": { "title": "Checkout: Your Information", "error": "Error: Last Name is required" }
+    },
+    {
+      "id": "tc08", "title": "Checkout: sifarişi tamamlamaq", "result": "Passed",
+      "start": { "page": "overview", "user": "standard_user", "cart": ["backpack"] }, "pre": "standard_user ilə daxil olmusan, səbətdə Backpack var, Checkout: Overview səhifəsi açıqdır.",
+      "data": [],
+      "steps": [{ "t": "“Finish” düyməsini bas.", "on": { "ev": "finish" } }],
+      "expect": { "title": "Checkout: Complete!", "header": "Thank you for your order!", "badge": 0 }
+    },
+    {
+      "id": "tc09", "title": "problem_user: Bolt T-Shirt-i səbətə əlavə etmək", "result": "Failed",
+      "start": { "page": "products", "user": "problem_user" }, "pre": "problem_user ilə daxil olmusan, Products səhifəsi açıqdır, səbət boşdur.",
+      "data": [],
+      "steps": [{ "t": "Bolt T-Shirt məhsulunun “Add to cart” düyməsini bas.", "on": { "ev": "add", "item": "bolt" } }],
+      "expect": { "badge": 1, "btn:bolt": "Remove" },
+      "bug": {
+        "where": ["products"], "what": ["bolt"], "when": ["problem_user", "problem user"],
+        "model": "Products: Bolt T-Shirt üçün “Add to cart” basanda düymə və səbət nişanı dəyişmir (problem_user)"
+      }
+    },
+    {
+      "id": "tc10", "title": "problem_user: qiymətə görə sıralama", "result": "Failed",
+      "start": { "page": "products", "user": "problem_user" }, "pre": "problem_user ilə daxil olmusan, Products səhifəsi açıqdır.",
+      "data": [["Sıralama", "Price (low to high)"]],
+      "steps": [{ "t": "Sıralama siyahısından “Price (low to high)” seç.", "on": { "ev": "sort", "v": "lohi" } }],
+      "expect": { "first": "Onesie" },
+      "bug": {
+        "where": ["products"], "what": ["price (low to high)", "low to high", "sira", "sort"], "when": ["problem_user", "problem user"],
+        "model": "Products: “Price (low to high)” seçiləndə məhsulların sırası dəyişmir (problem_user)"
+      }
+    },
+    {
+      "id": "tc11", "title": "problem_user: Checkout məlumatlarını doldurmaq", "result": "Failed",
+      "start": { "page": "info", "user": "problem_user", "cart": ["backpack"] }, "pre": "problem_user ilə daxil olmusan, səbətdə Backpack var, Checkout: Your Information səhifəsi açıqdır.",
+      "data": [["First Name", "Ali"], ["Last Name", "Aliyev"], ["Zip/Postal Code", "1000"]],
+      "steps": [
+        { "t": "First Name sahəsinə Ali yaz.", "on": { "ev": "type", "f": "first", "v": "Ali" } },
+        { "t": "Last Name sahəsinə Aliyev yaz.", "on": { "ev": "type", "f": "last" } },
+        { "t": "Zip/Postal Code sahəsinə 1000 yaz.", "on": { "ev": "type", "f": "zip", "v": "1000" } },
+        { "t": "“Continue” düyməsini bas.", "on": { "ev": "continue" } }
+      ],
+      "expect": { "title": "Checkout: Overview" },
+      "see": ["error", "field:first", "field:last"],
+      "bug": {
+        "where": ["checkout", "your information"], "what": ["last name"], "when": ["problem_user", "problem user"],
+        "model": "Checkout: Your Information: Last Name sahəsinə yazılan hərflər First Name sahəsinə düşür (problem_user)"
+      }
+    }
+  ],
+  "sections": {
+    "c7s5": ["tc01", "tc03", "tc07"],
+    "c7s6": ["free"],
+    "c11s4": ["tc02", "tc04", "tc05", "tc06", "tc08"],
+    "c12s1": ["tc09", "tc10", "tc11"]
+  }
+}
