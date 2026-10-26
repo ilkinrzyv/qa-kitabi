@@ -809,6 +809,301 @@ def pipeline():
 reg('pipeline', 'c20s7', 'Mühitlər zənciri', 'CI/CD · mərhələlər və qapılar', pipeline())
 
 
+def outcome(d, x, y, w, h, title, sub, col, dash=None, tfill=None):
+    """Result box: coloured title, grey sub line (same metrics as labelbox)."""
+    d.rect(x, y, w, h, fill=col, fo=0.1, stroke=col, rx=8, dash=dash)
+    ty = y + h / 2 - 8.5 + 13 * 0.36
+    d.text(x + 12, ty, title, size=13, w=600, fill=tfill or col, inside=(x, y, w, h))
+    d.text(x + 12, ty + 17, sub, size=12, fill=S, inside=(x, y, w, h))
+
+
+# 22. Test status: three questions ------------------------------------------------------------------------------------------
+def tstatus():
+    d = D('tstatus', W, 360, 'Test statusunu üç sual seçir: planda varmı, sona qədər getdimi, nəticə gözləniləndirmi')
+    ty = d.title('Test statusunu üç sual seçir')
+    qx, qw, qh = 10, 176, 46
+    ox, ow = 216, 114
+    qs = [('1. Planda var?', 'bu relizdə icra edilir', ('Not run', 'qəsdən buraxılıb', AX, S)),
+          ('2. Sona qədər getdi?', 'addımları keçmək olur', ('Blocked', 'baq mane olur', WARN, None)),
+          ('3. Faktiki = gözlənilən?', 'ekrandakı ilə tutuşdur', ('Failed', 'bug report yaz', CRIT, None))]
+    pitch = qh + 30
+    y0 = ty + 22
+    for i, (q, sub, (st, ss, col, tf)) in enumerate(qs):
+        y = y0 + i * pitch
+        d.labelbox(qx, y, qw, qh, q, sub, fill=TINT, fo=None, stroke=AX)
+        cy = y + qh / 2
+        d.line(qx + qw, cy, ox - 1, cy, end=True)
+        d.text((qx + qw + ox) / 2, cy - 7, 'xeyr', size=12, fill=S, anchor='middle')
+        outcome(d, ox, y, ow, qh, st, ss, col, dash='4 3' if col == AX else None, tfill=tf)
+        d.line(qx + 40, y + qh, qx + 40, y + pitch - 1, end=True)
+        d.text(qx + 50, y + qh + (pitch - qh) / 2 + 4.3, 'bəli', size=12, fill=S)
+    py = y0 + 3 * pitch
+    outcome(d, qx, py, qw, qh, 'Passed', 'test keçdi', GOOD)
+    yb = py + qh + 26
+    d.text(10, yb, 'Blocked testi mane olan baq düzələndə', size=12, fill=S)
+    d.text(10, yb + 16, 'yenidən icra et.', size=12, fill=S)
+    d.H = yb + 26
+    return d
+
+
+reg('tstatus', 'c4s3', 'Funksiya bu relizdən çıxarılıb', 'test statusları · Passed, Failed, Blocked, Not run', tstatus())
+
+
+# 23. Integration: stub and driver ----------------------------------------------------------------------------------------------
+def stubs():
+    d = D('stubs', W, 330, 'Hazır olmayan modulun yerini müvəqqəti əvəzedici tutur: aşağıda stub, yuxarıda driver')
+    ty = d.title('Hazır olmayan modulun yerini müvəqqəti əvəzedici tutur')
+    cols = [('Top-down', 'yuxarıdan aşağı', ('Qeydiyyat', 'hazırdır, test olunur', False),
+             ('Stub', 'email servisi əvəzinə', True)),
+            ('Bottom-up', 'aşağıdan yuxarı', ('Driver', 'qeydiyyat əvəzinə', True),
+             ('Email servisi', 'hazırdır, test olunur', False))]
+    cw, g, bh = 155, 10, 46
+    y = ty + 30
+    for i, (name, sub, top, bot) in enumerate(cols):
+        x = 10 + i * (cw + g)
+        d.text(x, y, name, size=13, w=600)
+        d.text(x, y + 17, sub, size=12, fill=S)
+        b1 = y + 30
+        b2 = b1 + bh + 40
+        for (t, s, fake), by in ((top, b1), (bot, b2)):
+            if fake:
+                d.labelbox(x, by, cw, bh, t, s, fill=TINT, fo=None, stroke=AX, dash='4 3')
+            else:
+                d.labelbox(x, by, cw, bh, t, s, fill=A, fo=0.12, stroke=A)
+        d.line(x + 40, b1 + bh, x + 40, b2 - 1, end=True)
+        d.text(x + 50, b1 + bh + 24.3, 'çağırır', size=12, fill=S)
+    ly = y + 30 + 2 * bh + 40 + 30
+    d.rect(10, ly - 10, 24, 14, fill=A, fo=0.12, stroke=A, rx=3)
+    d.text(42, ly + 1.3, 'əsl modul', size=12, fill=S)
+    d.rect(140, ly - 10, 24, 14, fill=TINT, stroke=AX, rx=3, dash='4 3')
+    d.text(172, ly + 1.3, 'müvəqqəti əvəzedici', size=12, fill=S)
+    d.rich(10, ly + 30, [('Big Bang', P, 600), (' — hamısı birdən qoşulur: baq', S, 400)], size=12, mono=False)
+    d.text(10, ly + 46, 'çıxanda onun yerini tapmaq çətindir.', size=12, fill=S)
+    d.H = ly + 56
+    return d
+
+
+reg('stubs', 'c5s2', 'çağırıcı proqram', 'inteqrasiya testi · stub və driver', stubs())
+
+
+# 24. Test documents: from general to concrete -------------------------------------------------------------------------------------
+def docs():
+    d = D('docs', W, 400, 'Test sənədləri ümumidən konkretə gedir: strategiya, plan, ssenari, test case, data')
+    ty = d.title('Hər pillə əvvəlkini konkretləşdirir')
+    rows = [('Test strategiyası', 'Şirkət: hər reliz regression keçir', None, False),
+            ('Test planı', 'Mobil bank 3.2 relizi', 'kim, nə vaxt', False),
+            ('Test ssenarisi', 'Köçürməni yoxla', 'nəyi?', True),
+            ('Test case', 'TC-TRANSFER-001: 100 AZN köçür', 'necə?', True),
+            ('Test data', 'test.user · balans 500 AZN', None, True)]
+    step, h, pitch = 14, 44, 58
+    y0 = ty + 20
+    for i, (name, ex, tag, many) in enumerate(rows):
+        x = 10 + i * step
+        y = y0 + i * pitch
+        w = 326 - x
+        if many:
+            d.rect(x + 4, y + 4, w, h, fill=TINT, stroke=AX, so=0.6)
+            d.rect(x, y, w, h, fill='var(--surface)')
+        d.rect(x, y, w, h, fill=A, fo=0.08 + 0.03 * i, stroke=A)
+        d.text(x + 12, y + 18, name, size=13, w=600, inside=(x, y, w, h))
+        d.text(x + 12, y + 35, ex, size=12, fill=S, inside=(x, y, w, h))
+        if tag:
+            d.text(x + w - 12, y + 18, tag, size=12, w=600, fill=A, anchor='end', inside=(x, y, w, h))
+        if i:
+            px = x - step
+            d.path(f'M {px + 7:g} {y - pitch + h:g} V {y + h / 2:g} H {x - 1:g}', stroke=AX, end=True)
+    yb = y0 + 4 * pitch + h + 26
+    d.text(10, yb, 'Junior plan və strategiyanı oxuyur;', size=12, fill=S)
+    d.text(10, yb + 16, 'ssenari, test case və datanı özü yazır.', size=12, fill=S)
+    d.H = yb + 26
+    return d
+
+
+reg('docs', 'c11s1', '$end', 'test sənədlərinin iyerarxiyası · mobil bank misalı', docs())
+
+
+# 25. Severity x priority ------------------------------------------------------------------------------------------------------------
+def sevpri():
+    d = D('sevpri', W, 380, 'Severity və priority ayrı oxlardır: dörd birləşmənin hər biri real həyatda olur')
+    ty = d.title('Severity və priority ayrı oxlardır')
+    gx, cw, ch, g = 50, 137, 92, 6
+    gy = ty + 22
+    cells = [(1, 1, 'Ödəniş düyməsi işləmir', 'heç kim ala bilmir', CRIT),
+             (0, 1, 'Ana səhifədə şirkətin adı səhvdir', 'hamı görür', WARN),
+             (1, 0, '10 illik arxiv hesabatı çökür', 'ildə bir-iki nəfər açır', WARN),
+             (0, 0, 'Ayarlarda düymələr arası məsafə fərqlidir', 'az adam görür', AX)]
+    for sev, pri, ex, why, col in cells:
+        x = gx + sev * (cw + g)
+        y = gy + (1 - pri) * (ch + g)
+        d.rect(x, y, cw, ch, fill=col, fo=0.1, stroke=col)
+        lines = d.wrap(ex, 12.5, 600, cw - 20)
+        for k, ln in enumerate(lines):
+            d.text(x + 10, y + 22 + k * 17, ln, size=12.5, w=600, inside=(x, y, cw, ch))
+        d.text(x + 10, y + ch - 12, why, size=12, fill=S, inside=(x, y, cw, ch))
+    gb = gy + 2 * ch + g
+    d.line(gx - 8, gb, gx - 8, gy, end=True)
+    d.line(gx, gb + 8, gx + 2 * cw + g, gb + 8, end=True)
+    for k, lab in enumerate(('yüksək', 'aşağı')):
+        d.text(gx - 16, gy + k * (ch + g) + ch / 2, lab, size=12, fill=S, anchor='middle', rotate=-90)
+    d.text(12, gy + ch + g / 2, 'priority', size=12, w=600, anchor='middle', rotate=-90)
+    for k, lab in enumerate(('aşağı', 'yüksək')):
+        d.text(gx + k * (cw + g) + cw / 2, gb + 26, lab, size=12, fill=S, anchor='middle')
+    d.text(gx + cw + g / 2, gb + 44, 'severity', size=12, w=600, anchor='middle')
+    yb = gb + 72
+    d.rich(10, yb, [('Severity', P, 600), (' — nə qədər pisdir? Tester təyin edir.', S, 400)], size=12, mono=False)
+    d.rich(10, yb + 18, [('Priority', P, 600), (' — nə vaxt düzəltməli? Product Owner.', S, 400)], size=12,
+           mono=False)
+    d.H = yb + 28
+    return d
+
+
+reg('sevpri', 'c12s5', 'reputasiyaya zərər', 'severity və priority · dörd birləşmə', sevpri())
+
+
+# 26. URL anatomy --------------------------------------------------------------------------------------------------------------------------
+def url():
+    d = D('url', W, 330, 'URL-in hər hissəsinin öz işi var; fraqment serverə göndərilmir')
+    ty = d.title('URL-in hər hissəsinin öz işi var')
+    size = 13
+    cw_ = tw('x', size, 400, True)
+
+    def line(y, parts):
+        """parts: (text, label, sub, is_part, anchor of the labels)"""
+        x = 10
+        segs = []
+        for t, lab, sub, part, anc in parts:
+            w = len(t) * cw_
+            segs.append((t, P if part else S, 600 if part else 400))
+            if part:
+                frag = lab == 'fraqment'
+                d.path(f'M {x + 1:g} {y + 6:g} v 6 H {x + w - 1:g} v -6', stroke=A, dash='3 3' if frag else None)
+                lx = {'start': x, 'middle': x + w / 2, 'end': x + w}[anc]
+                d.text(lx, y + 30, lab, size=12, w=600, fill=A, anchor=anc)
+                d.text(lx, y + 46, sub, size=12, fill=S, anchor=anc)
+            x += w
+        d.rich(10, y, segs, size=size, mono=True)
+
+    y1 = ty + 34
+    line(y1, [('https', 'protokol', 'şifrəli', True, 'start'), ('://', None, None, False, None),
+              ('shop.example.com', 'domen', 'subdomen: shop', True, 'middle'), (':', None, None, False, None),
+              ('443', 'port', 'qapı', True, 'middle')])
+    y2 = y1 + 84
+    line(y2, [('/products/shoes', 'yol', 'hansı resurs', True, 'middle'),
+              ('?color=red&size=42', 'sorğu parametrləri', '& ilə ayrılır', True, 'middle'),
+              ('#reviews', 'fraqment', 'serverə getmir', True, 'end')])
+    by = y2 + 70
+    d.rect(10, by, 320, 62, fill=TINT, stroke=AX, rx=8)
+    d.text(22, by + 20, 'Test ideyası: parametri dəyiş', size=12.5, w=600)
+    d.rich(22, by + 38, [('?page=2', P, 400), (' əvəzinə ', S, 400), ('?page=-1', CRIT, 600), (' / ', S, 400),
+                         ('?page=abc', CRIT, 600)], size=12, inside=(10, by, 320, 62))
+    d.text(22, by + 54, 'Sayt necə reaksiya verir?', size=12, fill=S)
+    d.H = by + 72
+    return d
+
+
+reg('url', 'c13s2', 'serverə göndərilmir', 'URL-in anatomiyası · altı hissə', url())
+
+
+# 27. Status code families ----------------------------------------------------------------------------------------------------------------
+def codes():
+    d = D('codes', W, 400, 'Status kodunun birinci rəqəmi problemin harada olduğunu deyir')
+    ty = d.title('Birinci rəqəm deyir: problem haradadır')
+    rows = [('2xx', 'Uğur', '200 OK olsa da, gövdədəki datanı yoxla', GOOD),
+            ('3xx', 'Yönləndirmə', 'yeni ünvan düzgündürmü?', AX),
+            ('4xx', 'Sorğuda problem · client', '401 — sən kimsən? 403 — icazən yoxdur', WARN),
+            ('5xx', 'Serverdə problem', 'hər 5xx üçün bug report yaz', CRIT)]
+    x, cw, h, gap = 10, 58, 46, 10
+    y = ty + 18
+    for code, t, s, col in rows:
+        d.rect(x, y, cw, h, fill=col, fo=0.14, stroke=col)
+        d.text(x + cw / 2, y + h / 2 + 5.4, code, size=15, w=600, mono=True, anchor='middle', inside=(x, y, cw, h))
+        d.text(x + cw + 12, y + 19, t, size=13, w=600)
+        d.text(x + cw + 12, y + 36, s, size=12, fill=S)
+        y += h + gap
+    y += 16
+    d.rich(10, y, [('Yanlış data göndər: ', P, 600), ('{"age": "abc"}', P, 400)], size=12.5, mono=False)
+    cy = y + 16
+    outcome(d, 10, cy, 155, 46, '400 / 422', 'düzgün rədd cavabı', GOOD)
+    outcome(d, 175, cy, 155, 46, '500', 'baq: server yıxılıb', CRIT)
+    d.H = cy + 56
+    return d
+
+
+reg('codes', 'c13s6', '$end', 'status kodları · 2xx, 3xx, 4xx, 5xx', codes())
+
+
+# 28. Client vs server validation ------------------------------------------------------------------------------------------------------------
+def validation():
+    d = D('validation', W, 420, 'Brauzer yoxlamasını keçmək olur, ona görə əsas yoxlama serverdə olmalıdır')
+    ty = d.title('Brauzer yoxlamasını keçmək olur, əsas yoxlama serverdədir')
+    y = ty + 20
+    lx, rx, sw, sh = 10, 175, 155, 46
+    d.labelbox(lx, y, sw, sh, 'İstifadəçi', '60 simvollu ad yazır', fill=TINT, fo=None, stroke=AX)
+    d.labelbox(rx, y, sw, sh, 'Tester · test mühiti', 'maxlength-i silir', fill=A, fo=0.1, stroke=A)
+    by = y + sh + 34
+    bh = 50
+    d.rect(10, by, 320, bh, fill=TINT, stroke=AX)
+    d.text(22, by + 20, 'Brauzer · client-side', size=13, w=600)
+    d.text(22, by + 37, '<input maxlength="50">', size=12, mono=True, fill=S)
+    ax_ = rx + sw / 2
+    d.line(lx + 40, y + sh, lx + 40, by - 1, stroke=GOOD, end=True)
+    sy = by + bh + 50
+    d.line(ax_, y + sh, ax_, by, stroke=A, sw=1.5)
+    d.line(ax_, by, ax_, by + bh, stroke=A, sw=1.5, dash='4 3')
+    d.line(ax_, by + bh, ax_, sy - 1, stroke=A, sw=1.5, end=True)
+    d.text(ax_ + 8, by + 29.3, 'keçir', size=12, w=600, fill=A)
+    d.text(22, by + bh + 22, 'İstifadəçi dayanır:', size=12, fill=GOOD)
+    d.text(22, by + bh + 38, 'dərhal xəta görür', size=12, fill=GOOD)
+    d.rect(10, sy, 320, bh, fill=A, fo=0.08, stroke=A)
+    d.text(22, sy + 20, 'Server · server-side', size=13, w=600)
+    d.text(22, sy + 37, 'əsas sərhəd: hər sorğunu yoxlayır', size=12, fill=S)
+    oy = sy + bh + 30
+    for ox_, title, sub, col in ((10, '400 / 422', 'rədd edir — düzgün', GOOD),
+                                 (175, 'Qeyd yaranır', '60 simvol bazada — baq', CRIT)):
+        d.line(ox_ + 40, sy + bh, ox_ + 40, oy - 1, stroke=col, end=True)
+        outcome(d, ox_, oy, 155, 46, title, sub, col)
+    d.text(10, oy + 46 + 24, 'Bunu yalnız öz layihənin test mühitində et.', size=12, fill=S)
+    d.H = oy + 46 + 34
+    return d
+
+
+reg('validation', 'c14s1', 'Client və server validasiyası', 'client və server validasiyası · maxlength', validation())
+
+
+# 29. STAR answer ------------------------------------------------------------------------------------------------------------------------
+def star():
+    d = D('star', W, 400, 'STAR cavabı dörd hissədir: vəziyyət, vəzifə, hərəkət və rəqəmlə nəticə')
+    ty = d.title('STAR: vəziyyətdən rəqəmli nəticəyə')
+    items = [('S', 'Situation · vəziyyət', [[('Kursdakı komanda layihəsi', S, 400)]]),
+             ('T', 'Task · vəzifə', [[('Testlərə vaxt az qalmışdı', S, 400)]]),
+             ('A', 'Action · hərəkət', [[('Risklərə görə ən vacib 10 ssenarini', S, 400)],
+                                       [('seçdim, qalanını checklist ilə', S, 400)],
+                                       [('qısa yoxladım', S, 400)]]),
+             ('R', 'Result · nəticə', [[('Relizdən əvvəl ', S, 400), ('3 kritik defekt', GOOD, 600)],
+                                       [('tapıldı və düzəldildi', S, 400)]])]
+    cx, r, tx = 28, 15, 58
+    y0 = ty + 22
+    hs = [34 + 16 * len(lines) for _, _, lines in items]
+    d.line(cx, y0 + 22, cx, y0 + sum(hs[:-1]) + 12 * (len(hs) - 1) + 22, stroke=AX)
+    y = y0
+    for (letter, head, lines), h in zip(items, hs):
+        if letter == 'A':
+            d.rect(tx - 10, y, 330 - tx + 10, h, fill=A, fo=0.08, stroke=A)
+        cy = y + 22
+        d.circle(cx, cy, r, fill=P)
+        d.text(cx, cy + 5.4, letter, size=15, w=600, anchor='middle', fill=TINT, check=False)
+        d.text(tx, y + 22 + 4.7, head, size=13, w=600)
+        for k, segs in enumerate(lines):
+            d.rich(tx, y + 44 + k * 16, segs, size=12, mono=False)
+        y += h + 12
+    d.text(10, y + 14, 'A-da konkret addımların, R-də rəqəm olsun.', size=12, fill=S)
+    d.H = y + 24
+    return d
+
+
+reg('star', 'c21s8', '3 kritik defekt tapıldı', 'STAR metodu · kitabdakı misal', star())
+
+
 if __name__ == '__main__':
     import svgkit
     bad = 0
