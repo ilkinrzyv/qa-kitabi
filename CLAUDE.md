@@ -27,6 +27,8 @@ Screenshots land in `build/shots/` (gitignored).
   with Pygments, inserts diagrams after their anchor text and links glossary terms.
 - `build/deep/cNN.txt` — depth layers per section: `=== <sid>`, then `@qısa`, `@yadda` (3 bullets), `@dərin`, `@nümunə`,
   `@addımlar` (3–6 steps), `@növbən`.
+- `build/interview.json` — “Müsahibədə belə de” line for every glossary term, keyed by the English term; `parse_book.py`
+  counts a missing or unknown term as an error. Shown in the term sheet, the glossary (folded) and on flipped flashcards.
 - `build/compare.json` — good / bad writing cards keyed by section id (`tag`, `bad`, `good`, `why`); `parse_book.py`
   attaches them as `sec.cmp` and `cmpHTML()` renders them after the section text.
 - `build/quiz_*.json` — chapter quizzes. `build/diagrams.py` — SVG diagrams registered with `reg(slug, sid, anchor, cap, d)`,

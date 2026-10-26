@@ -791,9 +791,11 @@ function vKonspekt(v) {
     <div class="qz-act" style="margin-top:22px"><button class="btn primary" data-act="quiz" data-ch="${c.num}">${icon('target')}Fəsil testi</button><button class="btn ghost" data-act="open-ch" data-ch="${c.id}">${icon('book')}Fəslə qayıt</button></div>`;
 }
 /* ---------- glossary term popover ---------- */
+// interview.json: how to say the term in a job interview, one or two sentences
+const sayHTML = g => g.say ? `<div class="say"><div class="say-k">${icon('chat')}Müsahibədə belə de</div><p>${esc(g.say)}</p></div>` : '';
 function openTerm(gid) {
   const g = glById[gid]; if (!g) return;
-  openSheet(sheetHead('Termin', g.en) + `<div class="sheet-body"><div class="term-az">${esc(g.az)}</div><p class="term-def">${esc(g.def)}</p>
+  openSheet(sheetHead('Termin', g.en) + `<div class="sheet-body"><div class="term-az">${esc(g.az)}</div><p class="term-def">${esc(g.def)}</p>${sayHTML(g)}
     <div class="row">${g.ch.map(n => `<button class="chip" data-act="open-ch" data-ch="c${n}">Fəsil ${n}</button>`).join('')}</div>
     <div class="row" style="margin-top:14px"><button class="btn sm primary ai-only" data-act="ai-term" data-g="${g.id}">${icon('spark')}Claude ilə izah</button><button class="btn sm" data-act="search-gl" data-q="${esc(g.en)}">${icon('abc')}Lüğətdə aç</button></div></div>`, 'compact');
 }
@@ -933,7 +935,7 @@ function vCards(v) {
 }
 function cardBtns(g) {
   if (!S.cards.flip) return `<div class="fc-btns"><button class="btn primary" style="grid-column:1/-1" data-act="card-flip">Cavabı göstər</button></div>`;
-  return `<div class="fc-btns"><button class="btn no" data-act="card-no">${icon('x')}Bilmirdim</button><button class="btn yes" data-act="card-yes">${icon('check')}Bilirdim</button></div>
+  return `${sayHTML(g)}<div class="fc-btns"><button class="btn no" data-act="card-no">${icon('x')}Bilmirdim</button><button class="btn yes" data-act="card-yes">${icon('check')}Bilirdim</button></div>
     <div class="row" style="justify-content:center;margin-top:10px"><button class="btn sm ghost ai-only" data-act="ai-term" data-g="${g.id}">${icon('spark')}Claude ilə izah</button>${g.ch[0] ? `<button class="btn sm ghost" data-act="open-ch" data-ch="c${g.ch[0]}">${icon('book')}Fəsil ${g.ch[0]}</button>` : ''}</div>`;
 }
 function cardAnswer(know) {
@@ -958,6 +960,7 @@ function drawGlossary() {
   const list = GLOSS.filter(g => !q || fold(g.en + ' ' + g.az + ' ' + g.def).includes(q));
   $('#glcount').textContent = q ? `${list.length} nəticə` : `${GLOSS.length} termin, ingiliscə əlifba sırası ilə`;
   $('#gllist').innerHTML = list.length ? list.map(g => `<div class="gl-item"><div class="en">${esc(g.en)}</div><div class="az">${esc(g.az)}</div><div class="df">${esc(g.def)}</div>
+    ${g.say ? `<details class="say-d" data-open="say:${g.id}"${OPEN['say:' + g.id] ? ' open' : ''}><summary>${icon('chat')}Müsahibədə belə de</summary><p>${esc(g.say)}</p></details>` : ''}
     <div class="row">${g.ch.map(n => `<button class="chip" data-act="open-ch" data-ch="c${n}">Fəsil ${n}</button>`).join('')}<button class="chip acc ai-only" data-act="ai-term" data-g="${g.id}">${icon('spark')}Claude ilə izah</button></div></div>`).join('')
     : `<div class="empty" style="border:0">Heç nə tapılmadı.</div>`;
 }

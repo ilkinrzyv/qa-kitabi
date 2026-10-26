@@ -511,6 +511,17 @@ details.mini .ex-steps{margin-top:10px}
 .sheet.compact .sheet-panel{max-height:min(72vh,72dvh)}
 .term-az{color:var(--accent);font-weight:600;font-size:16px}
 .term-def{font-family:var(--f-read);font-size:var(--fs);line-height:1.6;margin:8px 0 14px}
+/* "Müsahibədə belə de" — interview line in the term sheet, glossary and flashcards */
+.say{margin:0 0 14px;padding:10px 12px;border-radius:12px;background:var(--accent-soft);border:1px solid var(--accent-line)}
+.say-k{display:flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.say-k svg.i{width:15px;height:15px}
+.say p,.say-d p{margin:6px 0 0;font-size:14.5px;line-height:1.5;color:var(--ink)}
+.fc-btns+.say,#fcbtns>.say{margin:14px 0 0}
+details.say-d{margin-top:6px}
+.say-d>summary{list-style:none;display:inline-flex;align-items:center;gap:5px;cursor:pointer;color:var(--accent);font-size:13px;font-weight:500;padding:3px 0}
+details.say-d[open]>summary{border-bottom:0;border-radius:0}
+.say-d>summary svg.i{width:15px;height:15px}
+.say-d p{padding:8px 10px;border-radius:10px;background:var(--accent-soft)}
 /* konspekt */
 .kon{display:flex;flex-direction:column;gap:10px;margin-top:18px}
 .ksec{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
