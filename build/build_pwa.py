@@ -61,8 +61,10 @@ def lib(src, dst):
     wr(dst, t)
 lib(os.path.join(LIBS, 'marked-12.0.2', 'package', 'marked.min.js'), 'libs/marked.min.js')
 lib(os.path.join(LIBS, 'dompurify-3.1.6', 'package', 'dist', 'purify.min.js'), 'libs/purify.min.js')
+lib(os.path.join(LIBS, 'sql.js-1.14.2', 'package', 'dist', 'sql-asm.js'), 'libs/sql-asm.js')  # loaded on demand by the SQL practice
 shutil.copy(os.path.join(LIBS, 'marked-12.0.2', 'package', 'LICENSE.md'), os.path.join(OUT, 'libs', 'LICENSE-marked.md'))
 shutil.copy(os.path.join(LIBS, 'dompurify-3.1.6', 'package', 'LICENSE'), os.path.join(OUT, 'libs', 'LICENSE-DOMPurify.txt'))
+shutil.copy(os.path.join(LIBS, 'sql.js-1.14.2', 'package', 'LICENSE'), os.path.join(OUT, 'libs', 'LICENSE-sql.js.md'))
 
 # ---------- icons ----------
 icon_files = []
@@ -143,13 +145,13 @@ wr('index.html', INDEX)
 wr('manifest.webmanifest', manifest)
 
 assets = ['./', 'app.css', 'app.js', 'book.js', 'pwa.js', 'manifest.webmanifest', 'fonts/fonts.css',
-          'libs/marked.min.js', 'libs/purify.min.js'] + font_files + icon_files
+          'libs/marked.min.js', 'libs/purify.min.js', 'libs/sql-asm.js'] + font_files + icon_files
 
 # version = content hash of everything the app is made of (templates, not the injected copies)
 h = hashlib.sha256()
 for part in (css, app_js, pwa_js, sw_tpl, book_js, INDEX, manifest, font_css):
     h.update(part.encode('utf-8'))
-for rel in font_files + icon_files + ['libs/marked.min.js', 'libs/purify.min.js']:
+for rel in font_files + icon_files + ['libs/marked.min.js', 'libs/purify.min.js', 'libs/sql-asm.js']:
     h.update(open(os.path.join(OUT, rel), 'rb').read())
 VERSION = datetime.date.today().strftime('%Y.%m.%d') + '-' + h.hexdigest()[:7]
 
@@ -242,7 +244,7 @@ göstərir. Məlumatların itmir.
 - `sw.js` — service worker (offline yaddaş)
 - `manifest.webmanifest`, `icons/` — tətbiqin adı və ikonları
 - `fonts/` — IBM Plex Sans, IBM Plex Mono, Literata (SIL Open Font License 1.1)
-- `libs/` — marked (MIT), DOMPurify (Apache-2.0 və ya MPL-2.0)
+- `libs/` — marked (MIT), DOMPurify (Apache-2.0 və ya MPL-2.0), sql.js — brauzerdə SQLite (MIT)
 '''
 wr('README.md', README)
 wr('.nojekyll', '')  # GitHub Pages: serve files as they are, no Jekyll

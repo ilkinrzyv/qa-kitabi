@@ -483,10 +483,22 @@ for sc in store['scenarios']:
         and sc.get('steps') and all(s.get('t') and s.get('on', {}).get('ev') in EVENTS for s in sc['steps']) \
         and all(s['on'].get('f') in FIELDS for s in sc['steps'] if s['on']['ev'] == 'type') \
         and sc.get('expect') and all(store_key(k) for k in list(sc['expect']) + sc.get('see', [])) \
-        and (sc['result'] == 'Passed' or all(sc.get('bug', {}).get(k) for k in ('where', 'what', 'when', 'model')))
+        and (sc['result'] == 'Passed' or all(sc.get('bug', {}).get(k) for k in ('where', 'what', 'when', 'model'))
+             and sc['bug'].get('r') in store.get('reports', {}))
     if not ok:
         print('ERR store scenario', sc.get('id'), file=sys.stderr); errors += 1
     sc_ids.add(sc.get('id'))
+# full bug reports, one per planted bug: the checker's keyword groups and a model report that must pass them
+SEVS, PRIS = ('Blocker', 'Critical', 'Major', 'Minor', 'Trivial'), ('High', 'Medium', 'Low')
+for bid, r in store.get('reports', {}).items():
+    m = r.get('model', {})
+    groups = lambda key: bool(r.get(key)) and all(g.get('l') and g.get('k') for g in r[key])
+    ok = bid in store['bugs'] and r.get('page') in PAGES and all(r.get(k) for k in ('where', 'what', 'when', 'sevWhy', 'priWhy')) \
+        and set(r.get('sev') or ['?']) <= set(SEVS) and set(r.get('pri') or ['?']) <= set(PRIS) \
+        and all(groups(k) for k in ('pre', 'need', 'exp', 'act')) \
+        and all(m.get(k) for k in ('title', 'pre', 'steps', 'exp', 'act', 'freq')) and m.get('sev') in r['sev'] and m.get('pri') in r['pri']
+    if not ok:
+        print('ERR store report', bid, file=sys.stderr); errors += 1
 for sid, ids in store['sections'].items():
     sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
     if not sec or not all(i in sc_ids or i == 'free' for i in ids):
@@ -529,6 +541,76 @@ for sid, progs in json.load(open(os.path.join(BASE, 'trace.json'), encoding='utf
         tr_count += 1
     if sec:
         sec['tr'] = progs
+# ---------- 6i. SQL practice (sql.json): the practice database is 16.3's code block; every SQL block of chapter 16 and
+# every task's solution must run on it (Python's sqlite3, the same SQLite the page runs through sql.js) ----------
+import sqlite3
+sqlcfg = json.load(open(os.path.join(BASE, 'sql.json'), encoding='utf-8'))
+m = re.search(r'### 16\.3\.[\s\S]*?```sql\n([\s\S]*?)```', md_text)
+seed = m.group(1).strip() if m else ''
+def sql_db(empty=False):
+    con = sqlite3.connect(':memory:')
+    if not empty:
+        con.executescript(seed)
+    return con
+ch16 = md_text[md_text.find('## Fəsil 16.'):md_text.find('## Fəsil 17.')]
+for i, block in enumerate(re.findall(r'```sql\n([\s\S]*?)```', ch16)):
+    try:
+        sql_db(empty='CREATE TABLE' in block).executescript(block)
+    except sqlite3.Error as e:
+        print('ERR sql block', i, e, file=sys.stderr); errors += 1
+sql_secs = {s['id']: s for c in chapters for s in c['sections']}
+q_ids = set()
+for t in sqlcfg['tasks']:
+    ok = t.get('id') and t['id'] not in q_ids and t.get('t') and t.get('x') and t.get('hint') and t.get('sec') in sql_secs \
+        and t.get('mode') in ('value', 'col', 'rows', 'state') and t.get('sol') and (t['mode'] != 'state' or t.get('state'))
+    for sol in t.get('sol') or []:
+        try:
+            con = sql_db()
+            if t['mode'] == 'state':
+                con.executescript(sol); rows = con.execute(t['state']).fetchall()
+            else:
+                rows = con.execute(sol).fetchall()
+            if not rows or (t['mode'] == 'value' and (len(rows) != 1 or len(rows[0]) != 1)):
+                ok = False
+        except (sqlite3.Error, KeyError):
+            ok = False
+    if not ok:
+        print('ERR sql task', t.get('id'), file=sys.stderr); errors += 1
+    q_ids.add(t.get('id'))
+for sid in sqlcfg.pop('sections'):
+    if sid not in sql_secs:
+        print('ERR sql section', sid, file=sys.stderr); errors += 1; continue
+    sql_secs[sid]['sql'] = 1
+sqlcfg['seed'] = seed
+print('sql tasks', len(sqlcfg['tasks']), 'seed bytes', len(seed))
+# ---------- 6h. practice API (api.json): a REST API over the practice store's data; tasks are checked against the request
+# log, planted bugs are found by sending the right request ----------
+api = json.load(open(os.path.join(BASE, 'api.json'), encoding='utf-8'))
+METHODS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')
+sec_ids = {s['id'] for c in chapters for s in c['sections']}
+api_ids = set()
+for t in api['tasks']:
+    ch = t.get('check', {})
+    reqs = [r for r in (ch.get('req'), ch.get('also')) if r]
+    ok = t.get('id') and t['id'] not in api_ids and t.get('t') and t.get('x') and t.get('hint') and t.get('sec') in sec_ids \
+        and (reqs or ch.get('bug')) and all(r.get('m') in METHODS and r.get('p') and isinstance(r.get('st'), int) for r in reqs) \
+        and (not ch.get('bug') or ch['bug'] in api['bugs'])
+    try:
+        [re.compile(r['p']) for r in reqs]
+    except (re.error, KeyError):
+        ok = False
+    if not ok:
+        print('ERR api task', t.get('id'), file=sys.stderr); errors += 1
+    api_ids.add(t.get('id'))
+for d in api['doc']:
+    if not (d.get('m') in METHODS and d.get('p', '').startswith('/') and d.get('d') and d.get('res') and all(isinstance(r[0], int) for r in d['res'])):
+        print('ERR api doc', d.get('m'), d.get('p'), file=sys.stderr); errors += 1
+for sid in api.pop('sections'):
+    sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+    if not sec:
+        print('ERR api section', sid, file=sys.stderr); errors += 1; continue
+    sec['api'] = 1
+print('api tasks', len(api['tasks']), 'bugs', len(api['bugs']))
 # ---------- 6b. new narrow diagrams (diagrams.py) ----------
 sys.path.insert(0, BASE)
 from diagrams import ALL as NEW_DIAGRAMS
@@ -639,7 +721,7 @@ for c in chapters:
             s['x']['short'], k = gl_wrap(s['x']['short'], rx, idx, 2); gl_total += k
 print('glossary links', gl_total)
 out = {'title': 'QA Kitabı: Sıfırdan Peşəkar Testerə', 'parts': parts, 'chapters': chapters,
-       'glossary': glossary, 'quizzes': quizzes, 'store': store}
+       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'api': api, 'sql': sqlcfg}
 json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 # ---------- 7. report ----------
