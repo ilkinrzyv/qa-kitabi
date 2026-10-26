@@ -85,6 +85,7 @@ const ICONS = {
   eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   cart: '<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.6 12.2a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.5L21.5 8H6.2"/>',
   print: '<path d="M7 9V3h10v6"/><path d="M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7z"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   camera: '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>',
   bug: '<rect x="7" y="7" width="10" height="13" rx="5"/><path d="M9 7a3 3 0 0 1 6 0M12 11v9M3 13h4M17 13h4M4 8l3 2M20 8l-3 2M4 19l3-2M20 19l-3-2"/>'
 };
@@ -448,7 +449,7 @@ function render(opts) {
   if (observer) { observer.disconnect(); observer = null; }
   hideSelPill();
   const v = $('#view');
-  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql };
+  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam };
   (views[S.view] || vHome)(v);
   if (opts.keepScroll) window.scrollTo(0, y);
   else if (!(S.view === 'reader' && S.params.sec)) window.scrollTo(0, 0);
@@ -2036,6 +2037,8 @@ function vPractice(v) {
       ${boxesHTML()}
       <div class="row" style="margin-top:14px"><button class="btn primary" data-act="cards">${icon('play')}Başla</button><button class="btn ghost" data-act="glossary">${icon('abc')}Lüğət</button></div>
     </div></section>
+  <section class="block"><div class="block-h"><h2>Sınaq imtahanı</h2><span class="muted" style="font-size:13px">${(P().exams || [])[0] ? `son: ${P().exams[0].ok}/${P().exams[0].n}` : 'ISTQB formatı'}</span></div>
+    <button class="quizcta" data-act="exam-open">${icon('target')}<div style="flex:1;min-width:0;text-align:left"><b>${examRun() && !examRun().done && examLeft(examRun()) > 0 ? 'Yarımçıq imtahanı davam et' : `${EXAM_N} sual · ${EXAM_MIN} dəqiqə`}</b><span>ISTQB CTFL formatı: keçid ${Math.round(EXAM_PASS * 100)}%, cavablar və izahlar sonda</span></div>${icon('arrow')}</button></section>
   <section class="block"><div class="block-h"><h2>Fəsil testləri</h2><span class="muted" style="font-size:13px">${o.quizDone}/21 · orta ${o.avg}%</span></div>
     <div class="qgrid">${cells}</div></section>
   <section class="block"><div class="block-h"><h2>Məşq mağazası</h2><span class="muted" style="font-size:13px">${Object.keys(SM.passed).length}/${STORE.scenarios.length} test case</span></div>
@@ -2127,6 +2130,121 @@ function finishQuiz() {
   Store.changed('progress');
 }
 
+/* ---------- mock exam: the ISTQB CTFL format — 40 questions, 60 minutes, pass at 65 %, answers shown only at the end.
+   Questions come from the chapter quizzes, spread over the chapters by pool size and kept in the book's order. A running
+   exam is saved in progress.examRun, so a reload continues it with the clock still running ---------- */
+const EXAM_N = 40, EXAM_MIN = 60, EXAM_PASS = 0.65;
+const EXAM_MODES = { istqb: { label: 'ISTQB formatı', sub: 'I–IV hissə · Fəsil 1–12', ch: MAIN.filter(c => c.num <= 12).map(c => c.num) },
+  all: { label: 'Bütün kitab', sub: 'Fəsil 1–21', ch: MAIN.map(c => c.num) } };
+const qById = {};
+Object.keys(QUIZ).forEach(n => QUIZ[n].forEach(q => { qById[q.id] = { q, ch: +n }; }));
+const mmss = ms => { const s = Math.max(0, Math.round(ms / 1000)); return pad2(Math.floor(s / 60)) + ':' + pad2(s % 60); };
+const examRun = () => { const r = P().examRun; return r && r.ids && r.ids.every(id => qById[id]) ? r : null; };
+const examLeft = r => r.start + r.dur - Date.now();
+function examNew(mode) {
+  const chs = EXAM_MODES[mode].ch.filter(n => (QUIZ[n] || []).length), total = chs.reduce((a, n) => a + QUIZ[n].length, 0);
+  // each chapter's share of the 40 follows its pool size (at least one), largest remainders round up
+  const q = chs.map(n => { const x = EXAM_N * QUIZ[n].length / total; return { n, x, k: Math.max(1, Math.floor(x)) }; });
+  let left = EXAM_N - q.reduce((a, r) => a + r.k, 0);
+  q.slice().sort((a, b) => (b.x % 1) - (a.x % 1)).forEach(r => { if (left > 0 && r.k < QUIZ[r.n].length) { r.k++; left--; } });
+  while (left < 0) { const r = q.filter(x => x.k > 1).sort((a, b) => b.k - a.k)[0]; r.k--; left++; }
+  const ids = [];
+  q.forEach(r => shuffle(QUIZ[r.n]).slice(0, r.k).forEach(x => ids.push(x.id)));
+  return { mode, ids, perm: ids.map(() => shuffle([0, 1, 2, 3])), picks: ids.map(() => null), flags: ids.map(() => 0), i: 0, start: Date.now(), dur: EXAM_MIN * 60000, done: false };
+}
+function examScore(r) {
+  const by = {};
+  let ok = 0;
+  r.ids.forEach((id, k) => { const { q, ch } = qById[id], hit = r.picks[k] === q.a; if (hit) ok++; const b = by[ch] || (by[ch] = [0, 0]); b[1]++; if (hit) b[0]++; });
+  return { ok, n: r.ids.length, by, pass: ok >= Math.ceil(r.ids.length * EXAM_PASS) };
+}
+function examFinish(timeout) {
+  const p = P(), r = p.examRun;
+  if (!r || r.done) return;
+  r.done = true; r.end = Math.min(Date.now(), r.start + r.dur);
+  const s = examScore(r);
+  p.exams = [{ at: r.end, mode: r.mode, ok: s.ok, n: s.n, ms: r.end - r.start }].concat(p.exams || []).slice(0, 10);
+  Store.changed('progress');
+  if (timeout) toast('Vaxt bitdi — imtahan avtomatik bitdi.');
+}
+function examTick() {
+  if (S.view !== 'exam') return;
+  const r = examRun(); if (!r || r.done) return;
+  const left = examLeft(r);
+  if (left <= 0) { examFinish(true); rerender(); return; }
+  const el = $('#exam-timer'); if (el) { el.textContent = mmss(left); el.parentNode.classList.toggle('warn', left < 5 * 60000); }
+}
+setInterval(examTick, 1000);
+function examStartHTML() {
+  const r = examRun(), m = S.examMode || 'istqb', hist = P().exams || [];
+  const goingOn = r && !r.done && examLeft(r) > 0;
+  return `<div class="card exam-rules"><div class="kicker">ISTQB CTFL formatında</div><h1 class="h1" style="font-size:24px">Sınaq imtahanı</h1>
+      <ul class="exam-list"><li><b>${EXAM_N}</b> sual, hər birinin bir düzgün cavabı var</li><li><b>${EXAM_MIN}</b> dəqiqə — vaxt bitəndə imtahan özü bitir</li>
+        <li>Keçid həddi <b>${Math.round(EXAM_PASS * 100)}%</b> — ${Math.ceil(EXAM_N * EXAM_PASS)} düzgün cavab</li><li>Düzgün cavablar və izahlar yalnız sonda görünür</li>
+        <li>Sualı işarələyib sonra qayıtmaq və cavabı dəyişmək olar</li></ul>
+      <p class="muted" style="margin:10px 0 0;font-size:13.5px">Real CTFL imtahanı da 40 sual və 60 dəqiqədir (imtahan ana dilində deyilsə, 75 dəqiqə), keçid 26/40.</p></div>
+    ${goingOn ? `<div class="block"><button class="cont" data-act="exam-go">${icon('play')}<div class="t"><div class="k">Yarımçıq imtahan</div><div class="n">Davam et · ${mmss(examLeft(r))} qalıb</div><div class="s">${r.picks.filter(x => x != null).length}/${r.ids.length} cavab</div></div>${icon('arrow')}</button></div>` : ''}
+    <section class="block"><div class="block-h"><h2>Suallar haradan</h2></div>
+      <div class="seg exam-mode">${Object.entries(EXAM_MODES).map(([k, x]) => `<button data-act="exam-mode" data-v="${k}" aria-pressed="${m === k}">${x.label}<small>${x.sub}</small></button>`).join('')}</div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="exam-start">${icon('target')}${goingOn ? 'Yenisini başla' : 'İmtahana başla'}</button>${r && r.done ? `<button class="btn" data-act="exam-res">${icon('list')}Son nəticə və səhvlər</button>` : ''}</div></section>
+    ${hist.length ? `<section class="block"><div class="block-h"><h2>Əvvəlki cəhdlər</h2></div><div class="card exam-hist">${hist.map(h => {
+      const pass = h.ok >= Math.ceil(h.n * EXAM_PASS), d = new Date(h.at);
+      return `<div class="exam-h"><span class="mono">${pad2(d.getDate())}.${pad2(d.getMonth() + 1)} ${pad2(d.getHours())}:${pad2(d.getMinutes())}</span><span>${esc(EXAM_MODES[h.mode] ? EXAM_MODES[h.mode].label : '')}</span><b>${h.ok}/${h.n}</b><span class="chip ${pass ? 'pass' : 'fail'}">${pass ? 'PASS' : 'FAIL'}</span></div>`;
+    }).join('')}</div></section>` : ''}`;
+}
+function examQHTML(r) {
+  const k = r.i, { q } = qById[r.ids[k]], L = 'ABCD';
+  const nav = r.ids.map((_, j) => `<button class="${j === k ? 'cur ' : ''}${r.picks[j] != null ? 'ans ' : ''}${r.flags[j] ? 'flag' : ''}" data-act="exam-nav" data-i="${j}" aria-label="Sual ${j + 1}">${j + 1}</button>`).join('');
+  const answered = r.picks.filter(x => x != null).length, flagged = r.flags.filter(Boolean).length;
+  return `<div class="exam-top"><span class="chip exam-time${examLeft(r) < 5 * 60000 ? ' warn' : ''}">${icon('clock')}<span id="exam-timer">${mmss(examLeft(r))}</span></span>
+      <span class="muted mono">${answered}/${r.ids.length} cavab${flagged ? ` · ${flagged} işarəli` : ''}</span></div>
+    <div class="exam-nav">${nav}</div>
+    <div class="kicker" style="margin-top:14px">Sual ${k + 1} / ${r.ids.length}${r.flags[k] ? ' · işarələnib' : ''}</div>
+    <div class="qz-q">${esc(q.q)}</div>
+    <div class="opts">${r.perm[k].map((oi, j) => `<button class="opt${r.picks[k] === oi ? ' sel' : ''}" data-act="exam-pick" data-o="${oi}" aria-pressed="${r.picks[k] === oi}"><span class="l">${L[j]}</span><span>${esc(q.o[oi])}</span></button>`).join('')}</div>
+    <div class="exam-acts"><button class="btn" data-act="exam-step" data-d="-1"${k ? '' : ' disabled'}>${icon('back')}Əvvəlki</button>
+      <button class="btn ghost${r.flags[k] ? ' on' : ''}" data-act="exam-flag" aria-pressed="${!!r.flags[k]}">${icon('save')}${r.flags[k] ? 'İşarəni götür' : 'İşarələ'}</button>
+      ${k < r.ids.length - 1 ? `<button class="btn primary" data-act="exam-step" data-d="1">Növbəti${icon('arrow')}</button>` : `<button class="btn primary" data-act="exam-end">${icon('check')}Bitir</button>`}</div>
+    <div class="row" style="margin-top:18px;justify-content:space-between"><span class="muted exam-kbd">Klaviatura: A–D seçir, ← → keçir, F işarələyir</span><button class="btn sm ghost" data-act="exam-end">${icon('stop')}İmtahanı bitir</button></div>`;
+}
+function examResHTML(r) {
+  const s = examScore(r), pc = Math.round(s.ok * 100 / s.n), L = 'ABCD';
+  const chs = Object.keys(s.by).map(Number).sort((a, b) => s.by[a][0] / s.by[a][1] - s.by[b][0] / s.by[b][1] || a - b);
+  const rows = chs.map(n => { const [a, b] = s.by[n], c = MAIN.find(x => x.num === n), w = pct(a, b);
+    return `<button class="exam-ch" data-act="quiz" data-ch="${n}"><span class="mono">F${pad2(n)}</span><span class="t">${esc(c.title)}<span class="meter${w === 100 ? ' pass' : ''}"><i style="width:${w}%"></i></span></span><b>${a}/${b}</b></button>`; }).join('');
+  const only = S.examAll ? null : 'wrong';
+  const items = r.ids.map((id, k) => ({ id, k })).filter(({ id, k }) => !only || r.picks[k] !== qById[id].q.a).map(({ id, k }) => {
+    const { q } = qById[id], mine = r.picks[k], hit = mine === q.a, sec = secById[q.sec], pos = oi => L[r.perm[k].indexOf(oi)];
+    return `<div class="exam-rev ${hit ? 'ok' : 'no'}"><div class="kicker">Sual ${k + 1}${sec ? ' · ' + esc(sec.num || '') : ''}</div><div class="exam-rq">${esc(q.q)}</div>
+      ${hit ? '' : `<div class="exam-a no">${icon('x')}<span>${mine == null ? 'Cavab verilməyib' : `${pos(mine)}. ${esc(q.o[mine])}`}</span></div>`}
+      <div class="exam-a ok">${icon('check')}<span>${pos(q.a)}. ${esc(q.o[q.a])}</span></div><p class="exam-e">${esc(q.e)}</p>
+      ${sec ? `<button class="btn sm ghost" data-act="goto-sec" data-sec="${sec.id}">${icon('book')}${esc(sec.num || 'Bölmə')}-ə bax</button>` : ''}</div>`;
+  }).join('');
+  return `<div class="result card"><div class="kicker">${esc(EXAM_MODES[r.mode].label)} · ${mmss(r.end - r.start)}</div>
+      <div class="big">${s.ok}<span class="muted" style="font-size:28px">/${s.n}</span></div>
+      <div class="row" style="justify-content:center;margin-top:6px"><span class="chip ${s.pass ? 'pass' : 'fail'}">${s.pass ? 'PASS' : 'FAIL'} · ${pc}%</span><span class="chip">keçid ${Math.ceil(s.n * EXAM_PASS)}/${s.n}</span></div>
+      <p class="muted" style="margin:12px 0 0">${s.pass ? (pc >= 80 ? 'Əla nəticə! Real imtahana hazırsan — zəif fəsilləri bir də təkrarla.' : 'Keçdin, amma ehtiyat azdır. Aşağıdakı zəif fəsillərdən başla.') : 'Hələ keçid həddinə çatmır. Zəif fəsillərin testlərini həll et və bir neçə gündən sonra yenidən cəhd et.'}</p></div>
+    <section class="block"><div class="block-h"><h2>Fəsillər üzrə</h2><span class="muted" style="font-size:13px">zəifdən güclüyə · toxun — fəsil testi</span></div><div class="card exam-chs">${rows}</div></section>
+    <section class="block"><div class="block-h"><h2>${only ? 'Səhv cavablar' : 'Bütün suallar'}</h2><button class="btn sm ghost" data-act="exam-all">${only ? 'Hamısını göstər' : 'Yalnız səhvlər'}</button></div>
+      ${items || '<div class="empty">Səhv cavab yoxdur!</div>'}</section>
+    <div class="qz-act" style="margin-top:18px"><button class="btn primary" data-act="exam-new">${icon('refresh')}Yeni imtahan</button><button class="btn ghost" data-act="tab" data-tab="practice">${icon('target')}Məşqə qayıt</button></div>`;
+}
+function vExam(v) {
+  let r = examRun();
+  if (r && !r.done && examLeft(r) <= 0) { examFinish(true); r = examRun(); }
+  const mode = r && (S.params.go || S.params.res) ? (r.done ? 'res' : 'run') : 'start';
+  setHeader({ back: true, kicker: 'Sınaq imtahanı', name: mode === 'res' ? 'Nəticə və səhvlərin izahı' : mode === 'run' ? `${EXAM_MODES[r.mode].label} · ${EXAM_N} sual` : 'ISTQB formatında 40 sual' });
+  v.innerHTML = mode === 'res' ? examResHTML(r) : mode === 'run' ? examQHTML(r) : examStartHTML();
+}
+function examPick(o) { const r = examRun(); if (!r || r.done) return; r.picks[r.i] = +o; Store.changed('progress'); rerender(); }
+function examGo(i) { const r = examRun(); if (!r || r.done) return; r.i = clamp(i, 0, r.ids.length - 1); Store.changed('progress', 2500); render({}); }
+function examEnd() {
+  const r = examRun(); if (!r || r.done) return;
+  const open = r.picks.filter(x => x == null).length, fl = r.flags.filter(Boolean).length;
+  const done = () => { examFinish(false); render({}); };
+  if (open || fl) openConfirm('İmtahanı bitirək?', `${open ? `${open} sual cavabsızdır` : ''}${open && fl ? ', ' : ''}${fl ? `${fl} sual işarəlidir` : ''}. Bitirəndən sonra cavabları dəyişmək olmur.`, 'Bitir', done);
+  else done();
+}
 /* ---------- flashcards ---------- */
 const INTERVAL = [0, 1, 2, 4, 8, 16];
 function startCards() {
@@ -2451,6 +2569,8 @@ function vProgress(v) {
     <div class="tile"><div class="lb">Bu gün təkrar</div><div class="vl">${o.due}<small> kart</small></div><div class="muted" style="font-size:12.5px;margin-top:2px">${o.newCards} yeni kart</div></div>
   </div>
   <section class="block"><div class="block-h"><h2>Hissələr üzrə</h2></div><div class="card partbars">${parts}</div></section>
+  ${(P().exams || []).length ? `<section class="block"><div class="block-h"><h2>Sınaq imtahanı</h2><span class="muted" style="font-size:13px">${P().exams.length} cəhd</span></div>
+    <button class="quizcta alt" data-act="exam-open">${icon('target')}<div style="flex:1;min-width:0;text-align:left"><b>Son: ${P().exams[0].ok}/${P().exams[0].n} · ən yaxşı: ${Math.max(...P().exams.map(x => x.ok))}/${EXAM_N}</b><span>keçid həddi ${Math.ceil(EXAM_N * EXAM_PASS)} — ${P().exams[0].ok >= Math.ceil(P().exams[0].n * EXAM_PASS) ? 'son cəhd keçib' : 'son cəhd keçməyib'}</span></div>${icon('arrow')}</button></section>` : ''}
   <section class="block"><div class="block-h"><h2>Zəif mövzular</h2><span class="muted" style="font-size:13px">son test cəhdlərinə görə</span></div>${weakHTML}</section>
   <section class="block"><div class="block-h"><h2>Qeydlərim</h2><span class="muted" style="font-size:13px">${notes.length}</span></div>${notesHTML}</section>
   <section class="block"><div class="block-h"><h2>Məlumatlar</h2></div><div class="card">
@@ -2932,6 +3052,23 @@ document.addEventListener('click', ev => {
       break;
     }
     case 'sm-check': smCheck(); break;
+    case 'exam-open': closeSheet(); go('exam', {}, { push: S.view !== 'exam' }); break;
+    case 'exam-mode': S.examMode = d.v; rerender(); break;
+    case 'exam-start': {
+      const start = () => { P().examRun = examNew(S.examMode || 'istqb'); Store.changed('progress'); S.params = { go: 1 }; render({}); };
+      const r = examRun();
+      if (r && !r.done && examLeft(r) > 0) openConfirm('Yeni imtahan?', 'Yarımçıq imtahan silinəcək və nəticəsi saxlanmayacaq.', 'Yenisini başla', start); else start();
+      break;
+    }
+    case 'exam-go': S.params = { go: 1 }; render({}); break;
+    case 'exam-res': S.params = { res: 1 }; render({}); break;
+    case 'exam-nav': examGo(+d.i); break;
+    case 'exam-step': { const r = examRun(); if (r) examGo(r.i + +d.d); break; }
+    case 'exam-pick': examPick(d.o); break;
+    case 'exam-flag': { const r = examRun(); if (r && !r.done) { r.flags[r.i] = r.flags[r.i] ? 0 : 1; Store.changed('progress'); rerender(); } break; }
+    case 'exam-end': examEnd(); break;
+    case 'exam-all': S.examAll = !S.examAll; rerender(); break;
+    case 'exam-new': S.params = {}; render({}); break;
     case 'sql-pre': sqlRunPre(el); break;
     case 'sql-open': {
       if (d.pre) { const pre = el.closest('.sql-run').previousElementSibling; SQX.q = pre.textContent.trim(); SQX.out = null; }
@@ -3119,6 +3256,14 @@ document.addEventListener('pointerdown', ev => {
 });
 document.addEventListener('keydown', ev => {
   if (ev.key === 'Escape' && sheetEl) { closeSheet(); return; }
+  if (S.view === 'exam' && S.params.go && !sheetEl && !ev.ctrlKey && !ev.metaKey && !ev.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName)) {
+    const r = examRun(), k = ev.key.toLowerCase(), j = 'abcd'.indexOf(k) >= 0 ? 'abcd'.indexOf(k) : '1234'.indexOf(k);
+    if (r && !r.done) {
+      if (j >= 0) { ev.preventDefault(); examPick(r.perm[r.i][j]); return; }
+      if (k === 'arrowright' || k === 'arrowleft') { ev.preventDefault(); examGo(r.i + (k === 'arrowright' ? 1 : -1)); return; }
+      if (k === 'f') { ev.preventDefault(); r.flags[r.i] = r.flags[r.i] ? 0 : 1; Store.changed('progress'); rerender(); return; }
+    }
+  }
   if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey) && ev.target.dataset && ev.target.dataset.sqlq !== undefined) { ev.preventDefault(); sqlRunConsole(); return; }
   if (ev.key === 'Enter' && !ev.shiftKey) {
     if (ev.target.id === 'tin') { ev.preventDefault(); const v = ev.target.value; ev.target.value = ''; autoGrow(ev.target); tutorSend(v); }
@@ -3233,6 +3378,7 @@ function routeHash() {
   else if (h === 'mesq' || h === 'practice') { S.tab = 'practice'; S.view = 'practice'; S.params = {}; }
   else if (h === 'xulase') { S.tab = 'practice'; S.view = 'summary'; S.params = { ch: 'all' }; }
   else if (t === 'magaza') { S.tab = 'practice'; S.view = 'store'; S.params = { sc: own(scById, act) ? act : null }; }
+  else if (h === 'imtahan') { S.tab = 'practice'; S.view = 'exam'; S.params = {}; }
   else if (h === 'sql') { S.tab = 'practice'; S.view = 'sql'; S.params = {}; }
   else if (h === 'api') { S.tab = 'practice'; S.view = 'lab'; S.params = {}; }
   else if (h === 'muellim' || h === 'tutor') { S.tab = 'tutor'; S.view = 'tutor'; S.params = {}; S.tutorMode = 'chat'; }
