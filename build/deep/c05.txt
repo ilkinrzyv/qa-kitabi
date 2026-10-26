@@ -165,3 +165,33 @@ ISTQB-nin yeni proqramında səviyyələr bir az daha dəqiq bölünür: kompone
 4. **(d) Qəbul** — biznes ehtiyacına uyğunluq; texniki defekt olmaya bilər.
 @növbən
 Taksi tətbiqi üçün 4 defekt uydur — hər biri fərqli səviyyədə ən ucuz tutulsun. Hər defektin yanında səviyyəni və səbəbini yaz.
+
+=== c5x1
+@qısa
+Baxım testi canlıdakı sistemin dəyişikliklərini yoxlayır: dəyişiklik, köçürmə və istismardan çıxarma. Hər dəfə dəyişikliyin özü və regression yoxlanır, həcmini isə təsir analizi müəyyən edir.
+@yadda
+- Səbəblər: dəyişiklik (yeni funksiya, hotfix, yenilənmə), köçürmə, istismardan çıxarma.
+- Dəyişikliyi yoxla + dəyişməyəni yoxla (regression).
+- Təsir analizi: dəyişiklik harada nəyə toxuna bilər?
+@dərin
+### Hotfix-də nə edirik
+Təcili düzəlişdə vaxt azdır: düzəlişin özü, ən riskli əlaqəli funksiyalar və smoke test. Tam regression sonradan, növbəti planlı relizdə aparılır. Hansı testlərin seçildiyi və nəyin test olunmadığı açıq yazılır.
+
+### Köçürmədə data
+Data köçürmədə ən böyük risk datanın itməsi və ya pozulmasıdır. Yoxlanır: sətirlərin sayı köhnə və yeni sistemdə eynidirmi, xüsusi simvollar (ə, ş, ğ) düzgündürmü, tarixlər və məbləğlər dəyişməyibmi. SQL bu yoxlamaların əsas alətidir (16-cı fəsil).
+
+### Təsir analizinin mənbələri
+İzlənə bilmə cədvəli (hansı tələb hansı modulda), kod dəyişikliklərinin siyahısı (pull request), proqramçının izahı, keçmiş defektlər. Bu mənbələr olmayanda tester “hər şeyi test etmək” məcburiyyətində qalır — bu isə Prinsip 2-yə ziddir.
+
+### Retirement niyə test olunur
+Sistem bağlananda istifadəçilərin datası qanunla müəyyən müddət saxlanmalı və lazım olanda bərpa oluna bilməlidir. Arxivin açılıb-açılmadığı da test olunur.
+@nümunə
+**Tapşırıq.** Onlayn mağazada ƏDV dərəcəsi 18%-dən 20%-ə qalxır. Baxım testi üçün təsir analizini et: nəyi yoxlayırsan, nəyi yox?
+@addımlar
+1. **Dəyişiklik:** vergi hesablaması — səbətdə, sifarişdə və qəbzdə ƏDV 20% göstərilir.
+2. **Birbaşa təsir:** ümumi məbləğ, endirimlərlə birlikdə hesablama, geri qaytarma məbləği.
+3. **Dolayı təsir:** mühasibat hesabatları, e-poçtla göndərilən qəbz, API cavabı (mobil tətbiq üçün).
+4. **Toxunulmayan:** profil, axtarış, şərhlər — yalnız smoke ilə.
+5. **Köhnə sifarişlər:** dəyişiklikdən əvvəlki sifarişlərdə ƏDV 18% olaraq qalmalıdır.
+@növbən
+Şirkət saytı köhnə serverdən buluda köçürür. Köçürmə üçün baxım testi planına 5 bənd yaz.

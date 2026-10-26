@@ -280,3 +280,63 @@ Jira ilə inteqrasiya, avtomatik test nəticələrinin idxalı (CI-dan), hesabat
 5. **Nəticə:** bu struktur TestRail-in məntiqini təkrarlayır və portfolio-ya qoyula bilər.
 @növbən
 Spreadsheet-də “Axtarış” funksiyası üçün test idarəetmə sistemi planla: vərəqləri, sütunları, status siyahısını və pass rate-i hesablayan düsturun məntiqini yaz.
+
+=== c11x1
+@qısa
+Test qiymətləndirməsi testin nə qədər vaxt və iş aparacağını əvvəlcədən hesablamaqdır. Dörd üsul: nisbətə görə, ekstrapolyasiya, Wideband Delphi və üç nöqtəli qiymətləndirmə: E = (a + 4m + b) / 6.
+@yadda
+- Nisbət və ekstrapolyasiya rəqəmlərə, Delphi və Planning Poker ekspertlərin razılığına əsaslanır.
+- Üç nöqtəli: E = (a + 4m + b) / 6, SD = (b − a) / 6.
+- Qiymət vəd deyil — risklər dəyişəndə yenilənir.
+@dərin
+### Niyə “m” dörd dəfə sayılır
+Düstur ən ehtimallı qiymətə daha çox çəki verir, amma optimist və pessimist hallar da nəzərə alınır. Pessimist qiymət böyükdürsə, nəticə yuxarı çəkilir — bu, gizli riskləri qiymətə daxil edir.
+
+### Planning Poker
+Komandanın hər üzvü story-ni gizli kartla qiymətləndirir (məsələn, 1, 2, 3, 5, 8). Kartlar eyni anda açılır. Ən aşağı və ən yüksək qiymət verənlər səbəbini izah edir, sonra yenidən səs verilir. Tester çox vaxt test işinin görünməyən hissəsini — data hazırlığı, mühit, regression — xatırladır.
+
+### Qiymətə nə daxildir
+Yalnız icra yox: tələblərin analizi, test case yazmaq, test data, mühitin hazırlanması, retest və regression, hesabat. Junior-un tipik səhvi yalnız “düymələri basmaq” vaxtını saymaqdır.
+
+### Qiyməti yeniləmək
+Planlama zamanı bilinməyən risk ortaya çıxanda (məsələn, test mühiti gecikir) qiymət dərhal yenilənir və komandaya bildirilir. Gec bildirilən gecikmə ən pis gecikmədir.
+@nümunə
+**Tapşırıq.** Yeni “Sifarişin izlənməsi” funksiyasının testi üçün tester belə deyir: ən yaxşı halda 4 gün, ən ehtimallı 6 gün, ən pis halda 14 gün. Üç nöqtəli qiymətləndirmə ilə qiyməti və aralığı hesabla.
+@addımlar
+1. a = 4, m = 6, b = 14.
+2. E = (4 + 4 × 6 + 14) / 6 = (4 + 24 + 14) / 6 = 42 / 6 = 7 gün.
+3. SD = (14 − 4) / 6 = 10 / 6 ≈ 1,7 gün.
+4. Qiymət: 7 ± 1,7 gün, yəni təxminən 5,3–8,7 gün.
+5. Böyük pessimist qiymətin səbəbini (məsələn, kuryer xidmətinin test mühiti yoxdur) risk kimi plana yaz.
+@növbən
+Login funksiyasının regression testi üçün qiymətlər: optimist 2 saat, ən ehtimallı 3 saat, pessimist 10 saat. E və SD-ni hesabla. Pessimist qiymət niyə bu qədər böyük ola bilər? İki səbəb yaz.
+
+=== c11x2
+@qısa
+Risk səviyyəsi ehtimal ilə təsirin hasilidir. Məhsul riskləri keyfiyyətlə, layihə riskləri idarəetmə ilə bağlıdır. Risk analizi riskləri tapır və qiymətləndirir, test case-lər isə riskə, əhatəyə və ya tələblərə görə prioritetləşdirilir.
+@yadda
+- Risk səviyyəsi = ehtimal × təsir.
+- Məhsul riski testlə azaldılır, layihə riski planda idarə olunur.
+- Prioritet: riskə görə, əhatəyə görə, tələblərə görə — asılılıqları unutma.
+@dərin
+### Risk əsaslı test nədir
+Test səyini riskə görə paylamaq: yüksək riskli sahə daha çox, daha dərin və daha erkən test olunur, daha müstəqil tester tərəfindən yoxlanılır. Aşağı riskli sahəyə smoke və ya checklist kifayət edə bilər. Bu, Prinsip 2-nin (tam test mümkün deyil) praktik cavabıdır.
+
+### Ehtimal və təsiri necə qiymətləndirmək
+Ehtimal: kodun mürəkkəbliyi, yeni texnologiya, tez-tez dəyişən tələblər, keçmiş defektlər (Prinsip 4). Təsir: neçə istifadəçiyə toxunur, pul və ya data itkisi, qanuni nəticə, reputasiya. Qiymətləri komanda birlikdə verir — Product Owner təsiri, proqramçı ehtimalı daha yaxşı bilir.
+
+### Risk cədvəli canlı sənəddir
+Hər sprintdə yenilənir: düzəldilmiş sahələrin riski azalır, yeni funksiyalar yeni risklər gətirir. Yekun hesabatda (4.6) “qalan risklər” bölməsi məhz bu cədvəldən yazılır.
+
+### Prioritet üsullarının birləşməsi
+Praktikada üsullar birləşdirilir: əvvəl riskə görə sıralanır, bərabər risklilər arasında ən çox tələbi əhatə edən seçilir, asılılıqlar isə sıranı düzəldir.
+@nümunə
+**Tapşırıq.** Pizza sifarişi tətbiqi üçün 4 risk qiymətləndir (ehtimal və təsir 1–3) və test sırasını müəyyən et: ödəniş alınır, amma sifariş yaranmır; menyu şəkilləri gec yüklənir; promo kod iki dəfə tətbiq olunur; “Bizimlə əlaqə” səhifəsində telefon nömrəsi köhnədir.
+@addımlar
+1. Ödəniş alınır, sifariş yaranmır: ehtimal 2, təsir 3 → 6.
+2. Promo kod iki dəfə tətbiq olunur: ehtimal 2, təsir 2 → 4.
+3. Menyu şəkilləri gec yüklənir: ehtimal 3, təsir 1 → 3.
+4. Köhnə telefon nömrəsi: ehtimal 1, təsir 2 → 2.
+5. Test sırası: ödəniş → promo kod → menyu performansı → “Əlaqə” səhifəsi. Ödəniş üçün həm də API testləri və müstəqil yoxlama.
+@növbən
+Universitetin onlayn imtahan sistemi üçün 2 məhsul riski və 2 layihə riski yaz. Məhsul risklərini ehtimal və təsirlə qiymətləndir və hər biri üçün riskə cavab tədbiri təklif et.

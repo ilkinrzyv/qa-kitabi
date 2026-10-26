@@ -271,3 +271,62 @@ Real həyatda “təmiz” model az rast gəlinir. Məsələn, layihənin planla
 4. **Qayda:** seçim “hansı model modadır” yox, “bu layihənin riski və dəyişkənliyi necədir” sualına əsaslanır.
 @növbən
 Bu layihələr üçün model seç və iki cümlə ilə əsaslandır: (a) yeni sosial şəbəkə startapı; (b) aeroport üçün baqaj izləmə sistemi; (c) mövcud saytın dəstəyi — hər gün kiçik düzəliş sorğuları gəlir.
+
+=== c3x1
+@qısa
+TDD, ATDD və BDD-də test koddan əvvəl yazılır və inkişafı istiqamətləndirir. TDD — proqramçının unit testləri (qırmızı → yaşıl → refaktor), ATDD — komandanın qəbul meyarlarından çıxan testləri, BDD — Given–When–Then formasında davranış ssenariləri.
+@yadda
+- TDD: test yaz (qırmızı) → minimum kod (yaşıl) → refaktor.
+- ATDD: “üç amigo” qəbul meyarlarını misallarla yazır, misallar qəbul testinə çevrilir.
+- BDD: Gherkin ssenariləri, Cucumber onları avtomatik testə çevirir.
+@dərin
+### Niyə əvvəl test
+Test əvvəl yazılanda tələb dərhal yoxlanıla bilən olur: “məbləğ düzgün hesablanmalıdır” yox, “100 AZN və 10% endirim → 90 AZN”. Qeyri-müəyyənlik kod yazılmazdan əvvəl üzə çıxır — bu, shift-left-in (3.10) ən güclü formasıdır.
+
+### TDD tester üçün nə deməkdir
+TDD unit səviyyəsində işləyir, onu proqramçı edir. Tester üçün faydası: sistem testinə gələn kodda sadə defektlər az olur və tester vaxtını daha mürəkkəb ssenarilərə sərf edir.
+
+### ATDD və BDD fərqi
+İkisi də qəbul səviyyəsindədir və komanda ilə yazılır. Fərq formadadır: ATDD-də misallar istənilən formada ola bilər (cədvəl, siyahı), BDD-də isə Given–When–Then formatında yazılır və çox vaxt birbaşa avtomatlaşdırılır.
+
+### Tipik səhv
+BDD ssenarisini UI addımları ilə doldurmaq: “Given login səhifəsini aç, When email sahəsinə yaz…”. Ssenari davranışı təsvir etməlidir, kliklər isə avtomatlaşdırma kodunda qalmalıdır.
+@nümunə
+**Tapşırıq.** User story: “Alıcı kimi 50 AZN-dən yuxarı sifarişdə pulsuz çatdırılma istəyirəm.” Bu story üçün iki BDD ssenarisi yaz.
+@addımlar
+1. Qəbul meyarını misalla aydınlaşdır: 50 AZN daxildirmi? Product Owner: “50 AZN və yuxarı — pulsuz.”
+2. Pozitiv ssenari: Given səbətdə 50 AZN-lik məhsul var, When istifadəçi checkout-a keçir, Then çatdırılma 0 AZN göstərilir.
+3. Sərhəd ssenarisi: Given səbətdə 49,99 AZN-lik məhsul var, When checkout-a keçir, Then çatdırılma 3 AZN göstərilir.
+4. Ssenarilərdə klik yox, davranış var — UI dəyişsə də ssenari dəyişmir.
+@növbən
+User story: “İstifadəçi kimi 3 dəfə yanlış şifrədən sonra hesabımın 15 dəqiqəlik bloklanmasını istəyirəm.” Bu story üçün 3 BDD ssenarisi yaz: pozitiv, sərhəd və bloklanmadan sonra.
+
+=== c3x2
+@qısa
+DevOps-da kod tez-tez və avtomatik canlıya çıxır, test isə CI/CD pipeline-ın içindədir. Shift-left testi mümkün qədər erkən başlatmaqdır. Retrospektivdə komanda prosesi faktlara əsasən yaxşılaşdırır.
+@yadda
+- DevOps: sürətli rəy və avtomatik regression, amma manual və exploratory test yenə lazımdır.
+- Shift-left: review, test-first, CI, statik analiz, erkən qeyri-funksional test.
+- Retrospektivin nəticəsi konkret, yoxlanıla bilən tədbir olmalıdır.
+@dərin
+### Pipeline-da tester-in yeri
+Tester hansı testlərin hansı mərhələdə işləyəcəyini təklif edir: unit və API testləri hər commit-də, E2E və smoke staging-də, performans gecə. Uğursuz test pipeline-ı dayandırmalıdır, əks halda testlər yalnız “dekorasiya” olur.
+
+### Shift-left-in qiyməti
+Erkən test əlavə iş deməkdir: tələblərin review-u, test-first, pipeline qurmaq. Amma Prinsip 3-ə görə defekt nə qədər gec tapılsa, bir o qədər baha olur. Komanda bu investisiyaya razı olmalıdır — tək tester bunu edə bilməz.
+
+### Shift-right nədir
+Bəzi komandalar canlıda da test edir: monitorinq, A/B test, “feature flag” ilə yeni funksiyanı istifadəçilərin kiçik hissəsinə açmaq. Bu, shift-left-i əvəz etmir, tamamlayır.
+
+### Yaxşı retrospektiv
+Faktlarla danışılır (rəqəmlər, misallar), günahkar axtarılmır, 1–3 tədbir seçilir, hər tədbirin sahibi olur və növbəti retrospektivdə yoxlanır: “keçən dəfə qərara aldığımız API testləri yazıldımı, faydası oldumu?”
+@nümunə
+**Tapşırıq.** Komanda hər iki həftədə bir relizə çıxır, amma son 3 relizdə canlıda ödənişlə bağlı baqlar tapılıb. Shift-left baxımından 3 tədbir və retrospektiv üçün bir fakt hazırla.
+@addımlar
+1. **Fakt:** son 3 relizdə canlıda 5 baq, 4-ü ödənişdə; hamısı tələblərdə qeyd olunmamış hallarda.
+2. **Tədbir 1:** ödəniş story-lərinin qəbul meyarlarını üç amigo ilə yazmaq (ATDD).
+3. **Tədbir 2:** ödəniş API-si üçün avtomatik testləri pipeline-a qoşmaq, hər commit-də.
+4. **Tədbir 3:** tələblərin review-u üçün ödəniş checklist-i (Əlavə B.9).
+5. Növbəti retrospektivdə yoxlamaq: canlıda ödəniş baqlarının sayı azaldımı?
+@növbən
+Komandanız yeni mobil tətbiq yazır və testlər yalnız relizdən bir gün əvvəl aparılır. Shift-left üçün 4 konkret addım təklif et və hər birinin xərcini və faydasını bir cümlə ilə yaz.

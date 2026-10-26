@@ -172,3 +172,32 @@ Ağır test planı əvəzinə: komanda səviyyəsində “test strategiyası” 
 5. **İcra və bağlanış:** story hazır olan kimi test, tapılan baqların həlli, DoD yoxlanışı; retrospektivdə “test datası hazırlamaq çox vaxt aldı — skript yazaq” dərsi.
 @növbən
 Story: “İstifadəçi profil şəklini dəyişə bilər.” Bu story üçün sprint daxilində STLC-nin 6 mərhələsinin hər birində bir konkret iş yaz.
+
+=== c4x1
+@qısa
+Monitorinq planı faktla müqayisə edir, nəzarət isə fərq olanda tədbir görür. Gedişat hesabatı müntəzəm, yekun hesabat mərhələnin sonunda yazılır. Konfiqurasiya idarəetməsi hər nəticənin hansı versiyada alındığını bilməyə imkan verir.
+@yadda
+- Monitorinq: ölçmək; nəzarət: fərq olanda tədbir görmək.
+- Gedişat hesabatı — müntəzəm; yekun hesabat — sonda; oxucuya uyğunlaşdırılır.
+- Hər nəticə build və mühitlə birlikdə qeyd olunur; testware versiyalanır.
+@dərin
+### Yaxşı gedişat hesabatı
+Qısa və faktlara əsaslanır: “120 test case-dən 90-ı icra olunub (75%), 82-si keçib; 3 açıq Critical defekt, hamısı ödənişdə. Risk: ödəniş xidmətinin test mühiti 2 gündür işləmir. Təklif: ödəniş testlərini mock xidmətlə davam etdirmək.” Rəqəm, risk və təklif — rəhbərliyin qərar verməsi üçün lazım olan hər şey.
+
+### Nəzarət tədbirlərinə misallar
+Prioritetləri dəyişmək (yüksək riskli testləri əvvələ çəkmək), əlavə adam və ya vaxt istəmək, test mühitini dəyişmək, çıxış meyarını Product Owner ilə yenidən razılaşdırmaq, relizi təxirə salmağı təklif etmək. Son qərar adətən tester-in deyil, rəhbərliyindir — tester faktları verir.
+
+### Baseline və dəyişikliklər
+Test planı və ya tələblər “baseline” olandan sonra dəyişikliklər qeydiyyatla edilir: kim, nə vaxt, niyə dəyişdi. Belə olanda test nəticələri ilə tələblərin hansı versiyası arasında əlaqə itmir.
+
+### Agile-da status
+Lövhə (To Do → In Progress → Testing → Done), burn-down qrafiki və Daily Scrum statusu hamı üçün görünən edir. Ayrıca uzun hesabat çox vaxt yalnız relizin sonunda yazılır.
+@nümunə
+**Tapşırıq.** Sprint sonudur: 40 test case-dən 34-ü icra olunub, 30-u keçib, 4-ü düşüb; 2 açıq Major defekt var; test mühiti bir gün işləməyib. Rəhbərlik üçün 4 cümləlik gedişat hesabatı yaz.
+@addımlar
+1. **Gedişat:** 40 test case-dən 34-ü icra olunub (85%), 30-u keçib, 4-ü düşüb.
+2. **Defektlər:** 2 açıq Major defekt — ikisi də səbətdə; düzəlişlər sabaha gözlənilir.
+3. **Maneə və risk:** test mühiti 1 gün işləməyib, 6 test case icra olunmayıb; səbət sahəsində risk qalır.
+4. **Təklif:** səbət düzəlişlərindən sonra qalan 6 testi və səbət regression-unu icra edib relizə qərar vermək.
+@növbən
+Komanda “testlər keçdi” deyir, amma canlıda baq tapılanda heç kəs hansı build-in test olunduğunu bilmir. Konfiqurasiya idarəetməsi baxımından 3 qayda təklif et.

@@ -138,3 +138,32 @@ Bu suallar biznes üçün “nə qədər itkiyə dözə bilərik?” sualına ç
 5. **Şəbəkə:** sinxronlaşma zamanı internet kəsilir — sonradan tam sinxronlaşır, dublikat yaranmır.
 @növbən
 Kompüter üçün yeni mühasibat proqramının versiyası çıxır. Installation, data miqrasiyası və recovery baxımından 5 test ideyası yaz.
+
+=== c6x1
+@qısa
+Test kvadrantları test növlərini iki oxla bölür: biznesə və ya texnologiyaya yönəlib, komandaya kömək edir və ya məhsulu tənqid edir. Dörd kvadrantın hamısı relizdə yoxlanmalıdır.
+@yadda
+- Q1 — unit və komponent inteqrasiya (avtomatik), Q2 — funksional və story testləri.
+- Q3 — exploratory, usability, UAT (manual), Q4 — smoke və qeyri-funksional (alətlərlə).
+- Kvadrantlar “hansı növlər?”, piramida “hansı səviyyədə və nə qədər?” sualına cavab verir.
+@dərin
+### “Komandaya kömək” nə deməkdir
+Bu testlər məhsul qurularkən yazılır və proqramçıya düzgün istiqamətdə getdiyini göstərir: unit testlər, story-nin qəbul testləri, misallar. Onlar çox vaxt koddan əvvəl və ya kodla eyni vaxtda yaranır (3.9).
+
+### “Məhsulu tənqid” nə deməkdir
+Hazır məhsula kənardan baxırıq: istifadəçi bunu rahat işlədə bilirmi (Q3), sistem yükə və hücuma davam gətirirmi (Q4)? Bu testlər tələbdə yazılmayan problemləri tapır.
+
+### Tipik dəyişiklik
+Yalnız Q2-də işləyən komanda funksiyaları tələbə uyğun qurur, amma canlıda yavaşlıq (Q4) və istifadəçi çaşqınlığı (Q3) ilə qarşılaşır. Kvadrantlar test planında “nəyi unutmuşuq?” sualının cavabıdır.
+
+### Kvadrantlar sıra deyil
+Q1-dən Q4-ə ardıcıllıq yoxdur: dörd kvadrant eyni sprintdə paralel işləyə bilər.
+@nümunə
+**Tapşırıq.** Mobil bankın yeni “Kartdan karta köçürmə” funksiyası üçün hər kvadrantdan bir test yaz.
+@addımlar
+1. **Q1:** komissiya hesablayan funksiyanın unit testi — 100 AZN köçürmədə 0,50 AZN komissiya.
+2. **Q2:** story testi — düzgün kart nömrəsi və məbləğlə köçürmə uğurludur, balans azalır.
+3. **Q3:** exploratory sessiya — köçürmə formasını yaşlı istifadəçi gözü ilə yoxlamaq, səhv kart nömrəsində mesaj aydındırmı.
+4. **Q4:** yük testi — 1000 eyni vaxtlı köçürmədə cavab müddəti 2 saniyədən azdır; təhlükəsizlik — başqasının kartından köçürmə mümkün deyil.
+@növbən
+Onlayn kurs platformasında “video dərsə baxmaq” funksiyası üçün hər kvadrantdan bir test yaz və hansının avtomatlaşdırılacağını qeyd et.

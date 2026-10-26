@@ -10,7 +10,7 @@ Interactive Azerbaijani textbook on software QA for a beginner (no programming b
 
 ```bash
 pip install -r requirements.txt
-python3 build/parse_book.py   # → build/book.json (gitignored); expect "deep layers 160 missing 0" and "errors 0"
+python3 build/parse_book.py   # → build/book.json (gitignored); expect "deep layers 170 missing 0" and "errors 0"
 python3 build/build_pwa.py    # → docs/ and dist/qa-kitabi-offline.zip; prints the new version
 python3 build/build_page.py   # → dist/qa-kitab.html and build/test.html (page used by the t*.js checks)
 python3 build/diagrams.py     # diagram self-check; must report 0 issues
@@ -23,8 +23,14 @@ Screenshots land in `build/shots/` (gitignored).
 
 ## Where things live
 
-- `book/book.md` — chapter text. `parse_book.py` splits it into chapters and sections (ids like `c8s4`), highlights code
-  with Pygments, inserts diagrams after their anchor text and links glossary terms.
+- `book/book.md` — chapter text. `parse_book.py` splits it into chapters and sections (ids like `c8s4`, numbered by
+  position), highlights code with Pygments, inserts diagrams after their anchor text and links glossary terms. Saved
+  progress, notes, answers and every `*.json` below are keyed by these ids, so a section added later carries its own id
+  in the heading (`### 3.9. Title {#c3x1}`) and the sections after it keep theirs. New quiz questions go at the end of a
+  chapter's list (quiz ids are positional too). Glossary ids are frozen in `build/glossary_ids.json` (flash-card
+  progress is keyed by them): a new term needs a line there, an alias in `parse_book.py` (`_al`) and an interview line.
+- `build/ctfl.json` — ISTQB CTFL v4.0 map: the six syllabus chapters with their topics, each pointing to the sections
+  that teach it (`#istqb`). `parse_book.py` checks every id.
 - `build/deep/cNN.txt` — depth layers per section: `=== <sid>`, then `@qısa`, `@yadda` (3 bullets), `@dərin`, `@nümunə`,
   `@addımlar` (3–6 steps), `@növbən`.
 - `build/interview.json` — “Müsahibədə belə de” line for every glossary term, keyed by the English term; `parse_book.py`

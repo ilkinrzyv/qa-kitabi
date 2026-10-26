@@ -1104,6 +1104,81 @@ def star():
 reg('star', 'c21s8', '3 kritik defekt tapıldı', 'STAR metodu · kitabdakı misal', star())
 
 
+# 30. Testing quadrants -------------------------------------------------------------------------------------------------------------------
+def quadrants():
+    d = D('quadrants', W, 400, 'Test kvadrantları: biznes və ya texnologiya, komandaya kömək və ya məhsulu tənqid')
+    ty = d.title('Dörd kvadrant: hansı testlər və nə üçün')
+    gx, cw, ch, g = 50, 137, 112, 6
+    gy = ty + 40
+    cells = [(0, 0, 'Q2', ['Funksional testlər', 'story testləri', 'API, prototiplər'], 'manual və avtomatik', A),
+             (1, 0, 'Q3', ['Exploratory', 'usability', 'UAT'], 'manual', WARN),
+             (0, 1, 'Q1', ['Unit və komponent', 'inteqrasiya', 'testləri'], 'avtomatik, CI', GOOD),
+             (1, 1, 'Q4', ['Smoke, performans,', 'yük, təhlükəsizlik'], 'alətlərlə', CRIT)]
+    for cx_, cy_, q, lines, how, col in cells:
+        x, y = gx + cx_ * (cw + g), gy + cy_ * (ch + g)
+        d.rect(x, y, cw, ch, fill=col, fo=0.1, stroke=col)
+        d.text(x + 10, y + 22, q, size=14, w=600, fill=col, inside=(x, y, cw, ch))
+        for k, ln in enumerate(lines):
+            d.text(x + 10, y + 44 + k * 16, ln, size=12, inside=(x, y, cw, ch))
+        d.text(x + 10, y + ch - 11, how, size=12, fill=S, inside=(x, y, cw, ch))
+    for k, lab in enumerate(('komandaya kömək', 'məhsulu tənqid')):
+        d.text(gx + k * (cw + g) + cw / 2, gy - 10, lab, size=12, w=600, fill=S, anchor='middle')
+    for k, lab in enumerate(('biznes', 'texnologiya')):
+        d.text(gx - 14, gy + k * (ch + g) + ch / 2, lab, size=12, w=600, fill=S, anchor='middle', rotate=-90)
+    yb = gy + 2 * ch + g + 26
+    d.text(10, yb, 'Sıra yoxdur: dörd kvadrant eyni sprintdə işləyir.', size=12, fill=S)
+    d.text(10, yb + 16, 'Relizdən əvvəl hamısına baxılır.', size=12, fill=S)
+    d.H = yb + 26
+    return d
+
+
+reg('quadrants', 'c6x1', 'Q4', 'test kvadrantları · Q1–Q4', quadrants())
+
+
+# 31. Risk matrix ---------------------------------------------------------------------------------------------------------------------------------
+def riskmatrix():
+    d = D('riskmatrix', W, 400, 'Risk səviyyəsi ehtimalla təsirin hasilidir: sağ yuxarı küncdəki risklər birinci test olunur')
+    ty = d.title('Risk səviyyəsi = ehtimal × təsir')
+    gx, cs, g = 56, 88, 4
+    gy = ty + 24
+    lvl = lambda s: (GOOD, 'aşağı') if s <= 2 else (WARN, 'orta') if s <= 4 else (CRIT, 'yüksək')
+    for i in range(3):          # likelihood 1..3, left to right
+        for j in range(3):      # impact 3..1, top to bottom
+            lk, im = i + 1, 3 - j
+            col, _ = lvl(lk * im)
+            x, y = gx + i * (cs + g), gy + j * (cs * 0.72 + g)
+            d.rect(x, y, cs, cs * 0.72, fill=col, fo=0.12 + 0.05 * (lk * im > 4), stroke=col, rx=6)
+            d.text(x + cs - 8, y + 17, str(lk * im), size=12, w=600, fill=col, anchor='end', mono=True)
+    risks = [(1, 2, 3, 'Ödəniş iki dəfə çıxılır'), (2, 3, 2, 'Promo kod məbləği yeniləmir'),
+             (3, 3, 1, '“Haqqımızda”-da orfoqrafik səhv'), (4, 2, 1, 'Profil şəkli yüklənmir')]
+    for n, lk, im, _ in risks:
+        x = gx + (lk - 1) * (cs + g) + 22
+        y = gy + (3 - im) * (cs * 0.72 + g) + cs * 0.72 / 2 + 6
+        d.circle(x, y, 10, fill=P)
+        d.text(x, y + 4.3, str(n), size=12, w=600, anchor='middle', fill=TINT, check=False)
+    gw, gh = 3 * cs + 2 * g, 3 * (cs * 0.72) + 2 * g
+    for i in range(3):
+        d.text(gx + i * (cs + g) + cs / 2, gy + gh + 18, str(i + 1), size=12, fill=S, anchor='middle', mono=True)
+    d.line(gx, gy + gh + 5, gx + gw + 4, gy + gh + 5, end=True)
+    d.line(gx - 4, gy + gh, gx - 4, gy - 4, end=True)
+    d.text(gx + gw / 2, gy + gh + 36, 'ehtimal', size=12, w=600, fill=S, anchor='middle')
+    for j in range(3):
+        d.text(gx - 12, gy + j * (cs * 0.72 + g) + cs * 0.36 + 4, str(3 - j), size=12, fill=S, anchor='end', mono=True)
+    d.text(18, gy + gh / 2, 'təsir', size=12, w=600, fill=S, anchor='middle', rotate=-90)
+    ly = gy + gh + 62
+    for k, (n, lk, im, t) in enumerate(risks):
+        yy = ly + k * 20
+        col, name = lvl(lk * im)
+        d.circle(19, yy - 4, 8, fill=P)
+        d.text(19, yy + 0.3, str(n), size=11.5, w=600, anchor='middle', fill=TINT, check=False)
+        d.rich(34, yy, [(t, P, 400), (f'  {lk * im} · {name}', col, 600)], size=12, mono=False)
+    d.H = ly + 3 * 20 + 12
+    return d
+
+
+reg('riskmatrix', 'c11x2', 'Profil şəkli yüklənmir', 'risk matrisi · ehtimal × təsir', riskmatrix())
+
+
 if __name__ == '__main__':
     import svgkit
     bad = 0

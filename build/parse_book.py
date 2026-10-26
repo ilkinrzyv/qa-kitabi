@@ -31,6 +31,8 @@ FIXES = [
      'Çətin gələn bölmədə “Sadə izah et” və ya “Başqa misal” düyməsini bas, ya da mətndən bir hissəni seçib “Seçiləni izah et” de. İstənilən sualını “Müəllim” bölməsində yaz.'),
     ('linkini mənə göndər.', 'linkini cavab sahəsinə yaz.'),
     ('cavab yaz və mənə göndər — yoxlayıb rəy verərəm.', 'cavab yaz və “Yoxla” düyməsini bas — Claude rəy verəcək.'),
+    ('Bu kitabın I–IV hissələri onun əsas mövzularını əhatə edir.',
+     'Bu kitabın I–IV hissələri onun əsas mövzularını əhatə edir. Sillabusun hər mövzusunun kitabda harada olduğunu [ISTQB xəritəsi](#istqb) göstərir.'),
 ]
 for a, b in FIXES:
     n = md_text.count(a)
@@ -259,6 +261,10 @@ chapters = []
 cur_part = None
 cur_ch = None
 glossary = []
+# glossary ids are frozen (flash-card progress is keyed by them): a new term needs its id in glossary_ids.json
+GL_IDS = json.load(open(os.path.join(BASE, 'glossary_ids.json'), encoding='utf-8'))
+# a section added later carries its own id in the heading ("### 3.9. Title {#c3x1}"), so the sections after it keep theirs
+SEC_ID = re.compile(r'\s*\{#([a-z0-9]+)\}\s*$')
 
 def new_chapter(title, part_id):
     global cur_ch
@@ -297,18 +303,25 @@ for idx, (ln, level, text) in enumerate(heads):
             rows = soup.find('table').find('tbody').find_all('tr')
             for i, tr in enumerate(rows):
                 tds = [td.get_text().strip() for td in tr.find_all('td')]
-                glossary.append({'id': f'g{i+1}', 'en': tds[0], 'az': tds[1], 'def': tds[2],
+                if tds[0] not in GL_IDS:
+                    print('ERR glossary id missing in glossary_ids.json', tds[0], file=sys.stderr)
+                glossary.append({'id': GL_IDS.get(tds[0], f'gx{i+1}'), 'en': tds[0], 'az': tds[1], 'def': tds[2],
                                  'ch': [int(x) for x in re.findall(r'\d+', tds[3])]})
         elif soup is not None:
             ch['intro'] = str(soup)
         continue
     if level == 3:
         ch = cur_ch
+        mid = SEC_ID.search(text)
+        if mid:
+            text = text[:mid.start()]
         num, t = split_title(text)
         k = kind_of(text)
-        sid = f"{ch['id']}s{len(ch['sections'])+1}"
+        sid = mid.group(1) if mid else f"{ch['id']}s{sum(1 for x in ch['sections'] if not x.get('own')) + 1}"
         soup = render(body)
         sec = {'id': sid, 'num': num, 'title': t, 'kind': k}
+        if mid:
+            sec['own'] = 1
         if ch['kind'] == 'appendix':
             if soup.find('input', attrs={'type': 'checkbox'}):
                 sec['kind'] = 'checklist'
@@ -392,6 +405,7 @@ quizzes = {}
 for f in sorted(glob.glob(os.path.join(BASE, 'quiz_*.json'))):
     quizzes.update(json.load(open(f, encoding='utf-8')))
 errors = 0
+errors += sum(1 for g in glossary if g['id'].startswith('gx'))
 for chn, qs in quizzes.items():
     ch = next(c for c in chapters if c['num'] == int(chn))
     for i, q in enumerate(qs):
@@ -541,6 +555,14 @@ for sid, progs in json.load(open(os.path.join(BASE, 'trace.json'), encoding='utf
         tr_count += 1
     if sec:
         sec['tr'] = progs
+# ---------- 6j. ISTQB CTFL v4.0 map (ctfl.json): every syllabus topic points to the book sections that teach it ----------
+ctfl = json.load(open(os.path.join(BASE, 'ctfl.json'), encoding='utf-8'))['chapters']
+all_sids = {s['id'] for c in chapters for s in c['sections']}
+for cc in ctfl:
+    for tp in cc['topics']:
+        if not tp.get('s') or not tp.get('t') or not tp.get('c') or any(x not in all_sids for x in tp['s']):
+            print('ERR ctfl topic', cc['n'], tp.get('c'), file=sys.stderr); errors += 1
+print('ctfl topics', sum(len(c['topics']) for c in ctfl), 'sections', len({x for c in ctfl for t in c['topics'] for x in t['s']}))
 # ---------- 6i. SQL practice (sql.json): the practice database is 16.3's code block; every SQL block of chapter 16 and
 # every task's solution must run on it (Python's sqlite3, the same SQLite the page runs through sql.js) ----------
 import sqlite3
@@ -675,6 +697,15 @@ _al('g76', 'stress test~'); _al('g77', 'system testing', 'sistem test~'); _al('g
 _al('g80', 'test plan', 'test planı~'); _al('g81', 'test scenario~', 'test ssenari~'); _al('g82', 'test suite~', 'test dəsti~')
 _al('g83', 'UAT', cs=True); _al('g84', 'unit test~'); _al('g85', 'usability', 'istifadə rahatlığı'); _al('g86', 'user story', 'istifadəçi hekayə~')
 _al('g87', 'verification', 'validation'); _al('g88', 'white box', 'ağ qutu'); _al('g89', 'workaround~', 'müvəqqəti həll')
+# CTFL 4.0 terms (ids from glossary_ids.json)
+_al('g90', 'debugging', 'sazlama'); _al('g91', 'root cause', 'kök səbəb~'); _al('g92', 'testware')
+_al('g93', 'whole team approach', 'bütün komanda yanaşması'); _al('g94', 'independence of testing', 'testin müstəqilliyi')
+_al('g95', 'TDD', cs=True); _al('g96', 'ATDD', cs=True); _al('g97', 'BDD', cs=True); _al('g98', 'DevOps', cs=True, chs=[3, 20])
+_al('g99', 'impact analysis', 'təsir analiz~'); _al('g100', 'maintenance testing', 'baxım test~')
+_al('g101', 'configuration management', 'konfiqurasiya idarəetmə~'); _al('g102', 'test completion report', 'yekun hesabat~', chs=[4])
+_al('g103', 'testing quadrants', 'test kvadrant~'); _al('g104', 'review', chs=[7]); _al('g105', 'retrospektiv~', chs=[3])
+_al('g106', 'shift-left', 'shift left', 'sola sürüşdürmə'); _al('g107', 'three-point estimation', 'üç nöqtəli qiymətləndirmə')
+_al('g108', 'product risk~', 'project risk~', 'məhsul risk~', 'layihə risk~'); _al('g109', 'risk level', 'risk səviyyə~')
 GL_TAIL = '[a-zəğıöüşçA-ZƏĞIİÖÜŞÇ]*'
 def _gl_regex(chnum):
     alts, idx = [], {}
@@ -721,7 +752,7 @@ for c in chapters:
             s['x']['short'], k = gl_wrap(s['x']['short'], rx, idx, 2); gl_total += k
 print('glossary links', gl_total)
 out = {'title': 'QA Kitabı: Sıfırdan Peşəkar Testerə', 'parts': parts, 'chapters': chapters,
-       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'api': api, 'sql': sqlcfg}
+       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'api': api, 'sql': sqlcfg, 'ctfl': ctfl}
 json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 # ---------- 7. report ----------
