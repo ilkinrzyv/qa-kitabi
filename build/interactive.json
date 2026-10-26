@@ -1,0 +1,56 @@
+{
+  "c8s3": {
+    "type": "bva",
+    "title": "Sərhəd dəyərləri: yaş 18–60",
+    "hint": "Sürgünü çək və ya dəyərə toxun. Sonra “səhv kod”u yandır: hansı dəyər defekti tapır?",
+    "label": "Yaş",
+    "min": 18,
+    "max": 60,
+    "from": 10,
+    "to": 70,
+    "ep": 35,
+    "bug": { "code": "if (age > 18)", "fix": "if (age >= 18)", "lo": 19, "hi": 60 }
+  },
+  "c9s1": {
+    "type": "dtable",
+    "title": "Qərar cədvəli: login, 3 şərt",
+    "hint": "Şərtləri dəyiş və hansı qaydanın işlədiyinə bax. “—” olan şərt bu qaydada nəticəyə təsir etmir.",
+    "conditions": [
+      { "id": "reg", "label": "Qeydiyyatdadır?" },
+      { "id": "blk", "label": "Hesab bloklanıb?" },
+      { "id": "pwd", "label": "Şifrə düzgündür?" }
+    ],
+    "rules": [
+      { "when": { "reg": false, "blk": null, "pwd": null }, "result": "“Email və ya şifrə yanlışdır”" },
+      { "when": { "reg": true, "blk": true, "pwd": null }, "result": "“Hesab bloklanıb”" },
+      { "when": { "reg": true, "blk": false, "pwd": true }, "result": "Daxil olur" },
+      { "when": { "reg": true, "blk": false, "pwd": false }, "result": "“Email və ya şifrə yanlışdır”" }
+    ]
+  },
+  "c9s2": {
+    "type": "state",
+    "title": "Vəziyyət keçidləri: 3 səhv şifrə — blok",
+    "hint": "Hadisə düymələrinə bas və sistemin hansı vəziyyətə keçdiyinə bax. Ən vacib test: bloklanmış hesaba düzgün şifrə ilə girmək.",
+    "start": "s0",
+    "states": [
+      { "id": "s0", "short": "0 səhv", "label": "Daxil olmayıb (0 səhv)", "x": 4, "y": 14 },
+      { "id": "s1", "short": "1 səhv", "label": "1 səhv cəhd", "x": 96, "y": 14 },
+      { "id": "s2", "short": "2 səhv", "label": "2 səhv cəhd", "x": 188, "y": 14 },
+      { "id": "s3", "short": "Bloklanıb", "label": "Bloklanıb", "x": 280, "y": 14 },
+      { "id": "s4", "short": "Daxil olub", "label": "Daxil olub", "x": 142, "y": 118 }
+    ],
+    "events": [
+      { "id": "ok", "label": "Düzgün şifrə" },
+      { "id": "bad", "label": "Səhv şifrə" },
+      { "id": "out", "label": "Çıxış et" }
+    ],
+    "moves": {
+      "s0": { "ok": ["s4", "Daxil olur."], "bad": ["s1", "Xəta mesajı; 1 səhv cəhd."] },
+      "s1": { "ok": ["s4", "Daxil olur."], "bad": ["s2", "Xəta mesajı; 2 səhv cəhd."] },
+      "s2": { "ok": ["s4", "Daxil olur."], "bad": ["s3", "Hesab bloklanır."] },
+      "s3": { "ok": ["s3", "Etibarsız keçid testi: bloklanmış hesaba düzgün şifrə ilə giriş olmamalıdır — “Hesab bloklanıb” qalır. Burada tez-tez defekt çıxır.", "warn"],
+              "bad": ["s3", "Bloklanıb qalır."] },
+      "s4": { "out": ["s0", "Çıxış. Sual ver: uğurlu girişdən sonra səhv sayğacı sıfırlanırmı?"] }
+    }
+  }
+}

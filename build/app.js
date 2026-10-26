@@ -700,13 +700,114 @@ function srtEnd(ev, drop) {
 }
 document.addEventListener('pointerup', ev => srtEnd(ev, true));
 document.addEventListener('pointercancel', ev => srtEnd(ev, false));
+/* interactive diagrams (interactive.json): a BVA number line with a slider and a "buggy code" switch, a state machine
+   driven by event buttons, a decision table driven by condition switches. State lives in memory; SVG uses theme tokens. */
+const IX = {};
+const ixHTML = s => s.ix ? `<div class="ix" data-ix="${s.id}" data-type="${s.ix.type}">${ixInner(s.id)}</div>` : '';
+function ixRedraw(sid) { const el = document.querySelector(`[data-ix="${sid}"]`); if (el) el.innerHTML = ixInner(sid); }
+function ixInner(sid) {
+  const c = secById[sid].ix;
+  return `<div class="ix-k">${icon('play')}İnteraktiv · ${esc(c.title)}</div><p class="ix-hint">${esc(c.hint || '')}</p>`
+    + (c.type === 'bva' ? bvaHTML(sid, c) : c.type === 'state' ? stHTML(sid, c) : dtHTML(sid, c));
+}
+// BVA: the slider re-renders only the picture and the verdict, so dragging it is never interrupted
+function bvaHTML(sid, c) {
+  const st = IX[sid] || (IX[sid] = { v: c.ep, three: false, bug: false });
+  return `<input type="range" class="bva-range" min="${c.from}" max="${c.to}" step="1" value="${st.v}" data-ix-range="${sid}" aria-label="${esc(c.label)}">
+    <div class="bva-out">${bvaOut(sid, c)}</div>
+    <div class="ix-tgs"><label><input type="checkbox" data-ix-tg="three" data-sid="${sid}"${st.three ? ' checked' : ''}> 3 dəyərli BVA</label>
+      ${c.bug ? `<label><input type="checkbox" data-ix-tg="bug" data-sid="${sid}"${st.bug ? ' checked' : ''}><span>Proqramçının səhv kodu: <code>${esc(c.bug.code)}</code></span></label>` : ''}</div>`;
+}
+function bvaOut(sid, c) {
+  const st = IX[sid], v = st.v, W = 340, P = 16, X = n => P + (n - c.from) * (W - 2 * P) / (c.to - c.from);
+  const pts = st.three ? [c.min - 1, c.min, c.min + 1, c.max - 1, c.max, c.max + 1] : [c.min - 1, c.min, c.max, c.max + 1];
+  const ticks = []; for (let n = Math.ceil(c.from / 10) * 10; n <= c.to; n += 10) ticks.push(n);
+  const valid = v >= c.min && v <= c.max;
+  const cls = v < c.min ? `invalid sinif (${c.min}-dən kiçik)` : v > c.max ? `invalid sinif (${c.max}-dən böyük)` : `valid sinif (${c.min}–${c.max})`;
+  const role = v === c.min - 1 || v === c.max + 1 ? 'sərhəddən kənar qonşu' : v === c.min || v === c.max ? 'sərhədin özü'
+    : v === c.min + 1 || v === c.max - 1 ? 'sərhədin içəridəki qonşusu (3 dəyərli BVA)' : v === c.ep ? 'EP: valid sinifdən bir dəyər' : '';
+  const actual = c.bug && st.bug ? v >= c.bug.lo && v <= c.bug.hi : valid;
+  const yn = ok => `<b class="${ok ? 'ix-ok' : 'ix-bad'}">${ok ? 'Qəbul' : 'Xəta'}</b>`;
+  const svg = `<svg class="ix-svg" viewBox="0 0 ${W} 76" role="img" aria-label="${esc(c.label)} ${v}: ${esc(cls)}">
+    <rect class="bva-bad" x="${P}" y="30" width="${X(c.min - 0.5) - P}" height="10" rx="3"/>
+    <rect class="bva-good" x="${X(c.min - 0.5)}" y="30" width="${X(c.max + 0.5) - X(c.min - 0.5)}" height="10" rx="3"/>
+    <rect class="bva-bad" x="${X(c.max + 0.5)}" y="30" width="${W - P - X(c.max + 0.5)}" height="10" rx="3"/>
+    ${pts.map(n => `<line class="bva-pt" x1="${X(n)}" y1="24" x2="${X(n)}" y2="46"/>`).join('')}
+    ${ticks.map(n => `<text class="bva-tl" x="${X(n)}" y="62" text-anchor="middle">${n}</text>`).join('')}
+    <text class="bva-tl b" x="${X(c.min)}" y="74" text-anchor="middle">${c.min}</text><text class="bva-tl b" x="${X(c.max)}" y="74" text-anchor="middle">${c.max}</text>
+    <path class="bva-cur" d="M${X(v) - 6} 8 L${X(v) + 6} 8 L${X(v)} 20 Z"/>
+  </svg>`;
+  const chips = [c.ep].concat(pts).map(n => `<button class="chip${n === v ? ' acc' : ''}" data-act="ix-set" data-sid="${sid}" data-v="${n}">${n}${n === c.ep ? ' · EP' : ''}</button>`).join('');
+  return `${svg}<div class="row bva-chips">${chips}</div>
+    <div class="ix-info"><div><b>${esc(c.label)}: ${v}</b> — ${esc(cls)}${role ? ` · ${esc(role)}` : ''}</div>
+      <div>Gözlənilən nəticə: ${yn(valid)}</div>
+      ${c.bug && st.bug ? `<div>Faktiki nəticə (<code>${esc(c.bug.code)}</code>): ${yn(actual)} — ${actual !== valid ? `<b class="ix-found">Defekt tapıldı!</b> Düzgün kod: <code>${esc(c.bug.fix)}</code>` : 'fərq yoxdur, bu dəyər səhvi tapmır.'}</div>` : ''}</div>`;
+}
+// state machine: nodes and edges are drawn from the config; the current state, the last edge and the table row light up
+function stHTML(sid, c) {
+  const st = IX[sid] || (IX[sid] = { cur: c.start, log: [] });
+  const S = Object.fromEntries(c.states.map(s => [s.id, s])), W = 64, H = 30, mid = s => [s.x + W / 2, s.y + H / 2];
+  const edge = (a, b) => { // clip the centre-to-centre line to both boxes
+    const [ax, ay] = mid(a), [bx, by] = mid(b), dx = bx - ax, dy = by - ay;
+    const t = (w, h) => Math.min(dx ? w / 2 / Math.abs(dx) : 1e9, dy ? h / 2 / Math.abs(dy) : 1e9);
+    const ta = t(W + 6, H + 6), tb = t(W + 10, H + 10);
+    return [ax + dx * ta, ay + dy * ta, bx - dx * tb, by - dy * tb];
+  };
+  const evName = Object.fromEntries(c.events.map(e => [e.id, e.label.split(' ')[0].toLocaleLowerCase('az')]));
+  const last = st.log[st.log.length - 1];
+  const edges = [];
+  Object.entries(c.moves).forEach(([f, mm]) => Object.entries(mm).forEach(([e, m]) => { if (m[0] !== f) edges.push([f, m[0], e]); }));
+  // a pair of opposite edges is drawn as two parallel lines; labels sit on one side, near the start of the edge
+  const svgEdges = edges.map(([f, t, e]) => {
+    const back = edges.some(x => x[0] === t && x[1] === f), [x1, y1, x2, y2] = edge(S[f], S[t]);
+    const len = Math.hypot(x2 - x1, y2 - y1) || 1, nx = (y2 - y1) / len, ny = -(x2 - x1) / len, o = back ? 4 : 0;
+    const on = last && last.from === f && last.to === t, flat = Math.abs(nx) < 0.35, k = back || flat ? 0.5 : 0.32, lo = back ? 11 : 6;
+    const anchor = flat ? 'middle' : nx > 0 ? 'start' : 'end'; // the label grows away from its line, never across it
+    return `<line class="st-edge${on ? ' on' : ''}" x1="${x1 + nx * o}" y1="${y1 + ny * o}" x2="${x2 + nx * o}" y2="${y2 + ny * o}" marker-end="url(#ixa-${sid}${on ? '-on' : ''})"/>
+      <text class="st-el" x="${x1 + (x2 - x1) * k + nx * lo}" y="${y1 + (y2 - y1) * k + ny * lo + 3}" text-anchor="${anchor}">${esc(evName[e])}</text>`;
+  }).join('');
+  const loops = c.states.filter(s => Object.values(c.moves[s.id] || {}).some(m => m[0] === s.id)).map(s => {
+    const on = last && last.from === s.id && last.to === s.id;
+    return `<path class="st-edge${on ? ' on' : ''}" d="M${s.x + 18} ${s.y - 1} C ${s.x + 18} ${s.y - 16}, ${s.x + 46} ${s.y - 16}, ${s.x + 46} ${s.y - 3}" fill="none" marker-end="url(#ixa-${sid}${on ? '-on' : ''})"/>`;
+  }).join('');
+  const nodes = c.states.map(s => `<g class="st-node${s.id === st.cur ? ' on' : ''}"><rect x="${s.x}" y="${s.y}" width="${W}" height="${H}" rx="9"/><text x="${s.x + W / 2}" y="${s.y + H / 2 + 4}" text-anchor="middle">${esc(s.short)}</text></g>`).join('');
+  const maxY = Math.max(...c.states.map(s => s.y)) + H + 8;
+  const svg = `<svg class="ix-svg" viewBox="0 -10 348 ${maxY + 10}" role="img" aria-label="Hazırkı vəziyyət: ${esc(S[st.cur].label)}">
+    <defs><marker id="ixa-${sid}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" orient="auto"><path class="st-arr" d="M0 0L10 5L0 10z"/></marker>
+      <marker id="ixa-${sid}-on" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="st-arr on" d="M0 0L10 5L0 10z"/></marker></defs>
+    ${svgEdges}${loops}${nodes}</svg>`;
+  const btns = c.events.map(e => `<button class="btn sm" data-act="ix-ev" data-sid="${sid}" data-e="${e.id}"${(c.moves[st.cur] || {})[e.id] ? '' : ' disabled'}>${esc(e.label)}</button>`).join('');
+  const table = `<div class="tbl st-tbl"><table><thead><tr><th>Hazırkı vəziyyət</th>${c.events.map(e => `<th>${esc(e.label)}</th>`).join('')}</tr></thead><tbody>${c.states.map(s => `<tr class="${s.id === st.cur ? 'on' : ''}"><td>${esc(s.label)}</td>${c.events.map(e => {
+    const m = (c.moves[s.id] || {})[e.id];
+    return `<td class="${m && m[2] === 'warn' ? 'warn' : ''}">${m ? (m[0] === s.id ? `${esc(S[m[0]].label)} qalır` : esc(S[m[0]].label)) : '—'}</td>`;
+  }).join('')}</tr>`).join('')}</tbody></table></div>`;
+  const log = st.log.length ? `<ol class="st-log">${st.log.slice(-6).map(l => `<li class="${l.warn ? 'warn' : ''}"><b>${esc(S[l.from].short)}</b> — ${esc(l.ev)} → <b>${esc(S[l.to].short)}</b>. ${esc(l.note)}</li>`).join('')}</ol>` : '';
+  return `${svg}<div class="ix-info"><div>Hazırkı vəziyyət: <b>${esc(S[st.cur].label)}</b></div></div>
+    <div class="row st-btns">${btns}<button class="btn sm ghost" data-act="ix-reset" data-sid="${sid}">${icon('refresh')}Yenidən başla</button></div>${log}${table}`;
+}
+// decision table: the switches pick a combination, the matching rule's column lights up; "—" conditions are dimmed
+function dtHTML(sid, c) {
+  const st = IX[sid] || (IX[sid] = { v: Object.fromEntries(c.conditions.map(k => [k.id, true])) });
+  const ri = c.rules.findIndex(r => c.conditions.every(k => r.when[k.id] === null || r.when[k.id] === st.v[k.id]));
+  const rule = c.rules[ri], free = c.conditions.filter(k => rule && rule.when[k.id] === null);
+  const yn = b => b === null ? '—' : b ? 'Bəli' : 'Xeyr';
+  const sw = c.conditions.map(k => `<div class="dt-sw${free.includes(k) ? ' dim' : ''}"><span class="lb">${esc(k.label)}${free.includes(k) ? ' <i>(bu qaydada fərqi yoxdur)</i>' : ''}</span>
+    <div class="seg">${[true, false].map(b => `<button data-act="ix-dt" data-sid="${sid}" data-c="${k.id}" data-v="${b ? 1 : 0}" aria-pressed="${st.v[k.id] === b}">${yn(b)}</button>`).join('')}</div></div>`).join('');
+  const table = `<div class="tbl dt-tbl"><table><thead><tr><th></th>${c.rules.map((_, i) => `<th class="${i === ri ? 'on' : ''}">Qayda ${i + 1}</th>`).join('')}</tr></thead><tbody>
+    ${c.conditions.map(k => `<tr><td>${esc(k.label)}</td>${c.rules.map((r, i) => `<td class="${i === ri ? 'on' : ''}">${yn(r.when[k.id])}</td>`).join('')}</tr>`).join('')}
+    <tr class="res"><td>Nəticə</td>${c.rules.map((r, i) => `<td class="${i === ri ? 'on' : ''}">${esc(r.result)}</td>`).join('')}</tr></tbody></table></div>`;
+  const n = c.conditions.length;
+  return `<div class="dt-sws">${sw}</div>
+    <div class="ix-info"><div>Bu kombinasiya → <b>Qayda ${ri + 1}</b>: ${esc(rule ? rule.result : '?')}</div>
+      <div class="muted">2<sup>${n}</sup> = ${2 ** n} kombinasiya → ${c.rules.length} qayda, yəni ${c.rules.length} test.</div></div>${table}`;
+}
 function textBody(c, s) {
   const lv = lvlOf(s.id);
   if (lv === 'short') {
-    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${keysHTML(s.x)}
+    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${keysHTML(s.x)}
       <button class="btn sm ghost more" data-act="lvl" data-sec="${s.id}" data-v="std">${icon('book')}Tam mətni oxu</button>${miniHTML(c, s, false)}`;
   }
-  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
+  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
 }
 function fbHTML(a) {
   let h = '';
@@ -793,7 +894,7 @@ function secHTML(c, s) {
   else if (s.kind === 'selfcheck') body = selfHTML(c, s);
   else if (s.kind === 'checklist') body = checklistHTML(s);
   else if (s.x) body = textBody(c, s);
-  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}`;
+  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}`;
   return `<section class="sec${learned ? ' learned' : ''}" id="${s.id}" data-sec="${s.id}" data-kind="${s.kind}">
     <header class="sec-h"><span class="sec-num">${esc(s.num || kindTag(s).toLocaleUpperCase('az'))}</span><h2>${esc(s.title)}</h2>${s.x ? lvlCtl(s.id, lvlOf(s.id)) : ''}</header>
     ${body}${footerHTML(c, s)}</section>`;
@@ -1759,6 +1860,14 @@ document.addEventListener('click', ev => {
       st.checked = true; srtRedraw(d.k); break;
     }
     case 'srt-reset': delete SRT[d.k]; srtRedraw(d.k); break;
+    case 'ix-set': IX[d.sid].v = +d.v; ixRedraw(d.sid); break;
+    case 'ix-ev': {
+      const c = secById[d.sid].ix, st = IX[d.sid], m = (c.moves[st.cur] || {})[d.e]; if (!m) break;
+      st.log.push({ from: st.cur, to: m[0], ev: c.events.find(e => e.id === d.e).label, note: m[1], warn: m[2] === 'warn' });
+      st.cur = m[0]; ixRedraw(d.sid); break;
+    }
+    case 'ix-reset': delete IX[d.sid]; ixRedraw(d.sid); break;
+    case 'ix-dt': IX[d.sid].v[d.c] = d.v === '1'; ixRedraw(d.sid); break;
     case 'back': back(); break;
     case 'open-ch': closeSheet(); go('reader', { ch: d.ch }, { tab: d.ch === 'gb' && S.tab === 'practice' ? 'practice' : (S.tab === 'practice' || S.tab === 'progress' ? S.tab : 'book') }); break;
     case 'continue': { const l = P().last; if (l) go('reader', { ch: l.ch, sec: l.sec }, { tab: 'book' }); break; }
@@ -1949,6 +2058,9 @@ document.addEventListener('input', ev => {
     clearTimeout(noteTimers[id]);
     const st = document.querySelector(`[data-st="${id}"]`); if (st) st.textContent = 'Yazılır…';
     noteTimers[id] = setTimeout(() => { Store.changed('ans-' + cid); if (st) st.textContent = 'Saxlanıb'; }, 700);
+  } else if (t.dataset.ixRange) {
+    const sid = t.dataset.ixRange; IX[sid].v = +t.value;
+    const out = t.parentNode.querySelector('.bva-out'); if (out) out.innerHTML = bvaOut(sid, secById[sid].ix);
   } else if (t.id === 'glq') { S.glq = t.value; drawGlossary(); }
   else if (t.id === 'sq') { doSearch(t.value); }
   else if (t.id === 'tin' || t.id === 'shin' || t.id === 'rpin') autoGrow(t);
@@ -1956,6 +2068,7 @@ document.addEventListener('input', ev => {
 document.addEventListener('toggle', ev => { const el = ev.target; if (el && el.dataset && el.dataset.open) OPEN[el.dataset.open] = el.open; }, true);
 document.addEventListener('change', ev => {
   const t = ev.target;
+  if (t.dataset.ixTg) { IX[t.dataset.sid][t.dataset.ixTg] = t.checked; ixRedraw(t.dataset.sid); return; }
   if (t.dataset.chk) { const K = Store.doc('checks').k; if (t.checked) K[t.dataset.chk] = 1; else delete K[t.dataset.chk]; Store.changed('checks'); updChk(t.dataset.sec); }
   else if (t.id === 'tctx') { const ch = Store.doc('chat'); ch.ctx = t.value; Store.changed('chat'); toast('Kontekst dəyişdi: ' + (t.value === 'none' ? 'ümumi' : chLabel(chById[t.value]))); }
 });

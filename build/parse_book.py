@@ -446,6 +446,26 @@ for sid, exs in json.load(open(os.path.join(BASE, 'sorting.json'), encoding='utf
             print('ERR sorting exercise', sid, ex.get('title'), file=sys.stderr); errors += 1
     sec['srt'] = exs
     srt_count += len(exs)
+# ---------- 6e. interactive diagrams (interactive.json, keyed by section id): bva / state / dtable ----------
+ix_count = 0
+for sid, ix in json.load(open(os.path.join(BASE, 'interactive.json'), encoding='utf-8')).items():
+    sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+    t = ix.get('type')
+    if t == 'bva':
+        ok = all(isinstance(ix.get(k), int) for k in ('min', 'max', 'from', 'to', 'ep')) and ix['from'] < ix['min'] - 1 and ix['max'] + 1 < ix['to']
+    elif t == 'state':
+        ids = {s['id'] for s in ix.get('states', [])}
+        evs = {e['id'] for e in ix.get('events', [])}
+        ok = ix.get('start') in ids and all(f in ids and e in evs and m[0] in ids for f, mm in ix.get('moves', {}).items() for e, m in mm.items())
+    elif t == 'dtable':
+        cids = {c['id'] for c in ix.get('conditions', [])}
+        ok = len(ix.get('rules', [])) >= 2 and all(set(r['when']) == cids and r.get('result') for r in ix['rules'])
+    else:
+        ok = False
+    if not sec or not ok or not ix.get('title'):
+        print('ERR interactive diagram', sid, t, file=sys.stderr); errors += 1; continue
+    sec['ix'] = ix
+    ix_count += 1
 # ---------- 6b. new narrow diagrams (diagrams.py) ----------
 sys.path.insert(0, BASE)
 from diagrams import ALL as NEW_DIAGRAMS
@@ -580,5 +600,5 @@ for ch in chapters:
             extra += f" k{len(s['items'])}"
     print(f"  {ch['id']:4} {ch['kind']:9} {str(ch['num']):5} secs={len(ch['sections']):2} {kinds} {extra} | {ch['title'][:50]}")
 print('deep layers', deep_count, 'missing', len(deep_missing))
-print('total sections', tot_sec, 'glossary', len(glossary), 'quiz chapters', len(quizzes), 'quiz q', sum(len(v) for v in quizzes.values()), 'compare cards', cmp_count, 'sorting', srt_count, 'interview lines', sum(1 for g in glossary if g.get('say')), 'errors', errors)
+print('total sections', tot_sec, 'glossary', len(glossary), 'quiz chapters', len(quizzes), 'quiz q', sum(len(v) for v in quizzes.values()), 'compare cards', cmp_count, 'sorting', srt_count, 'interactive', ix_count, 'interview lines', sum(1 for g in glossary if g.get('say')), 'errors', errors)
 print('json bytes', os.path.getsize(OUT))
