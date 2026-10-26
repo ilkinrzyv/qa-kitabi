@@ -807,10 +807,10 @@ function dtHTML(sid, c) {
 function textBody(c, s) {
   const lv = lvlOf(s.id);
   if (lv === 'short') {
-    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${keysHTML(s.x)}
+    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${trHTML(s)}${keysHTML(s.x)}
       <button class="btn sm ghost more" data-act="lvl" data-sec="${s.id}" data-v="std">${icon('book')}Tam mətni oxu</button>${miniHTML(c, s, false)}`;
   }
-  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
+  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${trHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
 }
 function fbHTML(a) {
   let h = '';
@@ -893,12 +893,12 @@ function checklistHTML(s) {
 function secHTML(c, s) {
   const learned = !!P().learned[s.id];
   let body;
-  if (s.kind === 'example') body = exampleHTML(s);
+  if (s.kind === 'example') body = exampleHTML(s) + trHTML(s);
   else if (s.kind === 'tasks') body = tasksHTML(c, s);
   else if (s.kind === 'selfcheck') body = selfHTML(c, s);
   else if (s.kind === 'checklist') body = checklistHTML(s);
   else if (s.x) body = textBody(c, s);
-  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}`;
+  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${trHTML(s)}`;
   return `<section class="sec${learned ? ' learned' : ''}" id="${s.id}" data-sec="${s.id}" data-kind="${s.kind}">
     <header class="sec-h"><span class="sec-num">${esc(s.num || kindTag(s).toLocaleUpperCase('az'))}</span><h2>${esc(s.title)}</h2>${s.x ? lvlCtl(s.id, lvlOf(s.id)) : ''}</header>
     ${body}${footerHTML(c, s)}</section>`;
@@ -1075,10 +1075,10 @@ const SM_BUG = { noAdd: ['bolt', 'fleece'], noRemove: ['bikelight'] }; // proble
 const SM = { id: undefined, found: {}, passed: {} }; // session only
 const money = n => '$' + n.toFixed(2);
 const tcName = id => id.replace(/^tc/, 'TC-');
+const smFresh = s0 => ({ page: s0.page, user: s0.user || '', cart: (s0.cart || []).slice(), sort: 'az', order: 'az', err: '', menu: false, f: { user: '', pass: '', first: '', last: '', zip: '' } });
 function smStart(id) {
-  const sc = scById[id] || null, s0 = sc ? sc.start : { page: 'login' };
-  Object.assign(SM, { id: sc ? id : null, sc, done: 0, off: false, snap: null, fb: null, ans: '', status: '', title: '', touched: {},
-    st: { page: s0.page, user: s0.user || '', cart: (s0.cart || []).slice(), sort: 'az', order: 'az', err: '', menu: false, f: { user: '', pass: '', first: '', last: '', zip: '' } } });
+  const sc = scById[id] || null;
+  Object.assign(SM, { id: sc ? id : null, sc, done: 0, off: false, snap: null, fb: null, ans: '', status: '', title: '', touched: {}, st: smFresh(sc ? sc.start : { page: 'login' }) });
 }
 function smOrder(st) {
   const name = (a, b) => a.name.localeCompare(b.name, 'en');
@@ -1087,7 +1087,14 @@ function smOrder(st) {
 }
 const smSig = st => [st.page, st.user, st.cart.join(), st.order].join('|');
 function smEvent(e) {
-  const st = SM.st, prob = st.user === 'problem_user', before = smSig(st);
+  const before = smSig(SM.st);
+  smApply(SM.st, e, SM.found);
+  smStep(e, before);
+}
+// the shop itself: one event changes one state (the practice store's, or the code tracer's browser); planted bugs that
+// fire are noted in `found`
+function smApply(st, e, found) {
+  const prob = st.user === 'problem_user';
   switch (e.ev) {
     case 'login': {
       const u = st.f.user.trim(), p = st.f.pass; Object.assign(e, { user: u, pass: p });
@@ -1097,9 +1104,9 @@ function smEvent(e) {
       if (!st.err) Object.assign(st, { user: u, page: 'products' });
       break;
     }
-    case 'add': if (prob && SM_BUG.noAdd.includes(e.item)) SM.found.add = 1; else if (!st.cart.includes(e.item)) st.cart.push(e.item); break;
-    case 'remove': if (prob && e.where === 'products' && SM_BUG.noRemove.includes(e.item)) SM.found.remove = 1; else st.cart = st.cart.filter(x => x !== e.item); break;
-    case 'sort': st.sort = e.v; if (!prob) st.order = e.v; else if (e.v !== 'az') SM.found.sort = 1; break;
+    case 'add': if (prob && SM_BUG.noAdd.includes(e.item)) found.add = 1; else if (!st.cart.includes(e.item)) st.cart.push(e.item); break;
+    case 'remove': if (prob && e.where === 'products' && SM_BUG.noRemove.includes(e.item)) found.remove = 1; else st.cart = st.cart.filter(x => x !== e.item); break;
+    case 'sort': st.sort = e.v; if (!prob) st.order = e.v; else if (e.v !== 'az') found.sort = 1; break;
     case 'cart': Object.assign(st, { page: 'cart', menu: false }); break;
     case 'shop': Object.assign(st, { page: 'products', menu: false }); break;
     case 'checkout': Object.assign(st, { page: 'info', err: '' }); Object.assign(st.f, { first: '', last: '', zip: '' }); break;
@@ -1117,7 +1124,6 @@ function smEvent(e) {
     case 'menu': st.menu = !st.menu; break;
     case 'err-x': st.err = ''; break;
   }
-  smStep(e, before);
 }
 // steps tick in order: a typing step checks the field, an action step needs this event; an action that is not the next
 // step and changes the page, the cart or the order spoils the run (the screen would no longer be the test case's)
@@ -1233,8 +1239,8 @@ function smFbHTML() {
     <details class="cmp-why sm-model"><summary>${icon('eye')}Ekranda nə vardı? (nümunə cavab)</summary><p>${esc(smList(SM.snap))}.</p>
       ${sc.bug && f.truth === 'Failed' ? `<p><b>Bug başlığı:</b> ${esc(sc.bug.model)}</p>` : ''}</details>`;
 }
-function smDevHTML() {
-  const st = SM.st, n = st.cart.length, pg = st.page;
+function smDevHTML(st = SM.st) {
+  const n = st.cart.length, pg = st.page;
   const btn = (e, label, cls, extra) => `<button class="sm-btn${cls ? ' ' + cls : ''}" data-act="sm" data-e="${e}"${extra || ''}>${label}</button>`;
   const err = st.err ? `<div class="sm-err" role="alert"><span>${esc(st.err)}</span><button data-act="sm" data-e="err-x" aria-label="Bağla">✕</button></div>` : '';
   const inp = (f, type) => `<input class="sm-in${st.err ? ' bad' : ''}" data-sm-f="${f}" type="${type || 'text'}" placeholder="${SM_FIELDS[f]}" value="${esc(st.f[f])}" autocomplete="off" autocapitalize="off" spellcheck="false">`;
@@ -1306,6 +1312,67 @@ function vStore(v) {
 const simHTML = s => s.sim ? `<div class="sm-link"><div class="srt-k">${icon('play')}Məşq mağazası</div><p class="srt-hint">Bu test case-ləri mağaza modelində icra et və faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur.</p>
   <div class="sm-links">${s.sim.map(id => id === 'free' ? `<button class="btn sm" data-act="sm-open" data-sc="">${icon('search')}${esc(STORE.free.title)}</button>`
     : `<button class="btn sm" data-act="sm-open" data-sc="${id}"><b>${tcName(id)}</b> ${esc(scById[id].title)}</button>`).join('')}</div></div>` : '';
+/* ---------- code tracer (trace.json): JavaScript runs line by line with its variables and console; a Playwright test runs
+   against the practice store's shop, its lines coloured by role (locator, action, assertion) ---------- */
+const TR = {}; // steps taken per program (session only)
+const trById = {}, TR_LIST = [];
+CHAPTERS.forEach(c => c.sections.forEach(s => (s.tr || []).forEach(p => { trById[p.id] = p; TR_LIST.push({ sid: s.id, p }); })));
+const TR_URL = { login: '/', products: '/inventory.html', cart: '/cart.html', info: '/checkout-step-one.html', overview: '/checkout-step-two.html', complete: '/checkout-complete.html' };
+const trHTML = s => (s.tr || []).map(p => `<div class="tr" data-tr="${p.id}">${trInner(p.id)}</div>`).join('');
+function trRedraw(id) { const el = document.querySelector(`[data-tr="${id}"]`); if (el) el.innerHTML = trInner(id); }
+function trCheck(st, c) {
+  const nf = 'element(s) not found';
+  if (c.expect === 'url') { const u = TR_URL[st.page]; return { ok: new RegExp(c.re).test(u), m: 'toHaveURL', exp: `/${c.re}/`, got: `"${u}"` }; }
+  if (c.expect === 'error') return { ok: st.err.includes(c.text), m: 'toContainText', exp: `"${c.text}"`, got: st.err ? `"${st.err}"` : nf };
+  if (c.expect === 'badge') { const n = st.page === 'login' ? 0 : st.cart.length; return { ok: String(n) === c.text, m: 'toHaveText', exp: `"${c.text}"`, got: n ? `"${n}"` : nf }; }
+  const ok = c.expect === 'visible' ? SM_PAGES[st.page] === c.text : st.page === 'products' && st.cart.includes(c.item); // btn: the item's Remove button
+  return { ok, m: 'toBeVisible', exp: 'visible', got: ok ? 'visible' : nf };
+}
+// replay the first i steps; a failed expect ends a Playwright test there, as the test runner does
+function trRun(p, i) {
+  const r = { vars: {}, changed: [], out: [], lines: new Set(), checks: [], st: null, stop: 0 };
+  for (let k = 0; k < i; k++) {
+    const s = p.steps[k]; r.lines.add(s.l); r.changed = Object.keys(s.v || {});
+    (s.x || []).forEach(n => { delete r.vars[n]; });
+    Object.assign(r.vars, s.v);
+    if (s.o !== undefined) r.out.push(s.o);
+    if (s.a) {
+      if (s.a.ev === 'goto') r.st = smFresh({ page: 'login' });
+      else if (s.a.ev === 'type') r.st.f[s.a.f] = s.a.v;
+      else smApply(r.st, Object.assign({ where: 'products' }, s.a), {});
+    }
+    if (s.c) { const c = Object.assign({ l: s.l }, trCheck(r.st, s.c)); r.checks.push(c); if (!c.ok) { r.stop = k + 1; break; } }
+  }
+  return r;
+}
+const trLast = p => trRun(p, p.steps.length).stop || p.steps.length;
+function trInner(id) {
+  const p = trById[id], N = trLast(p), i = Math.min(TR[id] || 0, N), r = trRun(p, i), cur = i ? p.steps[i - 1] : null, pw = p.lang === 'pw';
+  const lines = p.hl.map((h, k) => {
+    const n = k + 1, chk = r.checks.filter(c => c.l === n).pop();
+    return `<span class="tr-ln${cur && cur.l === n ? ' cur' : ''}${r.lines.has(n) ? ' run' : ''}${chk ? (chk.ok ? ' ok' : ' bad') : ''}"><span class="tr-no">${n}</span>${h || ' '}</span>`;
+  }).join('');
+  const btn = (d, label, on, cls) => `<button class="btn sm${cls ? ' ' + cls : ''}" data-act="tr" data-tr="${id}" data-d="${d}"${on ? '' : ' disabled'}>${label}</button>`;
+  const ctl = `<div class="row tr-ctl">${btn('0', icon('refresh') + 'Başa', i, 'ghost')}${btn('-1', icon('back') + 'Geri', i)}${btn('1', (i ? 'Növbəti addım' : 'Başla') + icon('chev'), i < N, 'primary')}${btn('end', 'Sona', i < N, 'ghost')}<span class="tr-pos">${i}/${N}</span></div>`;
+  const note = `<div class="tr-note">${cur ? esc(cur.n || `Sətir ${cur.l} icra olundu.`) : '“Başla” düyməsinə bas: kod sətir-sətir icra olunacaq.'}</div>`;
+  let panes;
+  if (pw) {
+    const failed = r.checks.some(c => !c.ok);
+    const checks = r.checks.map(c => `<div class="tr-chk">${smMark(c.ok)}<div>Sətir ${c.l}: <code>${c.m}</code>${c.ok ? ' — keçdi' : `<pre class="tr-err">Error: expect(${c.m === 'toHaveURL' ? 'page' : 'locator'}).${c.m}(expected)\nExpected: ${esc(c.exp)}\nReceived: ${esc(c.got)}</pre>`}</div></div>`).join('');
+    panes = `<div class="tr-box"><div class="tr-h">Brauzer · Məşq mağazası modeli</div><div class="tr-url">${r.st ? TR_URL[r.st.page] : 'about:blank'}</div>
+        ${r.st ? `<div class="sm-dev tr-dev" inert>${smDevHTML(r.st)}</div>` : '<div class="tr-empty tr-blank">Səhifə hələ açılmayıb</div>'}</div>
+      <div class="tr-box"><div class="tr-h">Test nəticəsi</div>${checks || '<div class="tr-empty">Hələ yoxlama yoxdur.</div>'}
+        ${i === N ? `<div class="tr-sum ${failed ? 'bad' : 'ok'}">${failed ? '1 failed' : '1 passed'}</div>` : ''}</div>`;
+  } else {
+    const names = Object.keys(r.vars);
+    panes = `<div class="tr-box"><div class="tr-h">Dəyişənlər</div>${names.length ? `<table class="tr-vars">${names.map(n => `<tr${r.changed.includes(n) ? ' class="ch"' : ''}><td>${esc(n)}</td><td>${esc(r.vars[n])}</td></tr>`).join('')}</table>` : '<div class="tr-empty">Hələ yoxdur.</div>'}</div>
+      <div class="tr-box"><div class="tr-h">Konsol</div><pre class="tr-out">${r.out.map(esc).join('\n')}</pre></div>`;
+  }
+  return `<div class="srt-k">${icon('play')}Kod izləyicisi · ${esc(p.title)}</div>
+    <p class="srt-hint">${pw ? 'Testi addım-addım icra et: hər sətirdə brauzerdə nə baş verdiyini və yoxlamanın nəticəsini gör.' : 'Kodu addım-addım icra et: hər addımda işləyən sətir, dəyişənlərin dəyəri və konsol görünür.'}</p>
+    ${pw ? '<div class="tr-legend"><span class="tr-loc">lokator</span> elementi tapır · <span class="tr-act">hərəkət</span> onunla nə edir · <span class="tr-as">yoxlama</span> nəticəni yoxlayır</div>' : ''}
+    <pre class="code tr-code">${lines}</pre>${ctl}${note}<div class="tr-panes">${panes}</div>`;
+}
 /* ---------- glossary term popover ---------- */
 // interview.json: how to say the term in a job interview, one or two sentences
 const sayHTML = g => g.say ? `<div class="say"><div class="say-k">${icon('chat')}Müsahibədə belə de</div><p>${esc(g.say)}</p></div>` : '';
@@ -1347,6 +1414,9 @@ function vPractice(v) {
   <section class="block"><div class="block-h"><h2>Məşq mağazası</h2><span class="muted" style="font-size:13px">${Object.keys(SM.passed).length}/${STORE.scenarios.length} test case</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">saucedemo.com-a bənzəyən kiçik mağaza modeli. Test case-in addımlarını icra et, faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur. problem_user-də gizli bug-lar var.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sm-open" data-sc="tc01">${icon('play')}Test case-lərlə başla</button><button class="btn" data-act="sm-open" data-sc="">${icon('search')}Kəşfiyyat sessiyası</button></div></div></section>
+  <section class="block"><div class="block-h"><h2>Kod izləyicisi</h2><span class="muted" style="font-size:13px">${TR_LIST.length} proqram</span></div>
+    <div class="card"><div class="muted" style="font-size:13.5px">JavaScript kodunu sətir-sətir icra et və dəyişənlərin dəyərini gör. Playwright testində lokator, hərəkət və yoxlamanı ayırd et.</div>
+      <div class="sm-links" style="margin-top:12px">${TR_LIST.map(({ sid, p }) => `<button class="btn sm" data-act="goto-sec" data-sec="${sid}"><b>${esc(secById[sid].num || 'Fəsil ' + chById[secCh[sid]].num)}</b> ${esc(p.title)}</button>`).join('')}</div></div></section>
   <section class="block"><div class="block-h"><h2>Xülasə vərəqləri</h2><span class="muted" style="font-size:13px">fəsil başına 1 səhifə</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">Əsas fikirlər, sxem, tipik səhvlər, “Özünü yoxla” sualları və terminlər bir A4 səhifəsində. Təkrar və müsahibəyə hazırlıq üçün çap et və ya PDF kimi saxla.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sum" data-ch="all">${icon('print')}Bütün vərəqlər (${MAIN.length})</button></div>
@@ -2229,6 +2299,7 @@ document.addEventListener('click', ev => {
       break;
     }
     case 'sm-check': smCheck(); break;
+    case 'tr': { const N = trLast(trById[d.tr]), i = Math.min(TR[d.tr] || 0, N); TR[d.tr] = d.d === '0' ? 0 : d.d === 'end' ? N : clamp(i + +d.d, 0, N); trRedraw(d.tr); break; }
     case 'kon-quiz': if (AI.state === 'on') aiForKonspekt(d.ch); break;
     case 'ch-lesson': if (AI.state === 'on') aiForChapterLesson(d.ch); break;
     case 'qz-explain': if (AI.state === 'on') aiForMistakes(); break;

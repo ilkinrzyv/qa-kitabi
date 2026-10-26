@@ -770,6 +770,45 @@ details.say-d[open]>summary{border-bottom:0;border-radius:0}
 .sm-links{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
 .sm-links .btn{height:auto;min-height:36px;padding:7px 12px;justify-content:flex-start;text-align:left;white-space:normal}
 .sm-links .btn b{flex:none;white-space:nowrap;font-family:var(--f-mono);font-size:12.5px;color:var(--accent)}
+/* code tracer: the code with the current line, step controls, then variables + console (JS) or browser + results (Playwright) */
+.tr{margin-top:16px;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--accent-line)}
+.tr-legend{margin:0 0 4px;font-size:13px;line-height:1.9;color:var(--ink-2)}
+.tr-loc,.tr-act,.tr-as{border-radius:4px;padding:0 2px}
+.tr-loc{color:var(--accent);background:var(--accent-soft)}
+.tr-act{color:var(--warn);background:var(--warn-soft)}
+.tr-as{color:var(--pass);background:var(--pass-soft)}
+pre.code.tr-code{margin:8px 0 0;padding:8px 0;font-size:12.8px;line-height:1.55}
+.tr-code .tr-loc,.tr-code .tr-act,.tr-code .tr-as{padding:0;border-radius:2px} /* no gaps that read as spaces in code */
+.tr-ln{display:block;width:max-content;min-width:100%;padding-right:12px;border-left:3px solid transparent;white-space:pre}
+.tr-no{display:inline-block;width:2.6em;padding-right:.9em;text-align:right;color:var(--ink-3);user-select:none}
+.tr-ln.run .tr-no{color:var(--ink-2)}
+.tr-ln.ok{border-left-color:var(--pass)}
+.tr-ln.cur{background:var(--accent-soft);border-left-color:var(--accent)}
+.tr-ln.cur .tr-no{color:var(--accent);font-weight:600}
+.tr-ln.bad{background:var(--fail-soft);border-left-color:var(--fail)}
+.tr-ctl{margin-top:10px;gap:6px}
+.tr-ctl .btn svg.i{width:16px;height:16px}
+.tr-pos{margin-left:auto;font-family:var(--f-mono);font-size:12.5px;color:var(--ink-3)}
+.tr-note{margin-top:10px;padding:9px 11px;border-radius:10px;background:var(--accent-soft);border:1px solid var(--accent-line);font-size:14px;line-height:1.5}
+.tr-panes{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}
+@media (min-width:640px){.tr-panes{grid-template-columns:1fr 1fr}}
+.tr-box{min-width:0;padding:10px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line)}
+.tr-h{margin-bottom:6px;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.tr-empty{font-size:13px;color:var(--ink-3)}
+.tr-vars{width:100%;border-collapse:collapse;font-family:var(--f-mono);font-size:13px}
+.tr-vars td{padding:3px 8px 3px 0;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
+.tr-vars td:first-child{white-space:nowrap;color:var(--ink-2)}
+.tr-vars tr.ch td{color:var(--accent);font-weight:600}
+.tr-out{margin:0;min-height:1.5em;font-family:var(--f-mono);font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.tr-url{padding:4px 8px;border-radius:6px;background:var(--surface);border:1px solid var(--line);font-family:var(--f-mono);font-size:12px;color:var(--ink-2);overflow-wrap:anywhere}
+.tr-dev{max-width:320px;min-height:0;margin:8px auto 0;border-width:6px;border-radius:18px;font-size:13px;pointer-events:none}
+.tr-blank{padding:28px 8px;text-align:center}
+.tr-chk{display:grid;grid-template-columns:22px 1fr;gap:6px;margin-bottom:6px;font-size:13.5px;line-height:1.45}
+.tr-chk code{font-family:var(--f-mono);font-size:12.5px}
+.tr-err{margin:6px 0 0;padding:8px 10px;border-radius:8px;background:var(--fail-soft);border:1px solid var(--fail-line);color:var(--fail);font-family:var(--f-mono);font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.tr-sum{display:inline-block;margin-top:4px;padding:2px 10px;border-radius:999px;font-family:var(--f-mono);font-size:12.5px;font-weight:600}
+.tr-sum.ok{color:var(--pass);background:var(--pass-soft)}
+.tr-sum.bad{color:var(--fail);background:var(--fail-soft)}
 /* role-play */
 .tmode button{display:inline-flex;align-items:center;justify-content:center;gap:7px}
 .tmode svg.i{width:17px;height:17px}

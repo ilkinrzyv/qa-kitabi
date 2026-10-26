@@ -493,6 +493,42 @@ for sid, ids in store['sections'].items():
         print('ERR store section', sid, ids, file=sys.stderr); errors += 1; continue
     sec['sim'] = ids
 del store['sections']
+# ---------- 6g. code tracer (trace.json, keyed by section id): JavaScript stepped line by line, Playwright tests run against
+# the practice store; every line is pre-highlighted (Playwright lines by role: locator, action, assertion) ----------
+PW_TOK = re.compile(r"(?P<loc>page\.(?:getBy\w+|locator)\((?:[^()]|\([^()]*\))*\))|(?P<as>expect\(|\)\.to\w+\((?:[^()]|\([^()]*\))*\))"
+                    r"|(?P<act>(?:page\.goto|\.\w+)\((?:[^()]|\([^()]*\))*\))")
+def pw_line(line):
+    if line.strip().startswith('//'):
+        return f'<span class="c1">{htmlmod.escape(line)}</span>'
+    plain = lambda s: re.sub(r'\b(await|async)\b', r'<span class="k">\1</span>', htmlmod.escape(s))
+    out, at = '', 0
+    for m in PW_TOK.finditer(line):
+        out += plain(line[at:m.start()]) + f'<span class="tr-{m.lastgroup}">{htmlmod.escape(m.group())}</span>'
+        at = m.end()
+    return out + plain(line[at:])
+tr_count = 0
+tr_ids = set()
+for sid, progs in json.load(open(os.path.join(BASE, 'trace.json'), encoding='utf-8')).items():
+    sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+    for p in progs:
+        n = len(p.get('code', []))
+        ok = sec and p.get('id') and p['id'] not in tr_ids and p.get('title') and p.get('lang') in ('js', 'pw') and n and p.get('steps') \
+            and all(1 <= st.get('l', 0) <= n for st in p['steps']) \
+            and all(st['a']['ev'] in ('goto', 'type', 'login', 'add') for st in p['steps'] if 'a' in st) \
+            and all(st['c']['expect'] in ('url', 'visible', 'error', 'badge', 'btn') for st in p['steps'] if 'c' in st) \
+            and all(isinstance(v, str) for st in p['steps'] for v in st.get('v', {}).values())
+        if not ok:
+            print('ERR trace program', sid, p.get('id'), file=sys.stderr); errors += 1; continue
+        tr_ids.add(p['id'])
+        if p['lang'] == 'js':
+            p['hl'] = highlight('\n'.join(p['code']), get_lexer_by_name('javascript'), FORMATTER).rstrip('\n').split('\n')
+            if len(p['hl']) != n:
+                print('ERR trace highlight lines', p['id'], file=sys.stderr); errors += 1
+        else:
+            p['hl'] = [pw_line(line) for line in p['code']]
+        tr_count += 1
+    if sec:
+        sec['tr'] = progs
 # ---------- 6b. new narrow diagrams (diagrams.py) ----------
 sys.path.insert(0, BASE)
 from diagrams import ALL as NEW_DIAGRAMS
@@ -627,5 +663,5 @@ for ch in chapters:
             extra += f" k{len(s['items'])}"
     print(f"  {ch['id']:4} {ch['kind']:9} {str(ch['num']):5} secs={len(ch['sections']):2} {kinds} {extra} | {ch['title'][:50]}")
 print('deep layers', deep_count, 'missing', len(deep_missing))
-print('total sections', tot_sec, 'glossary', len(glossary), 'quiz chapters', len(quizzes), 'quiz q', sum(len(v) for v in quizzes.values()), 'compare cards', cmp_count, 'sorting', srt_count, 'interactive', ix_count, 'store scenarios', len(sc_ids), 'interview lines', sum(1 for g in glossary if g.get('say')), 'errors', errors)
+print('total sections', tot_sec, 'glossary', len(glossary), 'quiz chapters', len(quizzes), 'quiz q', sum(len(v) for v in quizzes.values()), 'compare cards', cmp_count, 'sorting', srt_count, 'interactive', ix_count, 'store scenarios', len(sc_ids), 'traces', tr_count, 'interview lines', sum(1 for g in glossary if g.get('say')), 'errors', errors)
 print('json bytes', os.path.getsize(OUT))

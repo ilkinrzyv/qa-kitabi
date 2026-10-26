@@ -1,0 +1,298 @@
+{
+  "c18s2": [
+    {
+      "id": "js-vars", "lang": "js", "title": "Dəyişənlər: const və let",
+      "code": [
+        "const siteName = 'Swag Labs';",
+        "let attempts = 0;",
+        "attempts = attempts + 1;",
+        "attempts = attempts + 1;",
+        "console.log(siteName, attempts);",
+        "console.log(typeof attempts, typeof siteName);"
+      ],
+      "steps": [
+        { "l": 1, "v": { "siteName": "'Swag Labs'" }, "n": "const ilə “qutu” yaradılır: siteName = 'Swag Labs'. const-un dəyəri sonra dəyişmir." },
+        { "l": 2, "v": { "attempts": "0" }, "n": "let ilə qutu: attempts = 0. let-in dəyəri dəyişə bilər." },
+        { "l": 3, "v": { "attempts": "1" }, "n": "Əvvəl sağ tərəf hesablanır: attempts + 1 = 0 + 1 = 1. Sonra nəticə eyni qutuya yazılır." },
+        { "l": 4, "v": { "attempts": "2" }, "n": "Yenə: 1 + 1 = 2. Qutu eynidir, dəyəri yenidir." },
+        { "l": 5, "o": "Swag Labs 2", "n": "console.log qutuların indiki dəyərini çap edir. Bir neçə dəyəri boşluqla ayırır." },
+        { "l": 6, "o": "number string", "n": "typeof tipi göstərir: attempts ədəddir (number), siteName mətndir (string)." }
+      ]
+    }
+  ],
+  "c18s5": [
+    {
+      "id": "js-if", "lang": "js", "title": "if / else: hansı yol işləyir?",
+      "code": [
+        "function register(age) {",
+        "  if (age >= 18) {",
+        "    console.log('Qeydiyyat mümkündür');",
+        "  } else if (age >= 14) {",
+        "    console.log('Valideyn icazəsi lazımdır');",
+        "  } else {",
+        "    console.log('Qeydiyyat mümkün deyil');",
+        "  }",
+        "}",
+        "",
+        "register(17);",
+        "register(18);",
+        "register(10);"
+      ],
+      "steps": [
+        { "l": 1, "n": "Funksiya yalnız yadda saxlanır (təyin olunur). Hələ işləmir." },
+        { "l": 11, "n": "register(17) çağırılır: funksiyaya 17 göndərilir." },
+        { "l": 1, "v": { "age": "17" }, "n": "Funksiyanın içində age = 17 olur." },
+        { "l": 2, "n": "Şərt: 17 >= 18 → false. Bu blok buraxılır." },
+        { "l": 4, "n": "Növbəti şərt: 17 >= 14 → true." },
+        { "l": 5, "o": "Valideyn icazəsi lazımdır", "n": "1-ci yol işlədi (14–17 yaş)." },
+        { "l": 9, "x": ["age"], "n": "Funksiya bitir, age qutusu silinir." },
+        { "l": 12, "n": "register(18) çağırılır." },
+        { "l": 1, "v": { "age": "18" } },
+        { "l": 2, "n": "18 >= 18 → true. 18 sərhəd dəyəridir: şərtdə >= olduğu üçün bu yola düşür." },
+        { "l": 3, "o": "Qeydiyyat mümkündür", "n": "2-ci yol işlədi." },
+        { "l": 9, "x": ["age"] },
+        { "l": 13, "n": "register(10) çağırılır." },
+        { "l": 1, "v": { "age": "10" } },
+        { "l": 2, "n": "10 >= 18 → false." },
+        { "l": 4, "n": "10 >= 14 → false." },
+        { "l": 7, "o": "Qeydiyyat mümkün deyil", "n": "else — 3-cü yol işlədi." },
+        { "l": 9, "x": ["age"], "n": "3 çağırış — 3 fərqli yol. Kodun 3 yolu var, branch coverage üçün ən azı 3 test lazımdır (Fəsil 7)." }
+      ]
+    }
+  ],
+  "c18s6": [
+    {
+      "id": "js-func", "lang": "js", "title": "Funksiya: parametr və return",
+      "code": [
+        "function calculateDiscount(price, percent) {",
+        "  const discount = price * percent / 100;",
+        "  return price - discount;",
+        "}",
+        "",
+        "const result = calculateDiscount(100, 10);",
+        "console.log(result);"
+      ],
+      "steps": [
+        { "l": 1, "n": "Funksiya təyin olunur. Hələ işləmir." },
+        { "l": 6, "n": "Əvvəl sağ tərəf hesablanır: calculateDiscount(100, 10) çağırılır." },
+        { "l": 1, "v": { "price": "100", "percent": "10" }, "n": "Arqumentlər parametr qutularına düşür: price = 100, percent = 10." },
+        { "l": 2, "v": { "discount": "10" }, "n": "100 * 10 / 100 = 10." },
+        { "l": 3, "n": "return: 100 - 10 = 90. Nəticə funksiyanın çağırıldığı yerə qayıdır." },
+        { "l": 6, "x": ["price", "percent", "discount"], "v": { "result": "90" }, "n": "Funksiyanın qutuları silinir, qayıdan 90 result-a yazılır." },
+        { "l": 7, "o": "90" }
+      ]
+    }
+  ],
+  "c18s7": [
+    {
+      "id": "js-loop", "lang": "js", "title": "Massiv və dövr: for...of, filter",
+      "code": [
+        "const prices = [45.5, 120, 15, 80];",
+        "let total = 0;",
+        "for (const price of prices) {",
+        "  total = total + price;",
+        "}",
+        "console.log(total);",
+        "const expensive = prices.filter(p => p > 50);",
+        "console.log(expensive);"
+      ],
+      "steps": [
+        { "l": 1, "v": { "prices": "[45.5, 120, 15, 80]" }, "n": "Massivdə 4 element var, indeksləri 0, 1, 2, 3-dür." },
+        { "l": 2, "v": { "total": "0" } },
+        { "l": 3, "v": { "price": "45.5" }, "n": "1-ci dövr: price = prices[0] = 45.5." },
+        { "l": 4, "v": { "total": "45.5" }, "n": "0 + 45.5 = 45.5." },
+        { "l": 3, "v": { "price": "120" }, "n": "2-ci dövr: price = prices[1] = 120." },
+        { "l": 4, "v": { "total": "165.5" }, "n": "45.5 + 120 = 165.5." },
+        { "l": 3, "v": { "price": "15" }, "n": "3-cü dövr: prices[2]." },
+        { "l": 4, "v": { "total": "180.5" } },
+        { "l": 3, "v": { "price": "80" }, "n": "4-cü dövr: prices[3] — sonuncu element, indeksi length - 1 = 3." },
+        { "l": 4, "v": { "total": "260.5" } },
+        { "l": 5, "x": ["price"], "n": "Elementlər bitdi, dövr dayanır. price qutusu yalnız dövrün içində var idi." },
+        { "l": 6, "o": "260.5" },
+        { "l": 7, "v": { "expensive": "[120, 80]" }, "n": "filter hər elementi yoxlayır: 45.5 > 50? yox. 120? hə. 15? yox. 80? hə." },
+        { "l": 8, "o": "[ 120, 80 ]", "n": "Node massivi belə çap edir. Orijinal prices massivi dəyişməyib." }
+      ]
+    }
+  ],
+  "c18s10": [
+    {
+      "id": "js-check", "lang": "js", "title": "Öz “test”imiz: isValidAge və check",
+      "code": [
+        "function isValidAge(age) {",
+        "  return Number.isInteger(age) && age >= 18 && age <= 60;",
+        "}",
+        "",
+        "function check(description, actual, expected) {",
+        "  if (actual === expected) {",
+        "    console.log('PASS:', description);",
+        "  } else {",
+        "    console.log('FAIL:', description, '| gözlənilən:', expected, '| faktiki:', actual);",
+        "  }",
+        "}",
+        "",
+        "check('17 rədd olunur', isValidAge(17), false);",
+        "check('18 qəbul olunur', isValidAge(18), true);",
+        "check('Mətn \"30\" rədd olunur', isValidAge('30'), false);"
+      ],
+      "steps": [
+        { "l": 1, "n": "isValidAge təyin olunur." },
+        { "l": 5, "n": "check təyin olunur — bizim mini “expect”imiz." },
+        { "l": 13, "n": "Arqumentlər əvvəl hesablanır: isValidAge(17) çağırılır." },
+        { "l": 1, "v": { "age": "17" } },
+        { "l": 2, "n": "Number.isInteger(17) → true, 17 >= 18 → false. && zənciri ilk false-da dayanır → false qayıdır." },
+        { "l": 5, "x": ["age"], "v": { "description": "'17 rədd olunur'", "actual": "false", "expected": "false" }, "n": "check çağırılır: actual = false (funksiyanın cavabı), expected = false (gözlənilən)." },
+        { "l": 6, "n": "false === false → true." },
+        { "l": 7, "o": "PASS: 17 rədd olunur" },
+        { "l": 11, "x": ["description", "actual", "expected"] },
+        { "l": 14, "n": "isValidAge(18) çağırılır." },
+        { "l": 1, "v": { "age": "18" } },
+        { "l": 2, "n": "isInteger(18) → true, 18 >= 18 → true, 18 <= 60 → true. Nəticə true." },
+        { "l": 5, "x": ["age"], "v": { "description": "'18 qəbul olunur'", "actual": "true", "expected": "true" } },
+        { "l": 6, "n": "true === true → true." },
+        { "l": 7, "o": "PASS: 18 qəbul olunur" },
+        { "l": 11, "x": ["description", "actual", "expected"] },
+        { "l": 15, "n": "isValidAge('30') — dırnaqdadır, yəni mətndir (string), ədəd deyil." },
+        { "l": 1, "v": { "age": "'30'" } },
+        { "l": 2, "n": "Number.isInteger('30') → false: mətn tam ədəd deyil. Zəncir dərhal false olur." },
+        { "l": 5, "x": ["age"], "v": { "description": "'Mətn \"30\" rədd olunur'", "actual": "false", "expected": "false" } },
+        { "l": 6, "n": "false === false → true." },
+        { "l": 7, "o": "PASS: Mətn \"30\" rədd olunur" },
+        { "l": 11, "x": ["description", "actual", "expected"], "n": "check() avtomatik testin mahiyyətidir: faktiki nəticəni gözlənilənlə müqayisə edir. Playwright-ın expect() funksiyası da belə işləyir." }
+      ]
+    }
+  ],
+  "c18s12": [
+    {
+      "id": "js-total", "lang": "js", "title": "Kəsr ədəd: 0.1 × 3 niyə 0.3 deyil?",
+      "code": [
+        "function calculateTotal(price, quantity, discountPercent) {",
+        "  const subtotal = price * quantity;",
+        "  const discount = subtotal * discountPercent / 100;",
+        "  return subtotal - discount;",
+        "}",
+        "",
+        "const total = calculateTotal(0.1, 3, 0);",
+        "console.log(total);",
+        "console.log(total === 0.3);"
+      ],
+      "steps": [
+        { "l": 1, "n": "Funksiya təyin olunur." },
+        { "l": 7, "n": "calculateTotal(0.1, 3, 0) çağırılır." },
+        { "l": 1, "v": { "price": "0.1", "quantity": "3", "discountPercent": "0" } },
+        { "l": 2, "v": { "subtotal": "0.30000000000000004" }, "n": "0.1 * 3 — kompüter 0.3 yox, 0.30000000000000004 alır: 0.1 ikilik sistemdə dəqiq saxlanmır." },
+        { "l": 3, "v": { "discount": "0" }, "n": "0.30000000000000004 * 0 / 100 = 0." },
+        { "l": 4, "n": "return 0.30000000000000004 - 0." },
+        { "l": 7, "x": ["price", "quantity", "discountPercent", "subtotal", "discount"], "v": { "total": "0.30000000000000004" } },
+        { "l": 8, "o": "0.30000000000000004" },
+        { "l": 9, "o": "false", "n": "=== dəqiq müqayisə edir: 0.30000000000000004 ilə 0.3 eyni deyil → false. Testdə bu FAIL olardı. Pulla işləyən sistemlərdə “1 qəpik fərqi” defekti belə yaranır." }
+      ]
+    }
+  ],
+  "c19s6": [
+    {
+      "id": "pw-login", "lang": "pw", "title": "Playwright: uğurlu giriş",
+      "code": [
+        "test('düzgün istifadəçi ilə uğurlu giriş', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  await page.getByPlaceholder('Username').fill('standard_user');",
+        "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+        "  await page.getByRole('button', { name: 'Login' }).click();",
+        "",
+        "  await expect(page).toHaveURL(/inventory/);",
+        "  await expect(page.getByText('Products')).toBeVisible();",
+        "});"
+      ],
+      "steps": [
+        { "l": 1, "n": "test(…) — bir test. page — Playwright-ın verdiyi brauzer tabıdır." },
+        { "l": 2, "a": { "ev": "goto" }, "n": "Hərəkət: səhifəni açır. await — səhifə yüklənənə qədər gözlə, sonra növbəti sətrə keç." },
+        { "l": 3, "a": { "ev": "type", "f": "user", "v": "standard_user" }, "n": "Lokator placeholder-i “Username” olan sahəni tapır, hərəkət (fill) mətni yazır." },
+        { "l": 4, "a": { "ev": "type", "f": "pass", "v": "secret_sauce" } },
+        { "l": 5, "a": { "ev": "login" }, "n": "getByRole “Login” adlı düyməni tapır, click onu basır." },
+        { "l": 7, "c": { "expect": "url", "re": "inventory" }, "n": "Yoxlama: URL-də “inventory” sözü olmalıdır." },
+        { "l": 8, "c": { "expect": "visible", "text": "Products" }, "n": "Yoxlama: “Products” mətni ekranda görünməlidir." },
+        { "l": 9, "n": "Bütün yoxlamalar keçdi — test passed." }
+      ]
+    },
+    {
+      "id": "pw-locked", "lang": "pw", "title": "Playwright: bloklanmış istifadəçi",
+      "code": [
+        "test('bloklanmış istifadəçi xəta mesajı görür', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  await page.getByPlaceholder('Username').fill('locked_out_user');",
+        "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+        "  await page.getByRole('button', { name: 'Login' }).click();",
+        "",
+        "  await expect(page.locator('[data-test=\"error\"]')).toContainText('locked out');",
+        "});"
+      ],
+      "steps": [
+        { "l": 1, "n": "Neqativ test: gözlənilən nəticə xəta mesajıdır." },
+        { "l": 2, "a": { "ev": "goto" } },
+        { "l": 3, "a": { "ev": "type", "f": "user", "v": "locked_out_user" } },
+        { "l": 4, "a": { "ev": "type", "f": "pass", "v": "secret_sauce" } },
+        { "l": 5, "a": { "ev": "login" }, "n": "Giriş olmur, ekranda xəta çıxır." },
+        { "l": 7, "c": { "expect": "error", "text": "locked out" }, "n": "Lokator data-test=\"error\" atributu olan elementi tapır. toContainText mətnin hamısını yox, bir hissəsini yoxlayır." },
+        { "l": 8, "n": "Neqativ test də keçə bilər: sistem gözlənildiyi kimi xəta verdi — test passed." }
+      ]
+    }
+  ],
+  "c19s12": [
+    {
+      "id": "pw-cart", "lang": "pw", "title": "Playwright: məhsul səbətə əlavə olunur",
+      "code": [
+        "test('məhsul səbətə əlavə olunur', async ({ page }) => {",
+        "  // İlkin şərt: giriş",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  await page.getByPlaceholder('Username').fill('standard_user');",
+        "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+        "  await page.getByRole('button', { name: 'Login' }).click();",
+        "",
+        "  // Addım",
+        "  await page.locator('[data-test=\"add-to-cart-sauce-labs-backpack\"]').click();",
+        "",
+        "  // Gözlənilən nəticə",
+        "  await expect(page.locator('.shopping_cart_badge')).toHaveText('1');",
+        "  await expect(page.locator('[data-test=\"remove-sauce-labs-backpack\"]')).toBeVisible();",
+        "});"
+      ],
+      "steps": [
+        { "l": 1, "n": "Manual test case koda çevrilib: ilkin şərt, addım, iki gözlənilən nəticə." },
+        { "l": 3, "a": { "ev": "goto" } },
+        { "l": 4, "a": { "ev": "type", "f": "user", "v": "standard_user" } },
+        { "l": 5, "a": { "ev": "type", "f": "pass", "v": "secret_sauce" } },
+        { "l": 6, "a": { "ev": "login" }, "n": "İlkin şərt hazırdır: Products səhifəsi açıqdır." },
+        { "l": 9, "a": { "ev": "add", "item": "backpack" }, "n": "Addım: Backpack-in “Add to cart” düyməsi data-test atributu ilə tapılır və basılır." },
+        { "l": 12, "c": { "expect": "badge", "text": "1" }, "n": "1-ci gözlənilən nəticə: səbət nişanında “1”." },
+        { "l": 13, "c": { "expect": "btn", "item": "backpack" }, "n": "2-ci gözlənilən nəticə: “Remove” düyməsi görünür." },
+        { "l": 14, "n": "Test passed." }
+      ]
+    },
+    {
+      "id": "pw-cart-problem", "lang": "pw", "title": "Eyni test problem_user ilə: test bug-ı tutur",
+      "code": [
+        "test('məhsul səbətə əlavə olunur (problem_user)', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  await page.getByPlaceholder('Username').fill('problem_user');",
+        "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+        "  await page.getByRole('button', { name: 'Login' }).click();",
+        "",
+        "  await page.locator('[data-test=\"add-to-cart-sauce-labs-bolt-t-shirt\"]').click();",
+        "",
+        "  await expect(page.locator('.shopping_cart_badge')).toHaveText('1');",
+        "  await expect(page.locator('[data-test=\"remove-sauce-labs-bolt-t-shirt\"]')).toBeVisible();",
+        "});"
+      ],
+      "steps": [
+        { "l": 1, "n": "Eyni test, yalnız istifadəçi və məhsul fərqlidir: problem_user və Bolt T-Shirt." },
+        { "l": 2, "a": { "ev": "goto" } },
+        { "l": 3, "a": { "ev": "type", "f": "user", "v": "problem_user" } },
+        { "l": 4, "a": { "ev": "type", "f": "pass", "v": "secret_sauce" } },
+        { "l": 5, "a": { "ev": "login" } },
+        { "l": 7, "a": { "ev": "add", "item": "bolt" }, "n": "Düymə basılır, amma ekranda heç nə dəyişmir." },
+        { "l": 9, "c": { "expect": "badge", "text": "1" }, "n": "Yoxlama düşür: nişan yoxdur. Playwright əvvəl bir müddət gözləyir (auto-waiting), sonra testi dayandırır. Sonrakı sətirlər icra olunmur. Bu, Məşq mağazasındakı TC-09 bug-ıdır — avtomatik test onu tutdu." },
+        { "l": 10, "c": { "expect": "btn", "item": "bolt" } },
+        { "l": 11 }
+      ]
+    }
+  ]
+}
