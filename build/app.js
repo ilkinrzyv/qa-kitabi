@@ -84,7 +84,9 @@ const ICONS = {
   phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M11 18.5h2"/>',
   eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   cart: '<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.6 12.2a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.5L21.5 8H6.2"/>',
-  print: '<path d="M7 9V3h10v6"/><path d="M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7z"/>'
+  print: '<path d="M7 9V3h10v6"/><path d="M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7z"/>',
+  camera: '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>',
+  bug: '<rect x="7" y="7" width="10" height="13" rx="5"/><path d="M9 7a3 3 0 0 1 6 0M12 11v9M3 13h4M17 13h4M4 8l3 2M20 8l-3 2M4 19l3-2M20 19l-3-2"/>'
 };
 const icon = (n, cls) => `<svg class="i${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
@@ -446,7 +448,7 @@ function render(opts) {
   if (observer) { observer.disconnect(); observer = null; }
   hideSelPill();
   const v = $('#view');
-  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, sql: vSql };
+  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql };
   (views[S.view] || vHome)(v);
   if (opts.keepScroll) window.scrollTo(0, y);
   else if (!(S.view === 'reader' && S.params.sec)) window.scrollTo(0, 0);
@@ -807,10 +809,10 @@ function dtHTML(sid, c) {
 function textBody(c, s) {
   const lv = lvlOf(s.id);
   if (lv === 'short') {
-    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}
+    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}
       <button class="btn sm ghost more" data-act="lvl" data-sec="${s.id}" data-v="std">${icon('book')}Tam mətni oxu</button>${miniHTML(c, s, false)}`;
   }
-  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
+  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
 }
 function fbHTML(a) {
   let h = '';
@@ -898,7 +900,7 @@ function secHTML(c, s) {
   else if (s.kind === 'selfcheck') body = selfHTML(c, s);
   else if (s.kind === 'checklist') body = checklistHTML(s);
   else if (s.x) body = textBody(c, s);
-  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}`;
+  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}`;
   return `<section class="sec${learned ? ' learned' : ''}" id="${s.id}" data-sec="${s.id}" data-kind="${s.kind}">
     <header class="sec-h"><span class="sec-num">${esc(s.num || kindTag(s).toLocaleUpperCase('az'))}</span><h2>${esc(s.title)}</h2>${s.x ? lvlCtl(s.id, lvlOf(s.id)) : ''}</header>
     ${body}${footerHTML(c, s)}</section>`;
@@ -1077,8 +1079,10 @@ const money = n => '$' + n.toFixed(2);
 const tcName = id => id.replace(/^tc/, 'TC-');
 const smFresh = s0 => ({ page: s0.page, user: s0.user || '', cart: (s0.cart || []).slice(), sort: 'az', order: 'az', err: '', menu: false, f: { user: '', pass: '', first: '', last: '', zip: '' } });
 function smStart(id) {
-  const sc = scById[id] || null;
-  Object.assign(SM, { id: sc ? id : null, sc, done: 0, off: false, snap: null, fb: null, ans: '', status: '', title: '', touched: {}, st: smFresh(sc ? sc.start : { page: 'login' }) });
+  const sc = scById[id] || null, nid = sc ? id : null;
+  // a restart keeps the open bug report: reproducing the bug again is how its frequency (3/3) is measured
+  Object.assign(SM, { id: nid, sc, done: 0, off: false, snap: null, fb: null, ans: '', status: '', title: '', touched: {}, st: smFresh(sc ? sc.start : { page: 'login' }),
+    rep: SM.id === nid ? SM.rep : null });
 }
 function smOrder(st) {
   const name = (a, b) => a.name.localeCompare(b.name, 'en');
@@ -1104,9 +1108,9 @@ function smApply(st, e, found) {
       if (!st.err) Object.assign(st, { user: u, page: 'products' });
       break;
     }
-    case 'add': if (prob && SM_BUG.noAdd.includes(e.item)) found.add = 1; else if (!st.cart.includes(e.item)) st.cart.push(e.item); break;
-    case 'remove': if (prob && e.where === 'products' && SM_BUG.noRemove.includes(e.item)) found.remove = 1; else st.cart = st.cart.filter(x => x !== e.item); break;
-    case 'sort': st.sort = e.v; if (!prob) st.order = e.v; else if (e.v !== 'az') found.sort = 1; break;
+    case 'add': if (prob && SM_BUG.noAdd.includes(e.item)) found.add = (found.add || 0) + 1; else if (!st.cart.includes(e.item)) st.cart.push(e.item); break;
+    case 'remove': if (prob && e.where === 'products' && SM_BUG.noRemove.includes(e.item)) found.remove = (found.remove || 0) + 1; else st.cart = st.cart.filter(x => x !== e.item); break;
+    case 'sort': st.sort = e.v; if (!prob) st.order = e.v; else if (e.v !== 'az') found.sort = (found.sort || 0) + 1; break;
     case 'cart': Object.assign(st, { page: 'cart', menu: false }); break;
     case 'shop': Object.assign(st, { page: 'products', menu: false }); break;
     case 'checkout': Object.assign(st, { page: 'info', err: '' }); Object.assign(st.f, { first: '', last: '', zip: '' }); break;
@@ -1146,7 +1150,7 @@ function smType(t) {
   const st = SM.st, f = t.dataset.smF;
   SM.touched[f] = true;
   if (f === 'last' && st.user === 'problem_user' && t.value) { // planted bug: Last Name's letters land in First Name
-    st.f.first = t.value.slice(-1); st.f.last = ''; t.value = ''; SM.found.last = 1;
+    st.f.first = t.value.slice(-1); st.f.last = ''; t.value = ''; SM.found.last = (SM.found.last || 0) + 1;
     const fi = $('#sm-dev [data-sm-f="first"]'); if (fi) fi.value = st.f.first;
   } else st.f[f] = t.value;
   smEvent({ ev: 'type', f, v: st.f[f] });
@@ -1222,6 +1226,7 @@ function smCheck() {
   SM.fb = { rows, truth, sw: swFind(SM.ans, false), bug, good };
   if (good) SM.passed[sc.id] = 1;
   const el = $('#sm-fb'); if (el) el.innerHTML = smFbHTML();
+  if (SM.rep) brRedraw();
 }
 const smMark = ok => ok === true ? `<span class="sm-ok">${icon('check')}</span>` : ok === 'near' ? '<span class="sm-near">≈</span>' : `<span class="sm-no">${icon('x')}</span>`;
 function smFbHTML() {
@@ -1234,7 +1239,8 @@ function smFbHTML() {
     <div class="sm-st ${stOk ? 'ok' : 'no'}">${smMark(stOk)}<div><b>Status: ${f.truth}</b> — ${f.truth === 'Passed' ? 'faktiki nəticə gözlənilənlə üst-üstə düşür.' : `faktiki nəticə gözləniləndən fərqlidir. ${esc(diff.join('; '))}.`}${stOk ? '' : ` Sən ${SM.status} seçmisən.`}</div></div>
     ${b ? `<div class="sm-bug"><div class="sm-fb-h">Bug başlığı: [harada] + [nə baş verir] + [hansı şərtdə]</div>
       ${b.empty ? '<p class="muted">Başlıq yazılmayıb.</p>' : `<ul class="sm-rows">${b.parts.map(([n, ok]) => `<li>${smMark(ok)}<div><b>${n}</b>${ok ? '' : ' — başlıqda yoxdur'}</div></li>`).join('')}</ul>`}
-      ${b.sw.length ? `<div class="swc">${swList(b.sw)}</div>` : ''}</div>` : ''}
+      ${b.sw.length ? `<div class="swc">${swList(b.sw)}</div>` : ''}
+      ${SM.rep ? '' : `<div class="row" style="margin-top:10px"><button class="btn" data-act="br-open" data-b="${sc.bug.r}">${icon('bug')}Tam bug report yaz</button></div>`}</div>` : ''}
     ${f.good ? `<div class="sm-good">${icon('check')}Əla — faktiki nəticə ekranla, status gözlənilənlə uyğundur.</div>` : ''}
     <details class="cmp-why sm-model"><summary>${icon('eye')}Ekranda nə vardı? (nümunə cavab)</summary><p>${esc(smList(SM.snap))}.</p>
       ${sc.bug && f.truth === 'Failed' ? `<p><b>Bug başlığı:</b> ${esc(sc.bug.model)}</p>` : ''}</details>`;
@@ -1270,7 +1276,7 @@ function smCaseHTML() {
   if (!sc) {
     const ids = Object.keys(STORE.bugs), got = ids.filter(k => SM.found[k]);
     return `<div class="card sm-case"><div class="sm-id">Exploratory testing</div><h2 class="sm-t">${esc(STORE.free.title)}</h2><p class="sm-p">${esc(STORE.free.charter)}</p>
-      <div class="sm-state${got.length === ids.length ? ' ok' : ''}">Tapılan bug-lar: <b>${got.length}/${ids.length}</b>${got.length ? `<ul class="sm-found">${got.map(k => `<li>${icon('check')}<span>${esc(STORE.bugs[k])}</span></li>`).join('')}</ul>` : '<br>Bug tapanda burada görünəcək. Hər tapıntı üçün bug report başlığını 12.2-dəki formula ilə yaz.'}</div>
+      <div class="sm-state${got.length === ids.length ? ' ok' : ''}">Tapılan bug-lar: <b>${got.length}/${ids.length}</b>${got.length ? `<ul class="sm-found">${got.map(k => `<li>${icon('check')}<div><span>${esc(STORE.bugs[k])}</span>${SM.rep && SM.rep.bid === k ? '' : `<button class="btn sm" data-act="br-open" data-b="${k}">${icon('bug')}Bug report yaz</button>`}</div></li>`).join('')}</ul>` : '<br>Bug tapanda burada görünəcək. Hər tapıntı üçün tam bug report yaz: başlıq 12.2-dəki formula ilə.'}</div>
       <div class="row" style="margin-top:10px"><button class="btn sm ghost" data-act="sm-restart">${icon('refresh')}Mağazanı sıfırla</button></div></div>`;
   }
   const n = sc.steps.length;
@@ -1307,8 +1313,113 @@ function vStore(v) {
     .concat(STORE.scenarios.map(x => `<button class="chip${x === sc ? ' acc' : SM.passed[x.id] ? ' pass' : ''}" data-act="sm-open" data-sc="${x.id}">${SM.passed[x.id] ? icon('check') : ''}${tcName(x.id)}</button>`)).join('');
   v.innerHTML = `<p class="muted sm-intro">Mini Store — saucedemo.com-dakı mağazaya bənzəyən sadələşdirilmiş model (real sayt deyil). Test case-in addımlarını burada icra et, faktiki nəticəni yaz: kitab onu ekranda olanla tutuşdurur.</p>
     <div class="sm-pick">${pick}</div><div id="sm-case">${smCaseHTML()}</div><div class="sm-dev" id="sm-dev">${smDevHTML()}</div>
-    ${sc ? `<div class="card sm-res">${smResHTML()}</div>` : ''}`;
+    ${sc ? `<div class="card sm-res">${smResHTML()}</div>` : ''}<div id="br">${brHTML()}</div>`;
 }
+/* full bug report (store.json "reports"): every field of 12.1 for one planted bug, checked field by field. The screenshot
+   is the shop's screen at that moment, so it proves the bug only after the bug happened, on the page where it shows ---------- */
+const REP = STORE.reports;
+const BR_SEV = ['Blocker', 'Critical', 'Major', 'Minor', 'Trivial'], BR_PRI = ['High', 'Medium', 'Low'];
+const BR_F = { title: 'Başlıq (Summary)', env: 'Mühit (Environment)', sev: 'Severity', pri: 'Priority (təklif)', pre: 'İlkin şərtlər',
+  steps: 'Təkrarlama addımları', exp: 'Gözlənilən nəticə', act: 'Faktiki nəticə', freq: 'Təkrarlanma tezliyi', shot: 'Əlavələr (sübut)' };
+const BR_SEEN = { add: st => st.page === 'products', remove: st => st.page === 'products' && st.cart.includes('bikelight'),
+  sort: st => st.page === 'products' && st.sort !== 'az', last: st => st.page === 'info' && !st.f.last };
+const BR_ENV = /(chrome|firefox|safari|edge|opera|yandex|brauzer|windows|android|ios|iphone|ipad|macos|mac os|linux)/;
+function brOpen(bid) {
+  const sc = !!(SM.sc && SM.sc.bug && SM.sc.bug.r === bid);
+  SM.rep = { bid, sc, f: { title: sc ? SM.title : '', env: '', sev: '', pri: '', pre: '', steps: '', exp: '', act: '', freq: '' }, shot: null, fb: null };
+}
+const brSteps = t => String(t || '').split(/\n+|\s+(?=\d+[).]\s)/).map(x => x.replace(/^\s*\d+[).]\s*/, '').trim()).filter(Boolean);
+const brMiss = (T, groups) => groups.filter(g => !g.k.some(k => smHas(T, k))).map(g => g.l);
+function uaEnv() {
+  const u = navigator.userAgent, v = re => (u.match(re) || [])[1];
+  const b = v(/Edg\/(\d+)/) ? 'Edge ' + v(/Edg\/(\d+)/) : v(/OPR\/(\d+)/) ? 'Opera ' + v(/OPR\/(\d+)/) : v(/Firefox\/(\d+)/) ? 'Firefox ' + v(/Firefox\/(\d+)/)
+    : v(/Chrome\/(\d+)/) ? 'Chrome ' + v(/Chrome\/(\d+)/) : v(/Version\/(\d+)[^]*Safari/) ? 'Safari ' + v(/Version\/(\d+)[^]*Safari/) : '';
+  const os = /Android/.test(u) ? 'Android' : /iPhone|iPad/.test(u) ? 'iOS' : /Windows/.test(u) ? 'Windows' : /Mac OS X/.test(u) ? 'macOS' : /Linux/.test(u) ? 'Linux' : '';
+  return [os, b].filter(Boolean).join(', ') || 'ƏS və brauzer';
+}
+function brShot() {
+  const r = SM.rep, st = JSON.parse(JSON.stringify(SM.st));
+  const d = new Date();
+  r.shot = { st, ok: !!SM.found[r.bid] && st.user === 'problem_user' && BR_SEEN[r.bid](st), at: [d.getHours(), d.getMinutes(), d.getSeconds()].map(pad2).join(':') };
+}
+function brCheck() {
+  const r = SM.rep, R = REP[r.bid], f = r.f, rows = [];
+  const row = (k, ok, note) => rows.push({ k, ok: !!ok, note: note || '' });
+  const T = k => fz(f[k]);
+  // title: the formula of 12.2, facts without emotion (12.7)
+  const parts = smBugParts(f.title, R).filter(p => !p[1]).map(p => p[0].toLowerCase());
+  const emo = /!{2,}/.test(f.title) || /(tecili|dehset|berbad|rezil|biabir)/.test(T('title'));
+  row('title', f.title.trim() && !parts.length && !emo, !f.title.trim() ? 'Başlıq yazılmayıb.' : emo ? 'Emosiya yox, fakt yaz: “!!!”, “təcili” kimi sözləri çıxar (12.7).'
+    : parts.length ? `Formulda çatışmır: ${parts.join(', ')}. Formul: [harada] + [nə baş verir] + [hansı şərtdə].` : '');
+  const envOk = BR_ENV.test(T('env'));
+  row('env', envOk, !envOk ? `Brauzeri və əməliyyat sistemini yaz. Sənin mühitin: ${uaEnv()}.` : !/\d/.test(f.env) ? 'Versiyanı da yaz: Chrome-da chrome://version, Firefox-da about:support.' : '');
+  row('sev', R.sev.includes(f.sev), f.sev ? R.sevWhy : 'Severity seç.');
+  row('pri', R.pri.includes(f.pri), f.pri ? R.priWhy : 'Priority seç: tester təklif verir, qərarı adətən Product Owner verir.');
+  const preMiss = brMiss(T('pre'), R.pre);
+  row('pre', !preMiss.length, preMiss.length ? `İlkin şərtlərdə yoxdur: ${preMiss.join(', ')}.` : '');
+  const steps = brSteps(f.steps), needMiss = brMiss(T('pre') + ' ' + T('steps'), R.need), vague = /(nese|bir sey|ve s\.|ve sair|filan)/.test(T('steps'));
+  row('steps', steps.length && !needMiss.length && !vague, !steps.length ? 'Addımları yaz: hər sətirdə bir hərəkət.' : needMiss.length ? `Addımlarda yoxdur: ${needMiss.join(', ')}.`
+    : vague ? '“nəsə”, “və s.” yox — konkret hərəkət yaz.' : steps.length > R.model.steps.length + 3 ? 'Defekti təkrarlamaq üçün lazım olmayan addımları çıxar (12.7).' : '');
+  const act = r.sc ? SM.ans : f.act, expMiss = brMiss(T('exp'), R.exp), same = T('exp') && T('exp') === fz(act);
+  row('exp', T('exp') && !expMiss.length && !same, !T('exp') ? 'Gözlənilən nəticəni yaz: tələbə görə nə olmalı idi.' : same ? 'Gözlənilən və faktiki nəticə eynidir — onda baq yoxdur.'
+    : expMiss.length ? `Gözlənilən nəticədə yoxdur: ${expMiss.join(', ')}.` : '');
+  let sw = swFind(f.title, false);
+  if (r.sc) {
+    const ok = !!(SM.fb && SM.fb.rows.every(x => x.ok === true));
+    row('act', ok, !SM.fb ? 'Faktiki nəticəni yuxarıda yaz və “Yoxla” bas.' : ok ? 'Yuxarıda ekranla tutuşdurulub.' : 'Yuxarıdakı faktiki nəticə ekranla tam uyğun deyil — orada düzəlt və yenidən yoxla.');
+  } else {
+    const actMiss = brMiss(T('act'), R.act), s2 = swFind(f.act, false);
+    sw = sw.concat(s2);
+    row('act', T('act') && !actMiss.length && !s2.length, !T('act') ? 'Faktiki nəticəni yaz: ekranda əslində nə görünür?' : actMiss.length ? `Faktiki nəticədə yoxdur: ${actMiss.join(', ')}.`
+      : s2.length ? 'Rəy və ya çıxarış sözü var — ekranda görünəni yaz.' : '');
+  }
+  const m = f.freq.match(/(\d+)\s*\/\s*(\d+)/), n = SM.found[r.bid] || 0;
+  const freqOk = m && +m[2] > 0 && +m[1] <= +m[2] && +m[1] <= n;
+  row('freq', freqOk, !m ? 'Tezliyi “3/3” kimi yaz: neçə cəhddən neçəsində təkrarlandı.' : +m[1] > +m[2] ? 'Birinci ədəd cəhdlərin sayından çox ola bilməz.'
+    : +m[1] > n ? `Baq bu sessiyada ${n} dəfə baş verdi, sən ${m[1]} yazmısan. Neçə dəfə təkrarlamısansa, onu yaz.` : n === 1 ? 'Bir dəfə azdır: 2–3 dəfə təkrarla ki, baqın sabit olduğu görünsün.' : '');
+  row('shot', r.shot && r.shot.ok, !r.shot ? 'Baq ekranda görünəndə “Ekran şəkli” bas.' : r.shot.ok ? '' : 'Ekran şəkli baqı göstərmir: baq baş verəndən sonra, onun göründüyü səhifədə çək.');
+  r.fb = { rows, sw };
+}
+function brMd() {
+  const r = SM.rep, f = r.f, cell = s => String(s || '—').replace(/\|/g, '\\|').replace(/\s*\n+\s*/g, ' ');
+  const rows = [['Başlıq', f.title], ['Mühit', f.env], ['Severity', f.sev], ['Priority', f.pri && f.pri + ' (təklif)'], ['İlkin şərtlər', f.pre],
+    ['Addımlar', brSteps(f.steps).map((s, i) => `${i + 1}) ${s}`).join(' ')], ['Gözlənilən nəticə', f.exp], ['Faktiki nəticə', r.sc ? SM.ans : f.act],
+    ['Təkrarlanma', f.freq], ['Əlavələr', r.shot ? 'Ekran şəkli' : '']];
+  return '| Sahə | Dəyər |\n| --- | --- |\n' + rows.map(([a, b]) => `| ${a} | ${cell(b)} |`).join('\n');
+}
+function brFbHTML() {
+  const r = SM.rep, b = r && r.fb; if (!b) return '';
+  const m = REP[r.bid].model, n = b.rows.filter(x => x.ok).length;
+  const model = [['Başlıq', m.title], ['Mühit', `${uaEnv()}; Mini Store (kitabdakı model)`], ['Severity', m.sev], ['Priority', m.pri + ' (təklif)'], ['İlkin şərtlər', m.pre],
+    ['Addımlar', m.steps.map((s, i) => `${i + 1}) ${s}`).join(' ')], ['Gözlənilən nəticə', m.exp], ['Faktiki nəticə', m.act], ['Təkrarlanma', m.freq], ['Əlavələr', 'Baq görünən ekranın şəkli']];
+  return `<div class="sm-fb-h">Hesabat yoxlandı: ${n}/${b.rows.length} sahə qaydasındadır</div>
+    <ul class="sm-rows">${b.rows.map(x => `<li>${smMark(x.ok)}<div><b>${BR_F[x.k]}</b>${x.note ? `<div class="sm-note${x.ok ? ' i' : ''}">${esc(x.note)}</div>` : ''}</div></li>`).join('')}</ul>
+    ${b.sw.length ? `<div class="swc">${swList(b.sw)}</div>` : ''}
+    ${n === b.rows.length ? `<div class="sm-good">${icon('check')}Əla — proqramçı bu report ilə defekti səndən heç nə soruşmadan təkrarlaya bilər.</div>` : ''}
+    <details class="cmp-why sm-model br-model"><summary>${icon('eye')}Nümunə hesabat</summary><div class="tbl"><table><tbody>${model.map(([a, v]) => `<tr><td>${a}</td><td>${esc(v)}</td></tr>`).join('')}</tbody></table></div></details>`;
+}
+function brHTML() {
+  const r = SM.rep; if (!r) return '';
+  const f = r.f;
+  const fld = (k, ctl) => `<label class="br-f"><span class="br-l">${BR_F[k]}</span>${ctl}</label>`;
+  const inp = (k, ph) => fld(k, `<input class="field br-in" data-br-f="${k}" value="${esc(f[k])}" placeholder="${esc(ph)}" autocomplete="off" spellcheck="false">`);
+  const ta = (k, ph, n) => fld(k, `<textarea class="field br-ta" data-br-f="${k}" rows="${n}" placeholder="${esc(ph)}">${esc(f[k])}</textarea>`);
+  const sel = (k, opts) => fld(k, `<select class="field br-sel" data-br-f="${k}"><option value="">— seç —</option>${opts.map(o => `<option${f[k] === o ? ' selected' : ''}>${o}</option>`).join('')}</select>`);
+  const act = r.sc ? `<div class="br-f"><span class="br-l">${BR_F.act}</span><div class="br-ro">${SM.ans.trim() ? esc(SM.ans) : '<span class="muted">Yuxarıdakı “Faktiki nəticə” sahəsində yaz.</span>'}</div></div>`
+    : ta('act', 'Ekranda əslində nə görünür', 2);
+  const shot = r.shot ? `<div class="br-shot${r.shot.ok ? '' : ' bad'}"><div class="br-shot-img" inert aria-hidden="true"><div class="sm-dev">${smDevHTML(r.shot.st)}</div></div>
+    <div class="br-shot-m">${icon('camera')}Ekran şəkli · ${esc(r.shot.at)}</div></div>` : '';
+  return `<div class="card br"><div class="br-h">${icon('bug')}<div><div class="sm-id">Bug report${r.sc ? ' · ' + tcName(SM.sc.id) : ' · kəşfiyyat'}</div>
+      <p class="sm-p">Proqramçı defekti səndən heç nə soruşmadan təkrarlaya bilməlidir (12.1). Hər sahəni doldur, sonra yoxla.</p></div></div>
+    ${inp('title', '[harada] + [nə baş verir] + [hansı şərtdə]')}${inp('env', 'Məsələn: Windows 11, Chrome 141, Mini Store')}
+    <div class="br-two">${sel('sev', BR_SEV)}${sel('pri', BR_PRI)}</div>
+    ${ta('pre', 'Hansı istifadəçi ilə, hansı səhifədə, səbətdə nə var', 2)}${ta('steps', '1) …\n2) …\nHər sətirdə bir hərəkət', 4)}
+    ${ta('exp', 'Tələbə görə nə olmalı idi', 2)}${act}${inp('freq', 'Neçə cəhddən neçəsində: məsələn, 3/3')}
+    <div class="br-f"><span class="br-l">${BR_F.shot}</span><div class="row"><button class="btn sm" data-act="br-shot">${icon('camera')}Ekran şəkli</button><span class="muted br-hint">Mağaza ekranını olduğu kimi çəkir</span></div>${shot}</div>
+    <div class="row br-acts"><button class="btn primary" data-act="br-check">${icon('check')}Hesabatı yoxla</button><button class="btn" data-act="br-copy">${icon('copy')}Markdown kimi kopyala</button><button class="btn ghost" data-act="br-close">Bağla</button></div>
+    <div id="br-fb" class="sm-fb" aria-live="polite">${brFbHTML()}</div></div>`;
+}
+function brRedraw() { const el = $('#br'); if (el) el.innerHTML = brHTML(); }
 const simHTML = s => s.sim ? `<div class="sm-link"><div class="srt-k">${icon('play')}Məşq mağazası</div><p class="srt-hint">Bu test case-ləri mağaza modelində icra et və faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur.</p>
   <div class="sm-links">${s.sim.map(id => id === 'free' ? `<button class="btn sm" data-act="sm-open" data-sc="">${icon('search')}${esc(STORE.free.title)}</button>`
     : `<button class="btn sm" data-act="sm-open" data-sc="${id}"><b>${tcName(id)}</b> ${esc(scById[id].title)}</button>`).join('')}</div></div>` : '';
@@ -1566,6 +1677,329 @@ function sqlDecorate() {
   });
 }
 new MutationObserver(sqlDecorate).observe($('#view'), { childList: true, subtree: true });
+/* ---------- practice API (api.json): a REST API over the practice store's data, answered inside the page (no network, so it
+   works offline and on claude.ai), and a Postman-like panel: method, URL with {{variables}}, headers, a JSON body and tests
+   built from rows, shown as the pm.test code they stand for. Some endpoints have planted bugs ---------- */
+const API = BOOK.api;
+const API_P = STORE.products.map((p, i) => ({ id: i + 1, name: p.name, price: p.price })); // numeric ids in the shop's order
+const HTTP_TXT = { 200: 'OK', 201: 'Created', 400: 'Bad Request', 401: 'Unauthorized', 403: 'Forbidden', 404: 'Not Found', 405: 'Method Not Allowed', 409: 'Conflict', 422: 'Unprocessable Content', 500: 'Internal Server Error' };
+const LAB_M = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+const LAB_T = [['status', 'Status kodu'], ['body', 'Gövdə'], ['time', 'Cavab müddəti'], ['set', 'Dəyişənə yaz']];
+const LAB_OP = { eql: ['=', 'to.eql'], include: ['daxildir', 'to.include'], type: ['tipi', 'to.be.a'], below: ['<', 'to.be.below'] };
+const LAB = { srv: null, env: null, req: null, res: null, busy: false, tab: 'body', rtab: 'body', log: [], found: {}, done: {} }; // session only
+const round2 = n => Math.round(n * 100) / 100;
+function labInit(force) {
+  if (LAB.srv && !force) return;
+  LAB.srv = { tokens: {}, carts: {}, ghost: {}, next: 1002,
+    orders: { 1001: { id: 1001, owner: 'visual_user', firstName: 'Vüsal', lastName: 'Quliyev', zip: '2000', items: [API_P[3]], total: 49.99, tax: 4, status: 'created' } },
+    users: { standard_user: { firstName: 'Standard', lastName: 'User', email: 'standard@ministore.test', phone: null },
+      problem_user: { firstName: 'Problem', lastName: 'User', email: 'problem@ministore.test', phone: null } } };
+  if (!LAB.env || force) LAB.env = [['baseUrl', API.baseUrl], ['token', '']];
+  if (!LAB.req) LAB.req = { m: 'GET', url: '{{baseUrl}}/products', hdrs: '', body: '', tests: [{ t: 'status', v: '200' }] };
+}
+const envGet = k => { const e = LAB.env.find(x => x[0] === k); return e ? e[1] : undefined; };
+function envSet(k, v) { const e = LAB.env.find(x => x[0] === k); if (e) e[1] = v; else LAB.env.push([k, v]); }
+function labSubst(s, miss) { return String(s || '').replace(/\{\{\s*([\w.-]+)\s*\}\}/g, (m, k) => { const v = envGet(k); if (v === undefined) { miss.add(k); return m; } return v; }); }
+function labFound(k) { if (!LAB.found[k]) LAB.newBug = k; LAB.found[k] = (LAB.found[k] || 0) + 1; }
+// the server: one request in, { st, body, hdrs } out
+function apiServe(m, path, q, h, body, badJson) {
+  const S = LAB.srv, J = (st, b, x) => ({ st, body: b, hdrs: Object.assign({ 'Content-Type': 'application/json; charset=utf-8' }, x || {}) });
+  const E = (st, msg, x) => J(st, { error: msg }, x), no = allow => E(405, 'Method Not Allowed', { Allow: allow });
+  const seg = path.split('/').filter(Boolean), b = body && typeof body === 'object' && !Array.isArray(body) ? body : {};
+  const who = () => {
+    if (!h.authorization) return E(401, 'Authorization header is missing', { 'WWW-Authenticate': 'Bearer' });
+    const u = S.tokens[h.authorization.replace(/^Bearer\s*/i, '').trim()];
+    return u || E(401, 'Token is not valid', { 'WWW-Authenticate': 'Bearer' });
+  };
+  const cartOf = ids => { const items = ids.map(id => API_P[id - 1]); return { items, total: round2(items.reduce((a, p) => a + p.price, 0)) }; };
+  const order = o => ({ id: o.id, firstName: o.firstName, lastName: o.lastName, zip: o.zip, items: o.items, total: o.total, tax: o.tax, status: o.status });
+  if (badJson && m !== 'GET' && m !== 'DELETE') return E(400, 'Invalid JSON body');
+  const [r0, r1] = seg, n = seg.length;
+  if (r0 === 'login' && n === 1) {
+    if (m !== 'POST') return no('POST');
+    if (!b.username) return E(400, 'username is required');
+    if (!b.password) return E(400, 'password is required');
+    if (!STORE.users.includes(b.username) || b.password !== STORE.password) return E(401, 'Username and password do not match any user in this service');
+    if (b.username === 'locked_out_user') return E(403, 'Sorry, this user has been locked out.');
+    const tok = 'tok_' + Math.random().toString(16).slice(2, 10);
+    S.tokens[tok] = b.username;
+    return J(200, { token: tok, username: b.username });
+  }
+  if (r0 === 'products' && n <= 2) {
+    if (m !== 'GET') return no('GET');
+    if (n === 2) {
+      if (!/^\d+$/.test(r1)) return E(400, 'id must be a number');
+      const p = API_P[+r1 - 1];
+      return p ? J(200, p) : E(404, 'Product not found');
+    }
+    const sort = q.get('sort'), lim = q.get('limit'), pg = q.get('page');
+    if (sort !== null && !['az', 'za', 'lohi', 'hilo'].includes(sort)) return E(400, 'sort must be one of: az, za, lohi, hilo');
+    for (const [k, v] of [['limit', lim], ['page', pg]]) if (v !== null && !/^[1-9]\d*$/.test(v)) return E(400, `${k} must be a positive number`);
+    const name = (x, y) => x.name.localeCompare(y.name, 'en');
+    const by = { az: name, za: (x, y) => name(y, x), lohi: (x, y) => x.price - y.price || name(x, y), hilo: (x, y) => y.price - x.price || name(x, y) };
+    let list = API_P.slice().sort(by[sort || 'az']);
+    if (lim !== null) {
+      const page = +(pg || 1);
+      if (page > 1 && +lim < list.length) labFound('page'); // planted bug: the page number is ignored
+      list = list.slice(0, +lim);
+    }
+    return J(200, list);
+  }
+  if (r0 === 'cart' && n <= 2) {
+    if (n === 1 && m !== 'GET' && m !== 'POST') return no('GET, POST');
+    if (n === 2 && m !== 'DELETE') return no('DELETE');
+    const u = who(); if (u.st) return u;
+    const cart = S.carts[u] || (S.carts[u] = []);
+    if (n === 2) {
+      if (!/^\d+$/.test(r1)) return E(400, 'productId must be a number');
+      if (!cart.includes(+r1)) return E(404, 'Product not in cart');
+      if (u === 'problem_user') { (S.ghost[u] || (S.ghost[u] = [])).push(+r1); return J(200, cartOf(cart.filter(x => x !== +r1))); } // planted bug: nothing is removed
+      cart.splice(cart.indexOf(+r1), 1);
+      return J(200, cartOf(cart));
+    }
+    if (m === 'GET') { if ((S.ghost[u] || []).some(id => cart.includes(id))) labFound('ghost'); return J(200, cartOf(cart)); }
+    if (!('productId' in b)) return E(400, 'productId is required');
+    if (typeof b.productId !== 'number') { labFound('type500'); return E(500, 'Internal Server Error'); } // planted bug: should be 400
+    if (!API_P[b.productId - 1] || !Number.isInteger(b.productId)) return E(404, 'Product not found');
+    if (cart.includes(b.productId)) return E(409, 'Product already in cart');
+    cart.push(b.productId);
+    return J(201, cartOf(cart));
+  }
+  if (r0 === 'orders' && n <= 2) {
+    if (n === 1 && m !== 'GET' && m !== 'POST') return no('GET, POST');
+    if (n === 2 && m !== 'GET') return no('GET');
+    const u = who(); if (u.st) return u;
+    if (n === 2) {
+      if (!/^\d+$/.test(r1)) return E(400, 'id must be a number');
+      const o = S.orders[+r1];
+      if (!o) return E(404, 'Order not found');
+      if (o.owner !== u) labFound('idor'); // planted bug: should be 403
+      return J(200, order(o));
+    }
+    if (m === 'GET') return J(200, Object.values(S.orders).filter(o => o.owner === u).map(order));
+    for (const f of ['firstName', 'lastName', 'zip']) {
+      if (b[f] === undefined || b[f] === null || b[f] === '') return E(400, `${f} is required`);
+      if (typeof b[f] !== 'string') return E(400, `${f} must be a string`);
+    }
+    const cart = S.carts[u] || [];
+    if (!cart.length) return E(422, 'Cart is empty');
+    if (b.firstName.length > 50 || b.lastName.length > 50) labFound('long'); // planted bug: should be 422
+    const c = cartOf(cart), id = S.next++;
+    S.orders[id] = { id, owner: u, firstName: b.firstName, lastName: b.lastName, zip: b.zip, items: c.items, total: c.total, tax: round2(c.total * 0.08), status: 'created' };
+    S.carts[u] = [];
+    return J(201, order(S.orders[id]), { Location: '/orders/' + id });
+  }
+  if (r0 === 'users' && r1 === 'me' && n === 2) {
+    if (!['GET', 'PUT', 'PATCH'].includes(m)) return no('GET, PUT, PATCH');
+    const u = who(); if (u.st) return u;
+    const prof = S.users[u] || (S.users[u] = { firstName: '', lastName: '', email: '', phone: null });
+    const F = ['firstName', 'lastName', 'email', 'phone'], keys = Object.keys(b);
+    if (m !== 'GET') {
+      if (m === 'PUT') { const miss = F.filter(k => !(k in b)); if (miss.length) return E(400, 'PUT replaces the whole profile. Missing fields: ' + miss.join(', ')); }
+      if (!keys.length) return E(400, 'Body is empty');
+      const bad = keys.find(k => !F.includes(k)); if (bad) return E(400, 'Unknown field: ' + bad);
+      if ('email' in b && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(b.email))) return E(422, 'email is not valid');
+      Object.assign(prof, b);
+    }
+    return J(200, Object.assign({ username: u }, prof));
+  }
+  return E(404, 'Not Found');
+}
+function labPath(o, p) {
+  let v = o;
+  for (const k of String(p || '').replace(/\[(\d+)\]/g, '.$1').split('.').filter(Boolean)) {
+    if (v == null) return undefined;
+    v = k === 'length' && (Array.isArray(v) || typeof v === 'string') ? v.length : v[k];
+  }
+  return v;
+}
+const labVal = s => { try { return JSON.parse(s); } catch (e) { return s; } };
+const labType = v => v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v;
+const labExpr = p => 'data' + (!p ? '' : p[0] === '[' ? p : '.' + p);
+const labShort = v => { const s = v === undefined ? 'undefined' : JSON.stringify(v); return s.length > 48 ? s.slice(0, 47) + '…' : s; };
+// a test row is used only when it is complete
+const labRowOk = r => r.t === 'status' || r.t === 'time' ? /^\d+$/.test(r.v || '') : r.t === 'set' ? /^[\w.-]+$/.test(r.name || '') : r.t === 'body' && r.op && (r.v || '') !== '';
+function labTestName(r) {
+  if (r.t === 'status') return `Status kodu: ${r.v}`;
+  if (r.t === 'time') return `Cavab müddəti < ${r.v} ms`;
+  if (r.t === 'set') return `${r.name} ← ${labExpr(r.p)}`;
+  return `${labExpr(r.p)} ${LAB_OP[r.op][0]} ${r.v}`;
+}
+function labRun(res) {
+  return LAB.req.tests.filter(labRowOk).map(r => {
+    const name = labTestName(r);
+    if (r.t === 'status') return { name, pass: res.st === +r.v, got: res.st };
+    if (r.t === 'time') return { name, pass: res.time < +r.v, got: res.time + ' ms' };
+    const v = labPath(res.body, r.p);
+    if (r.t === 'set') { if (v !== undefined) envSet(r.name, typeof v === 'string' ? v : JSON.stringify(v)); return { name, pass: v !== undefined, got: labShort(v), set: true }; }
+    const w = labVal(r.v);
+    const pass = r.op === 'eql' ? JSON.stringify(v) === JSON.stringify(w) : r.op === 'type' ? labType(v) === r.v
+      : r.op === 'below' ? typeof v === 'number' && v < +r.v : typeof v === 'string' ? v.includes(String(w)) : Array.isArray(v) && v.some(x => JSON.stringify(x) === JSON.stringify(w));
+    return { name, pass, got: labShort(v) };
+  });
+}
+// the pm code a row stands for (pre-highlighted)
+function labCode() {
+  const S2 = s => `<span class="s2">${esc(JSON.stringify(s))}</span>`, V = s => { const v = labVal(s); return typeof v === 'string' ? S2(v) : `<span class="mi">${esc(s)}</span>`; };
+  const rows = LAB.req.tests.filter(labRowOk);
+  if (!rows.length) return '<span class="c1">// yoxlama yoxdur</span>';
+  const t = (name, body) => `pm.<span class="nf">test</span>(${S2(name)}, <span class="kd">function</span> () {\n  ${body};\n});`;
+  const out = rows.some(r => r.t === 'body' || r.t === 'set') ? ['<span class="kd">const</span> data = pm.response.<span class="nf">json</span>();'] : [];
+  rows.forEach(r => {
+    const name = labTestName(r);
+    if (r.t === 'status') out.push(t(name, `pm.response.to.have.<span class="nf">status</span>(<span class="mi">${esc(r.v)}</span>)`));
+    else if (r.t === 'time') out.push(t(name, `pm.<span class="nf">expect</span>(pm.response.responseTime).to.be.<span class="nf">below</span>(<span class="mi">${esc(r.v)}</span>)`));
+    else if (r.t === 'set') out.push(`pm.environment.<span class="nf">set</span>(${S2(r.name)}, ${esc(labExpr(r.p))});`);
+    else out.push(t(name, `pm.<span class="nf">expect</span>(${esc(labExpr(r.p))}).${LAB_OP[r.op][1].replace(/(\w+)$/, '<span class="nf">$1</span>')}(${r.op === 'type' ? S2(r.v) : V(r.v)})`));
+  });
+  return out.join('\n');
+}
+const JSON_TOK = /("(?:\\.|[^"\\])*")(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|\b(true|false|null)\b/g;
+function jsonHL(t) {
+  let out = '', at = 0;
+  for (const m of t.matchAll(JSON_TOK)) {
+    out += esc(t.slice(at, m.index)) + (m[1] ? `<span class="${m[2] ? 'nt' : 's2'}">${esc(m[1])}</span>${m[2] || ''}` : `<span class="${m[3] ? 'mi' : 'kc'}">${m[3] || m[4]}</span>`);
+    at = m.index + m[0].length;
+  }
+  return out + esc(t.slice(at));
+}
+function labSend() {
+  if (LAB.busy) return;
+  const R = LAB.req, miss = new Set();
+  const url = labSubst(R.url, miss).trim(), hdrText = labSubst(R.hdrs, miss), bodyText = labSubst(R.body, miss);
+  const h = {};
+  hdrText.split('\n').forEach(l => { const i = l.indexOf(':'); if (i > 0) h[l.slice(0, i).trim().toLowerCase()] = l.slice(i + 1).trim(); });
+  let u = null; try { u = new URL(url); } catch (e) { }
+  const base = new URL(API.baseUrl);
+  let res;
+  if (!u) res = { err: `Invalid URL: “${url || '(boş)'}”. Ünvan https:// ilə başlamalıdır: {{baseUrl}}/products kimi.` };
+  else if (u.origin !== base.origin) res = { err: `Could not send request: getaddrinfo ENOTFOUND ${u.hostname}. Bu məşq API-si yalnız ${base.host} ünvanında işləyir ({{baseUrl}}).` };
+  else {
+    let body = null, bad = false;
+    if (bodyText.trim()) { try { body = JSON.parse(bodyText); } catch (e) { bad = true; } }
+    const path = u.pathname.replace(/\/+$/, '') || '/';
+    res = Object.assign(apiServe(R.m, path, u.searchParams, h, body, bad), { m: R.m, path: path + u.search });
+    res.text = JSON.stringify(res.body, null, 2);
+    res.size = new TextEncoder().encode(res.text).length;
+    res.time = 60 + Math.floor(Math.random() * 180);
+  }
+  res.miss = [...miss];
+  LAB.busy = true; LAB.res = null; labRedraw('res');
+  setTimeout(() => {
+    LAB.busy = false;
+    if (!res.err) {
+      res.tests = labRun(res);
+      LAB.log.unshift({ m: res.m, path: res.path.split('?')[0], full: res.path, st: res.st, tests: res.tests, req: JSON.parse(JSON.stringify(R)) });
+      if (LAB.log.length > 30) LAB.log.pop();
+      labCheck();
+    }
+    LAB.res = res;
+    labRedraw('res'); labRedraw('env'); labRedraw('tasks'); labRedraw('bugs');
+    if (LAB.newBug) { toast('Baq tapıldı: ' + API.bugs[LAB.newBug]); LAB.newBug = null; }
+  }, res.err ? 150 : res.time);
+}
+const labHit = (e, r) => e.m === r.m && e.st === r.st && new RegExp(r.p).test(e.path);
+function labCheck() {
+  API.tasks.forEach(t => {
+    if (LAB.done[t.id]) return;
+    const c = t.check;
+    let ok = !c.req || LAB.log.some(e => labHit(e, c.req) && (!c.tests || (e.tests.length >= c.tests && e.tests.every(x => x.pass))));
+    if (ok && c.also) ok = LAB.log.some(e => labHit(e, c.also));
+    if (ok && c.env) ok = !!LAB.srv.tokens[envGet(c.env)];
+    if (ok && c.bug) ok = !!LAB.found[c.bug];
+    if (ok) { LAB.done[t.id] = 1; if (!LAB.newBug) toast('Tapşırıq tamamlandı: ' + t.t); }
+  });
+}
+function labTasksHTML() {
+  const T = API.tasks, n = T.filter(t => LAB.done[t.id]).length, next = T.find(t => !LAB.done[t.id]);
+  const item = t => `<li class="${LAB.done[t.id] ? 'ok' : ''}">${LAB.done[t.id] ? icon('check') : '<i></i>'}<div><b>${esc(t.t)}</b> <span class="muted">${esc(secById[t.sec].num)}</span><div class="lab-tx">${esc(t.x)}</div>
+    ${LAB.done[t.id] ? '' : `<details class="cmp-why"><summary>${icon('bulb')}İpucu</summary><p>${esc(t.hint)}</p></details>`}</div></li>`;
+  return `<div class="block-h" style="margin:0"><h2>Tapşırıqlar</h2><span class="chip${n === T.length ? ' pass' : ''}">${n}/${T.length}</span></div>
+    ${next ? `<ul class="lab-tl lab-next">${item(next)}</ul>` : `<div class="sm-good">${icon('check')}Bütün tapşırıqlar tamamlandı.</div>`}
+    <details class="lab-all"><summary>${icon('list')}Bütün tapşırıqlar</summary><ul class="lab-tl">${T.map(item).join('')}</ul></details>`;
+}
+function labTestsHTML() {
+  const rows = LAB.req.tests.map((r, i) => {
+    const typ = `<select class="field lab-ts" data-lt="${i}:t" aria-label="Yoxlama növü">${LAB_T.map(([v, l]) => `<option value="${v}"${r.t === v ? ' selected' : ''}>${l}</option>`).join('')}</select>`;
+    const inp = (f, ph, cls) => `<input class="field lab-ti ${cls || ''}" data-lt="${i}:${f}" value="${esc(r[f] || '')}" placeholder="${esc(ph)}" autocomplete="off" spellcheck="false">`;
+    let rest;
+    if (r.t === 'status') rest = `<span class="lab-op">=</span>${inp('v', '200', 'n')}`;
+    else if (r.t === 'time') rest = `<span class="lab-op">&lt;</span>${inp('v', '1000', 'n')}<span class="lab-op">ms</span>`;
+    else if (r.t === 'set') rest = `${inp('name', 'token', 'n')}<span class="lab-op">←</span>${inp('p', 'token')}`;
+    else rest = `${inp('p', 'length, name, items[0].price')}<select class="field lab-ts op" data-lt="${i}:op" aria-label="Müqayisə">${Object.entries(LAB_OP).map(([k, [l]]) => `<option value="${k}"${r.op === k ? ' selected' : ''}>${l}</option>`).join('')}</select>${inp('v', r.op === 'type' ? 'number' : '6', 'n')}`;
+    return `<div class="lab-tr">${typ}<div class="lab-tr-x">${rest}</div><button class="ibtn" data-act="lab-tdel" data-i="${i}" aria-label="Yoxlamanı sil">${icon('x')}</button></div>`;
+  }).join('');
+  return `<div class="lab-trs">${rows}</div><button class="btn sm" data-act="lab-tadd">${icon('check')}Yoxlama əlavə et</button>
+    <div class="lab-cap">Postman-da bu yoxlamalar belə yazılır (Scripts → Post-response):</div><pre class="code lab-code" id="lab-code">${labCode()}</pre>`;
+}
+function labReqHTML() {
+  const R = LAB.req, nh = R.hdrs.split('\n').filter(l => l.includes(':')).length, nt = R.tests.filter(labRowOk).length;
+  const pane = LAB.tab === 'hdrs'
+    ? `<textarea class="field lab-ta mono" data-lab="hdrs" rows="3" placeholder="Authorization: Bearer {{token}}" spellcheck="false">${esc(R.hdrs)}</textarea>
+      <div class="row"><button class="btn sm" data-act="lab-auth">${icon('key')}Authorization: Bearer {{token}}</button></div>`
+    : LAB.tab === 'body' ? `<textarea class="field lab-ta mono" data-lab="body" rows="5" placeholder='{ "productId": 1 }' spellcheck="false">${esc(R.body)}</textarea>
+      <div class="row"><span class="chip">raw · JSON</span><button class="btn sm ghost" data-act="lab-fmt">Formatla</button>${R.m === 'GET' || R.m === 'DELETE' ? '<span class="muted lab-note">GET və DELETE gövdə göndərmir</span>' : ''}</div>`
+    : labTestsHTML();
+  return `<div class="lab-line"><select class="field lab-m" data-lab="m" aria-label="Metod">${LAB_M.map(x => `<option${R.m === x ? ' selected' : ''}>${x}</option>`).join('')}</select>
+      <input class="field lab-url mono" data-lab="url" value="${esc(R.url)}" aria-label="URL" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="btn primary" data-act="lab-send"${LAB.busy ? ' disabled' : ''}>${icon('send')}Send</button></div>
+    <div class="seg lab-tabs">${[['hdrs', `Headers${nh ? ' (' + nh + ')' : ''}`], ['body', 'Body'], ['tests', `Tests${nt ? ' (' + nt + ')' : ''}`]].map(([k, l]) => `<button data-act="lab-tab" data-v="${k}" aria-pressed="${LAB.tab === k}">${l}</button>`).join('')}</div>
+    <div class="lab-pane">${pane}</div>`;
+}
+function labResHTML() {
+  if (LAB.busy) return '<div class="thinking"><i></i>Göndərilir…</div>';
+  const r = LAB.res;
+  if (!r) return '<p class="muted" style="margin:0">Sorğu göndər — cavab burada görünəcək.</p>';
+  const miss = r.miss.length ? `<div class="sm-note">Dəyişən tapılmadı: ${r.miss.map(k => `{{${esc(k)}}}`).join(', ')} — Environment-də yoxdur, mətn olduğu kimi getdi.</div>` : '';
+  if (r.err) return `<div class="ai-err">${esc(r.err)}</div>${miss}`;
+  const fam = Math.floor(r.st / 100), cls = fam === 2 ? 'pass' : fam === 4 ? 'warn' : fam === 5 ? 'fail' : '';
+  const nt = r.tests.length, np = r.tests.filter(x => x.pass).length;
+  const pane = LAB.rtab === 'hdrs' ? `<div class="tbl"><table><tbody>${Object.entries(r.hdrs).map(([k, v]) => `<tr><td>${esc(k)}</td><td class="mono">${esc(v)}</td></tr>`).join('')}</tbody></table></div>`
+    : LAB.rtab === 'tests' ? (nt ? `<ul class="sm-rows lab-results">${r.tests.map(x => `<li>${smMark(x.pass)}<div><span class="chip ${x.pass ? 'pass' : 'fail'}">${x.pass ? 'PASS' : 'FAIL'}</span> ${esc(x.name)}${x.pass && !x.set ? '' : `<div class="muted lab-got">alındı: ${esc(String(x.got))}</div>`}</div></li>`).join('')}</ul>` : '<p class="muted" style="margin:0">Yoxlama yoxdur — Tests tabında əlavə et.</p>')
+    : `<pre class="code lab-json">${jsonHL(r.text)}</pre>`;
+  return `<div class="lab-st"><span class="chip ${cls}">${r.st} ${HTTP_TXT[r.st] || ''}</span><span class="muted mono">${esc(r.m)} ${esc(r.path)}</span></div>
+    <div class="lab-meta mono"><span>Time: ${r.time} ms</span><span>Size: ${r.size} B</span>${nt ? `<span class="${np === nt ? 'ok' : 'no'}">Tests: ${np}/${nt}</span>` : ''}</div>${miss}
+    <div class="seg lab-tabs">${[['body', 'Body'], ['hdrs', 'Headers'], ['tests', `Test Results${nt ? ` (${np}/${nt})` : ''}`]].map(([k, l]) => `<button data-act="lab-rtab" data-v="${k}" aria-pressed="${LAB.rtab === k}">${l}</button>`).join('')}</div>${pane}`;
+}
+function labEnvHTML() {
+  return `<div class="block-h" style="margin:0"><h2 lang="en">Environment · Mini Store</h2><button class="btn sm ghost" data-act="lab-reset">${icon('refresh')}Sıfırla</button></div>
+    <div class="lab-env">${LAB.env.map(([k, v], i) => `<div class="lab-er"><code>{{${esc(k)}}}</code><input class="field lab-ti mono" data-le="${i}" value="${esc(v)}" aria-label="${esc(k)}" autocomplete="off" spellcheck="false">${i > 1 ? `<button class="ibtn" data-act="lab-edel" data-i="${i}" aria-label="Sil">${icon('x')}</button>` : '<span></span>'}</div>`).join('')}</div>
+    <div class="lab-er add"><input class="field lab-ti mono" id="lab-ek" placeholder="ad" autocomplete="off" spellcheck="false"><input class="field lab-ti mono" id="lab-ev" placeholder="dəyər" autocomplete="off" spellcheck="false"><button class="btn sm" data-act="lab-eadd">Əlavə et</button></div>`;
+}
+function labDocHTML() {
+  return `<summary>${icon('book')}<span class="st">API sənədi<span class="sub">${API.doc.length} endpoint · nə gözlənilir</span></span>${icon('chev', 'chev')}</summary>
+    <div class="dbody lab-doc">${API.doc.map(d => `<div class="lab-ep"><div><span class="lab-mt m-${d.m}">${d.m}</span> <code>${esc(d.p)}</code>${d.auth ? ' <span class="chip">token</span>' : ''}</div><p>${esc(d.d)}</p>
+      ${d.body ? `<pre class="code lab-json">${jsonHL(d.body)}</pre>` : ''}<div class="lab-codes">${d.res.map(([s, t]) => `<span><b>${s}</b> ${esc(t)}</span>`).join('')}</div></div>`).join('')}</div>`;
+}
+function labBugsHTML() {
+  const ids = Object.keys(API.bugs), got = ids.filter(k => LAB.found[k]);
+  const hist = LAB.log.slice(0, 8).map((e, i) => `<button class="lab-h" data-act="lab-hist" data-i="${i}"><span class="lab-mt m-${e.m}">${e.m}</span><span class="mono">${esc(e.full)}</span><b class="${e.st < 300 ? 'ok' : e.st >= 500 ? 'no' : 'w'}">${e.st}</b></button>`).join('');
+  return `<div class="block-h" style="margin:0"><h2>Gizli baqlar</h2><span class="chip${got.length === ids.length ? ' pass' : ''}">${got.length}/${ids.length}</span></div>
+    <p class="muted lab-note">Sənədlə cavabı tutuşdur: fərq varsa, baq tapmısan. Tapşırıqlar ikisinə aparır, qalanları özün axtar.</p>
+    ${got.length ? `<ul class="sm-found">${got.map(k => `<li>${icon('check')}<span>${esc(API.bugs[k])}</span></li>`).join('')}</ul>` : ''}
+    ${hist ? `<div class="block-h" style="margin:14px 0 6px"><h2>Tarixçə</h2></div><div class="lab-hs">${hist}</div>` : ''}`;
+}
+function labRedraw(part) {
+  const el = $('#lab-' + part); if (!el) return;
+  el.innerHTML = { req: labReqHTML, res: labResHTML, env: labEnvHTML, tasks: labTasksHTML, bugs: labBugsHTML }[part]();
+}
+function vLab(v) {
+  labInit();
+  setHeader({ back: true, kicker: 'Məşq API-si', name: 'Mini Store API · Postman kimi' });
+  v.innerHTML = `<p class="muted sm-intro">Mini Store-un REST API-si (real server deyil, cavabları kitab özü verir — internetsiz də işləyir). Sorğunu Postman-dakı kimi qur: metod, URL, başlıqlar, gövdə və yoxlamalar.</p>
+    <div class="card lab-card" id="lab-tasks">${labTasksHTML()}</div>
+    <div class="card lab-card" id="lab-req">${labReqHTML()}</div>
+    <div class="card lab-card lab-res" id="lab-res" aria-live="polite">${labResHTML()}</div>
+    <div class="card lab-card" id="lab-env">${labEnvHTML()}</div>
+    <details class="deep lab-card">${labDocHTML()}</details>
+    <div class="card lab-card" id="lab-bugs">${labBugsHTML()}</div>`;
+}
+function labLinkHTML(s) {
+  if (!s.api) return '';
+  const ts = API.tasks.filter(t => t.sec === s.id);
+  return `<div class="sm-link"><div class="srt-k">${icon('send')}Məşq API-si</div><p class="srt-hint">${ts.length ? 'Bu bölmənin tapşırıqlarını Mini Store API-sində et — sorğu göndər, cavabı və yoxlamaları gör.' : 'Sorğunun hissələrini canlı gör: metod, URL, başlıqlar, gövdə; cavabda status, başlıqlar və JSON.'}</p>
+    <div class="sm-links">${ts.length ? ts.map(t => `<button class="btn sm" data-act="lab-open"><b>${LAB.done[t.id] ? '✓' : t.id.toUpperCase()}</b> ${esc(t.t)}</button>`).join('') : `<button class="btn sm" data-act="lab-open">${icon('send')}Məşq API-sini aç</button>`}</div></div>`;
+}
 /* ---------- glossary term popover ---------- */
 // interview.json: how to say the term in a job interview, one or two sentences
 const sayHTML = g => g.say ? `<div class="say"><div class="say-k">${icon('chat')}Müsahibədə belə de</div><p>${esc(g.say)}</p></div>` : '';
@@ -1605,11 +2039,14 @@ function vPractice(v) {
   <section class="block"><div class="block-h"><h2>Fəsil testləri</h2><span class="muted" style="font-size:13px">${o.quizDone}/21 · orta ${o.avg}%</span></div>
     <div class="qgrid">${cells}</div></section>
   <section class="block"><div class="block-h"><h2>Məşq mağazası</h2><span class="muted" style="font-size:13px">${Object.keys(SM.passed).length}/${STORE.scenarios.length} test case</span></div>
-    <div class="card"><div class="muted" style="font-size:13.5px">saucedemo.com-a bənzəyən kiçik mağaza modeli. Test case-in addımlarını icra et, faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur. problem_user-də gizli bug-lar var.</div>
+    <div class="card"><div class="muted" style="font-size:13.5px">saucedemo.com-a bənzəyən kiçik mağaza modeli. Test case-in addımlarını icra et, faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur. problem_user-də gizli bug-lar var: tapdığın hər biri üçün tam bug report yaz.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sm-open" data-sc="tc01">${icon('play')}Test case-lərlə başla</button><button class="btn" data-act="sm-open" data-sc="">${icon('search')}Kəşfiyyat sessiyası</button></div></div></section>
   <section class="block"><div class="block-h"><h2>SQL məşqi</h2><span class="muted" style="font-size:13px">${SQLC.tasks.filter(t => SQX.done[t.id]).length}/${SQLC.tasks.length} tapşırıq</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">SQLite brauzerdə işləyir — heç nə yükləmək lazım deyil. 16-cı fəslin customers və orders bazası: sorğu yaz, nəticəni cədvəl kimi gör, tapşırıqları avtomatik yoxlat.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sql-open">${icon('play')}SQL konsolunu aç</button></div></div></section>
+  <section class="block"><div class="block-h"><h2>Məşq API-si</h2><span class="muted" style="font-size:13px">${API.tasks.filter(t => LAB.done[t.id]).length}/${API.tasks.length} tapşırıq</span></div>
+    <div class="card"><div class="muted" style="font-size:13.5px">Mini Store-un REST API-si və Postman-a bənzər panel: metod, URL, başlıqlar, JSON gövdə, avtomatik yoxlamalar və environment. Sənədlə cavabı tutuşdur — API-də gizli baqlar var.</div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="lab-open">${icon('send')}Sorğu göndər</button></div></div></section>
   <section class="block"><div class="block-h"><h2>Kod izləyicisi</h2><span class="muted" style="font-size:13px">${TR_LIST.length} proqram</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">JavaScript kodunu sətir-sətir icra et və dəyişənlərin dəyərini gör. Playwright testində lokator, hərəkət və yoxlamanı ayırd et.</div>
       <div class="sm-links" style="margin-top:12px">${TR_LIST.map(({ sid, p }) => `<button class="btn sm" data-act="goto-sec" data-sec="${sid}"><b>${esc(secById[sid].num || 'Fəsil ' + chById[secCh[sid]].num)}</b> ${esc(p.title)}</button>`).join('')}</div></div></section>
@@ -2510,6 +2947,42 @@ document.addEventListener('click', ev => {
       const box = el.closest('.sql-out'); if (box) box.innerHTML = ''; else if (S.view === 'sql') { SQX.out = null; sqlRedraw('out'); }
       break;
     }
+    case 'lab-open': closeSheet(); go('lab', {}, { push: S.view !== 'lab' }); break;
+    case 'lab-send': labSend(); break;
+    case 'lab-tab': LAB.tab = d.v; labRedraw('req'); break;
+    case 'lab-rtab': LAB.rtab = d.v; labRedraw('res'); break;
+    case 'lab-tadd': LAB.req.tests.push({ t: 'body', p: '', op: 'eql', v: '' }); labRedraw('req'); break;
+    case 'lab-tdel': LAB.req.tests.splice(+d.i, 1); labRedraw('req'); break;
+    case 'lab-auth': {
+      const R = LAB.req;
+      if (!/^authorization\s*:/im.test(R.hdrs)) R.hdrs = (R.hdrs.trim() ? R.hdrs.trim() + '\n' : '') + 'Authorization: Bearer {{token}}';
+      LAB.tab = 'hdrs'; labRedraw('req'); break;
+    }
+    case 'lab-fmt': try { LAB.req.body = JSON.stringify(JSON.parse(LAB.req.body), null, 2); labRedraw('req'); } catch (e) { toast('JSON düzgün deyil: ' + e.message); } break;
+    case 'lab-hist': { const e = LAB.log[+d.i]; if (e) { LAB.req = JSON.parse(JSON.stringify(e.req)); labRedraw('req'); $('#lab-req').scrollIntoView({ behavior: 'smooth', block: 'start' }); } break; }
+    case 'lab-eadd': {
+      const k = ($('#lab-ek') || {}).value || '', v = ($('#lab-ev') || {}).value || '';
+      if (!/^[\w.-]+$/.test(k.trim())) { toast('Dəyişənin adı: hərf, rəqəm, _ . -'); break; }
+      envSet(k.trim(), v); labRedraw('env'); break;
+    }
+    case 'lab-edel': LAB.env.splice(+d.i, 1); labRedraw('env'); break;
+    case 'lab-reset': labInit(true); LAB.res = null; render({ keepScroll: true }); toast('Server və Environment sıfırlandı: token, səbət və sifarişlər silindi.'); break;
+    case 'br-open': {
+      brOpen(d.b); brRedraw();
+      const fb = $('#sm-fb'); if (fb && SM.fb) fb.innerHTML = smFbHTML();
+      const cs = $('#sm-case'); if (cs && !SM.sc) cs.innerHTML = smCaseHTML();
+      const br = $('#br'); if (br) br.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      break;
+    }
+    case 'br-shot': if (SM.rep) { brShot(); brRedraw(); toast(SM.rep.shot.ok ? 'Ekran şəkli əlavə olundu' : 'Ekran şəkli əlavə olundu — amma baq bu ekranda görünmür'); } break;
+    case 'br-check': if (SM.rep) { brCheck(); const el = $('#br-fb'); if (el) el.innerHTML = brFbHTML(); } break;
+    case 'br-copy': if (SM.rep) { try { navigator.clipboard.writeText(brMd()).then(() => toast('Bug report kopyalandı — Jira-ya və ya README-yə yapışdır.'), () => toast('Kopyalamaq alınmadı')); } catch (e) { toast('Kopyalamaq alınmadı'); } } break;
+    case 'br-close': {
+      SM.rep = null; brRedraw();
+      const fb = $('#sm-fb'); if (fb && SM.fb) fb.innerHTML = smFbHTML();
+      const cs = $('#sm-case'); if (cs && !SM.sc) cs.innerHTML = smCaseHTML();
+      break;
+    }
     case 'tr': { const N = trLast(trById[d.tr]), i = Math.min(TR[d.tr] || 0, N); TR[d.tr] = d.d === '0' ? 0 : d.d === 'end' ? N : clamp(i + +d.d, 0, N); trRedraw(d.tr); break; }
     case 'kon-quiz': if (AI.state === 'on') aiForKonspekt(d.ch); break;
     case 'ch-lesson': if (AI.state === 'on') aiForChapterLesson(d.ch); break;
@@ -2652,6 +3125,7 @@ document.addEventListener('keydown', ev => {
     else if (ev.target.id === 'shin') { ev.preventDefault(); shSend(); }
     else if (ev.target.id === 'rpin') { ev.preventDefault(); const v = ev.target.value; if (!v.trim() || S.rpBusy) return; ev.target.value = ''; autoGrow(ev.target); rpCall('send', v); }
     else if (ev.target.id === 'apikey' && PWA) { ev.preventDefault(); const b = $('[data-act="key-save"]'); if (b && !b.disabled) saveKey(b); }
+    else if (ev.target.dataset && ev.target.dataset.lab === 'url') { ev.preventDefault(); labSend(); }
     else if (ev.target.dataset && ev.target.dataset.smF) { ev.preventDefault(); smEvent({ ev: SM.st.page === 'login' ? 'login' : 'continue' }); smRedraw(); } // Enter submits the form, as on the site
   }
   if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.classList && ev.target.classList.contains('fc')) { ev.preventDefault(); ev.target.click(); }
@@ -2691,6 +3165,14 @@ document.addEventListener('input', ev => {
   else if (t.dataset.smAns !== undefined) SM.ans = t.value;
   else if (t.dataset.smTitle !== undefined) SM.title = t.value;
   else if (t.dataset.sqlq !== undefined) SQX.q = t.value;
+  else if (t.dataset.lab) { LAB.req[t.dataset.lab] = t.value; if (t.dataset.lab === 'm') labRedraw('req'); }
+  else if (t.dataset.lt) {
+    const [i, f] = t.dataset.lt.split(':'), r = LAB.req.tests[+i];
+    if (f === 't') { LAB.req.tests[+i] = t.value === 'body' ? { t: 'body', p: '', op: 'eql', v: '' } : { t: t.value }; labRedraw('req'); }
+    else { r[f] = t.value; if (f === 'op') labRedraw('req'); else { const c = $('#lab-code'); if (c) c.innerHTML = labCode(); } }
+  }
+  else if (t.dataset.le) LAB.env[+t.dataset.le][1] = t.value;
+  else if (t.dataset.brF && SM.rep) SM.rep.f[t.dataset.brF] = t.value;
   else if (t.id === 'glq') { S.glq = t.value; drawGlossary(); }
   else if (t.id === 'sq') { doSearch(t.value); }
   else if (t.id === 'tin' || t.id === 'shin' || t.id === 'rpin') autoGrow(t);
@@ -2752,6 +3234,7 @@ function routeHash() {
   else if (h === 'xulase') { S.tab = 'practice'; S.view = 'summary'; S.params = { ch: 'all' }; }
   else if (t === 'magaza') { S.tab = 'practice'; S.view = 'store'; S.params = { sc: own(scById, act) ? act : null }; }
   else if (h === 'sql') { S.tab = 'practice'; S.view = 'sql'; S.params = {}; }
+  else if (h === 'api') { S.tab = 'practice'; S.view = 'lab'; S.params = {}; }
   else if (h === 'muellim' || h === 'tutor') { S.tab = 'tutor'; S.view = 'tutor'; S.params = {}; S.tutorMode = 'chat'; }
   else if (h === 'rol' || h === 'roleplay') { S.tab = 'tutor'; S.view = 'tutor'; S.params = {}; S.tutorMode = 'rp'; }
   else if (h === 'progress' || h === 'ireliles') { S.tab = 'progress'; S.view = 'progress'; S.params = {}; }

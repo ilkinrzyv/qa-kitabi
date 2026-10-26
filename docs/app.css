@@ -766,6 +766,28 @@ details.say-d[open]>summary{border-bottom:0;border-radius:0}
 .sm-good{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--pass)}
 .sm-good svg.i{width:18px;height:18px;stroke-width:2.4}
 .sm-model p{margin:6px 0 0;font-size:14px;line-height:1.5;color:var(--ink)}
+.sm-found li>div{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+/* full bug report: the 12.1 fields, a screenshot of the shop as evidence, field-by-field check */
+.br{margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.br-h{display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start}
+.br-h>svg.i{width:24px;height:24px;color:var(--accent);margin-top:2px}
+.br-f{display:flex;flex-direction:column;gap:5px;min-width:0}
+.br-l{font-size:13px;font-weight:600;color:var(--ink-2)}
+.br .field{min-height:0}
+.br-in,.br-sel{height:44px;padding:0 12px}
+.br-ta{resize:vertical}
+.br-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.br-ro{padding:10px 12px;border-radius:12px;border:1px dashed var(--line-2);background:var(--surface-2);font-size:14.5px;line-height:1.45;white-space:pre-wrap}
+.br-hint{font-size:12.5px}
+.br-shot{margin-top:4px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.br-shot-img{width:200px;height:250px;overflow:hidden;border-radius:12px;border:2px solid var(--pass-line);pointer-events:none;user-select:none}
+.br-shot.bad .br-shot-img{border-color:var(--fail-line)}
+.br-shot-img .sm-dev{zoom:.5;margin:0;max-width:none;width:400px;border-width:0;border-radius:0}
+.br-shot-m{display:flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:12px;color:var(--ink-3)}
+.br-shot-m svg.i{width:15px;height:15px}
+.br-acts{margin-top:2px}
+.br-model .tbl{margin:8px 0 0}
+.sm-note.i{color:var(--ink-2)}
 .sm-link{margin-top:16px;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--accent-line)}
 .sm-links{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
 .sm-links .btn{height:auto;min-height:36px;padding:7px 12px;justify-content:flex-start;text-align:left;white-space:normal}
@@ -793,6 +815,67 @@ details.say-d[open]>summary{border-bottom:0;border-radius:0}
 .sql-cols{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-2)}
 .sql-cols code{font-family:var(--f-mono);font-size:12.5px;color:var(--ink)}
 pre.code.sql-sol{margin:6px 0 0;font-size:12.8px}
+/* practice API: tasks, a Postman-like request line with tabs, the response (status, time, size, body / headers / tests),
+   environment variables, the API document, found bugs and history */
+.lab-card{margin-top:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+details.lab-card{display:block;gap:0}
+.lab-tl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.lab-tl li{display:grid;grid-template-columns:20px 1fr;gap:8px;font-size:14.5px;line-height:1.45}
+.lab-tl li>i{width:14px;height:14px;margin-top:4px;border-radius:50%;border:1.6px solid var(--line-2)}
+.lab-tl li>svg.i{width:18px;height:18px;color:var(--pass);stroke-width:2.4;margin-top:1px}
+.lab-tl li.ok b{color:var(--pass)}
+.lab-tx{color:var(--ink-2);margin-top:2px}
+.lab-tl .cmp-why{margin-top:4px}
+.lab-next{padding:10px 12px;border-radius:12px;background:var(--accent-soft);border:1px solid var(--accent-line)}
+.lab-all>summary{list-style:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--accent);font-size:13.5px;font-weight:500;padding:2px 0}
+details.lab-all[open]>summary{border-bottom:0;border-radius:0;margin-bottom:10px}
+.lab-all>summary svg.i{width:16px;height:16px}
+.lab-line{display:grid;grid-template-columns:92px 1fr auto;gap:6px;align-items:center}
+.lab-line .field{min-height:0;height:42px;padding:0 10px}
+.lab-m{font-family:var(--f-mono);font-weight:600;font-size:13.5px}
+.lab-url{font-size:13.5px;min-width:0}
+.lab-line .btn{height:42px}
+@media (max-width:560px){.lab-line .lab-url{grid-row:2;grid-column:1/-1}.lab-line .btn{grid-column:3;grid-row:1}}
+.lab-tabs button{font-size:13px}
+.lab-pane{display:flex;flex-direction:column;gap:8px;min-width:0}
+.lab-ta{min-height:0;font-size:13.5px;line-height:1.5}
+.lab-note{font-size:12.5px;margin:0}
+.lab-trs{display:flex;flex-direction:column;gap:8px}
+.lab-tr{display:grid;grid-template-columns:132px 1fr 36px;gap:6px;align-items:center}
+.lab-tr-x{display:flex;align-items:center;gap:6px;min-width:0}
+.lab-tr .field,.lab-er .field{min-height:0;height:38px;padding:0 8px;font-size:13.5px}
+.lab-ti{flex:1;min-width:0}
+.lab-ti.n{flex:0 1 84px}
+.lab-ts.op{flex:0 0 auto;width:auto}
+.lab-op{font-family:var(--f-mono);font-size:13px;color:var(--ink-3)}
+.lab-tr .ibtn,.lab-er .ibtn{width:36px;height:36px}
+.lab-cap{font-size:12.5px;color:var(--ink-3)}
+pre.code.lab-code,pre.code.lab-json{margin:0;font-size:12.5px;line-height:1.55;max-height:360px;overflow:auto}
+.lab-st{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lab-st .chip{height:28px;font-size:13px;font-weight:600}
+.lab-st .muted{font-size:12.5px;overflow-wrap:anywhere}
+.lab-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-3)}
+.lab-meta .ok{color:var(--pass)}.lab-meta .no{color:var(--fail)}
+.lab-results .chip{height:20px;font-size:11px;padding:0 6px}
+.lab-got{font-size:12.5px;font-family:var(--f-mono);overflow-wrap:anywhere}
+.lab-env{display:flex;flex-direction:column;gap:6px}
+.lab-er{display:grid;grid-template-columns:auto 1fr 36px;gap:6px;align-items:center}
+.lab-er code{font-family:var(--f-mono);font-size:12.5px;color:var(--accent);background:var(--accent-soft);padding:3px 6px;border-radius:6px}
+.lab-er.add{grid-template-columns:96px 1fr auto}
+.lab-doc{display:flex;flex-direction:column;gap:14px}
+.lab-ep{display:flex;flex-direction:column;gap:5px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.lab-ep:last-child{border-bottom:0;padding-bottom:0}
+.lab-ep p{margin:0;font-size:14px;line-height:1.45;color:var(--ink-2)}
+.lab-ep code{font-family:var(--f-mono);font-size:13px}
+.lab-codes{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--ink-2)}
+.lab-codes b{font-family:var(--f-mono)}
+.lab-mt{display:inline-block;min-width:52px;font-family:var(--f-mono);font-size:11.5px;font-weight:700;letter-spacing:.02em}
+.m-GET{color:var(--pass)}.m-POST{color:var(--warn)}.m-PUT,.m-PATCH{color:var(--accent)}.m-DELETE{color:var(--fail)}
+.lab-hs{display:flex;flex-direction:column;gap:4px}
+.lab-h{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;text-align:left;padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);font-size:12.5px;min-width:0}
+.lab-h .mono{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lab-h b{font-family:var(--f-mono)}
+.lab-h b.ok{color:var(--pass)}.lab-h b.w{color:var(--warn)}.lab-h b.no{color:var(--fail)}
 /* code tracer: the code with the current line, step controls, then variables + console (JS) or browser + results (Playwright) */
 .tr{margin-top:16px;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--accent-line)}
 .tr-legend{margin:0 0 4px;font-size:13px;line-height:1.9;color:var(--ink-2)}
