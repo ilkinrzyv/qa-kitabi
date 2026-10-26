@@ -31,6 +31,9 @@ Screenshots land in `build/shots/` (gitignored).
   counts a missing or unknown term as an error. Shown in the term sheet, the glossary (folded) and on flipped flashcards.
 - `build/compare.json` — good / bad writing cards keyed by section id (`tag`, `bad`, `good`, `why`); `parse_book.py`
   attaches them as `sec.cmp` and `cmpHTML()` renders them after the section text.
+- `build/sorting.json` — drag-and-drop exercises keyed by section id: `order` (items in the right order) or `group`
+  (`groups` + items with `g`); every item has a `why`. Pointer events with touch-action:none on the handles, tap-to-place
+  and ▲▼ as fallbacks, edge auto-scroll while dragging. State lives in memory only.
 - `build/quiz_*.json` — chapter quizzes. `build/diagrams.py` — SVG diagrams registered with `reg(slug, sid, anchor, cap, d)`,
   drawn with `svgkit.py` (text measured with the vendored fonts in `fonts/`, overlap and overflow checks).
 - `build/app.js` — the whole UI in one IIFE, no framework. `PWA = window.QA_PWA` exists only in the offline build:
