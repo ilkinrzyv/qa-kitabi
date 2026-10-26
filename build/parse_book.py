@@ -541,6 +541,48 @@ for sid, progs in json.load(open(os.path.join(BASE, 'trace.json'), encoding='utf
         tr_count += 1
     if sec:
         sec['tr'] = progs
+# ---------- 6i. SQL practice (sql.json): the practice database is 16.3's code block; every SQL block of chapter 16 and
+# every task's solution must run on it (Python's sqlite3, the same SQLite the page runs through sql.js) ----------
+import sqlite3
+sqlcfg = json.load(open(os.path.join(BASE, 'sql.json'), encoding='utf-8'))
+m = re.search(r'### 16\.3\.[\s\S]*?```sql\n([\s\S]*?)```', md_text)
+seed = m.group(1).strip() if m else ''
+def sql_db(empty=False):
+    con = sqlite3.connect(':memory:')
+    if not empty:
+        con.executescript(seed)
+    return con
+ch16 = md_text[md_text.find('## Fəsil 16.'):md_text.find('## Fəsil 17.')]
+for i, block in enumerate(re.findall(r'```sql\n([\s\S]*?)```', ch16)):
+    try:
+        sql_db(empty='CREATE TABLE' in block).executescript(block)
+    except sqlite3.Error as e:
+        print('ERR sql block', i, e, file=sys.stderr); errors += 1
+sql_secs = {s['id']: s for c in chapters for s in c['sections']}
+q_ids = set()
+for t in sqlcfg['tasks']:
+    ok = t.get('id') and t['id'] not in q_ids and t.get('t') and t.get('x') and t.get('hint') and t.get('sec') in sql_secs \
+        and t.get('mode') in ('value', 'col', 'rows', 'state') and t.get('sol') and (t['mode'] != 'state' or t.get('state'))
+    for sol in t.get('sol') or []:
+        try:
+            con = sql_db()
+            if t['mode'] == 'state':
+                con.executescript(sol); rows = con.execute(t['state']).fetchall()
+            else:
+                rows = con.execute(sol).fetchall()
+            if not rows or (t['mode'] == 'value' and (len(rows) != 1 or len(rows[0]) != 1)):
+                ok = False
+        except (sqlite3.Error, KeyError):
+            ok = False
+    if not ok:
+        print('ERR sql task', t.get('id'), file=sys.stderr); errors += 1
+    q_ids.add(t.get('id'))
+for sid in sqlcfg.pop('sections'):
+    if sid not in sql_secs:
+        print('ERR sql section', sid, file=sys.stderr); errors += 1; continue
+    sql_secs[sid]['sql'] = 1
+sqlcfg['seed'] = seed
+print('sql tasks', len(sqlcfg['tasks']), 'seed bytes', len(seed))
 # ---------- 6h. practice API (api.json): a REST API over the practice store's data; tasks are checked against the request
 # log, planted bugs are found by sending the right request ----------
 api = json.load(open(os.path.join(BASE, 'api.json'), encoding='utf-8'))
@@ -679,7 +721,7 @@ for c in chapters:
             s['x']['short'], k = gl_wrap(s['x']['short'], rx, idx, 2); gl_total += k
 print('glossary links', gl_total)
 out = {'title': 'QA Kitabı: Sıfırdan Peşəkar Testerə', 'parts': parts, 'chapters': chapters,
-       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'api': api}
+       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'api': api, 'sql': sqlcfg}
 json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 # ---------- 7. report ----------

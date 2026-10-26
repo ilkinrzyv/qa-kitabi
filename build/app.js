@@ -448,7 +448,7 @@ function render(opts) {
   if (observer) { observer.disconnect(); observer = null; }
   hideSelPill();
   const v = $('#view');
-  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab };
+  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql };
   (views[S.view] || vHome)(v);
   if (opts.keepScroll) window.scrollTo(0, y);
   else if (!(S.view === 'reader' && S.params.sec)) window.scrollTo(0, 0);
@@ -809,10 +809,10 @@ function dtHTML(sid, c) {
 function textBody(c, s) {
   const lv = lvlOf(s.id);
   if (lv === 'short') {
-    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${labLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}
+    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}
       <button class="btn sm ghost more" data-act="lvl" data-sec="${s.id}" data-v="std">${icon('book')}Tam mətni oxu</button>${miniHTML(c, s, false)}`;
   }
-  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${labLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
+  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
 }
 function fbHTML(a) {
   let h = '';
@@ -900,7 +900,7 @@ function secHTML(c, s) {
   else if (s.kind === 'selfcheck') body = selfHTML(c, s);
   else if (s.kind === 'checklist') body = checklistHTML(s);
   else if (s.x) body = textBody(c, s);
-  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${labLinkHTML(s)}${trHTML(s)}`;
+  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}`;
   return `<section class="sec${learned ? ' learned' : ''}" id="${s.id}" data-sec="${s.id}" data-kind="${s.kind}">
     <header class="sec-h"><span class="sec-num">${esc(s.num || kindTag(s).toLocaleUpperCase('az'))}</span><h2>${esc(s.title)}</h2>${s.x ? lvlCtl(s.id, lvlOf(s.id)) : ''}</header>
     ${body}${footerHTML(c, s)}</section>`;
@@ -1484,6 +1484,199 @@ function trInner(id) {
     ${pw ? '<div class="tr-legend"><span class="tr-loc">lokator</span> elementi tapır · <span class="tr-act">hərəkət</span> onunla nə edir · <span class="tr-as">yoxlama</span> nəticəni yoxlayır</div>' : ''}
     <pre class="code tr-code">${lines}</pre>${ctl}${note}<div class="tr-panes">${panes}</div>`;
 }
+/* ---------- SQL practice (sql.json): SQLite in the page through sql.js (its asm.js build — one script, no wasm file to
+   fetch). The practice database is 16.3's code block. Every SQL block of chapter 16 gets a Run button; the console runs
+   free queries and checks tasks on a fresh copy of the database ---------- */
+const SQLC = BOOK.sql;
+const SQL_SRC = PWA ? 'libs/sql-asm.js' : 'https://cdn.jsdelivr.net/npm/sql.js@1.14.2/dist/sql-asm.js';
+const SQX = { eng: null, db: null, q: 'SELECT * FROM customers;', out: null, task: 0, done: {}, fb: null }; // session only
+function sqlEngine() {
+  if (!SQX.eng) SQX.eng = new Promise((ok, no) => {
+    const init = () => window.initSqlJs().then(ok, no);
+    if (window.initSqlJs) { init(); return; }
+    const s = document.createElement('script');
+    s.src = SQL_SRC; s.async = true;
+    s.onload = () => window.initSqlJs ? init() : no(new Error('initSqlJs'));
+    s.onerror = () => no(new Error('load'));
+    document.head.appendChild(s);
+  }).catch(e => { SQX.eng = null; throw e; });
+  return SQX.eng;
+}
+async function sqlFresh(empty) { const SQL = await sqlEngine(); const db = new SQL.Database(); if (!empty) db.exec(SQLC.seed); return db; }
+async function sqlDB() { if (!SQX.db) SQX.db = await sqlFresh(); return SQX.db; }
+function sqlDrop() { if (SQX.db) SQX.db.close(); SQX.db = null; }
+const SQL_WRITE = /^\s*(insert|update|delete|replace|create|drop|alter)\b/i;
+// every statement separately: its columns and rows, or how many rows it changed
+function sqlExec(db, text) {
+  const res = [];
+  try {
+    for (const st of db.iterateStatements(text)) {
+      const sql = st.getSQL().trim(), cols = st.getColumnNames();
+      if (cols.length) { const rows = []; while (st.step()) rows.push(st.get()); res.push({ sql, cols, rows }); }
+      else { st.step(); res.push({ sql, changed: /^\s*(insert|update|delete|replace)\b/i.test(sql) ? db.getRowsModified() : null }); }
+    }
+  } catch (e) { res.push({ err: String(e && e.message || e) }); }
+  return res;
+}
+function sqlNotes(text, res) {
+  const n = [];
+  if (/(=|<>|!=)\s*null\b/i.test(text)) n.push('NULL “=” ilə yoxlanmır — nəticə həmişə boş olur. IS NULL və ya IS NOT NULL yaz.');
+  res.filter(r => r.sql && /^\s*(update|delete)\b/i.test(r.sql) && !/\bwhere\b/i.test(r.sql))
+    .forEach(r => n.push(`WHERE yoxdur: “${r.sql.split(/\s+/).slice(0, 3).join(' ')}…” bütün cədvələ təsir etdi (${r.changed} sətir). «Bazanı sıfırla» ilə əvvəlki vəziyyətə qayıt.`));
+  return n;
+}
+function sqlHint(e) {
+  let m;
+  if ((m = e.match(/no such column: (\S+)/))) return `“${m[1]}” adlı sütun yoxdur. Mətndirsə, dırnağa al: '${m[1]}'. Sütunların adını «Cədvəllər» siyahısında yoxla.`;
+  if ((m = e.match(/no such table: (\S+)/))) return `“${m[1]}” adlı cədvəl yoxdur. Cədvəllər: customers, orders. Silmisənsə, «Bazanı sıfırla» bas.`;
+  if (/incomplete input/.test(e)) return 'Sorğu yarımçıq qalıb: dırnaq və ya mötərizə bağlanmayıb.';
+  if ((m = e.match(/near "([^"]*)": syntax error/))) return `Sintaksis xətası “${m[1]}” sözünün yanındadır: vergülü, dırnağı və açar sözlərin yazılışını yoxla.`;
+  if (/UNIQUE constraint failed/.test(e)) return 'Bu id artıq var: primary key təkrarlana bilməz.';
+  if ((m = e.match(/NOT NULL constraint failed: (\S+)/))) return `${m[1]} boş ola bilməz (NOT NULL).`;
+  if (/already exists/.test(e)) return 'Bu cədvəl artıq var. Bazanı yenidən yaratmaq üçün «Bazanı sıfırla» bas.';
+  return '';
+}
+const sqlVerb = s => /^\s*create/i.test(s) ? 'Cədvəl yaradıldı' : /^\s*insert/i.test(s) ? 'Əlavə olundu' : /^\s*update/i.test(s) ? 'Dəyişdi'
+  : /^\s*delete/i.test(s) ? 'Silindi' : /^\s*drop/i.test(s) ? 'Cədvəl silindi' : 'İcra olundu';
+const sqlCell = v => v === null ? '<td class="sql-null">NULL</td>' : `<td>${esc(v)}</td>`;
+function sqlTable(cols, rows) {
+  return `<div class="tbl"><table><thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows.slice(0, 200).map(r => `<tr>${r.map(sqlCell).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+function sqlOutHTML(o) {
+  if (!o) return '';
+  if (o.loading) return '<div class="thinking"><i></i>SQLite yüklənir…</div>';
+  if (o.fail) return `<div class="ai-err">SQLite yüklənmədi. ${PWA ? 'Tətbiqi yenilə.' : 'İnternet bağlantısını yoxla və yenidən cəhd et.'}</div>`;
+  const blocks = o.res.map(r => r.err ? `<div class="ai-err"><b>Xəta:</b> ${esc(r.err)}${sqlHint(r.err) ? `<div class="sql-hint">${esc(sqlHint(r.err))}</div>` : ''}</div>`
+    : r.cols ? `<div class="sql-res"><div class="sql-cap">${r.rows.length} sətir${r.rows.length > 200 ? ' (ilk 200-ü)' : ''}</div>${r.rows.length ? sqlTable(r.cols, r.rows) : '<p class="muted sql-empty">Nəticə boşdur — boş nəticə də nəticədir.</p>'}</div>`
+    : `<div class="sql-ok">${icon('check')}${sqlVerb(r.sql)}${r.changed != null ? ` · ${r.changed} sətir` : ''}</div>`).join('');
+  return `${o.notes.map(n => `<div class="sm-note sql-warn">${esc(n)}</div>`).join('')}${blocks}${o.wrote ? `<div class="row"><button class="btn sm ghost" data-act="sql-reset">${icon('refresh')}Bazanı sıfırla</button></div>` : ''}`;
+}
+async function sqlRun(text, seed) {
+  try {
+    let db;
+    if (seed) { sqlDrop(); db = SQX.db = await sqlFresh(true); } else db = await sqlDB();
+    const res = sqlExec(db, text);
+    return { res, notes: sqlNotes(text, res), wrote: !seed && res.some(r => r.sql && SQL_WRITE.test(r.sql)) };
+  } catch (e) { return { fail: true }; }
+}
+async function sqlRunPre(btn) {
+  const box = btn.closest('.sql-run'), pre = box && box.previousElementSibling, out = box && $('.sql-out', box);
+  if (!pre || !out) return;
+  const seed = /create\s+table/i.test(pre.textContent);
+  out.innerHTML = sqlOutHTML({ loading: true });
+  const o = await sqlRun(pre.textContent, seed);
+  out.innerHTML = seed && !o.fail && !o.res.some(r => r.err)
+    ? `<div class="sql-ok">${icon('check')}Baza yaradıldı: customers — ${sqlCount('customers')} sətir, orders — ${sqlCount('orders')} sətir. İndi bu fəslin sorğularını işə sala bilərsən.</div>`
+    : sqlOutHTML(o);
+}
+function sqlCount(t) { try { return SQX.db.exec(`SELECT COUNT(*) FROM ${t}`)[0].values[0][0]; } catch (e) { return 0; } }
+async function sqlRunConsole() {
+  SQX.out = { loading: true }; sqlRedraw('out');
+  SQX.out = await sqlRun(SQX.q);
+  sqlRedraw('out'); sqlRedraw('schema');
+}
+// task checks run on a fresh copy, so earlier experiments with the shared database do not matter
+const sqlNorm = v => typeof v === 'number' ? Math.round(v * 100) / 100 : v === null ? null : String(v).trim();
+const sqlRow = r => JSON.stringify(r.map(sqlNorm));
+const sqlSorted = rows => rows.map(sqlRow).sort();
+async function sqlCheck() {
+  const t = SQLC.tasks[SQX.task], q = SQX.q.trim();
+  if (!q) { toast('Sorğunu yaz.'); return; }
+  let fb;
+  try {
+    const db = await sqlFresh(), res = sqlExec(db, q), err = res.find(r => r.err);
+    const sel = res.filter(r => r.cols).pop();
+    if (err) fb = { ok: false, msg: 'Sorğu xəta verdi: ' + err.err + (sqlHint(err.err) ? ' — ' + sqlHint(err.err) : '') };
+    else if (t.mode === 'state') {
+      const got = db.exec(t.state)[0].values, wrote = res.some(r => r.sql && /^\s*(insert|update|delete|replace)\b/i.test(r.sql));
+      const e = await sqlFresh(); e.exec(t.sol[0]); const want = e.exec(t.state)[0].values; e.close();
+      const diff = Math.abs(got.length - want.length) + want.filter((r, i) => !got[i] || sqlRow(r) !== sqlRow(got[i])).length;
+      fb = !wrote ? { ok: false, msg: 'Bu tapşırıq cədvəli dəyişməyi tələb edir: UPDATE və ya INSERT yaz.' }
+        : diff ? { ok: false, msg: `Cədvəlin son vəziyyəti gözləniləndən fərqlidir (${diff} sətir).${res.some(r => r.changed > 1) && t.sol[0].startsWith('UPDATE') ? ' WHERE çox geniş ola bilər.' : ''}` }
+        : { ok: true };
+    } else if (!sel) fb = { ok: false, msg: 'Sorğu nəticə qaytarmadı: SELECT yaz.' };
+    else {
+      const alts = [];
+      for (const s of t.sol) { const e = await sqlFresh(); const r = e.exec(s)[0]; e.close(); alts.push({ cols: r.columns, rows: r.values }); }
+      const w = alts[0], n = sel.rows.length;
+      if (t.mode === 'value') {
+        const v = sqlNorm(w.rows[0][0]);
+        fb = n !== 1 ? { ok: false, msg: `Nəticədə ${n} sətir var — bir dəyər gözlənilir (COUNT, SUM kimi).` }
+          : sel.rows[0].some(x => sqlNorm(x) === v) ? { ok: true } : { ok: false, msg: `Nəticə ${sel.rows[0].map(x => x === null ? 'NULL' : x).join(', ')} — gözlənilən deyil. Filtrə (WHERE) bax.` };
+      } else if (t.mode === 'col') {
+        const want = w.rows.map(r => JSON.stringify(sqlNorm(r[0]))).sort().join();
+        fb = n !== w.rows.length ? { ok: false, msg: `Nəticədə ${n} sətir var, gözlənilən ${w.rows.length}.` }
+          : sel.cols.some((c, j) => sel.rows.map(r => JSON.stringify(sqlNorm(r[j]))).sort().join() === want) ? { ok: true }
+          : { ok: false, msg: 'Sətirlərin sayı düzdür, amma lazımi dəyərlər nəticədə yoxdur.' };
+      } else {
+        fb = null;
+        for (const a of alts) {
+          if (a.cols.length !== sel.cols.length) { fb = fb || { ok: false, msg: `Gözlənilən ${a.cols.length} sütun, səndə ${sel.cols.length}.` }; continue; }
+          const same = sqlSorted(a.rows).join() === sqlSorted(sel.rows).join();
+          if (same && (!t.ordered || a.rows.map(sqlRow).join() === sel.rows.map(sqlRow).join())) { fb = { ok: true }; break; }
+          fb = same ? { ok: false, msg: 'Sətirlər düzdür, amma sıra fərqlidir — ORDER BY-a bax.' } : (fb || { ok: false, msg: 'Dəyərlər gözləniləndən fərqlidir.' });
+        }
+      }
+    }
+    db.close();
+  } catch (e) { fb = { ok: false, msg: 'SQLite yüklənmədi.' }; }
+  fb.notes = sqlNotes(q, []);
+  SQX.fb = Object.assign(fb, { id: t.id });
+  if (fb.ok) SQX.done[t.id] = 1;
+  sqlRedraw('task');
+}
+function sqlTaskHTML() {
+  const T = SQLC.tasks, t = T[SQX.task], n = T.filter(x => SQX.done[x.id]).length, fb = SQX.fb && SQX.fb.id === t.id ? SQX.fb : null;
+  return `<div class="block-h" style="margin:0"><h2>Tapşırıq ${SQX.task + 1}/${T.length}</h2><span class="chip${n === T.length ? ' pass' : ''}">${n}/${T.length} həll</span></div>
+    <div class="sql-t${SQX.done[t.id] ? ' ok' : ''}"><div><b>${SQX.done[t.id] ? icon('check') : ''}${esc(t.t)}</b> <span class="muted">${esc(secById[t.sec].num)}</span></div><p>${esc(t.x)}</p>
+      <details class="cmp-why"><summary>${icon('bulb')}İpucu</summary><p>${esc(t.hint)}</p></details></div>
+    ${fb ? `<div class="sm-st ${fb.ok ? 'ok' : 'no'}">${smMark(fb.ok)}<div>${fb.ok ? '<b>Düzdür!</b> Nəticə gözlənilənlə üst-üstə düşür.' : esc(fb.msg)}${fb.notes.map(x => `<div class="sm-note">${esc(x)}</div>`).join('')}</div></div>
+      <details class="cmp-why"><summary>${icon('eye')}Nümunə həll</summary><pre class="code sql-sol">${esc(t.sol[0])}</pre></details>` : ''}
+    <div class="row"><button class="btn sm ghost" data-act="sql-task" data-d="-1"${SQX.task ? '' : ' disabled'}>${icon('back')}Əvvəlki</button><button class="btn sm ghost" data-act="sql-task" data-d="1"${SQX.task < T.length - 1 ? '' : ' disabled'}>Növbəti${icon('arrow')}</button></div>`;
+}
+function sqlSchemaHTML() {
+  if (!SQX.db) return '<div class="thinking"><i></i>SQLite yüklənir…</div>';
+  return ['customers', 'orders'].map(t => {
+    let cols = [];
+    try { cols = SQX.db.exec(`PRAGMA table_info(${t})`)[0].values; } catch (e) { return `<div class="sql-tb"><b>${t}</b> <span class="muted">— cədvəl yoxdur</span></div>`; }
+    return `<div class="sql-tb"><div><b class="mono">${t}</b> <span class="muted">${sqlCount(t)} sətir</span></div><div class="sql-cols">${cols.map(c => `<span><code>${esc(c[1])}</code> ${esc(c[2])}${c[5] ? ' · PK' : ''}${c[3] ? ' · NOT NULL' : ''}</span>`).join('')}</div></div>`;
+  }).join('');
+}
+function sqlRedraw(part) {
+  const el = $('#sql-' + part); if (!el) return;
+  el.innerHTML = { task: sqlTaskHTML, out: () => sqlOutHTML(SQX.out), schema: sqlSchemaHTML }[part]();
+}
+function vSql(v) {
+  setHeader({ back: true, kicker: 'SQL məşqi', name: 'SQLite brauzerdə · customers və orders' });
+  v.innerHTML = `<p class="muted sm-intro">SQLite birbaşa brauzerdə işləyir — heç nə yükləmək lazım deyil. Baza 16.3-dəki customers və orders cədvəlləridir. Dəyişdirsən, «Bazanı sıfırla» ilk vəziyyəti qaytarır.</p>
+    <div class="card lab-card" id="sql-task">${sqlTaskHTML()}</div>
+    <div class="card lab-card"><textarea class="field mono sql-q" data-sqlq rows="6" spellcheck="false" autocapitalize="off" aria-label="SQL sorğusu">${esc(SQX.q)}</textarea>
+      <div class="row"><button class="btn primary" data-act="sql-go">${icon('play')}İşə sal</button><button class="btn" data-act="sql-check">${icon('check')}Yoxla</button><button class="btn ghost" data-act="sql-reset">${icon('refresh')}Bazanı sıfırla</button></div>
+      <div class="muted sql-kbd">Ctrl + Enter — işə sal. «Yoxla» sorğunu bazanın təmiz nüsxəsində tapşırıqla tutuşdurur.</div></div>
+    <div class="card lab-card" id="sql-out" aria-live="polite">${sqlOutHTML(SQX.out) || '<p class="muted" style="margin:0">Sorğunu yaz və «İşə sal» bas — nəticə cədvəl kimi burada görünəcək.</p>'}</div>
+    <details class="deep lab-card" open><summary>${icon('layers')}<span class="st">Cədvəllər<span class="sub">sütunlar, tiplər, sətirlərin sayı</span></span>${icon('chev', 'chev')}</summary><div class="dbody" id="sql-schema">${sqlSchemaHTML()}</div></details>`;
+  if (!SQX.db) sqlDB().then(() => sqlRedraw('schema'), () => { const el = $('#sql-schema'); if (el) el.innerHTML = sqlOutHTML({ fail: true }); });
+}
+function sqlLinkHTML(s) {
+  if (!s.sql) return '';
+  const ts = SQLC.tasks.filter(t => t.sec === s.id);
+  const txt = s.id === 'c16s3' ? 'Bu tətbiqdə heç nə yükləmək lazım deyil: SQLite brauzerdə işləyir və baza hazırdır. Kodun altındakı «Bazanı yarat» onu yenidən yaradır, hər sorğunun altında isə «İşə sal» var.'
+    : ts.length ? 'Bu bölmənin tapşırıqlarını SQL konsolunda həll et — «Yoxla» nəticəni gözlənilənlə tutuşdurur.' : 'Sorğuları kodun altındakı «İşə sal» ilə işə sal və ya konsolda öz sorğunu yaz.';
+  return `<div class="sm-link"><div class="srt-k">${icon('play')}SQL məşqi</div><p class="srt-hint">${txt}</p><div class="sm-links">${ts.length
+    ? ts.map(t => `<button class="btn sm" data-act="sql-open" data-t="${SQLC.tasks.indexOf(t)}"><b>${SQX.done[t.id] ? '✓' : t.id.toUpperCase()}</b> ${esc(t.t)}</button>`).join('')
+    : `<button class="btn sm" data-act="sql-open">${icon('play')}SQL konsolunu aç</button>`}</div></div>`;
+}
+// chapter 16's SQL blocks get Run / Open in console; a re-rendered section is decorated again
+function sqlDecorate() {
+  $$('#view pre.code[data-lang="sql"]:not([data-sqlx])').forEach(pre => {
+    const sec = pre.closest('[data-sec]');
+    if (!sec || secCh[sec.dataset.sec] !== 'c16') return;
+    pre.dataset.sqlx = '1';
+    const seed = /create\s+table/i.test(pre.textContent);
+    pre.insertAdjacentHTML('afterend', `<div class="sql-run"><div class="row"><button class="btn sm" data-act="sql-pre">${icon('play')}${seed ? 'Bazanı yarat' : 'İşə sal'}</button>${seed ? '' : `<button class="btn sm ghost" data-act="sql-open" data-pre="1">${icon('ext')}Konsolda aç</button>`}</div><div class="sql-out" aria-live="polite"></div></div>`);
+  });
+}
+new MutationObserver(sqlDecorate).observe($('#view'), { childList: true, subtree: true });
 /* ---------- practice API (api.json): a REST API over the practice store's data, answered inside the page (no network, so it
    works offline and on claude.ai), and a Postman-like panel: method, URL with {{variables}}, headers, a JSON body and tests
    built from rows, shown as the pm.test code they stand for. Some endpoints have planted bugs ---------- */
@@ -1848,6 +2041,9 @@ function vPractice(v) {
   <section class="block"><div class="block-h"><h2>Məşq mağazası</h2><span class="muted" style="font-size:13px">${Object.keys(SM.passed).length}/${STORE.scenarios.length} test case</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">saucedemo.com-a bənzəyən kiçik mağaza modeli. Test case-in addımlarını icra et, faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur. problem_user-də gizli bug-lar var: tapdığın hər biri üçün tam bug report yaz.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sm-open" data-sc="tc01">${icon('play')}Test case-lərlə başla</button><button class="btn" data-act="sm-open" data-sc="">${icon('search')}Kəşfiyyat sessiyası</button></div></div></section>
+  <section class="block"><div class="block-h"><h2>SQL məşqi</h2><span class="muted" style="font-size:13px">${SQLC.tasks.filter(t => SQX.done[t.id]).length}/${SQLC.tasks.length} tapşırıq</span></div>
+    <div class="card"><div class="muted" style="font-size:13.5px">SQLite brauzerdə işləyir — heç nə yükləmək lazım deyil. 16-cı fəslin customers və orders bazası: sorğu yaz, nəticəni cədvəl kimi gör, tapşırıqları avtomatik yoxlat.</div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sql-open">${icon('play')}SQL konsolunu aç</button></div></div></section>
   <section class="block"><div class="block-h"><h2>Məşq API-si</h2><span class="muted" style="font-size:13px">${API.tasks.filter(t => LAB.done[t.id]).length}/${API.tasks.length} tapşırıq</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">Mini Store-un REST API-si və Postman-a bənzər panel: metod, URL, başlıqlar, JSON gövdə, avtomatik yoxlamalar və environment. Sənədlə cavabı tutuşdur — API-də gizli baqlar var.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="lab-open">${icon('send')}Sorğu göndər</button></div></div></section>
@@ -2736,6 +2932,21 @@ document.addEventListener('click', ev => {
       break;
     }
     case 'sm-check': smCheck(); break;
+    case 'sql-pre': sqlRunPre(el); break;
+    case 'sql-open': {
+      if (d.pre) { const pre = el.closest('.sql-run').previousElementSibling; SQX.q = pre.textContent.trim(); SQX.out = null; }
+      if (d.t !== undefined) { SQX.task = +d.t; SQX.fb = null; }
+      closeSheet(); go('sql', {}, { push: S.view !== 'sql' }); break;
+    }
+    case 'sql-go': sqlRunConsole(); break;
+    case 'sql-check': sqlCheck(); break;
+    case 'sql-task': SQX.task = clamp(SQX.task + +d.d, 0, SQLC.tasks.length - 1); SQX.fb = null; sqlRedraw('task'); break;
+    case 'sql-reset': {
+      sqlDrop();
+      sqlDB().then(() => { sqlRedraw('schema'); toast('Baza ilk vəziyyətinə qayıtdı: 5 müştəri, 7 sifariş.'); }, () => toast('SQLite yüklənmədi.'));
+      const box = el.closest('.sql-out'); if (box) box.innerHTML = ''; else if (S.view === 'sql') { SQX.out = null; sqlRedraw('out'); }
+      break;
+    }
     case 'lab-open': closeSheet(); go('lab', {}, { push: S.view !== 'lab' }); break;
     case 'lab-send': labSend(); break;
     case 'lab-tab': LAB.tab = d.v; labRedraw('req'); break;
@@ -2908,6 +3119,7 @@ document.addEventListener('pointerdown', ev => {
 });
 document.addEventListener('keydown', ev => {
   if (ev.key === 'Escape' && sheetEl) { closeSheet(); return; }
+  if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey) && ev.target.dataset && ev.target.dataset.sqlq !== undefined) { ev.preventDefault(); sqlRunConsole(); return; }
   if (ev.key === 'Enter' && !ev.shiftKey) {
     if (ev.target.id === 'tin') { ev.preventDefault(); const v = ev.target.value; ev.target.value = ''; autoGrow(ev.target); tutorSend(v); }
     else if (ev.target.id === 'shin') { ev.preventDefault(); shSend(); }
@@ -2952,6 +3164,7 @@ document.addEventListener('input', ev => {
   } else if (t.dataset.smF) smType(t);
   else if (t.dataset.smAns !== undefined) SM.ans = t.value;
   else if (t.dataset.smTitle !== undefined) SM.title = t.value;
+  else if (t.dataset.sqlq !== undefined) SQX.q = t.value;
   else if (t.dataset.lab) { LAB.req[t.dataset.lab] = t.value; if (t.dataset.lab === 'm') labRedraw('req'); }
   else if (t.dataset.lt) {
     const [i, f] = t.dataset.lt.split(':'), r = LAB.req.tests[+i];
@@ -3020,6 +3233,7 @@ function routeHash() {
   else if (h === 'mesq' || h === 'practice') { S.tab = 'practice'; S.view = 'practice'; S.params = {}; }
   else if (h === 'xulase') { S.tab = 'practice'; S.view = 'summary'; S.params = { ch: 'all' }; }
   else if (t === 'magaza') { S.tab = 'practice'; S.view = 'store'; S.params = { sc: own(scById, act) ? act : null }; }
+  else if (h === 'sql') { S.tab = 'practice'; S.view = 'sql'; S.params = {}; }
   else if (h === 'api') { S.tab = 'practice'; S.view = 'lab'; S.params = {}; }
   else if (h === 'muellim' || h === 'tutor') { S.tab = 'tutor'; S.view = 'tutor'; S.params = {}; S.tutorMode = 'chat'; }
   else if (h === 'rol' || h === 'roleplay') { S.tab = 'tutor'; S.view = 'tutor'; S.params = {}; S.tutorMode = 'rp'; }

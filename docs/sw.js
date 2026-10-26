@@ -1,5 +1,5 @@
 /* QA Kitabı — service worker: keeps the whole book on the device so it opens without internet. */
-const VERSION = '2026.10.26-a61d463';
+const VERSION = '2026.10.26-1d2e718';
 const CACHE = 'qa-kitab-' + VERSION;
 const ASSETS = [
  "./",
@@ -11,6 +11,7 @@ const ASSETS = [
  "fonts/fonts.css",
  "libs/marked.min.js",
  "libs/purify.min.js",
+ "libs/sql-asm.js",
  "fonts/ibm-plex-sans-latin-ext-400-normal.woff2",
  "fonts/ibm-plex-sans-latin-400-normal.woff2",
  "fonts/ibm-plex-sans-latin-ext-500-normal.woff2",

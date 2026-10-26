@@ -1,0 +1,30 @@
+{
+  "tasks": [
+    { "id": "q1", "sec": "c16s7", "t": "Bakılı müştərilərin sayı", "x": "Bakıdan olan müştərilərin sayını tap.", "hint": "COUNT(*) və WHERE city = 'Bakı'",
+      "sol": ["SELECT COUNT(*) FROM customers WHERE city = 'Bakı';"], "mode": "value" },
+    { "id": "q2", "sec": "c16s7", "t": "Ləğv olunmayanların cəmi", "x": "Statusu cancelled olmayan sifarişlərin ümumi məbləğini tap.", "hint": "SUM(total) və WHERE status <> 'cancelled'",
+      "sol": ["SELECT SUM(total) FROM orders WHERE status <> 'cancelled';"], "mode": "value" },
+    { "id": "q3", "sec": "c16s8", "t": "Kim nə qədər xərcləyib", "x": "Hər müştərinin adını və sifarişlərinin ümumi məbləğini göstər; ən çox xərcləyən yuxarıda olsun.",
+      "hint": "JOIN, GROUP BY c.id, SUM(o.total), ORDER BY ... DESC",
+      "sol": ["SELECT c.name, SUM(o.total) AS spent FROM customers c JOIN orders o ON o.customer_id = c.id GROUP BY c.id ORDER BY spent DESC;",
+              "SELECT c.name, SUM(o.total) AS spent FROM customers c LEFT JOIN orders o ON o.customer_id = c.id GROUP BY c.id ORDER BY spent DESC;"],
+      "mode": "rows", "ordered": true },
+    { "id": "q4", "sec": "c16s8", "t": "Sifarişi olmayanlar", "x": "Heç sifarişi olmayan müştəriləri tap.", "hint": "LEFT JOIN və WHERE o.id IS NULL",
+      "sol": ["SELECT c.name FROM customers c LEFT JOIN orders o ON o.customer_id = c.id WHERE o.id IS NULL;"], "mode": "col" },
+    { "id": "q5", "sec": "c16s5", "t": "Oktyabr sifarişləri", "x": "2026-cı ilin oktyabr ayında verilmiş sifarişləri tap.", "hint": "order_date LIKE '2026-10-%' və ya BETWEEN '2026-10-01' AND '2026-10-31'",
+      "sol": ["SELECT id FROM orders WHERE order_date LIKE '2026-10-%';"], "mode": "col" },
+    { "id": "q6", "sec": "c16s5", "t": "Emaili olmayanlar", "x": "Emaili olmayan müştəriləri tap.", "hint": "IS NULL — “= NULL” işləmir",
+      "sol": ["SELECT name FROM customers WHERE email IS NULL;"], "mode": "col" },
+    { "id": "q7", "sec": "c16s9", "t": "Yetim sifarişlər", "x": "Müştərisi bazada olmayan sifarişləri tap.", "hint": "orders-dən LEFT JOIN customers, sonra WHERE c.id IS NULL",
+      "sol": ["SELECT o.id FROM orders o LEFT JOIN customers c ON o.customer_id = c.id WHERE c.id IS NULL;"], "mode": "col" },
+    { "id": "q8", "sec": "c16s7", "t": "Statuslar üzrə say", "x": "Hər statusda neçə sifariş olduğunu göstər: status və say.", "hint": "GROUP BY status, COUNT(*)",
+      "sol": ["SELECT status, COUNT(*) FROM orders GROUP BY status;"], "mode": "rows" },
+    { "id": "q9", "sec": "c16s10", "t": "Yeni sifarişlər ödənilib", "x": "Statusu new olan bütün sifarişlərin statusunu paid et. Başqa sifariş dəyişməməlidir.",
+      "hint": "UPDATE orders SET status = ... WHERE status = 'new'. Əvvəl eyni WHERE ilə SELECT et.",
+      "sol": ["UPDATE orders SET status = 'paid' WHERE status = 'new';"], "mode": "state", "state": "SELECT * FROM orders ORDER BY id" },
+    { "id": "q10", "sec": "c16s10", "t": "Emailsiz yeni müştəri", "x": "7 nömrəli müştəri əlavə et: Səbinə Rzayeva, Gəncə, emaili yoxdur.",
+      "hint": "INSERT INTO customers (id, name, city, email) VALUES (7, ..., NULL)",
+      "sol": ["INSERT INTO customers (id, name, city, email) VALUES (7, 'Səbinə Rzayeva', 'Gəncə', NULL);"], "mode": "state", "state": "SELECT * FROM customers ORDER BY id" }
+  ],
+  "sections": ["c16s3", "c16s4", "c16s5", "c16s6", "c16s7", "c16s8", "c16s9", "c16s10"]
+}

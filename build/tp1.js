@@ -82,6 +82,13 @@ function serve(port) {
   // quiz works offline
   await page.click('[data-act="tab"][data-tab="practice"]');
   await page.waitForTimeout(200);
+  // SQLite (libs/sql-asm.js, loaded on demand) comes from the cache too
+  await page.evaluate(() => { location.hash = 'sql'; });
+  await page.waitForSelector('#sql-schema .sql-tb', { timeout: 20000 }).catch(() => { });
+  await page.click('[data-act="sql-go"]').catch(() => { });
+  await page.waitForSelector('#sql-out .sql-cap', { timeout: 10000 }).catch(() => { });
+  out.offlineSql = await page.$eval('#sql-out .sql-cap', el => el.textContent).catch(() => null);
+  await page.evaluate(() => { location.hash = 'mesq'; });
   out.serverHitsWhileOffline = hits.length - before;
   await page.screenshot({ path: path.join(__dirname, 'shots', 'pwa-offline-practice.png') });
   out.errors = errors.filter(e => !/ERR_INTERNET_DISCONNECTED|Failed to load resource/.test(e));

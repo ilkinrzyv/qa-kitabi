@@ -60,6 +60,7 @@ async function setup(opts = {}) {
   const ctx = await browser.newContext({ viewport: { width: opts.w || 390, height: opts.h || 844 }, deviceScaleFactor: 2, colorScheme: opts.dark ? 'dark' : 'light', hasTouch: true, isMobile: !!opts.mobile });
   await ctx.route('https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js', r => r.fulfill({ contentType: 'text/javascript', body: fs.readFileSync(path.join(LIBS, 'marked-12.0.2/package/marked.min.js')) }));
   await ctx.route('https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js', r => r.fulfill({ contentType: 'text/javascript', body: fs.readFileSync(path.join(LIBS, 'dompurify-3.1.6/package/dist/purify.min.js')) }));
+  await ctx.route('https://cdn.jsdelivr.net/npm/sql.js@1.14.2/dist/sql-asm.js', r => r.fulfill({ contentType: 'text/javascript', body: fs.readFileSync(path.join(LIBS, 'sql.js-1.14.2/package/dist/sql-asm.js')) }));
   await ctx.route('https://fonts.googleapis.com/**', r => r.fulfill({ contentType: 'text/css', body: fontCss() }));
   await ctx.route('https://fonts.gstatic.com/local/**', r => {
     const rel = r.request().url().split('/local/')[1];
