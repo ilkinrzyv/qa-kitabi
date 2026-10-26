@@ -423,6 +423,45 @@ details.cmp-why[open]>summary{border-bottom:0;border-radius:0}
 .res-list{margin-top:16px;display:flex;flex-direction:column;gap:8px;text-align:left}
 .res-item{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:14px}
 .res-item button{color:var(--accent);font-size:13px;margin-top:2px;text-align:left}
+/* mock exam: rules, timer + question navigator, chosen option without verdict, results by chapter and the review */
+.exam-list{margin:10px 0 0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px;font-size:14.5px;line-height:1.45}
+.exam-mode button{height:auto;min-height:52px;padding:6px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.25}
+.exam-mode small{font-size:11.5px;font-weight:400;color:var(--ink-3)}
+.exam-hist{display:flex;flex-direction:column;gap:2px;padding:6px 14px}
+.exam-h{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:13.5px}
+.exam-h:first-child{border-top:0}
+.exam-h .mono{font-size:12.5px;color:var(--ink-3)}
+.exam-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.exam-time{height:30px;font-size:14px;font-weight:600;gap:6px}
+.exam-time svg.i{width:16px;height:16px}
+.exam-time.warn{color:var(--fail);border-color:var(--fail-line);background:var(--fail-soft)}
+.exam-top .muted{font-size:12.5px}
+.exam-nav{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:12px}
+.exam-nav button{height:30px;border-radius:7px;border:1px solid var(--line-2);background:var(--surface);font-family:var(--f-mono);font-size:12px;color:var(--ink-3);position:relative}
+.exam-nav button.ans{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent);font-weight:600}
+.exam-nav button.flag::after{content:"";position:absolute;top:2px;right:2px;width:6px;height:6px;border-radius:50%;background:var(--warn)}
+.exam-nav button.cur{outline:2px solid var(--accent);outline-offset:1px}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.sel .l{background:var(--accent);color:var(--accent-ink)}
+.exam-acts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:16px}
+.exam-acts .btn{padding:0 8px}
+.exam-acts .btn.on{color:var(--warn)}
+.exam-kbd{font-size:12px}
+@media (max-width:520px){.exam-kbd{display:none}}
+.exam-chs{display:flex;flex-direction:column;gap:2px;padding:6px 14px}
+.exam-ch{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;text-align:left;padding:8px 0;border-top:1px solid var(--line);width:100%}
+.exam-ch:first-child{border-top:0}
+.exam-ch .mono{font-size:12.5px;color:var(--ink-3)}
+.exam-ch .t{font-size:14px;min-width:0;display:flex;flex-direction:column;gap:5px}
+.exam-ch .meter{height:5px}
+.exam-ch b{font-family:var(--f-mono);font-size:13px}
+.exam-rev{margin-top:10px;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.exam-rev.no{border-color:var(--fail-line)}
+.exam-rq{font-weight:600;font-size:15px;line-height:1.4}
+.exam-a{display:grid;grid-template-columns:18px 1fr;gap:6px;font-size:14px;line-height:1.4}
+.exam-a svg.i{width:16px;height:16px;stroke-width:2.4;margin-top:2px}
+.exam-a.ok{color:var(--pass)}.exam-a.no{color:var(--fail)}
+.exam-e{margin:0;font-size:14px;line-height:1.5;color:var(--ink-2)}
 
 /* ---------- practice & progress ---------- */
 .qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
