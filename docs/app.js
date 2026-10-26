@@ -81,7 +81,8 @@ const ICONS = {
   ext: '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
   download: '<path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 20h14"/>',
   upload: '<path d="M12 20V9M7 14l5-5 5 5"/><path d="M5 4h14"/>',
-  phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M11 18.5h2"/>'
+  phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M11 18.5h2"/>',
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'
 };
 const icon = (n, cls) => `<svg class="i${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
@@ -589,7 +590,7 @@ function miniHTML(c, s, open) {
       <ol class="ex-steps" data-steps="${id}">${ex.steps.slice(0, shown).map(u => `<li><div class="prose">${u}</div></li>`).join('')}</ol>
       <div class="ex-ctrl" data-exctrl="${id}">${exCtrl(id, n, shown)}</div>
       <div class="turn"><div class="mini-k">${icon('pencil')}Sənin növbən</div><div class="prose">${ex.try}</div>
-        <textarea class="field" data-ans="${id}" data-ch="${c.id}" rows="4" placeholder="Cavabını bura yaz…">${esc(a.t || '')}</textarea>
+        <textarea class="field" data-ans="${id}" data-ch="${c.id}" rows="4" placeholder="Cavabını bura yaz…">${esc(a.t || '')}</textarea>${swBox(id, ex.try, a.t)}
         <div class="task-ctrl"><span class="st" data-st="${id}">${a.t ? 'Saxlanıb' : ''}</span>
           <button class="btn sm ghost ai-only" data-act="task-hint" data-task="${id}">${icon('bulb')}İpucu</button>
           <button class="btn sm primary ai-only" data-act="task-check" data-task="${id}">${icon('check')}Yoxla</button></div>
@@ -621,6 +622,44 @@ function fbHTML(a) {
   if (a && a.h) h += `<div class="fb-h" style="${a.fb ? 'margin-top:12px' : ''}">${icon('bulb')}<span>İpucu</span></div><div class="prose">${mdToHtml(a.h)}</div>`;
   return h;
 }
+/* screen words: answers that describe results get an instant, offline hint when they use opinion, ability, inference,
+   "should" or description words instead of what is visible on screen */
+const SW_TASK = /gözlənilən|faktiki|bug report|test case|checklist|ssenari/i;
+const SW_ON = '(?<!\\p{L})', SW_OFF = '(?!\\p{L})';
+const swRe = src => new RegExp(src, 'gu');
+const SW_RULES = [
+  { kind: 'rəy', re: swRe(`${SW_ON}(düzgün\\s+işlə\\p{L}*|işlə(mir|mədi|məyəcək)|normal(dır|\\s+işlə\\p{L}*)?|qaydasındadır|problemsiz|problem\\s+yoxdur|uğurla|yaxşı\\s+işlə\\p{L}*)${SW_OFF}`),
+    tip: 'Bu, rəydir — oxuyan ekranda nəyə baxacağını bilmir. Görünəni yaz: hansı səhifə açılır, hansı mətn çıxır.' },
+  { kind: 'bacarıq', re: swRe(`${SW_ON}\\p{L}+[aə]\\s+bil(irəm|ərəm|dim|ir|ər)${SW_OFF}`),
+    tip: '“…a bilirəm” sənin bacarığındır, ekranın vəziyyəti deyil. Məsələn: “Your Cart” səhifəsi açılır, siyahıda Sauce Labs Backpack görünür.' },
+  { kind: 'çıxarış', re: swRe(`${SW_ON}(sıfırlan\\p{L}*|qəbul\\s+(edil|olun)\\p{L}*|yadda\\s+saxlan\\p{L}*|əlavə\\s+olun\\p{L}*)${SW_OFF}`),
+    tip: 'Bu, nəticə çıxarışıdır — bunu ekranda nədən gördün? Məsələn: səbət nişanında 1 görünür, düymənin yazısı “Remove” olur.' },
+  { kind: 'gözlənti', re: swRe(`${SW_ON}\\p{L}+(malı|məli)(dır|dir)?${SW_OFF}`),
+    tip: '“-malıdır” nə olmalı olduğunu deyir. Nəticəni ekran sözü ilə yaz: “açılır”, “görünür” (“açılmalıdır” yox).' },
+  { kind: 'təsvir', re: swRe(`${SW_ON}(düzgün|yanlış|səhv|etibarlı|keçərli|uyğun|mövcud|real)\\s+(parol|şifrə|username|istifadəçi\\s+adı|login|e-?poçt|e-?mail|məlumat|data|dəyər|ad|soyad|kod|nömrə)${SW_OFF}`),
+    tip: 'Bu, təsvirdir — klaviaturada olduğu kimi yaza bilməzsən. Konkret dəyər yaz: standard_user, secret_sauce, ali@mail.az.' }
+];
+const SW_NEG = swRe(`${SW_ON}(açılmır|görünmür|çıxmır|dəyişmir|gəlmir|yüklənmir)${SW_OFF}`);
+const SW_POS = /(?<!\p{L})(açılır|görünür|qalır|yazılıb|çıxır|olur|dəyişir)(?!\p{L})/u;
+function swFind(text) {
+  // quoted text is copied from the screen on purpose («Sifarişiniz uğurla qəbul edildi»), so it is not checked
+  const t = (text || '').toLocaleLowerCase('az').replace(/“[^”\n]*”|«[^»\n]*»|"[^"\n]*"|„[^“”\n]*[“”]/g, ' '), seen = new Set(), out = [];
+  const add = (w, kind, tip) => { const k = kind + '|' + w; if (!seen.has(k) && out.length < 6) { seen.add(k); out.push({ w, kind, tip }); } };
+  SW_RULES.forEach(r => { for (const m of t.matchAll(r.re)) add(m[0], r.kind, r.tip); });
+  // a negation alone says what is missing, not what the screen shows
+  t.split('\n').forEach(line => { if (SW_POS.test(line)) return; for (const m of line.matchAll(SW_NEG)) add(m[0], 'inkar', 'Yalnız inkar yazılıb. Ekranda əvəzinə nə olduğunu da yaz: məsələn, “Checkout: Your Information” səhifəsində qalır.'); });
+  return out;
+}
+function swInner(text) {
+  const f = swFind(text); if (!f.length) return '';
+  return `<div class="swc-h">${icon('eye')}<span>Ekran sözləri</span></div><ul>${f.map(x => `<li><mark>${esc(x.w)}</mark><span class="chip warn">${x.kind}</span><span class="tip">${esc(x.tip)}</span></li>`).join('')}</ul>
+    <div class="swc-f">Ekranda görünəni yazan sözlər: açılır · görünür · yox olur · çıxır · yazılıb · qalır</div>`;
+}
+const swBox = (id, itemHtml, text) => SW_TASK.test(itemHtml) ? `<div class="swc" data-swc="${id}" aria-live="polite"${swFind(text).length ? '' : ' hidden'}>${swInner(text)}</div>` : '';
+function swUpdate(t) {
+  const box = document.querySelector(`[data-swc="${t.dataset.ans}"]`); if (!box) return;
+  const h = swInner(t.value); box.innerHTML = h; box.hidden = !h;
+}
 function tasksHTML(c, s) {
   const A = ansDoc(c.id).a;
   const head = (s.intro ? `<div class="prose">${s.intro}</div>` : '') +
@@ -630,7 +669,7 @@ function tasksHTML(c, s) {
     const done = a.g === 'Əla' || a.g === 'Yaxşı';
     return `<div class="task${done ? ' done' : ''}" id="${t.id}">
       <div class="task-q"><span class="task-n">${i + 1}</span><div class="prose">${t.html}</div></div>
-      <textarea class="field" data-ans="${t.id}" data-ch="${c.id}" rows="4" placeholder="Cavabını bura yaz…">${esc(a.t || '')}</textarea>
+      <textarea class="field" data-ans="${t.id}" data-ch="${c.id}" rows="4" placeholder="Cavabını bura yaz…">${esc(a.t || '')}</textarea>${swBox(t.id, t.html, a.t)}
       <div class="task-ctrl"><span class="st" data-st="${t.id}">${a.t ? 'Saxlanıb' : ''}</span>
         <button class="btn sm ghost ai-only" data-act="task-hint" data-task="${t.id}">${icon('bulb')}İpucu</button>
         <button class="btn sm primary ai-only" data-act="task-check" data-task="${t.id}">${icon('check')}Yoxla</button></div>
@@ -643,7 +682,7 @@ function selfHTML(c, s) {
   return s.items.map(q => {
     const a = A[q.id] || {};
     return `<div class="selfq" id="${q.id}"><div class="q prose" style="font-family:var(--f-ui);font-size:15.5px">${q.html}</div>
-      <textarea class="field" data-ans="${q.id}" data-ch="${c.id}" rows="2" placeholder="Qısa cavabın…">${esc(a.t || '')}</textarea>
+      <textarea class="field" data-ans="${q.id}" data-ch="${c.id}" rows="2" placeholder="Qısa cavabın…">${esc(a.t || '')}</textarea>${swBox(q.id, q.html, a.t)}
       <div class="task-ctrl"><span class="st" data-st="${q.id}">${a.t ? 'Saxlanıb' : ''}</span><button class="btn sm primary ai-only" data-act="self-check" data-q="${q.id}">${icon('check')}Yoxla</button></div>
       <div class="fb" data-fb="${q.id}"${a.fb ? '' : ' hidden'}>${fbHTML(a)}</div></div>`;
   }).join('');
@@ -1800,6 +1839,7 @@ document.addEventListener('input', ev => {
     const id = t.dataset.ans, cid = t.dataset.ch;
     const A = ansDoc(cid).a; const rec = A[id] || (A[id] = {});
     rec.t = t.value;
+    swUpdate(t);
     clearTimeout(noteTimers[id]);
     const st = document.querySelector(`[data-st="${id}"]`); if (st) st.textContent = 'Yazılır…';
     noteTimers[id] = setTimeout(() => { Store.changed('ans-' + cid); if (st) st.textContent = 'Saxlanıb'; }, 700);
