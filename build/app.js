@@ -82,7 +82,8 @@ const ICONS = {
   download: '<path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 20h14"/>',
   upload: '<path d="M12 20V9M7 14l5-5 5 5"/><path d="M5 4h14"/>',
   phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M11 18.5h2"/>',
-  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  print: '<path d="M7 9V3h10v6"/><path d="M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7z"/>'
 };
 const icon = (n, cls) => `<svg class="i${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
@@ -326,7 +327,7 @@ function aiErrHTML(e) {
 function artHash() {
   if (S.view === 'reader' && S.params.ch) return S.params.ch;
   if (S.view === 'quiz' && S.params.ch) return 'c' + S.params.ch;
-  if (S.view === 'konspekt' && S.params.ch) return S.params.ch;
+  if ((S.view === 'konspekt' || S.view === 'summary') && chById[S.params.ch]) return S.params.ch;
   if (S.view === 'tutor') return S.tutorMode === 'rp' ? 'rol' : 'muellim';
   if (S.view === 'progress') return 'progress';
   if (S.view === 'glossary' || S.view === 'cards') return 'ga';
@@ -443,7 +444,7 @@ function render(opts) {
   if (observer) { observer.disconnect(); observer = null; }
   hideSelPill();
   const v = $('#view');
-  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt };
+  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary };
   (views[S.view] || vHome)(v);
   if (opts.keepScroll) window.scrollTo(0, y);
   else if (!(S.view === 'reader' && S.params.sec)) window.scrollTo(0, 0);
@@ -929,13 +930,14 @@ function vReader(v) {
   const rp = rpId && RP.find(x => x.id === rpId);
   const end = `<div class="ch-end">
     ${q ? `<button class="quizcta" data-act="quiz" data-ch="${c.num}">${icon('target')}<div style="flex:1;min-width:0"><b>Fəsil testi</b><span>${q.length} sual · izahlı cavablar${st.q ? ' · ən yaxşı nəticə ' + st.q.best + '/' + st.q.n : ''}</span></div>${icon('arrow')}</button>` : ''}
-    ${c.kind === 'chapter' ? `<button class="quizcta alt" data-act="konspekt" data-ch="${c.id}">${icon('list')}<div style="flex:1;min-width:0"><b>Fəslin konspekti</b><span>hər bölmədən 3 əsas fikir, tipik səhvlər və terminlər</span></div>${icon('arrow')}</button>` : ''}
+    ${c.kind === 'chapter' ? `<button class="quizcta alt" data-act="konspekt" data-ch="${c.id}">${icon('list')}<div style="flex:1;min-width:0"><b>Fəslin konspekti</b><span>hər bölmədən 3 əsas fikir, tipik səhvlər və terminlər</span></div>${icon('arrow')}</button>
+    <button class="quizcta alt" data-act="sum" data-ch="${c.id}">${icon('print')}<div style="flex:1;min-width:0"><b>Xülasə vərəqi</b><span>fəsil bir səhifədə: əsas fikirlər, sxem, terminlər · çap et və ya PDF kimi saxla</span></div>${icon('arrow')}</button>` : ''}
     ${rp ? `<button class="quizcta alt ai-only" data-act="rp-open" data-rp="${rp.id}">${icon('users')}<div style="flex:1;min-width:0"><b>Rol oyunu: ${esc(rp.title)}</b><span>${esc(rp.who)} ilə real iş söhbətini məşq et — sonda Claude rəy verir</span></div>${icon('arrow')}</button>` : ''}
     <div class="nav2">${prev ? `<button data-act="open-ch" data-ch="${prev.id}"><div class="k">← Əvvəlki</div><div class="n">${esc(prev.title)}</div></button>` : '<span></span>'}
     ${next ? `<button class="next" data-act="open-ch" data-ch="${next.id}"><div class="k">Növbəti →</div><div class="n">${esc(next.title)}</div></button>` : '<span></span>'}</div></div>`;
   const tools = c.kind === 'chapter' ? `<div class="ch-tools">
       <div class="ch-lvl"><span class="lb">İzah səviyyəsi</span>${lvlCtl('', PREF().lvl || 'std', 'lvl-all')}</div>
-      <div class="row"><button class="btn sm" data-act="konspekt" data-ch="${c.id}">${icon('list')}Konspekt</button><button class="btn sm ai-only" data-act="ch-lesson" data-ch="${c.id}">${icon('steps')}Fəsil üzrə dərs</button></div>
+      <div class="row"><button class="btn sm" data-act="konspekt" data-ch="${c.id}">${icon('list')}Konspekt</button><button class="btn sm" data-act="sum" data-ch="${c.id}">${icon('print')}Xülasə vərəqi</button><button class="btn sm ai-only" data-act="ch-lesson" data-ch="${c.id}">${icon('steps')}Fəsil üzrə dərs</button></div>
     </div>` : '';
   v.innerHTML = `<header class="ch-hero"><div class="kicker"><b>${c.num ? 'Fəsil ' + pad2(c.num) : (c.id === 'c0' ? 'Giriş' : 'Əlavə B')}</b>${pl && pl.pn ? ' · ' + esc(pl.name) : ''}</div>
     <h1 class="h1">${esc(c.title)}</h1>${stats}${tools}
@@ -976,12 +978,87 @@ function vKonspekt(v) {
   const terms = GLOSS.filter(g => g.ch.includes(c.num));
   v.innerHTML = `<header class="ch-hero"><div class="kicker"><b>Fəsil ${pad2(c.num)}</b> · konspekt</div><h1 class="h1">${esc(c.title)}</h1>
       <p class="muted" style="margin:8px 0 0;font-size:14.5px">Hər bölmədən 3 əsas fikir. Bölməyə toxunsan, oxu ekranında açılacaq.</p>
-      <div class="row" style="margin-top:12px"><button class="btn sm" data-act="kon-copy">${icon('copy')}Kopyala</button><button class="btn sm ai-only" data-act="kon-quiz" data-ch="${c.id}">${icon('help')}Konspekt üzrə məni yoxla</button></div></header>
+      <div class="row" style="margin-top:12px"><button class="btn sm" data-act="kon-copy">${icon('copy')}Kopyala</button><button class="btn sm" data-act="sum" data-ch="${c.id}">${icon('print')}Xülasə vərəqi</button><button class="btn sm ai-only" data-act="kon-quiz" data-ch="${c.id}">${icon('help')}Konspekt üzrə məni yoxla</button></div></header>
     <div class="kon">${secs.map(s => `<div class="ksec${L[s.id] ? ' ok' : ''}"><button class="ksec-h" data-act="goto-sec" data-sec="${s.id}"><span class="n">${esc(s.num)}</span><b>${esc(s.title)}</b>${L[s.id] ? `<span class="ok">${icon('check')}</span>` : ''}</button>
       <ol>${s.x.keys.map(k => `<li>${k}</li>`).join('')}</ol></div>`).join('')}</div>
     ${pit ? `<section class="block"><div class="block-h"><h2>Tez-tez edilən səhvlər</h2></div><div class="card kon-pit prose">${pit.html}</div></section>` : ''}
     ${terms.length ? `<section class="block"><div class="block-h"><h2>Fəslin terminləri</h2><span class="muted" style="font-size:13px">${terms.length}</span></div><div class="row">${terms.map(g => `<button class="chip" data-act="gt" data-g="${g.id}">${esc(g.en)}</button>`).join('')}</div></section>` : ''}
     <div class="qz-act" style="margin-top:22px"><button class="btn primary" data-act="quiz" data-ch="${c.num}">${icon('target')}Fəsil testi</button><button class="btn ghost" data-act="open-ch" data-ch="${c.id}">${icon('book')}Fəslə qayıt</button></div>`;
+}
+/* ---------- summary sheet: one chapter on one printed A4 page ---------- */
+// the offline app on GitHub Pages: the claude.ai frame may ignore print(), so its fallback links there
+const SITE = 'https://ilkinrzyv.github.io/qa-kitabi/';
+const dgCache = {};
+function chDiagram(c) { // the chapter's first diagram, as rendered in the reader
+  if (dgCache[c.id] === undefined) {
+    const s = c.sections.find(x => /<figure class="diagram/.test(x.html || ''));
+    dgCache[c.id] = s ? s.html.match(/<figure class="diagram[\s\S]*?<\/figure>/)[0] : '';
+  }
+  return dgCache[c.id];
+}
+const unP = h => String(h || '').replace(/<\/?p>/g, ' ').trim();
+function sumHTML(c, hl) {
+  const L = P().learned, st = chStats(c);
+  const secs = c.sections.filter(s => s.x);
+  const pit = c.sections.find(s => s.kind === 'pitfalls');
+  const self = c.sections.find(s => s.kind === 'selfcheck');
+  const terms = GLOSS.filter(g => g.ch.includes(c.num));
+  const dg = chDiagram(c), pl = partLabel(partOf(c)), q = QUIZ[c.num];
+  const shape = !dg ? 'dg-0' : /^<figure class="diagram narrow/.test(dg) ? 'dg-n' : 'dg-w';
+  return `<article class="sum ${shape}" data-ch="${c.id}">
+    <header class="sum-h"><div class="sum-hl"><div class="sum-k">QA Kitabı · Fəsil ${pad2(c.num)}${pl && pl.pn ? ' · ' + esc(pl.full) : ''}</div><${hl} class="sum-t">${esc(c.title)}</${hl}></div>
+      <div class="sum-meta"><span class="chip">${secs.length} əsas fikir</span>${terms.length ? `<span class="chip">${terms.length} termin</span>` : ''}
+        <span class="chip${st.done === st.total ? ' pass' : ''}">${icon('check')}${st.done}/${st.total} öyrənildi</span>
+        ${q ? `<span class="chip${st.q ? (st.q.best / st.q.n >= .7 ? ' pass' : ' warn') : ''}">${st.q ? `Test ${st.q.best}/${st.q.n}` : `Test: ${q.length} sual`}</span>` : ''}</div></header>
+    <section class="sum-ideas"><h3 class="sum-l">${icon('bulb')}Əsas fikirlər</h3><ol>${secs.map(s => `<li${L[s.id] ? ' class="ok"' : ''}><span class="n">${esc(s.num)}</span><div><b>${esc(s.title)}.</b> ${unP(s.x.short)}</div></li>`).join('')}</ol></section>
+    ${dg ? `<section class="sum-dg"><h3 class="sum-l">${icon('layers')}Sxem</h3>${dg}</section>` : ''}
+    ${pit ? `<section class="sum-pit"><h3 class="sum-l">${icon('x')}Tez-tez edilən səhvlər</h3><div class="sum-pit-b">${pit.html}</div></section>` : ''}
+    ${self ? `<section class="sum-self"><h3 class="sum-l">${icon('help')}Özünü yoxla</h3><ul>${self.items.map(i => `<li>${unP(i.html)}</li>`).join('')}</ul></section>` : ''}
+    ${terms.length ? `<section class="sum-terms"><h3 class="sum-l">${icon('abc')}Terminlər</h3><ul>${terms.map(g => `<li><button class="gt" data-act="gt" data-g="${g.id}">${esc(g.en)}</button> — ${esc(g.az)}</li>`).join('')}</ul></section>` : ''}
+    <footer class="sum-f"><span>${esc(SITE.replace(/^https:\/\//, ''))}#${c.id}</span>${q ? `<span>Fəsil testi: ${q.length} sual</span>` : ''}</footer>
+  </article>`;
+}
+function vSummary(v) {
+  const all = S.params.ch === 'all';
+  const c = all ? null : MAIN.find(x => x.id === S.params.ch) || MAIN[0];
+  setHeader({ back: true, kicker: all ? 'Xülasə vərəqləri' : `Xülasə vərəqi · Fəsil ${pad2(c.num)}`, name: all ? `Bütün fəsillər · ${MAIN.length} səhifə` : c.title, right: [{ act: 'sum-print', icon: 'print', label: 'Çap et və ya PDF kimi saxla' }] });
+  const i = all ? -1 : MAIN.indexOf(c), prev = MAIN[i - 1], next = MAIN[i + 1];
+  v.innerHTML = `<div class="sum-bar"><p class="muted">${all ? `Hər fəsil bir A4 səhifəsində, cəmi ${MAIN.length} səhifə.` : 'Fəsil bir A4 səhifəsində.'} Çap pəncərəsində printer kimi «PDF kimi saxla» (Save as PDF) seçsən, PDF faylı alınar.</p>
+      <div class="row"><button class="btn primary" data-act="sum-print">${icon('print')}${all ? `Hamısını çap et (${MAIN.length} səhifə)` : 'Çap et / PDF'}</button>${all ? '' : `<button class="btn ghost" data-act="konspekt" data-ch="${c.id}">${icon('list')}Konspekt</button><button class="btn ghost" data-act="open-ch" data-ch="${c.id}">${icon('book')}Fəslə qayıt</button>`}</div></div>
+    <div class="sums">${(all ? MAIN : [c]).map(x => sumHTML(x, all ? 'h2' : 'h1')).join('')}</div>
+    ${all ? '' : `<div class="nav2 sum-nav">${prev ? `<button data-act="sum" data-ch="${prev.id}" data-replace="1"><div class="k">← Fəsil ${prev.num} vərəqi</div><div class="n">${esc(prev.title)}</div></button>` : '<span></span>'}
+      ${next ? `<button class="next" data-act="sum" data-ch="${next.id}" data-replace="1"><div class="k">Fəsil ${next.num} vərəqi →</div><div class="n">${esc(next.title)}</div></button>` : '<span></span>'}</div>`}`;
+}
+// print: .paper gives each sheet its A4 layout; --k shrinks a long chapter's sheet until it fits one page
+const PAGE_H = 270 * 96 / 25.4; // A4 height without the 12 mm @page margins, minus 3 mm of slack, in CSS px
+function fitSheet(el) {
+  el.style.setProperty('--k', '1');
+  let lo = 0.6, hi = 1;
+  if (el.offsetHeight > PAGE_H) {
+    for (let n = 0; n < 7; n++) { const k = (lo + hi) / 2; el.style.setProperty('--k', k.toFixed(3)); if (el.offsetHeight <= PAGE_H) lo = k; else hi = k; }
+    el.style.setProperty('--k', lo.toFixed(3));
+  } else lo = 1;
+  el.dataset.k = lo.toFixed(3);
+}
+function paperOn() { $$('#view .sum').forEach(el => { el.classList.add('paper'); fitSheet(el); }); }
+function paperOff() { $$('#view .sum.paper').forEach(el => el.classList.remove('paper')); }
+window.addEventListener('beforeprint', paperOn); // also for the browser's own Print menu
+window.addEventListener('afterprint', paperOff);
+function printSheets() {
+  let opened = false;
+  const mark = () => { opened = true; };
+  window.addEventListener('beforeprint', mark);
+  paperOn();
+  try { window.print(); } catch (e) { }
+  // a sandboxed frame (the claude.ai version) can ignore print() without an error: then no beforeprint follows
+  setTimeout(() => { window.removeEventListener('beforeprint', mark); if (!opened) { paperOff(); printHelp(); } }, 1200);
+}
+function printHelp() {
+  const hash = MAIN.some(c => c.id === S.params.ch) ? S.params.ch + '-xulase' : 'xulase';
+  openSheet(sheetHead('Çap', 'Çap pəncərəsi açılmadı') + `<div class="sheet-body">
+    <p style="margin:0 0 12px">${PWA ? 'Brauzerin menyusundan «Çap et» (Print) seç. PDF üçün printer siyahısında «PDF kimi saxla» (Save as PDF) seç.'
+      : 'claude.ai bu pəncərədən çapa icazə verməyə bilər. Vərəqi oflayn tətbiqdə aç və orada çap et və ya PDF kimi saxla.'}</p>
+    ${PWA ? '' : `<a class="btn primary" href="${esc(SITE + '#' + hash)}" target="_blank" rel="noopener">${icon('ext')}Oflayn tətbiqdə aç</a>`}</div>`, 'compact');
 }
 /* ---------- glossary term popover ---------- */
 // interview.json: how to say the term in a job interview, one or two sentences
@@ -1021,6 +1098,10 @@ function vPractice(v) {
     </div></section>
   <section class="block"><div class="block-h"><h2>Fəsil testləri</h2><span class="muted" style="font-size:13px">${o.quizDone}/21 · orta ${o.avg}%</span></div>
     <div class="qgrid">${cells}</div></section>
+  <section class="block"><div class="block-h"><h2>Xülasə vərəqləri</h2><span class="muted" style="font-size:13px">fəsil başına 1 səhifə</span></div>
+    <div class="card"><div class="muted" style="font-size:13.5px">Əsas fikirlər, sxem, tipik səhvlər, “Özünü yoxla” sualları və terminlər bir A4 səhifəsində. Təkrar və müsahibəyə hazırlıq üçün çap et və ya PDF kimi saxla.</div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sum" data-ch="all">${icon('print')}Bütün vərəqlər (${MAIN.length})</button></div>
+      <div class="qgrid sum-grid">${MAIN.map(c => `<button class="qcell" data-act="sum" data-ch="${c.id}" title="${esc(chLabel(c))}"><span class="id">Fəsil ${pad2(c.num)}</span><span class="t">${esc(c.title)}</span></button>`).join('')}</div></div></section>
   <section class="block"><div class="block-h"><h2>Hazır checklist-lər</h2></div>
     <button class="chrow card" style="border-radius:14px" data-act="open-ch" data-ch="gb"><span class="id">B</span><span class="tt"><b>Şablonlar və checklist-lər</b><span class="muted" style="font-size:13px">Login, qeydiyyat, axtarış, fayl, ödəniş, mobil, API</span></span><span class="side">${icon('arrow')}</span></button></section>`;
 }
@@ -1887,6 +1968,8 @@ document.addEventListener('click', ev => {
       try { navigator.clipboard.writeText(text).then(() => toast('Konspekt kopyalandı'), () => toast('Kopyalamaq alınmadı')); } catch (e) { toast('Kopyalamaq alınmadı'); }
       break;
     }
+    case 'sum': closeSheet(); go('summary', { ch: d.ch }, { push: !d.replace }); break;
+    case 'sum-print': printSheets(); break;
     case 'kon-quiz': if (AI.state === 'on') aiForKonspekt(d.ch); break;
     case 'ch-lesson': if (AI.state === 'on') aiForChapterLesson(d.ch); break;
     case 'qz-explain': if (AI.state === 'on') aiForMistakes(); break;
@@ -2096,6 +2179,7 @@ applyPrefs();
 AI.setState('pending');
 // links from the offline app: #c3s4 opens a section; #c3s4-simple, #c3-lesson, #c3-konspekt and #g12-term also
 // start that Claude action once Claude is ready. Only ids from the book are accepted, so a link cannot carry its own prompt.
+// #c3-xulase and #xulase open the summary sheets (the claude.ai version links there when it cannot print).
 let AUTO = null;
 const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 function routeHash() {
@@ -2106,6 +2190,7 @@ function routeHash() {
     S.tab = 'book'; S.view = 'reader'; S.params = { ch: t };
     if (act === 'lesson') AUTO = () => aiForChapterLesson(t);
     else if (act === 'konspekt') AUTO = () => aiForKonspekt(t);
+    else if (act === 'xulase' && chById[t].kind === 'chapter') S.view = 'summary';
   }
   else if (own(secById, t)) {
     S.tab = 'book'; S.view = 'reader'; S.params = { ch: secCh[t], sec: t };
@@ -2115,6 +2200,7 @@ function routeHash() {
   else if (h === 'gb') { S.view = 'reader'; S.params = { ch: 'gb' }; }
   else if (h === 'ga' || h === 'luget') { S.view = 'glossary'; S.params = {}; }
   else if (h === 'mesq' || h === 'practice') { S.tab = 'practice'; S.view = 'practice'; S.params = {}; }
+  else if (h === 'xulase') { S.tab = 'practice'; S.view = 'summary'; S.params = { ch: 'all' }; }
   else if (h === 'muellim' || h === 'tutor') { S.tab = 'tutor'; S.view = 'tutor'; S.params = {}; S.tutorMode = 'chat'; }
   else if (h === 'rol' || h === 'roleplay') { S.tab = 'tutor'; S.view = 'tutor'; S.params = {}; S.tutorMode = 'rp'; }
   else if (h === 'progress' || h === 'ireliles') { S.tab = 'progress'; S.view = 'progress'; S.params = {}; }

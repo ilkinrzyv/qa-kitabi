@@ -37,6 +37,11 @@ Screenshots land in `build/shots/` (gitignored).
 - `build/interactive.json` — one interactive diagram per section id: `bva` (number line + slider + buggy-code switch),
   `state` (states with x/y, events, `moves` = from → event → [to, note, "warn"?]) or `dtable` (conditions + rules with
   `null` for "—"). Rendered by `ixHTML()` as theme-token SVG/HTML; the BVA slider only redraws `.bva-out`.
+- Summary sheets (`vSummary()` in `app.js`; `#c3-xulase`, `#xulase` for all chapters): one printed A4 page per chapter,
+  built from data the book already has (each section's `@qısa`, the chapter's first diagram, pitfalls, self-check,
+  glossary terms). On `beforeprint` the sheets get `.paper` (the A4 layout) and `fitSheet()` lowers `--k` until each fits
+  one page; `t17.js` prints all 21 to PDF and expects 21 pages. If `print()` is ignored (the claude.ai frame may not
+  allow it), a help sheet links to the same sheet on GitHub Pages.
 - `build/quiz_*.json` — chapter quizzes. `build/diagrams.py` — SVG diagrams registered with `reg(slug, sid, anchor, cap, d)`,
   drawn with `svgkit.py` (text measured with the vendored fonts in `fonts/`, overlap and overflow checks).
 - `build/app.js` — the whole UI in one IIFE, no framework. `PWA = window.QA_PWA` exists only in the offline build:
