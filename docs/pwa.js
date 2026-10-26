@@ -2,8 +2,8 @@
    Loaded before app.js; app.js finds it as window.QA_PWA. */
 (function () {
 'use strict';
-const VERSION = '2026.10.26-e4c42ef';
-const ASSET_COUNT = 46;
+const VERSION = '2026.10.26-6ea7426';
+const ASSET_COUNT = 47;
 const CACHE = 'qa-kitab-' + VERSION;
 const ARTIFACT = 'https://claude.ai/artifact/ARfQ7Q2V6TsZ3nBnJdQzLq';
 const API = 'https://api.anthropic.com/v1';
