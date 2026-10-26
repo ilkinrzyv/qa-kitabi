@@ -19,6 +19,84 @@
     "title": "Kəşfiyyat sessiyası: problem_user",
     "charter": "Charter: mağazanı problem_user ilə kəşf et, məqsəd — gizli bug-ları tapmaq. Timebox: 15 dəqiqə. Oracle: eyni hərəkəti standard_user ilə də et və nəticələri müqayisə et."
   },
+  "reports": {
+    "add": {
+      "page": "products", "where": ["products"], "what": ["bolt", "fleece"], "when": ["problem_user", "problem user"],
+      "sev": ["Critical", "Major"], "pri": ["High"],
+      "sevWhy": "Bolt T-Shirt və Fleece Jacket-i səbətə atmaq, deməli almaq da mümkün deyil, başqa yolu yoxdur — Critical. Digər məhsullar işlədiyi üçün Major da qəbul olunur.",
+      "priWhy": "Alış funksiyası pozulub və birbaşa satışa təsir edir — High.",
+      "pre": [{ "l": "hansı istifadəçi (problem_user)", "k": ["problem_user", "problem user"] }, { "l": "hansı səhifə (Products)", "k": ["products"] }],
+      "need": [{ "l": "məhsulun adı (Bolt T-Shirt)", "k": ["bolt", "fleece"] }, { "l": "düymə (“Add to cart”)", "k": ["add to cart"] }],
+      "exp": [{ "l": "düymə “Remove” olur", "k": ["remove"] }, { "l": "səbət nişanında 1", "k": ["1"] }],
+      "act": [{ "l": "düymə “Add to cart” qalır", "k": ["add to cart"] }, { "l": "səbət nişanı", "k": ["nişan", "badge"] }],
+      "model": {
+        "title": "Products: Bolt T-Shirt üçün “Add to cart” basanda düymə və səbət nişanı dəyişmir (problem_user)",
+        "pre": "problem_user / secret_sauce ilə daxil olunub; Products səhifəsi açıqdır; səbət boşdur.",
+        "steps": ["Bolt T-Shirt məhsulunun “Add to cart” düyməsini bas."],
+        "exp": "Düymə “Remove” olur, səbət nişanında 1 görünür.",
+        "act": "Düymə “Add to cart” olaraq qalır, səbət nişanı görünmür.",
+        "freq": "3/3 (həmişə). Fleece Jacket-də də təkrarlanır; standard_user ilə problem yoxdur.",
+        "sev": "Critical", "pri": "High"
+      }
+    },
+    "remove": {
+      "page": "products", "where": ["products"], "what": ["bike light"], "when": ["problem_user", "problem user"],
+      "sev": ["Major", "Minor"], "pri": ["Medium", "Low"],
+      "sevWhy": "Bike Light-ı Products səhifəsindən silmək olmur, amma Your Cart səhifəsində silmək olur — yolu var, Major. Minor da qəbul olunur.",
+      "priWhy": "Alışa mane olmur, amma istifadəçini çaşdırır — Medium (təklif).",
+      "pre": [{ "l": "hansı istifadəçi (problem_user)", "k": ["problem_user", "problem user"] }, { "l": "hansı səhifə (Products)", "k": ["products"] }],
+      "need": [{ "l": "məhsulun adı (Bike Light)", "k": ["bike light"] }, { "l": "əvvəlcə “Add to cart”", "k": ["add to cart"] }, { "l": "sonra “Remove”", "k": ["remove"] }],
+      "exp": [{ "l": "düymə “Add to cart” olur", "k": ["add to cart"] }],
+      "act": [{ "l": "düymə “Remove” qalır", "k": ["remove"] }, { "l": "səbət nişanı", "k": ["nişan", "badge"] }],
+      "model": {
+        "title": "Products: Bike Light üçün “Remove” basanda düymə “Remove” qalır və səbət nişanı azalmır (problem_user)",
+        "pre": "problem_user / secret_sauce ilə daxil olunub; Products səhifəsi açıqdır; səbət boşdur.",
+        "steps": ["Bike Light məhsulunun “Add to cart” düyməsini bas.", "Bike Light məhsulunun “Remove” düyməsini bas."],
+        "exp": "Düymə “Add to cart” olur, səbət nişanı görünmür.",
+        "act": "Düymə “Remove” olaraq qalır, səbət nişanında 1 qalır.",
+        "freq": "3/3 (həmişə). Your Cart səhifəsində “Remove” işləyir.",
+        "sev": "Major", "pri": "Medium"
+      }
+    },
+    "sort": {
+      "page": "products", "where": ["products"], "what": ["price (low to high)", "low to high", "price (high to low)", "high to low", "name (z to a)", "sıra", "sort"], "when": ["problem_user", "problem user"],
+      "sev": ["Major", "Minor"], "pri": ["Medium", "Low"],
+      "sevWhy": "Sıralama heç işləmir, amma məhsulları yenə tapmaq olur — yolu var, Major. Minor da qəbul olunur.",
+      "priWhy": "Alışa mane olmur — Medium və ya Low.",
+      "pre": [{ "l": "hansı istifadəçi (problem_user)", "k": ["problem_user", "problem user"] }, { "l": "hansı səhifə (Products)", "k": ["products"] }],
+      "need": [{ "l": "sıralama seçimi (məsələn, “Price (low to high)”)", "k": ["low to high", "high to low", "z to a"] }],
+      "exp": [{ "l": "yeni sıra (məsələn, birinci Onesie)", "k": ["onesie", "fleece", "t-shirt (red)", "ucuz", "baha", "artan", "azalan"] }],
+      "act": [{ "l": "sıra dəyişmir", "k": ["dəyişmir", "eyni", "qalır"] }],
+      "model": {
+        "title": "Products: “Price (low to high)” seçiləndə məhsulların sırası dəyişmir (problem_user)",
+        "pre": "problem_user / secret_sauce ilə daxil olunub; Products səhifəsi açıqdır.",
+        "steps": ["Sıralama siyahısından “Price (low to high)” seç."],
+        "exp": "Məhsullar qiymətə görə artan sıra ilə düzülür: birinci Onesie ($7.99).",
+        "act": "Sıra dəyişmir: birinci Backpack ($29.99) qalır.",
+        "freq": "3/3 (həmişə). Digər sıralama seçimlərində də sıra dəyişmir.",
+        "sev": "Major", "pri": "Medium"
+      }
+    },
+    "last": {
+      "page": "info", "where": ["checkout", "your information"], "what": ["last name"], "when": ["problem_user", "problem user"],
+      "sev": ["Critical", "Blocker"], "pri": ["High"],
+      "sevWhy": "Last Name doldurulmur, ona görə problem_user sifarişi heç tamamlaya bilmir — Critical. Checkout-un sonrakı testləri də dayanır, Blocker da qəbul olunur.",
+      "priWhy": "Alış tamamlanmır, şirkət pul itirir — High.",
+      "pre": [{ "l": "hansı istifadəçi (problem_user)", "k": ["problem_user", "problem user"] }, { "l": "hansı səhifə (Checkout: Your Information)", "k": ["your information", "checkout"] }],
+      "need": [{ "l": "sahə (Last Name)", "k": ["last name"] }],
+      "exp": [{ "l": "Last Name sahəsində yazılan görünür", "k": ["last name"] }],
+      "act": [{ "l": "hərflər First Name-ə düşür", "k": ["first name"] }],
+      "model": {
+        "title": "Checkout: Your Information: Last Name sahəsinə yazılan hərflər First Name sahəsinə düşür (problem_user)",
+        "pre": "problem_user / secret_sauce ilə daxil olunub; səbətdə Backpack var; Checkout: Your Information səhifəsi açıqdır.",
+        "steps": ["First Name sahəsinə Ali yaz.", "Last Name sahəsinə Aliyev yaz."],
+        "exp": "Last Name sahəsində “Aliyev” görünür, First Name-də “Ali” qalır.",
+        "act": "Hər yazılan hərf First Name sahəsinə düşür: First Name-də “v” görünür, Last Name boş qalır.",
+        "freq": "3/3 (həmişə).",
+        "sev": "Critical", "pri": "High"
+      }
+    }
+  },
   "scenarios": [
     {
       "id": "tc01", "title": "Login: standard_user ilə uğurlu giriş", "result": "Passed",
@@ -99,7 +177,7 @@
       "steps": [{ "t": "Bolt T-Shirt məhsulunun “Add to cart” düyməsini bas.", "on": { "ev": "add", "item": "bolt" } }],
       "expect": { "badge": 1, "btn:bolt": "Remove" },
       "bug": {
-        "where": ["products"], "what": ["bolt"], "when": ["problem_user", "problem user"],
+        "r": "add", "where": ["products"], "what": ["bolt"], "when": ["problem_user", "problem user"],
         "model": "Products: Bolt T-Shirt üçün “Add to cart” basanda düymə və səbət nişanı dəyişmir (problem_user)"
       }
     },
@@ -110,7 +188,7 @@
       "steps": [{ "t": "Sıralama siyahısından “Price (low to high)” seç.", "on": { "ev": "sort", "v": "lohi" } }],
       "expect": { "first": "Onesie" },
       "bug": {
-        "where": ["products"], "what": ["price (low to high)", "low to high", "sira", "sort"], "when": ["problem_user", "problem user"],
+        "r": "sort", "where": ["products"], "what": ["price (low to high)", "low to high", "sira", "sort"], "when": ["problem_user", "problem user"],
         "model": "Products: “Price (low to high)” seçiləndə məhsulların sırası dəyişmir (problem_user)"
       }
     },
@@ -127,7 +205,7 @@
       "expect": { "title": "Checkout: Overview" },
       "see": ["error", "field:first", "field:last"],
       "bug": {
-        "where": ["checkout", "your information"], "what": ["last name"], "when": ["problem_user", "problem user"],
+        "r": "last", "where": ["checkout", "your information"], "what": ["last name"], "when": ["problem_user", "problem user"],
         "model": "Checkout: Your Information: Last Name sahəsinə yazılan hərflər First Name sahəsinə düşür (problem_user)"
       }
     }

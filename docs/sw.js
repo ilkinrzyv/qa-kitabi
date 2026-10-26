@@ -1,5 +1,5 @@
 /* QA Kitabı — service worker: keeps the whole book on the device so it opens without internet. */
-const VERSION = '2026.10.26-8796f6e';
+const VERSION = '2026.10.26-a61d463';
 const CACHE = 'qa-kitab-' + VERSION;
 const ASSETS = [
  "./",

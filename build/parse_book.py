@@ -483,10 +483,22 @@ for sc in store['scenarios']:
         and sc.get('steps') and all(s.get('t') and s.get('on', {}).get('ev') in EVENTS for s in sc['steps']) \
         and all(s['on'].get('f') in FIELDS for s in sc['steps'] if s['on']['ev'] == 'type') \
         and sc.get('expect') and all(store_key(k) for k in list(sc['expect']) + sc.get('see', [])) \
-        and (sc['result'] == 'Passed' or all(sc.get('bug', {}).get(k) for k in ('where', 'what', 'when', 'model')))
+        and (sc['result'] == 'Passed' or all(sc.get('bug', {}).get(k) for k in ('where', 'what', 'when', 'model'))
+             and sc['bug'].get('r') in store.get('reports', {}))
     if not ok:
         print('ERR store scenario', sc.get('id'), file=sys.stderr); errors += 1
     sc_ids.add(sc.get('id'))
+# full bug reports, one per planted bug: the checker's keyword groups and a model report that must pass them
+SEVS, PRIS = ('Blocker', 'Critical', 'Major', 'Minor', 'Trivial'), ('High', 'Medium', 'Low')
+for bid, r in store.get('reports', {}).items():
+    m = r.get('model', {})
+    groups = lambda key: bool(r.get(key)) and all(g.get('l') and g.get('k') for g in r[key])
+    ok = bid in store['bugs'] and r.get('page') in PAGES and all(r.get(k) for k in ('where', 'what', 'when', 'sevWhy', 'priWhy')) \
+        and set(r.get('sev') or ['?']) <= set(SEVS) and set(r.get('pri') or ['?']) <= set(PRIS) \
+        and all(groups(k) for k in ('pre', 'need', 'exp', 'act')) \
+        and all(m.get(k) for k in ('title', 'pre', 'steps', 'exp', 'act', 'freq')) and m.get('sev') in r['sev'] and m.get('pri') in r['pri']
+    if not ok:
+        print('ERR store report', bid, file=sys.stderr); errors += 1
 for sid, ids in store['sections'].items():
     sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
     if not sec or not all(i in sc_ids or i == 'free' for i in ids):
