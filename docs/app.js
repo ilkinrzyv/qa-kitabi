@@ -446,7 +446,7 @@ function render(opts) {
   if (observer) { observer.disconnect(); observer = null; }
   hideSelPill();
   const v = $('#view');
-  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore };
+  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, ctfl: vCtfl };
   (views[S.view] || vHome)(v);
   if (opts.keepScroll) window.scrollTo(0, y);
   else if (!(S.view === 'reader' && S.params.sec)) window.scrollTo(0, 0);
@@ -1409,6 +1409,8 @@ function vPractice(v) {
       ${boxesHTML()}
       <div class="row" style="margin-top:14px"><button class="btn primary" data-act="cards">${icon('play')}Başla</button><button class="btn ghost" data-act="glossary">${icon('abc')}Lüğət</button></div>
     </div></section>
+  <section class="block"><div class="block-h"><h2>ISTQB xəritəsi</h2><span class="muted" style="font-size:13px">CTFL v4.0</span></div>
+    <button class="quizcta alt" data-act="ctfl-open">${icon('layers')}<div style="flex:1;min-width:0;text-align:left"><b>Sillabus və kitab</b><span>${CTFL.length} fəsil, ${CTFL.reduce((a, c) => a + c.topics.length, 0)} mövzu — hər biri onu öyrədən bölmələrə bağlıdır</span></div>${icon('arrow')}</button></section>
   <section class="block"><div class="block-h"><h2>Fəsil testləri</h2><span class="muted" style="font-size:13px">${o.quizDone}/21 · orta ${o.avg}%</span></div>
     <div class="qgrid">${cells}</div></section>
   <section class="block"><div class="block-h"><h2>Məşq mağazası</h2><span class="muted" style="font-size:13px">${Object.keys(SM.passed).length}/${STORE.scenarios.length} test case</span></div>
@@ -1494,6 +1496,26 @@ function finishQuiz() {
   Store.changed('progress');
 }
 
+/* ---------- ISTQB CTFL v4.0 map (ctfl.json): the syllabus chapters and topics, each linked to the book sections that teach
+   it; a section marked as learned shows green ---------- */
+const CTFL = BOOK.ctfl;
+function vCtfl(v) {
+  setHeader({ back: true, kicker: 'ISTQB xəritəsi', name: 'CTFL v4.0 sillabusu və kitab' });
+  const L = P().learned, uniq = a => [...new Set(a)];
+  const all = uniq(CTFL.flatMap(c => c.topics.flatMap(t => t.s))), done = all.filter(id => L[id]).length, per = pct(done, all.length);
+  const chip = id => { const s = secById[id]; return `<button class="chip${L[id] ? ' pass' : ''}" data-act="goto-sec" data-sec="${id}" title="${esc(s.title)}">${L[id] ? icon('check') : ''}${esc(s.num || s.title)}</button>`; };
+  v.innerHTML = `<div class="card"><div class="kicker">ISTQB Certified Tester Foundation Level</div>
+      <h1 class="h1" style="font-size:24px">Sillabusun hər mövzusu kitabda haradadır</h1>
+      <p class="muted" style="margin:8px 0 0;font-size:14px">CTFL v4.0 sillabusu 6 fəsildən ibarətdir. Hər mövzunun altında onu öyrədən bölmələr var — öyrəndiyin bölmələr yaşıl görünür. Dəqiqələr sillabusun tədris vaxtıdır: imtahanda fəslin çəkisi təxminən buna uyğundur.</p>
+      <div class="herofig" style="margin-top:12px"><span class="v">${per}%</span><span class="u">${done} / ${all.length} bölmə öyrənilib</span></div>
+      <div class="meter${per === 100 ? ' pass' : ''}" style="margin-top:10px;height:8px"><i style="width:${per}%"></i></div></div>
+    ${CTFL.map(c => {
+      const ids = uniq(c.topics.flatMap(t => t.s)), d = ids.filter(id => L[id]).length;
+      return `<section class="block"><div class="block-h"><h2>${c.n} · ${esc(c.t)}</h2><span class="muted" style="font-size:12.5px">${c.min} dəq · ${d}/${ids.length}</span></div>
+        <div class="card ctfl"><div class="ctfl-en" lang="en">${esc(c.en)}</div>${c.topics.map(t => `<div class="ctfl-t"><div><span class="mono">${esc(t.c)}</span> ${esc(t.t)}</div><div class="ctfl-s">${t.s.map(chip).join('')}</div></div>`).join('')}</div></section>`;
+    }).join('')}
+    <p class="muted" style="font-size:13px;margin-top:18px">Mənbə: ISTQB CTFL Syllabus v4.0. Rəsmi imtahan: 40 sual, 60 dəqiqə, keçid həddi 26 düzgün cavab.</p>`;
+}
 /* ---------- flashcards ---------- */
 const INTERVAL = [0, 1, 2, 4, 8, 16];
 function startCards() {
@@ -2299,6 +2321,7 @@ document.addEventListener('click', ev => {
       break;
     }
     case 'sm-check': smCheck(); break;
+    case 'ctfl-open': closeSheet(); go('ctfl', {}, { push: S.view !== 'ctfl' }); break;
     case 'tr': { const N = trLast(trById[d.tr]), i = Math.min(TR[d.tr] || 0, N); TR[d.tr] = d.d === '0' ? 0 : d.d === 'end' ? N : clamp(i + +d.d, 0, N); trRedraw(d.tr); break; }
     case 'kon-quiz': if (AI.state === 'on') aiForKonspekt(d.ch); break;
     case 'ch-lesson': if (AI.state === 'on') aiForChapterLesson(d.ch); break;
@@ -2538,6 +2561,7 @@ function routeHash() {
   else if (h === 'mesq' || h === 'practice') { S.tab = 'practice'; S.view = 'practice'; S.params = {}; }
   else if (h === 'xulase') { S.tab = 'practice'; S.view = 'summary'; S.params = { ch: 'all' }; }
   else if (t === 'magaza') { S.tab = 'practice'; S.view = 'store'; S.params = { sc: own(scById, act) ? act : null }; }
+  else if (h === 'istqb') { S.tab = 'practice'; S.view = 'ctfl'; S.params = {}; }
   else if (h === 'muellim' || h === 'tutor') { S.tab = 'tutor'; S.view = 'tutor'; S.params = {}; S.tutorMode = 'chat'; }
   else if (h === 'rol' || h === 'roleplay') { S.tab = 'tutor'; S.view = 'tutor'; S.params = {}; S.tutorMode = 'rp'; }
   else if (h === 'progress' || h === 'ireliles') { S.tab = 'progress'; S.view = 'progress'; S.params = {}; }

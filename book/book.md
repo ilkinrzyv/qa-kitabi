@@ -120,6 +120,45 @@ Tipik bir iş günü belə ola bilər:
 
 Yaxşı tester-in keyfiyyətləri: diqqət, maraq, məntiq, səbr, istifadəçi kimi düşünmək və ünsüiyyət — defekti kimisə incitmədən, faktlarla izah etmək bacarığı.
 
+### 1.6. Test və debugging, kök səbəb, testware {#c1x1}
+
+Test və debugging (sazlama) fərqli işlərdir:
+
+- **Test** nasazlığı (failure) və ya defekti tapır və göstərir. Bunu tester edir.
+- **Debugging** defektin kodda harada olduğunu tapır, onu düzəldir və düzəlişi yoxlayır. Bunu adətən proqramçı edir.
+
+Ardıcıllıq belədir: tester nasazlığı tapır və bug report yazır → proqramçı debugging edir və düzəldir → tester düzəlişi yoxlayır (retest) və regression aparır.
+
+| İş | Hansı suala cavab verir | Kim edir |
+| --- | --- | --- |
+| Test | Problem varmı, harada və hansı şərtdə görünür? | Tester |
+| Debugging | Kodda səbəb haradadır, necə düzəlir? | Proqramçı |
+| Kök səbəb analizi | Niyə ümumiyyətlə baş verdi, necə təkrarlanmasın? | Komanda |
+
+**Kök səbəb (root cause)** — səhvin (error) baş verməsinin əsas səbəbidir. 1.3-dəki endirim misalında defekt kodda “0.1 yerinə 0.01” yazılmasıdır. Kök səbəb isə dərində ola bilər: tələbdə faizin necə yazılacağı göstərilməyib, kod review aparılmayıb. Kök səbəbi aradan qaldıranda eyni tip defektlər bir daha yaranmır: tələb şablonu dəyişir, review məcburi olur. Bu, artıq QA işidir (1.2).
+
+**Testware** — test prosesində yaranan bütün iş məhsullarıdır: test planı, test ssenariləri, test case-lər və checklist-lər, test data, avtomatik test skriptləri, bug report-lar, test hesabatları. Testware növbəti relizlərdə təkrar işlədilir, ona görə səliqə ilə saxlanılır və versiyalanır (4.6).
+
+**İzlənə bilmə (traceability)** — tələb, test case, test nəticəsi və defekt arasındakı əlaqədir. RTM cədvəli (11-ci fəsil) göstərir ki, hansı tələb hansı testlərlə yoxlanıb və harada defekt var. Tələb dəyişəndə hansı testləri yeniləmək lazım olduğu da məhz izlənə bilmə sayəsində görünür.
+
+### 1.7. Bütün komanda yanaşması və testin müstəqilliyi {#c1x2}
+
+**Bütün komanda yanaşması (whole team approach).** Keyfiyyət yalnız tester-in deyil, bütün komandanın məsuliyyətidir. Tester komandanın bərabərhüquqlu üzvüdür: Product Owner ilə qəbul meyarlarını yazır, proqramçı ilə unit testləri və avtomatlaşdırmanı müzakirə edir, analitiklə tələbləri nəzərdən keçirir. Komandanın hər üzvü test işinə qoşula bilər, amma hər kəs öz güclü tərəfini gətirir.
+
+**Testin müstəqilliyi (independence of testing).** Müəllif öz işindəki səhvləri çətin görür: nə yazmaq istədiyini bilir və gözü “düzgün”ü oxuyur. Ona görə testi başqa birinin etməsi daha çox defekt tapır.
+
+| Müstəqillik | Kim test edir |
+| --- | --- |
+| Yoxdur | Müəllifin özü: proqramçı öz kodunu yoxlayır |
+| Aşağı | Eyni komandadan həmkar |
+| Orta | Komandadakı tester |
+| Yüksək | Ayrıca test komandası və ya xarici şirkət |
+
+- **Üstünlükləri:** fərqli baxış başqa növ nasazlıqları tapır; tester müəllifin və maraqlı tərəflərin fərziyyələrini yoxlayır.
+- **Riskləri:** tester komandadan təcrid olunur, ünsiyyət zəifləyir; proqramçılar keyfiyyəti “tester-in işi” sanır; tester gecikmələrin günahkarı və ya darboğaz kimi görünür.
+
+Praktikada hər ikisi birlikdə olur: unit testləri proqramçı yazır (müstəqillik yoxdur, amma sürətlidir), sistem testini komandadakı tester aparır, qəbul testini isə istifadəçilər. Hər səviyyədə fərqli müstəqillik doğru seçimdir.
+
 ### Diqqət: tez-tez edilən səhvlər
 
 - **“Test proqramın səhvsiz olduğunu sübut edir.”** Xeyr — test yalnız defektlərin varlığını göstərir (Fəsil 2).
@@ -356,6 +395,58 @@ Kanban-ın əsas qaydası WIP limitidir (work in progress — eyni vaxtda görü
 | Müştəri nəticəni görür | Sonda | Sonda | Hər sprintdən sonra |
 | Uyğundur | Sabit tələblər | Sabit tələblər, ciddi sahələr (tibb, aviasiya) | Tez dəyişən bazar, startaplar, rəqəmsal məhsullar |
 
+### 3.9. Test-first yanaşmalar: TDD, ATDD və BDD {#c3x1}
+
+Bu yanaşmalarda test koddan **əvvəl** yazılır və inkişafı istiqamətləndirir: kod testi keçmək üçün yazılır.
+
+| Yanaşma | Testi kim yazır | Səviyyə | Forma |
+| --- | --- | --- | --- |
+| TDD (Test-Driven Development) | Proqramçı | Unit | Kodla yazılan unit test |
+| ATDD (Acceptance Test-Driven Development) | Komanda: biznes, proqramçı, tester | Sistem, qəbul | Qəbul meyarlarından çıxan testlər |
+| BDD (Behavior-Driven Development) | Komanda | Davranış | Given–When–Then (Gherkin) |
+
+**TDD dövrü — qırmızı, yaşıl, refaktor:**
+
+1. Hələ olmayan funksiya üçün test yaz. Test düşür (qırmızı).
+2. Testi keçirmək üçün minimum kod yaz. Test keçir (yaşıl).
+3. Kodu səliqəyə sal (refactoring). Testlər yaşıl qalmalıdır.
+
+Misal: əvvəl “`calculateDiscount(100, 10)` 90 qaytarır” testi yazılır, sonra funksiya.
+
+**ATDD.** Sprint planlamasında Product Owner, proqramçı və tester (“üç amigo”) user story-ni birlikdə müzakirə edir və qəbul meyarlarını konkret misallarla yazır. Bu misallar qəbul testlərinə çevrilir: əvvəlcə pozitiv, sonra neqativ və qeyri-funksional hallar. Kod bu testləri keçəndə story hazırdır.
+
+**BDD.** Davranış təbii dilə yaxın formada yazılır (Gherkin, 10-cu fəsil):
+
+```gherkin
+Scenario: Promo kod məbləği azaldır
+  Given istifadəçinin səbətində 100 AZN-lik məhsul var
+  When o TEST10 promo kodunu tətbiq edir
+  Then ümumi məbləğ 90 AZN olur
+```
+
+Cucumber kimi alətlər bu ssenariləri avtomatik testə çevirir: hər sətrin arxasında kod dayanır.
+
+Tester üçün nəticə: bu yanaşmalarda tester-in ən dəyərli işi koddan əvvəl görülür — misallar, sərhəd halları və neqativ ssenarilər təklif etmək.
+
+### 3.10. DevOps, shift-left və retrospektivlər {#c3x2}
+
+**DevOps** — inkişaf (development) və istismar (operations) komandalarının birgə işləməsidir: kod tez-tez, kiçik hissələrlə və avtomatik olaraq canlıya çıxır. Bunun əsası CI/CD pipeline-dır (20-ci fəsil).
+
+- **Tester üçün faydaları:** hər dəyişiklikdən sonra sürətli rəy, sabit test mühitləri, avtomatik regression, qeyri-funksional testlərin (performans, təhlükəsizlik) pipeline-a qoşulması.
+- **Riskləri:** pipeline-ı qurmaq və saxlamaq vaxt tələb edir; zəif yazılmış avtomatik testlər yalançı təhlükəsizlik hissi yaradır. Manual və exploratory test yenə lazımdır.
+
+**Shift-left (sola sürüşdürmə)** — testi SDLC-də mümkün qədər erkən başlatmaqdır (Prinsip 3). Praktikada:
+
+- tələbləri və dizaynı nəzərdən keçirmək (review, 7.4);
+- test case-ləri kod yazılmazdan əvvəl yazmaq (ATDD, 3.9);
+- hər commit-də CI-də avtomatik testləri işə salmaq;
+- dinamik testdən əvvəl statik analiz (məsələn, ESLint);
+- qeyri-funksional testlərə imkan olan kimi, komponent səviyyəsində başlamaq.
+
+Shift-left əvvəlcə əlavə iş və xərc tələb edir, amma sonradan defektlərin qiymətini azaldır. Bunu komanda və rəhbərlik birlikdə qəbul etməlidir.
+
+**Retrospektivlər və prosesin yaxşılaşdırılması.** Hər sprintin və ya layihənin sonunda komanda üç suala cavab verir: nə yaxşı getdi, nə pis getdi, nəyi necə yaxşılaşdıracağıq? Tester buraya test prosesinə dair faktlar gətirir. Misal: “Bu sprintdə canlıda 3 baq tapıldı, üçü də yeni ödəniş üsulunda idi — növbəti sprintdə onun üçün API testləri yazaq.” Nəticə konkret tədbir olmalıdır və növbəti retrospektivdə yoxlanmalıdır.
+
 ### Diqqət: tez-tez edilən səhvlər
 
 - **“Agile-da sənəd yoxdur.”** Yanlışdır. Sənəd var, sadəcə lazım olduğu qədər.
@@ -447,6 +538,25 @@ Yekun hesabatda ən çox bu sadə metriklər işlənir:
 ### 4.5. Agile-da STLC
 
 Scrum-da bu 6 mərhələ hər sprintdə kiçik miqyasda təkrarlanır. Sprint planning-də analiz və planlaşdırma, sprint boyu dizayn və icra, retrospektivdə bağlanış və dərslər olur. Mərhələlər qısadır və bir-birinə qarışır, amma məntiq eynidir.
+
+### 4.6. Monitorinq, hesabatlar və konfiqurasiya idarəetməsi {#c4x1}
+
+**Test monitorinqi** — planı faktiki vəziyyətlə müqayisə etmək: neçə test icra olunub, neçəsi keçib, neçə açıq defekt var (metriklər, 4.4). **Test nəzarəti (test control)** — fərq varsa, tədbir görmək: prioritetləri dəyişmək, riskli sahəyə əlavə test, relizi təxirə salmağı təklif etmək.
+
+| Hesabat | Nə vaxt | Nə yazılır |
+| --- | --- | --- |
+| Gedişat hesabatı (test progress report) | Müntəzəm: gündəlik, həftəlik, sprint sonu | Gedişat, metriklər, maneələr, risklər, növbəti addımlar |
+| Yekun hesabat (test completion report) | Mərhələnin və ya relizin sonunda | Nə test olundu, nəticələr, açıq defektlər, qalan risklər, çıxış meyarları, dərslər |
+
+Hesabatı oxucuya uyğunlaşdır: komandaya detallar, rəhbərliyə qısa xülasə və risklər lazımdır. Agile komandada status çox vaxt Daily Scrum-da, lövhədə (board) və dashboard-larda (məsələn, burn-down qrafiki) görünür. Yekun hesabatın şablonu Əlavə B.4-dədir.
+
+**Konfiqurasiya idarəetməsi (configuration management)** — testin bütün hissələrini versiyaları ilə izləmək: test olunan build, mühit, test case-lər, avtomatik skriptlər, test data. Məqsəd: hər nəticənin hansı versiyada alındığını bilmək və testi təkrarlaya bilmək.
+
+- Hər bug report-da build nömrəsi və mühit yazılır (12.1).
+- Test case-lər və avtomatik testlər versiya sistemində saxlanılır (Git, 20-ci fəsil).
+- **Baseline** — razılaşdırılmış versiyadır; ondan sonra dəyişikliklər yalnız qaydaya uyğun edilir.
+
+“Login testi keçdi” cümləsinin dəyəri yoxdur, əgər hansı build-də və hansı mühitdə keçdiyi bəlli deyilsə.
 
 ### Diqqət: tez-tez edilən səhvlər
 
@@ -541,6 +651,24 @@ Qəbul testi bu suala cavab verir: məhsul biznes ehtiyaclarına və istifadəç
 | İnteqrasiya | Modullar arası əlaqə | Proqramçı, tester | Səbət modulu ödəniş servisinə düzgün məbləğ ötürür |
 | Sistem | Bütöv sistem | Tester | Qeydiyyatdan ödənişə qədər tam alış ssenarisi |
 | Qəbul | Biznes ehtiyacına uyğunluq | Müştəri, istifadəçilər | Mağaza sahibi real sifarişlərlə sistemi qəbul edir |
+
+### 5.6. Baxım testi (maintenance testing) {#c5x1}
+
+Məhsul canlıya çıxandan sonra da dəyişir və hər dəyişiklik test tələb edir. Buna baxım testi deyilir. Onun səbəbləri (triggers):
+
+- **Dəyişiklik (modification):** yeni funksiya, defekt düzəlişi, təcili düzəliş (hotfix), əməliyyat sisteminin və ya kitabxananın yenilənməsi.
+- **Köçürmə (migration):** sistemin yeni serverə, buluda və ya platformaya keçməsi; köhnə datanın yeni sistemə köçürülməsi.
+- **İstismardan çıxarma (retirement):** sistem bağlananda datanın arxivlənməsi, saxlanma müddəti və bərpa imkanı yoxlanır.
+
+| Hadisə | Nə test olunur |
+| --- | --- |
+| Ödəniş xidmətinin yeni versiyası | Ödəniş, geri qaytarma, xəta halları və regression |
+| Bazanın yeni serverə köçürülməsi | Datanın tam və düzgün köçməsi, performans, ehtiyat nüsxə |
+| Köhnə mobil tətbiqin bağlanması | Datanın arxivi, istifadəçilərə bildiriş, yeni tətbiqə yönləndirmə |
+
+Baxım testinin iki hissəsi var: dəyişikliyin özünü yoxlamaq və dəyişməyən hissələrin sınmadığını yoxlamaq (regression). Nə qədər test lazım olduğunu **təsir analizi (impact analysis)** göstərir: dəyişiklik sistemin hansı hissələrinə toxuna bilər? Məsələn, endirim hesablaması dəyişibsə, səbət, sifariş, qəbz və hesabatlar yoxlanır, profil səhifəsi isə yox.
+
+Təsir analizi çətinləşir, əgər tələblər və testlər köhnəlibsə, izlənə bilmə (1.6) yoxdursa, avtomatik regression testləri azdırsa və sistemi bilən adamlar komandadan gedibsə.
 
 ### Diqqət: tez-tez edilən səhvlər
 
@@ -637,6 +765,19 @@ Misal: sayt açılır, login işləyir, kataloq görünür, məhsul səbətə ə
 - **End-to-end (E2E) testing** — real istifadəçi ssenarisi uçdan-uca, bütün sistemlər birlikdə.
 - **Installation testing** — quraşdırma, yeniləmə və silmə.
 - **Recovery testing** — sistem nasazlıqdan sonra necə bərpa olunur: server yenidən başlayanda data itirmi?
+
+### 6.5. Test kvadrantları {#c6x1}
+
+Test kvadrantları (testing quadrants) test növlərini iki ox üzrə qruplaşdırır. Birinci ox: test **biznesə** yoxsa **texnologiyaya** yönəlib. İkinci ox: testin məqsədi **komandaya kömək etmək** (məhsul qurularkən) yoxsa **məhsulu tənqid etmək** (qurulanı yoxlamaq). Kvadrantlar Agile komandada heç bir test növünün unudulmadığını yoxlamağa kömək edir.
+
+| Kvadrant | Yönəlib | Məqsəd | Nümunələr | Adətən |
+| --- | --- | --- | --- | --- |
+| Q1 | Texnologiyaya | Komandaya kömək | Unit və komponent inteqrasiya testləri | Avtomatik, CI-də |
+| Q2 | Biznesə | Komandaya kömək | Funksional testlər, story testləri, misallar, API testləri, prototiplər | Manual və ya avtomatik |
+| Q3 | Biznesə | Məhsulu tənqid | Exploratory, usability, UAT | Manual, istifadəçi gözü ilə |
+| Q4 | Texnologiyaya | Məhsulu tənqid | Smoke və qeyri-funksional testlər: performans, yük, təhlükəsizlik | Alətlərlə, çox vaxt avtomatik |
+
+Tester üçün nəticə: komanda yalnız Q2-də — funksional testlərdə — ilişib qalmamalıdır. Relizə hazırlıqda dörd kvadrantın hamısına baxılır. Test piramidası (19.2) isə avtomatik testlərin səviyyələr üzrə sayını göstərir: kvadrantlar “hansı növ testlər?”, piramida “hansı səviyyədə və nə qədər?” sualına cavab verir.
 
 ### Diqqət: tez-tez edilən səhvlər
 
@@ -772,6 +913,29 @@ Ad hoc testdən fərqi var. Ad hoc tam plansız və sənədsizdir. Exploratory i
 | Zəif tərəfi | Yorğunluq, təkrarda diqqətsizlik | Yalnız yazılanı yoxlayır, UI dəyişəndə sınır |
 
 Avtomatlaşdırma manual testi əvəz etmir: onu yalnız insanın görə biləcəyi işlərə azad edir. Ətraflı — Fəsil 19-da.
+
+### 7.8. Review prosesi: addımlar, rollar, uğur amilləri {#c7x1}
+
+7.4-də review növlərini gördük. Rəsmi review — məsələn, inspection — bir proses kimi aparılır:
+
+1. **Planlaşdırma** — nə nəzərdən keçiriləcək, məqsəd, çıxış meyarları, iştirakçılar və vaxt.
+2. **Başlanğıc (review initiation)** — iştirakçılar sənədi, rollarını və checklist-i alır; hər kəs nə edəcəyini bilir.
+3. **Fərdi review** — hər iştirakçı sənədi təkbaşına oxuyur və tapıntıları (anomaliyaları) qeyd edir. Ən çox defekt bu addımda tapılır.
+4. **Müzakirə və analiz** — tapıntılar görüşdə müzakirə olunur: hansı defektdir, kim düzəldəcək, sənəd qəbul olunurmu.
+5. **Düzəliş və hesabat** — müəllif düzəldir, defektlər qeydə alınır, çıxış meyarı yoxlanır.
+
+| Rol | Nə edir |
+| --- | --- |
+| Müəllif (author) | Sənədi yazıb, tapıntıları düzəldir |
+| Rəhbər (manager) | Review-a qərar verir, vaxt və adam ayırır |
+| Moderator (facilitator) | Görüşü aparır, hər kəsə söz verir, mübahisəni faktlara qaytarır |
+| Qeydiyyatçı (scribe) | Tapıntıları və qərarları yazır |
+| Reviewer | Sənədi oxuyur və defekt axtarır: tester, proqramçı, analitik, istifadəçi |
+| Review lideri | Review-un bütövlükdə təşkilinə cavabdehdir |
+
+**Uğur amilləri:** aydın məqsəd və ölçülə bilən çıxış meyarları; sənədi kiçik hissələrlə nəzərdən keçirmək; hazırlıq üçün vaxt; checklist; rəhbərliyin dəstəyi. Ən vacibi — **insanı yox, sənədi tənqid etmək**. Review-da tapılan defekt müəllifin “günahı” deyil, komandanın qazancıdır.
+
+Tester üçün: tələblərin review-u defekt tapmağın ən ucuz yoludur (Prinsip 3). 10-cu fəsildəki “tələbə sual vermək” vərdişi məhz fərdi review-dur.
 
 ### Diqqət: tez-tez edilən səhvlər
 
@@ -1451,6 +1615,49 @@ Test case — konkret bir yoxlamanın ətraflı təsviridir: ilkin şərtlər, a
 ### 11.8. Alətlər
 
 Başlanğıc üçün Google Sheets və ya Excel kifayətdir. Şirkətlərdə test idarəetmə alətləri işlədilir: TestRail, Qase, Zephyr və Xray (Jira əlavələri). Hamısının məntiqi eynidir: test case-lər, dəstlər, icra nəticələri və hesabatlar.
+
+### 11.9. Test qiymətləndirməsi (estimation) {#c11x1}
+
+“Bu funksiyanın testi nə qədər vaxt aparacaq?” — planlamada ən çox verilən sualdır. Dörd əsas üsul var:
+
+| Üsul | Necə | Misal |
+| --- | --- | --- |
+| Nisbətə görə (ratio) | Keçmiş layihələrin nisbətindən | Əvvəlki layihələrdə test inkişafın 40%-ni aparıb; inkişaf 10 gündürsə, test təxminən 4 gün |
+| Ekstrapolyasiya | Cari layihənin ilk ölçmələrindən | İlk 3 sprintdə hər story-nin testi orta 3 saat; qalan 20 story təxminən 60 saat |
+| Wideband Delphi | Ekspertlər ayrı-ayrılıqda qiymət verir, fərqləri müzakirə edir, yaxınlaşana qədər təkrarlayır | Planning Poker bunun Agile variantıdır |
+| Üç nöqtəli qiymətləndirmə | Optimist (a), ən ehtimallı (m) və pessimist (b) qiymət | Aşağıdakı düstur |
+
+**Üç nöqtəli düstur:** E = (a + 4m + b) / 6. Standart kənarlaşma: SD = (b − a) / 6.
+
+**Misal.** Optimist qiymət 6 saat, ən ehtimallı 9 saat, pessimist 18 saat. E = (6 + 4 × 9 + 18) / 6 = 60 / 6 = 10 saat. SD = (18 − 6) / 6 = 2 saat. Qiymət: 10 ± 2 saat, yəni 8–12 saat.
+
+Qiymətə təsir edən amillər: məhsulun mürəkkəbliyi və riski, tələblərin keyfiyyəti, komandanın təcrübəsi, test mühiti, alətlər və test datası. Qiymət vəd deyil: risklər dəyişəndə yenilənir.
+
+### 11.10. Risklər və test prioritetləri {#c11x2}
+
+**Risk** gələcəkdə baş verə biləcək və mənfi nəticəsi olan hadisədir. Onun iki atributu var: **ehtimal (likelihood)** və **təsir (impact)**. **Risk səviyyəsi = ehtimal × təsir.**
+
+- **Məhsul riskləri (product risks)** məhsulun keyfiyyəti ilə bağlıdır: funksiya düzgün işləmir, ödəniş iki dəfə çıxılır, səhifə yavaş açılır, data sızır. Bunları test azaldır.
+- **Layihə riskləri (project risks)** layihənin idarəsi ilə bağlıdır: mühit gec hazır olur, tester xəstələnir, tələblər tez-tez dəyişir, büdcə azalır. Bunlar test planının “Risklər” bölməsinə yazılır (11.2).
+
+**Məhsul risk analizi** iki addımdır: əvvəl riskləri **müəyyənləşdirmək** (beyin fırtınası, keçmiş defektlər, tələblərin review-u, istifadəçi şikayətləri), sonra hər birini **qiymətləndirmək** — ehtimal və təsiri, məsələn, 1–3 şkalası ilə.
+
+| Risk | Ehtimal | Təsir | Səviyyə |
+| --- | --- | --- | --- |
+| Ödəniş iki dəfə çıxılır | 2 | 3 | 6 — yüksək |
+| Promo kod məbləği yeniləmir | 3 | 2 | 6 — yüksək |
+| “Haqqımızda” səhifəsində orfoqrafik səhv | 3 | 1 | 3 — orta |
+| Profil şəkli yüklənmir | 2 | 1 | 2 — aşağı |
+
+**Riskə cavab (risk control):** testlə azaltmaq (daha çox və daha dərin test, erkən test, daha müstəqil tester), qəbul etmək, başqasına ötürmək (məsələn, xarici xidmətə və ya sığortaya) və ehtiyat plan hazırlamaq. Risklər layihə boyu izlənir: yeniləri yaranır, köhnələri azalır.
+
+**Test case-lərin prioritetləşdirilməsi:**
+
+- **Riskə görə** — ən yüksək riskli sahələrin testləri birinci;
+- **Əhatəyə görə (coverage)** — ən çox əhatə verən testlər birinci, məsələn, ən çox tələbi yoxlayan;
+- **Tələblərə görə** — biznes üçün ən vacib tələblərin testləri birinci.
+
+Asılılıqlar da nəzərə alınır: login testi ödəniş testindən əvvəl icra olunmalıdır. Vaxt çatmayanda (21.6) risk əsaslı seçim tester-in ən güclü arqumentidir.
 
 ### Diqqət: tez-tez edilən səhvlər
 
@@ -3567,6 +3774,8 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | Agile | Çevik yanaşma | Qısa iterasiyalarla, rəy alaraq məhsul hazırlamaq | 3 |
 | API | Proqram interfeysi | Proqramların bir-biri ilə danışma qaydası | 15 |
 | Assertion | Yoxlama ifadəsi | Kodda gözlənilən nəticəni yoxlayan sətir (expect) | 15, 19 |
+| ATDD | Qəbul testi ilə idarə olunan inkişaf | Qəbul meyarlarından koddan əvvəl testlər yazmaq | 3 |
+| BDD | Davranışla idarə olunan inkişaf | Davranışı Given–When–Then ilə təsvir edib avtomatlaşdırmaq | 3, 10 |
 | Black box testing | Qara qutu testi | Kodu bilmədən, giriş və çıxışa görə test | 7 |
 | Blocker | Bloklayıcı defekt | İşi və testi tamamilə dayandıran defekt | 12 |
 | Boundary Value Analysis (BVA) | Sərhəd dəyərlərinin analizi | Sərhədləri və qonşu dəyərləri yoxlamaq | 8 |
@@ -3579,13 +3788,16 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | CI/CD | Davamlı inteqrasiya və çatdırılma | Hər dəyişiklikdən sonra avtomatik build, test və yerləşdirmə | 20 |
 | Commit | Commit | Git-də yadda saxlanmış dəyişiklik | 20 |
 | Compatibility testing | Uyğunluq testi | Müxtəlif brauzer, OS və cihazlarda yoxlama | 6, 14 |
+| Configuration management | Konfiqurasiya idarəetməsi | Build, mühit və testware-in versiyalarla izlənməsi | 4 |
 | Cookie | Cookie | Serverin brauzerdə saxladığı kiçik məlumat | 13 |
 | Coverage | Əhatə | Testlərin kodu və ya tələbləri nə qədər əhatə etməsi | 7 |
 | CRUD | CRUD | Create, Read, Update, Delete — data ilə 4 əsas əməliyyat | 13 |
+| Debugging | Debugging (sazlama) | Defektin kodda yerini tapıb düzəltmək; adətən proqramçının işi | 1 |
 | Decision table | Qərar cədvəli | Şərt kombinasiyalarını və nəticələri göstərən cədvəl | 9 |
 | Defect clustering | Defektlərin qruplaşması | Defektlərin az sayıda modulda toplanması | 2 |
 | Definition of Done (DoD) | “Hazır” anlayışı | Tapşırığın bitmiş sayılması şərtləri | 3 |
 | Deployment | Yerləşdirmə | Məhsulun serverə və istifadəçilərə çatdırılması | 3 |
+| DevOps | DevOps | İnkişaf və istismar komandalarının birgə, avtomatik işləməsi | 3, 20 |
 | DevTools | Tərtibatçı alətləri | Brauzerin daxili analiz alətləri (F12) | 13 |
 | Duplicate | Dublikat | Artıq yazılmış defektin təkrarı | 12 |
 | End-to-end (E2E) testing | Uçdan-uca test | Real istifadəçi ssenarisinin tam yoxlanması | 6 |
@@ -3603,11 +3815,14 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | Gherkin | Gherkin | Given–When–Then formatlı ssenari dili | 10 |
 | Grey box testing | Boz qutu testi | Qismən daxili biliklə test | 7 |
 | HTTP status code | Status kodu | Sorğunun nəticəsini bildirən 3 rəqəmli kod | 13 |
+| Impact analysis | Təsir analizi | Dəyişikliyin sistemin hansı hissələrinə toxunduğunu müəyyən etmək | 5 |
+| Independence of testing | Testin müstəqilliyi | Testi müəllifdən başqasının aparması | 1 |
 | Integration testing | İnteqrasiya testi | Modullar arası əlaqənin yoxlanması | 5 |
 | JQL | JQL | Jira-da axtarış dili | 12 |
 | JSON | JSON | API-lərdə ən çox işlənən data formatı | 15 |
 | Load testing | Yük testi | Gözlənilən yükdə performansın yoxlanması | 6 |
 | Locator | Lokator | Avtomatlaşdırmada elementi tapma yolu | 19 |
+| Maintenance testing | Baxım testi | Canlıdakı sistemin dəyişikliklərinin testi | 5 |
 | Mock / Stub | Saxta əvəzedici | Hazır olmayan komponentin yerinə işləyən imitasiya | 5 |
 | Negative testing | Neqativ test | Yanlış data ilə sistemin reaksiyasını yoxlamaq | 7 |
 | Non-functional testing | Qeyri-funksional test | Sistemin necə işlədiyinin yoxlanması | 6 |
@@ -3617,6 +3832,7 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | Positive testing | Pozitiv test | Düzgün data ilə gözlənilən davranışı yoxlamaq | 7 |
 | Precondition | İlkin şərt | Testdən əvvəl hazır olmalı olan vəziyyət | 11 |
 | Priority | Prioritet | Defektin nə qədər tez düzəldilməli olduğu | 12 |
+| Product / Project risk | Məhsul / layihə riski | Keyfiyyətlə bağlı risk / layihənin idarəsi ilə bağlı risk | 11 |
 | Production (prod) | Canlı mühit | Real istifadəçilərin işlətdiyi sistem | 20 |
 | Pull request (PR) | Birləşdirmə sorğusu | Budağı main-ə birləşdirmək üçün sorğu | 20 |
 | QA / QC | Keyfiyyətin təminatı / keyfiyyətə nəzarət | Prosesi və məhsulu hədəf alan keyfiyyət fəaliyyəti | 1 |
@@ -3624,11 +3840,16 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | Release | Reliz | Məhsulun yeni versiyasının buraxılışı | 3 |
 | Requirement | Tələb | Sistemin nə etməli olduğunun təsviri | 10 |
 | Retest (confirmation testing) | Təkrar yoxlama | Düzəldilmiş defektin yoxlanması | 6 |
+| Retrospective | Retrospektiv | Komandanın prosesi yaxşılaşdırmaq üçün sprintin sonunda geriyə baxışı | 3 |
+| Review | Nəzərdən keçirmə (review) | İş məhsulunu işə salmadan oxuyub defekt axtarmaq | 7 |
+| Risk level | Risk səviyyəsi | Riskin ehtimalı ilə təsirinin hasili | 11 |
+| Root cause | Kök səbəb | Səhvin baş verməsinin əsas səbəbi | 1 |
 | RTM | Tələblərin izlənmə matrisi | Tələblər ilə test case-lərin əlaqə cədvəli | 10 |
 | Sanity testing | Sanity test | Konkret dəyişikliyin dar və dərin yoxlanması | 6 |
 | Scrum | Scrum | Sprintlərə əsaslanan Agile çərçivəsi | 3 |
 | SDLC | Proqramın həyat dövrü | Proqramın ideyadan dəstəyə qədər mərhələləri | 3 |
 | Severity | Ciddilik | Defektin texniki təsiri | 12 |
+| Shift left | Sola sürüşdürmə | Testi SDLC-də mümkün qədər erkən başlatmaq | 2, 3 |
 | Smoke testing | Smoke test | Yeni build-in əsas funksiyalarının qısa yoxlanması | 6 |
 | Sprint | Sprint | Scrum-da 1–4 həftəlik iş dövrü | 3 |
 | SQL | SQL | Verilənlər bazası ilə işləmək dili | 16 |
@@ -3638,17 +3859,23 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | STLC | Testin həyat dövrü | Test işinin mərhələləri | 4 |
 | Stress testing | Stress testi | Limitdən yuxarı yükdə davranışın yoxlanması | 6 |
 | System testing | Sistem testi | Bütöv sistemin yoxlanması | 5 |
+| TDD | Testlə idarə olunan inkişaf | Əvvəl unit test, sonra onu keçirən kod: qırmızı → yaşıl → refaktor | 3 |
 | Test case | Test case (test keysi) | Konkret yoxlamanın addımları və gözlənilən nəticəsi | 11 |
+| Test completion report | Yekun test hesabatı | Mərhələnin və ya relizin sonunda nəticələr, qalan risklər və dərslər | 4 |
 | Test data | Test məlumatları | Testlərdə işlədilən məlumatlar | 11 |
 | Test plan | Test planı | Nəyin, necə və kim tərəfindən test olunacağı | 11 |
 | Test scenario | Test ssenarisi | Nəyin test olunacağının yüksək səviyyəli təsviri | 11 |
 | Test suite | Test dəsti | Əlaqəli test case-lərin qrupu | 11 |
+| Testing quadrants | Test kvadrantları | Test növlərini biznes/texnologiya və kömək/tənqid oxları ilə qruplaşdırmaq | 6 |
+| Testware | Test materialları | Testin bütün iş məhsulları: plan, case, data, skript, hesabat | 1 |
+| Three-point estimation | Üç nöqtəli qiymətləndirmə | Optimist, ən ehtimallı və pessimist qiymətdən: E = (a + 4m + b) / 6 | 11 |
 | UAT | İstifadəçi qəbul testi | Real istifadəçilərin apardığı qəbul testi | 5 |
 | Unit testing | Unit (modul) testi | Ən kiçik kod hissəsinin yoxlanması | 5 |
 | Usability testing | İstifadə rahatlığı testi | Məhsulun nə qədər asan işlədildiyinin yoxlanması | 6 |
 | User story | İstifadəçi həkayəsi | “Bir \[rol\] kimi … istəyirəm ki …” formatında tələb | 10 |
 | Verification / Validation | Yoxlama / təsdiqləmə | Tələbə uyğunluq / istifadəçi ehtiyacına uyğunluq | 1 |
 | White box testing | Ağ qutu testi | Kodu bilərək test etmək | 7 |
+| Whole team approach | Bütün komanda yanaşması | Keyfiyyətə bütün komandanın cavabdeh olması | 1 |
 | Workaround | Müvəqqəti həll yolu | Defekt düzələnə qədər problemi keçmək üsulu | 12 |
 
 ## Əlavə B. Hazır şablonlar və checklist-lər

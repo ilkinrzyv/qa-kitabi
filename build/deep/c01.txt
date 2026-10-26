@@ -161,3 +161,62 @@ Junior tester → Middle → Senior → QA Lead və ya ixtisaslaşma: avtomatla�
 6. **Vaxt:** kartı vaxtında götürməsən, bankomat onu təhlükəsiz saxlayırmı?
 @növbən
 Mobil telefondakı zəngli saat (alarm) tətbiqi üçün eyni yanaşma ilə 6 yoxlama ideyası yaz: sərhəd, ardıcıllıq, eyni vaxtda, rol və ya ayar, mühit, vaxt.
+
+=== c1x1
+@qısa
+Test problemi tapır və göstərir, debugging isə kodda səbəbi tapıb düzəldir. Kök səbəb səhvin niyə ümumiyyətlə baş verdiyini izah edir. Testware testin bütün məhsullarıdır, izlənə bilmə isə tələb, test və defekt arasındakı əlaqədir.
+@yadda
+- Test — tester-in işi, debugging — proqramçının işi; sonra yenə tester: retest və regression.
+- Kök səbəbi aradan qaldırmaq eyni tip defektlərin qarşısını alır.
+- Testware: plan, case, data, skript, bug report, hesabat — hamısı saxlanılır və versiyalanır.
+@dərin
+### Debugging-in addımları
+Proqramçı əvvəl nasazlığı özündə təkrarlayır, sonra koda baxır (loqlar, debugger, addım-addım icra), defekti tapır, düzəldir və öz unit testi ilə yoxlayır. Tester-in bug report-u bu işi sürətləndirir: dəqiq addımlar, mühit və sübut olmasa, debugging saatlarla uzanır.
+
+### Kök səbəb hər zaman koddadır?
+Xeyr. Kök səbəb tələbdə (qeyri-müəyyən yazılıb), prosesdə (review aparılmayıb), insanda (yorğunluq, vaxt təzyiqi) və ya alətdə ola bilər. “5 dəfə niyə?” üsulu kömək edir: “Niyə endirim səhvdir? — Kodda 0.01 yazılıb. Niyə? — Tələbdə faizin formatı göstərilməyib. Niyə? — Tələb şablonunda belə sahə yoxdur.” Son cavab düzəldiləcək yeri göstərir.
+
+### Testware niyə saxlanılır
+Növbəti relizdə regression üçün test case-lər, avtomatik skriptlər və test data yenidən lazım olur. Köhnə bug report-lar isə hansı sahələrin riskli olduğunu göstərir (Prinsip 4: defektlər qruplaşır).
+
+### İzlənə bilmə nəyə kömək edir
+Tələb dəyişəndə hansı test case-ləri yeniləmək lazım olduğunu, relizdən əvvəl isə hansı tələblərin test olunmadığını göstərir. Ondan başqa, hesabatda “ödəniş tələblərinin 100%-i test olunub, 2 açıq defekt var” kimi aydın cümlələr yazmağa imkan verir.
+@nümunə
+**Tapşırıq.** Səbətdə promo kod tətbiq olunanda məbləğ yenilənmir. Kim nə edir: tester, proqramçı və komanda? Kök səbəb nə ola bilər?
+@addımlar
+1. **Tester:** defekti təkrarlayır, bug report yazır: addımlar, mühit, gözlənilən 90 AZN, faktiki 100 AZN.
+2. **Proqramçı (debugging):** problemi özündə təkrarlayır, kodda məbləğin yalnız səhifə yenilənəndə hesablandığını tapır və düzəldir.
+3. **Tester:** düzəlişi yoxlayır (retest), sonra səbət və ödəniş üzrə regression aparır.
+4. **Komanda (kök səbəb):** tələbdə “məbləğ dərhal yenilənir” yazılmayıbmış — tələb şablonuna “ekranın hansı hissəsi dərhal yenilənir” bəndi əlavə olunur.
+@növbən
+Mobil tətbiqdə profil şəkli yüklənəndə tətbiq çökür. Tester, proqramçı və komanda nə edir? Kök səbəb üçün iki fərqli ehtimal yaz.
+
+=== c1x2
+@qısa
+Keyfiyyət bütün komandanın məsuliyyətidir: tester komandanın bərabər üzvüdür və hamı ilə işləyir. Testin müstəqilliyi isə fərqli gözün daha çox defekt tapmasıdır: müəllif öz səhvini çətin görür.
+@yadda
+- Bütün komanda yanaşması: keyfiyyət tester-in yox, hamının işidir.
+- Müstəqillik səviyyələri: müəllifin özü → həmkar → komandadakı tester → ayrıca komanda.
+- Müstəqilliyin riski: təcrid, zəif ünsiyyət, “keyfiyyət tester-in işidir” düşüncəsi.
+@dərin
+### Bütün komanda yanaşmasında tester nə edir
+Sprint planlamasında story-nin necə test olunacağını deyir, qəbul meyarlarına misal və neqativ hallar əlavə edir, proqramçı ilə hansı yoxlamanın unit, hansının UI səviyyəsində olacağını razılaşdırır, Product Owner-ə risklər barədə məlumat verir. Proqramçı da öz növbəsində unit testləri yazır və tester-in avtomatlaşdırmasına kömək edir.
+
+### Niyə müəllif öz səhvini görmür
+İnsan öz yazdığını oxuyanda nə yazmaq istədiyini “görür”, əslində nə yazdığını yox. Proqramçı öz kodunu test edəndə də eyni fərziyyələri təkrarlayır: kodu yazarkən hansı halı unudubsa, testdə də onu unudur.
+
+### Müstəqillik nə vaxt daha vacibdir
+Risk yüksək olanda: tibbi, bank, aviasiya proqramlarında testi çox vaxt ayrıca komanda və ya xarici şirkət aparır, bəzən bu qanunla tələb olunur. Kiçik veb layihədə isə komandadakı tester kifayətdir.
+
+### Müsahibə sualı
+“Proqramçı test edə bilərmi?” — Bəli, unit testləri məhz o yazır. Amma eyni adamın həm yazıb, həm yeganə yoxlayan olması riskdir: fərqli baxış daha çox defekt tapır.
+@nümunə
+**Tapşırıq.** Bank tətbiqində pul köçürmə funksiyası hazırlanır. Hər test səviyyəsi üçün kim test etməlidir və müstəqillik hansı səviyyədə olur?
+@addımlar
+1. **Unit test:** proqramçı yazır — müstəqillik yoxdur, amma sürətli rəy verir.
+2. **İnteqrasiya testi:** proqramçı və tester birlikdə: köçürmə modulu ilə hesab xidməti arasındakı əlaqə.
+3. **Sistem testi:** komandadakı tester — orta müstəqillik.
+4. **Təhlükəsizlik testi:** xarici pentester şirkəti — yüksək müstəqillik, çünki risk yüksəkdir.
+5. **Qəbul testi:** bankın əməkdaşları və seçilmiş müştərilər.
+@növbən
+Startap komandasında 3 proqramçı və 1 tester var. Proqramçılar deyir: “Test tester-in işidir.” Bütün komanda yanaşmasına keçmək üçün 3 konkret təklif yaz.

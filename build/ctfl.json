@@ -1,0 +1,44 @@
+{
+  "_": "ISTQB CTFL v4.0 syllabus → book sections. Chapter minutes are the syllabus's teaching time, a hint of exam weight.",
+  "chapters": [
+    { "n": 1, "t": "Testin əsasları", "en": "Fundamentals of Testing", "min": 180, "topics": [
+      { "c": "1.1", "t": "Test nədir: məqsədlər, test və debugging", "s": ["c1s1", "c1x1"] },
+      { "c": "1.2", "t": "Test niyə lazımdır: QA və test, səhv, defekt, nasazlıq, kök səbəb", "s": ["c1s4", "c1s2", "c1s3", "c1x1"] },
+      { "c": "1.3", "t": "Testin 7 prinsipi", "s": ["c2s1", "c2s2", "c2s3", "c2s4", "c2s5", "c2s6", "c2s7"] },
+      { "c": "1.4", "t": "Test fəaliyyətləri, testware və rollar; izlənə bilmə", "s": ["c4s1", "c1x1", "c10s7", "c1s5"] },
+      { "c": "1.5", "t": "Bacarıqlar, bütün komanda yanaşması, testin müstəqilliyi", "s": ["c1s5", "c1x2"] }
+    ] },
+    { "n": 2, "t": "SDLC boyunca test", "en": "Testing Throughout the SDLC", "min": 130, "topics": [
+      { "c": "2.1.1–2.1.2", "t": "SDLC modelləri və onların testə təsiri", "s": ["c3s1", "c3s3", "c3s4", "c3s5", "c3s6", "c3s7", "c3s8", "c4s5"] },
+      { "c": "2.1.3", "t": "Test-first: TDD, ATDD, BDD", "s": ["c3x1", "c10s4"] },
+      { "c": "2.1.4–2.1.6", "t": "DevOps, shift-left, retrospektivlər", "s": ["c3x2", "c2s3", "c20s7"] },
+      { "c": "2.2", "t": "Test səviyyələri və test növləri; retest və regression", "s": ["c5s1", "c5s2", "c5s3", "c5s4", "c6s1", "c6s2", "c6s3"] },
+      { "c": "2.3", "t": "Baxım testi", "s": ["c5x1"] }
+    ] },
+    { "n": 3, "t": "Statik test", "en": "Static Testing", "min": 80, "topics": [
+      { "c": "3.1", "t": "Statik testin əsasları və dəyəri", "s": ["c7s4", "c10s5"] },
+      { "c": "3.2", "t": "Review prosesi, rollar, növlər, uğur amilləri", "s": ["c7s4", "c7x1", "c10s6"] }
+    ] },
+    { "n": 4, "t": "Test analizi və dizaynı", "en": "Test Analysis and Design", "min": 390, "topics": [
+      { "c": "4.1", "t": "Test texnikalarına baxış", "s": ["c7s1", "c9s6"] },
+      { "c": "4.2", "t": "Black-box: EP, BVA, qərar cədvəli, vəziyyət keçidləri", "s": ["c8s2", "c8s3", "c8s4", "c9s1", "c9s2"] },
+      { "c": "4.3", "t": "White-box: statement və branch coverage", "s": ["c7s2"] },
+      { "c": "4.4", "t": "Təcrübəyə əsaslanan: error guessing, exploratory, checklist", "s": ["c9s4", "c7s6", "c11s3"] },
+      { "c": "4.5", "t": "Əməkdaşlığa əsaslanan: user story, qəbul meyarları, ATDD", "s": ["c10s3", "c10s4", "c3x1"] }
+    ] },
+    { "n": 5, "t": "Test fəaliyyətlərinin idarə olunması", "en": "Managing the Test Activities", "min": 335, "topics": [
+      { "c": "5.1.1–5.1.3", "t": "Test planı, planlamada tester, giriş və çıxış meyarları", "s": ["c11s2", "c4s2"] },
+      { "c": "5.1.4", "t": "Qiymətləndirmə üsulları", "s": ["c11x1"] },
+      { "c": "5.1.5", "t": "Test case-lərin prioritetləşdirilməsi", "s": ["c11x2"] },
+      { "c": "5.1.6–5.1.7", "t": "Test piramidası və test kvadrantları", "s": ["c19s2", "c6x1"] },
+      { "c": "5.2", "t": "Risklərin idarə olunması", "s": ["c11x2"] },
+      { "c": "5.3", "t": "Monitorinq, nəzarət, metriklər, hesabatlar", "s": ["c4s4", "c4x1"] },
+      { "c": "5.4", "t": "Konfiqurasiya idarəetməsi", "s": ["c4x1", "c20s1"] },
+      { "c": "5.5", "t": "Defektlərin idarə olunması", "s": ["c12s1", "c12s3", "c12s4", "c12s6"] }
+    ] },
+    { "n": 6, "t": "Test alətləri", "en": "Test Tools", "min": 20, "topics": [
+      { "c": "6.1", "t": "Testə alət dəstəyi", "s": ["c19s3", "c12s9"] },
+      { "c": "6.2", "t": "Avtomatlaşdırmanın faydaları və riskləri", "s": ["c19s1", "c7s7", "c19s9"] }
+    ] }
+  ]
+}

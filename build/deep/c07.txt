@@ -251,3 +251,33 @@ Hər şeyi UI səviyyəsində avtomatlaşdırmaq, sabit gözləmələr, testlər
 4. **(d) Manual + skript köməyi** — bir dəfəlikdir; SQL sorğuları ilə müqayisə faydalıdır, tam avtomat test isə xərcini qaytarmaz.
 @növbən
 Bu testlər üçün qərar ver və səbəbini yaz: (a) hər gecə 5 brauzerdə ana səhifənin açılması; (b) yeni funksiyanın ilk exploratory sessiyası; (c) API-nin 50 endpoint-i üçün status kodları; (d) mobil oyunun “əyləncəli olub-olmaması”.
+
+=== c7x1
+@qısa
+Rəsmi review planlaşdırma, başlanğıc, fərdi review, müzakirə və düzəlişdən ibarətdir. Rollar: müəllif, rəhbər, moderator, qeydiyyatçı, reviewer və review lideri. Uğurun açarı — insanı yox, sənədi tənqid etmək.
+@yadda
+- 5 addım: planlaşdırma → başlanğıc → fərdi review → müzakirə → düzəliş və hesabat.
+- Ən çox defekt fərdi review-da tapılır.
+- Uğur amilləri: aydın məqsəd, kiçik hissələr, hazırlıq vaxtı, checklist, rəhbərliyin dəstəyi.
+@dərin
+### Review-un nəticəsi
+Hər tapıntı üçün qərar verilir: defektdir və düzəldilməlidir, sual kimi müəllifə ötürülür, yoxsa defekt deyil. Sənəd üçün isə: qəbul olunur, düzəlişdən sonra qəbul olunur və ya yenidən review lazımdır.
+
+### Növlərə görə formallıq
+Informal review-da proses demək olar ki, yoxdur: həmkar baxır və fikrini deyir. Inspection-da isə bütün addımlar, rollar və metriklər (tapılan defektlərin sayı, sərf olunan vaxt) məcburidir. Walkthrough-u müəllif aparır, technical review-u isə adətən moderator.
+
+### Tester review-da nə axtarır
+Yoxlanıla bilməyən ifadələr (“tez”, “rahat”), çatışmayan neqativ hallar, sərhədlər, ziddiyyətli tələblər, xəta mesajları, qeyri-funksional tələblərin olmaması. 10-cu fəsildəki suallar və Əlavə B-dəki checklist-lər bu işdə kömək edir.
+
+### Review uğursuz olur, əgər
+Sənəd çox böyükdür, iştirakçılar hazırlaşmayıb, görüş müəllifin “mühakiməsinə” çevrilir və ya tapıntılar heç yerdə qeyd olunmur.
+@nümunə
+**Tapşırıq.** Qeydiyyat formasının tələb sənədi review olunacaq. Kiçik komanda üçün rolları payla və fərdi review-da tester-in tapa biləcəyi 3 problem yaz. Tələb: “Şifrə güclü olmalıdır. Qeydiyyatdan sonra istifadəçi tez daxil olur.”
+@addımlar
+1. **Rollar:** müəllif — analitik; moderator — QA lead; qeydiyyatçı — proqramçılardan biri; reviewer-lər — tester, proqramçı, dizayner.
+2. **Tapıntı 1:** “Şifrə güclü olmalıdır” yoxlanıla bilmir — minimum uzunluq, rəqəm, böyük hərf, simvol tələbi yoxdur.
+3. **Tapıntı 2:** “Tez daxil olur” — neçə saniyə? Avtomatik daxil olur, yoxsa login səhifəsinə yönləndirilir?
+4. **Tapıntı 3:** Eyni email ilə ikinci qeydiyyat cəhdində nə baş verir və hansı mesaj çıxır? Tələbdə yazılmayıb.
+5. Tapıntılar qeyd olunur, müəllif düzəldir, moderator yenilənmiş sənədə baxıb qəbul edir.
+@növbən
+“Səbətə əlavə et” funksiyasının tələbi yazılıb: “İstifadəçi məhsulu səbətə əlavə edə bilər. Səbət düzgün işləməlidir.” Fərdi review et: ən azı 4 tapıntı və hər biri üçün müəllifə sual yaz.

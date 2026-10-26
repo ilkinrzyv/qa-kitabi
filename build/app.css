@@ -423,6 +423,14 @@ details.cmp-why[open]>summary{border-bottom:0;border-radius:0}
 .res-list{margin-top:16px;display:flex;flex-direction:column;gap:8px;text-align:left}
 .res-item{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:14px}
 .res-item button{color:var(--accent);font-size:13px;margin-top:2px;text-align:left}
+/* ISTQB map: syllabus topics with the sections that teach them */
+.ctfl{display:flex;flex-direction:column;gap:2px;padding:10px 14px}
+.ctfl-en{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
+.ctfl-t{display:flex;flex-direction:column;gap:6px;padding:9px 0;border-top:1px solid var(--line);font-size:14.5px;line-height:1.4}
+.ctfl-t:first-of-type{border-top:0}
+.ctfl-t .mono{font-size:12.5px;color:var(--accent);font-weight:600;margin-right:2px}
+.ctfl-s{display:flex;flex-wrap:wrap;gap:5px}
+.ctfl-s .chip{height:26px;cursor:pointer}
 
 /* ---------- practice & progress ---------- */
 .qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
