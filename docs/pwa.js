@@ -2,7 +2,7 @@
    Loaded before app.js; app.js finds it as window.QA_PWA. */
 (function () {
 'use strict';
-const VERSION = '2026.10.26-a7b2a17';
+const VERSION = '2026.10.26-fc6e202';
 const ASSET_COUNT = 46;
 const CACHE = 'qa-kitab-' + VERSION;
 const ARTIFACT = 'https://claude.ai/artifact/ARfQ7Q2V6TsZ3nBnJdQzLq';

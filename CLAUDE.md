@@ -49,6 +49,12 @@ Screenshots land in `build/shots/` (gitignored).
   The shop's behaviour and problem_user's bugs are in `app.js` (`smEvent`, `SM_BUG`); after the last step the screen is
   recorded and the written actual result is compared with it. `#magaza`, `#magaza-tc04`. `t18.js` runs every test case
   and expects the computed status to equal `result`.
+- `build/trace.json` — code tracer programs keyed by section id (example sections too). `lang: js` steps have the line
+  `l`, variables set `v` (JS literals as text), dropped `x`, console output `o` and a note `n`; `t19.js` runs each
+  program in Node and expects the same console lines and final top-level values. `lang: pw` steps drive the practice
+  store's shop (`a`: goto / type / login / add) and check it (`c`: url, visible, error, badge, btn); the first failed check
+  ends the test, as in Playwright. `parse_book.py` pre-highlights every line (Pygments for JS; locator / action /
+  assertion spans for Playwright).
 - `build/quiz_*.json` — chapter quizzes. `build/diagrams.py` — SVG diagrams registered with `reg(slug, sid, anchor, cap, d)`,
   drawn with `svgkit.py` (text measured with the vendored fonts in `fonts/`, overlap and overflow checks).
 - `build/app.js` — the whole UI in one IIFE, no framework. `PWA = window.QA_PWA` exists only in the offline build:
