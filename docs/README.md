@@ -10,7 +10,7 @@ Claude (müəllim, rol oyunları, “Claude ilə” düymələri) yalnız intern
    Açar yoxdursa, tətbiqdəki Claude düymələri bu versiyanı eyni bölmədə açır və eyni əməliyyatı başladır.
 2. **Öz Anthropic API açarınla** (istəyə görə) — cavablar birbaşa tətbiqin içində gəlir.
 
-Versiya: `2026.10.26-a48a23f` · cihazda tutduğu yer: təxminən 2,2 MB.
+Versiya: `2026.10.26-8cec443` · cihazda tutduğu yer: təxminən 3,5 MB.
 
 ## 1. Saytda yerləşdir (bir dəfə)
 
@@ -81,4 +81,4 @@ göstərir. Məlumatların itmir.
 - `sw.js` — service worker (offline yaddaş)
 - `manifest.webmanifest`, `icons/` — tətbiqin adı və ikonları
 - `fonts/` — IBM Plex Sans, IBM Plex Mono, Literata (SIL Open Font License 1.1)
-- `libs/` — marked (MIT), DOMPurify (Apache-2.0 və ya MPL-2.0)
+- `libs/` — marked (MIT), DOMPurify (Apache-2.0 və ya MPL-2.0), sql.js — brauzerdə SQLite (MIT)
