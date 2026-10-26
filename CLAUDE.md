@@ -42,6 +42,13 @@ Screenshots land in `build/shots/` (gitignored).
   glossary terms). On `beforeprint` the sheets get `.paper` (the A4 layout) and `fitSheet()` lowers `--k` until each fits
   one page; `t17.js` prints all 21 to PDF and expects 21 pages. If `print()` is ignored (the claude.ai frame may not
   allow it), a help sheet links to the same sheet on GitHub Pages.
+- `build/store.json` — the practice store ("Mini Store", modelled on saucedemo.com, no real brand names): users,
+  products, problem_user's bug labels, test cases (`start`, `pre`, `data`, `steps` with `on` = the event that ticks the
+  step, `expect`/`see` = screen keys such as `title`, `badge`, `btn:<product>`, `item:<product>`, `error`, `field:<f>`,
+  `result`, `bug` = title parts for the [harada] + [nə baş verir] + [hansı şərtdə] check) and section links.
+  The shop's behaviour and problem_user's bugs are in `app.js` (`smEvent`, `SM_BUG`); after the last step the screen is
+  recorded and the written actual result is compared with it. `#magaza`, `#magaza-tc04`. `t18.js` runs every test case
+  and expects the computed status to equal `result`.
 - `build/quiz_*.json` — chapter quizzes. `build/diagrams.py` — SVG diagrams registered with `reg(slug, sid, anchor, cap, d)`,
   drawn with `svgkit.py` (text measured with the vendored fonts in `fonts/`, overlap and overflow checks).
 - `build/app.js` — the whole UI in one IIFE, no framework. `PWA = window.QA_PWA` exists only in the offline build:

@@ -466,6 +466,33 @@ for sid, ix in json.load(open(os.path.join(BASE, 'interactive.json'), encoding='
         print('ERR interactive diagram', sid, t, file=sys.stderr); errors += 1; continue
     sec['ix'] = ix
     ix_count += 1
+# ---------- 6f. practice store (store.json): a small shop modelled on saucedemo.com and the test cases run in it ----------
+store = json.load(open(os.path.join(BASE, 'store.json'), encoding='utf-8'))
+pids = {p['id'] for p in store['products']}
+PAGES = ('login', 'products', 'cart', 'info', 'overview', 'complete')
+EVENTS = ('type', 'login', 'add', 'remove', 'cart', 'shop', 'checkout', 'cancel', 'continue', 'finish', 'home', 'sort', 'logout', 'reset')
+FIELDS = ('user', 'pass', 'first', 'last', 'zip')
+def store_key(k):
+    a, _, b = k.partition(':')
+    return (a in ('title', 'badge', 'error', 'header', 'first') and not b) or (a in ('btn', 'item') and b in pids) or (a == 'field' and b in FIELDS[2:])
+sc_ids = set()
+for sc in store['scenarios']:
+    st = sc.get('start', {})
+    ok = sc.get('id') and sc['id'] not in sc_ids and sc.get('title') and sc.get('pre') and sc.get('result') in ('Passed', 'Failed') \
+        and st.get('page') in PAGES and (st['page'] == 'login' or st.get('user') in store['users']) and set(st.get('cart', [])) <= pids \
+        and sc.get('steps') and all(s.get('t') and s.get('on', {}).get('ev') in EVENTS for s in sc['steps']) \
+        and all(s['on'].get('f') in FIELDS for s in sc['steps'] if s['on']['ev'] == 'type') \
+        and sc.get('expect') and all(store_key(k) for k in list(sc['expect']) + sc.get('see', [])) \
+        and (sc['result'] == 'Passed' or all(sc.get('bug', {}).get(k) for k in ('where', 'what', 'when', 'model')))
+    if not ok:
+        print('ERR store scenario', sc.get('id'), file=sys.stderr); errors += 1
+    sc_ids.add(sc.get('id'))
+for sid, ids in store['sections'].items():
+    sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+    if not sec or not all(i in sc_ids or i == 'free' for i in ids):
+        print('ERR store section', sid, ids, file=sys.stderr); errors += 1; continue
+    sec['sim'] = ids
+del store['sections']
 # ---------- 6b. new narrow diagrams (diagrams.py) ----------
 sys.path.insert(0, BASE)
 from diagrams import ALL as NEW_DIAGRAMS
@@ -576,7 +603,7 @@ for c in chapters:
             s['x']['short'], k = gl_wrap(s['x']['short'], rx, idx, 2); gl_total += k
 print('glossary links', gl_total)
 out = {'title': 'QA Kitabı: Sıfırdan Peşəkar Testerə', 'parts': parts, 'chapters': chapters,
-       'glossary': glossary, 'quizzes': quizzes}
+       'glossary': glossary, 'quizzes': quizzes, 'store': store}
 json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 # ---------- 7. report ----------
@@ -600,5 +627,5 @@ for ch in chapters:
             extra += f" k{len(s['items'])}"
     print(f"  {ch['id']:4} {ch['kind']:9} {str(ch['num']):5} secs={len(ch['sections']):2} {kinds} {extra} | {ch['title'][:50]}")
 print('deep layers', deep_count, 'missing', len(deep_missing))
-print('total sections', tot_sec, 'glossary', len(glossary), 'quiz chapters', len(quizzes), 'quiz q', sum(len(v) for v in quizzes.values()), 'compare cards', cmp_count, 'sorting', srt_count, 'interactive', ix_count, 'interview lines', sum(1 for g in glossary if g.get('say')), 'errors', errors)
+print('total sections', tot_sec, 'glossary', len(glossary), 'quiz chapters', len(quizzes), 'quiz q', sum(len(v) for v in quizzes.values()), 'compare cards', cmp_count, 'sorting', srt_count, 'interactive', ix_count, 'store scenarios', len(sc_ids), 'interview lines', sum(1 for g in glossary if g.get('say')), 'errors', errors)
 print('json bytes', os.path.getsize(OUT))

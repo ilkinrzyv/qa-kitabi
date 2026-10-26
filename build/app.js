@@ -83,6 +83,7 @@ const ICONS = {
   upload: '<path d="M12 20V9M7 14l5-5 5 5"/><path d="M5 4h14"/>',
   phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M11 18.5h2"/>',
   eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  cart: '<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.6 12.2a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.5L21.5 8H6.2"/>',
   print: '<path d="M7 9V3h10v6"/><path d="M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7z"/>'
 };
 const icon = (n, cls) => `<svg class="i${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
@@ -330,6 +331,7 @@ function artHash() {
   if ((S.view === 'konspekt' || S.view === 'summary') && chById[S.params.ch]) return S.params.ch;
   if (S.view === 'tutor') return S.tutorMode === 'rp' ? 'rol' : 'muellim';
   if (S.view === 'progress') return 'progress';
+  if (S.view === 'store') return 'magaza';
   if (S.view === 'glossary' || S.view === 'cards') return 'ga';
   if (S.view === 'practice') return 'mesq';
   return '';
@@ -444,7 +446,7 @@ function render(opts) {
   if (observer) { observer.disconnect(); observer = null; }
   hideSelPill();
   const v = $('#view');
-  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary };
+  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore };
   (views[S.view] || vHome)(v);
   if (opts.keepScroll) window.scrollTo(0, y);
   else if (!(S.view === 'reader' && S.params.sec)) window.scrollTo(0, 0);
@@ -805,10 +807,10 @@ function dtHTML(sid, c) {
 function textBody(c, s) {
   const lv = lvlOf(s.id);
   if (lv === 'short') {
-    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${keysHTML(s.x)}
+    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${keysHTML(s.x)}
       <button class="btn sm ghost more" data-act="lvl" data-sec="${s.id}" data-v="std">${icon('book')}Tam mətni oxu</button>${miniHTML(c, s, false)}`;
   }
-  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
+  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
 }
 function fbHTML(a) {
   let h = '';
@@ -835,17 +837,18 @@ const SW_RULES = [
 ];
 const SW_NEG = swRe(`${SW_ON}(açılmır|görünmür|çıxmır|dəyişmir|gəlmir|yüklənmir)${SW_OFF}`);
 const SW_POS = /(?<!\p{L})(açılır|görünür|qalır|yazılıb|çıxır|olur|dəyişir)(?!\p{L})/u;
-function swFind(text) {
+function swFind(text, neg = true) {
   // quoted text is copied from the screen on purpose («Sifarişiniz uğurla qəbul edildi»), so it is not checked
   const t = (text || '').toLocaleLowerCase('az').replace(/“[^”\n]*”|«[^»\n]*»|"[^"\n]*"|„[^“”\n]*[“”]/g, ' '), seen = new Set(), out = [];
   const add = (w, kind, tip) => { const k = kind + '|' + w; if (!seen.has(k) && out.length < 6) { seen.add(k); out.push({ w, kind, tip }); } };
   SW_RULES.forEach(r => { for (const m of t.matchAll(r.re)) add(m[0], r.kind, r.tip); });
-  // a negation alone says what is missing, not what the screen shows
-  t.split('\n').forEach(line => { if (SW_POS.test(line)) return; for (const m of line.matchAll(SW_NEG)) add(m[0], 'inkar', 'Yalnız inkar yazılıb. Ekranda əvəzinə nə olduğunu da yaz: məsələn, “Checkout: Your Information” səhifəsində qalır.'); });
+  // a negation alone says what is missing, not what the screen shows (the practice store checks those facts itself)
+  if (neg) t.split('\n').forEach(line => { if (SW_POS.test(line)) return; for (const m of line.matchAll(SW_NEG)) add(m[0], 'inkar', 'Yalnız inkar yazılıb. Ekranda əvəzinə nə olduğunu da yaz: məsələn, “Checkout: Your Information” səhifəsində qalır.'); });
   return out;
 }
-function swInner(text) {
-  const f = swFind(text); if (!f.length) return '';
+const swInner = text => swList(swFind(text));
+function swList(f) {
+  if (!f.length) return '';
   return `<div class="swc-h">${icon('eye')}<span>Ekran sözləri</span></div><ul>${f.map(x => `<li><mark>${esc(x.w)}</mark><span class="chip warn">${x.kind}</span><span class="tip">${esc(x.tip)}</span></li>`).join('')}</ul>
     <div class="swc-f">Ekranda görünəni yazan sözlər: açılır · görünür · yox olur · çıxır · yazılıb · qalır</div>`;
 }
@@ -895,7 +898,7 @@ function secHTML(c, s) {
   else if (s.kind === 'selfcheck') body = selfHTML(c, s);
   else if (s.kind === 'checklist') body = checklistHTML(s);
   else if (s.x) body = textBody(c, s);
-  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}`;
+  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}`;
   return `<section class="sec${learned ? ' learned' : ''}" id="${s.id}" data-sec="${s.id}" data-kind="${s.kind}">
     <header class="sec-h"><span class="sec-num">${esc(s.num || kindTag(s).toLocaleUpperCase('az'))}</span><h2>${esc(s.title)}</h2>${s.x ? lvlCtl(s.id, lvlOf(s.id)) : ''}</header>
     ${body}${footerHTML(c, s)}</section>`;
@@ -1060,6 +1063,249 @@ function printHelp() {
       : 'claude.ai bu pəncərədən çapa icazə verməyə bilər. Vərəqi oflayn tətbiqdə aç və orada çap et və ya PDF kimi saxla.'}</p>
     ${PWA ? '' : `<a class="btn primary" href="${esc(SITE + '#' + hash)}" target="_blank" rel="noopener">${icon('ext')}Oflayn tətbiqdə aç</a>`}</div>`, 'compact');
 }
+/* ---------- practice store (store.json): a small shop modelled on saucedemo.com. The reader runs a test case in it and
+   writes the actual result; the book compares that text with the screen as it was right after the last step ---------- */
+const STORE = BOOK.store;
+const prodById = Object.fromEntries(STORE.products.map(p => [p.id, p]));
+const scById = Object.fromEntries(STORE.scenarios.map(s => [s.id, s]));
+const SM_PAGES = { login: '', products: 'Products', cart: 'Your Cart', info: 'Checkout: Your Information', overview: 'Checkout: Overview', complete: 'Checkout: Complete!' };
+const SM_SORTS = [['az', 'Name (A to Z)'], ['za', 'Name (Z to A)'], ['lohi', 'Price (low to high)'], ['hilo', 'Price (high to low)']];
+const SM_FIELDS = { user: 'Username', pass: 'Password', first: 'First Name', last: 'Last Name', zip: 'Zip/Postal Code' };
+const SM_BUG = { noAdd: ['bolt', 'fleece'], noRemove: ['bikelight'] }; // problem_user's planted bugs; their labels are in store.json
+const SM = { id: undefined, found: {}, passed: {} }; // session only
+const money = n => '$' + n.toFixed(2);
+const tcName = id => id.replace(/^tc/, 'TC-');
+function smStart(id) {
+  const sc = scById[id] || null, s0 = sc ? sc.start : { page: 'login' };
+  Object.assign(SM, { id: sc ? id : null, sc, done: 0, off: false, snap: null, fb: null, ans: '', status: '', title: '', touched: {},
+    st: { page: s0.page, user: s0.user || '', cart: (s0.cart || []).slice(), sort: 'az', order: 'az', err: '', menu: false, f: { user: '', pass: '', first: '', last: '', zip: '' } } });
+}
+function smOrder(st) {
+  const name = (a, b) => a.name.localeCompare(b.name, 'en');
+  const by = { az: name, za: (a, b) => name(b, a), lohi: (a, b) => a.price - b.price || name(a, b), hilo: (a, b) => b.price - a.price || name(a, b) };
+  return STORE.products.slice().sort(by[st.order]);
+}
+const smSig = st => [st.page, st.user, st.cart.join(), st.order].join('|');
+function smEvent(e) {
+  const st = SM.st, prob = st.user === 'problem_user', before = smSig(st);
+  switch (e.ev) {
+    case 'login': {
+      const u = st.f.user.trim(), p = st.f.pass; Object.assign(e, { user: u, pass: p });
+      st.err = !u ? 'Epic sadface: Username is required' : !p ? 'Epic sadface: Password is required'
+        : !STORE.users.includes(u) || p !== STORE.password ? 'Epic sadface: Username and password do not match any user in this service'
+        : u === 'locked_out_user' ? 'Epic sadface: Sorry, this user has been locked out.' : '';
+      if (!st.err) Object.assign(st, { user: u, page: 'products' });
+      break;
+    }
+    case 'add': if (prob && SM_BUG.noAdd.includes(e.item)) SM.found.add = 1; else if (!st.cart.includes(e.item)) st.cart.push(e.item); break;
+    case 'remove': if (prob && e.where === 'products' && SM_BUG.noRemove.includes(e.item)) SM.found.remove = 1; else st.cart = st.cart.filter(x => x !== e.item); break;
+    case 'sort': st.sort = e.v; if (!prob) st.order = e.v; else if (e.v !== 'az') SM.found.sort = 1; break;
+    case 'cart': Object.assign(st, { page: 'cart', menu: false }); break;
+    case 'shop': Object.assign(st, { page: 'products', menu: false }); break;
+    case 'checkout': Object.assign(st, { page: 'info', err: '' }); Object.assign(st.f, { first: '', last: '', zip: '' }); break;
+    case 'cancel': Object.assign(st, { page: st.page === 'info' ? 'cart' : 'products', err: '' }); break;
+    case 'continue': {
+      const f = st.f; Object.assign(e, { first: f.first, last: f.last, zip: f.zip });
+      st.err = !f.first ? 'Error: First Name is required' : !f.last ? 'Error: Last Name is required' : !f.zip ? 'Error: Postal Code is required' : '';
+      if (!st.err) st.page = 'overview';
+      break;
+    }
+    case 'finish': Object.assign(st, { page: 'complete', cart: [] }); break;
+    case 'home': st.page = 'products'; break;
+    case 'logout': Object.assign(st, { page: 'login', user: '', err: '', menu: false }); Object.assign(st.f, { user: '', pass: '' }); break;
+    case 'reset': Object.assign(st, { cart: [], sort: 'az', order: 'az', menu: false }); break;
+    case 'menu': st.menu = !st.menu; break;
+    case 'err-x': st.err = ''; break;
+  }
+  smStep(e, before);
+}
+// steps tick in order: a typing step checks the field, an action step needs this event; an action that is not the next
+// step and changes the page, the cart or the order spoils the run (the screen would no longer be the test case's)
+function smStep(e, before) {
+  const sc = SM.sc;
+  if (!sc || SM.snap || SM.off) return;
+  let used = false;
+  for (let s = sc.steps[SM.done]; s; s = sc.steps[SM.done]) {
+    const on = s.on;
+    if (on.ev === 'type' ? (on.v !== undefined ? SM.st.f[on.f] === on.v : SM.touched[on.f]) : !used && Object.keys(on).every(k => on[k] === e[k])) { used = used || on.ev !== 'type'; SM.done++; }
+    else break;
+  }
+  if (!used && !['type', 'menu', 'err-x'].includes(e.ev)) {
+    if (smSig(SM.st) !== before) SM.off = true;
+    else if (e.ev === 'login' || e.ev === 'continue') toast('Addım sayılmadı: sahələrdəki dəyərləri test data ilə tutuşdur.');
+  }
+  if (SM.done === sc.steps.length) SM.snap = smSnap();
+}
+function smType(t) {
+  const st = SM.st, f = t.dataset.smF;
+  SM.touched[f] = true;
+  if (f === 'last' && st.user === 'problem_user' && t.value) { // planted bug: Last Name's letters land in First Name
+    st.f.first = t.value.slice(-1); st.f.last = ''; t.value = ''; SM.found.last = 1;
+    const fi = $('#sm-dev [data-sm-f="first"]'); if (fi) fi.value = st.f.first;
+  } else st.f[f] = t.value;
+  smEvent({ ev: 'type', f, v: st.f[f] });
+  smRedraw(true);
+}
+// what the screen shows for one item of the expected result
+function smVal(k) {
+  const st = SM.st, [a, b] = k.split(':');
+  if (a === 'title') return SM_PAGES[st.page];
+  if (a === 'badge') return st.page === 'login' ? 0 : st.cart.length;
+  if (a === 'error') return st.err;
+  if (a === 'header') return st.page === 'complete' ? 'Thank you for your order!' : '';
+  if (a === 'first') return st.page === 'products' ? smOrder(st)[0].name : '';
+  if (a === 'btn') return st.cart.includes(b) ? 'Remove' : 'Add to cart';
+  if (a === 'item') return st.page === 'cart' && st.cart.includes(b);
+  return st.f[b];
+}
+function smSnap() { const o = {}; Object.keys(SM.sc.expect).concat(SM.sc.see || []).forEach(k => { o[k] = smVal(k); }); return o; }
+function smLabel(k) {
+  const [a, b] = k.split(':'), p = prodById[b];
+  return { title: 'Səhifə başlığı', badge: 'Səbət nişanı', error: 'Xəta mesajı', header: 'Mesaj', first: 'Siyahıda birinci məhsul',
+    btn: p && `${p.name} düyməsi`, item: p && `Səbət siyahısında ${p.name}`, field: `${SM_FIELDS[b]} sahəsi` }[a];
+}
+function smShow(k, v) {
+  const a = k.split(':')[0];
+  if (a === 'badge') return v ? String(v) : 'görünmür';
+  if (a === 'item') return v ? 'var' : 'yoxdur';
+  if (a === 'first') return v ? `${v} (${money(STORE.products.find(p => p.name === v).price)})` : '—';
+  return v ? `«${v}»` : a === 'field' ? 'boş' : 'yoxdur';
+}
+const smList = o => Object.keys(o).map(k => `${smLabel(k)}: ${smShow(k, o[k])}`).join('; ');
+// comparing the written actual result with the screen: folded text, quotes ignored; a short value must stand alone
+const fz = s => fold(s).replace(/[«»“”"'’„`]/g, '').replace(/\s+/g, ' ').trim();
+const SM_NO = /(yox|gorunmur|itdi|itir|silin|cixdi|qalmadi|qalmir|bos)/;
+function smHas(T, v) {
+  const x = fz(v).replace(/[.!]+$/, '');
+  return x.length < 3 ? new RegExp(`(^|[^a-z0-9])${x.replace(/[^a-z0-9]/g, '\\$&')}([^a-z0-9]|$)`).test(T) : T.includes(x);
+}
+function smNear(T, v) { const w = fz(v).split(/[^a-z0-9]+/).filter(x => x.length > 2); return w.length > 2 && w.filter(x => T.includes(x)).length / w.length >= 0.6; }
+function smJudge(T, k, v, exp) {
+  const [a, b] = k.split(':'), r = { k, v, ok: false, note: '' };
+  if (a === 'badge') {
+    const zero = /(nisan|badge|ikon)[^.;\n]{0,25}\b0\b/.test(T);
+    if (v) r.ok = smHas(T, String(v)) && !zero;
+    else r.ok = !zero && (/(nisan|badge|ikon)[^.;\n]{0,40}(yox|gorunmur|it(di|ir)|silin|bos|qalm)/.test(T) || /(yox|gorunmur)[^.;\n]{0,30}(nisan|badge)/.test(T));
+    if (zero) r.note = 'Ekranda “0” yox idi: nişan ümumiyyətlə görünmürdü. “Səbət nişanı görünmür” yaz.';
+    else if (!r.ok && exp && exp !== v && smHas(T, String(exp))) r.note = `${exp} gözlənilən idi — ekranda nişan görünmürdü.`;
+    return r;
+  }
+  if (a === 'item') { const n = smHas(T, prodById[b].name); r.ok = v ? n : n && SM_NO.test(T); return r; }
+  if (a === 'field') { const l = T.includes(fz(SM_FIELDS[b])); r.ok = l && (v ? smHas(T, v) : SM_NO.test(T)); return r; }
+  if (!v) { r.ok = /(xeta|error)[^.;\n]{0,30}(yox|cixmir|gorunmur)/.test(T); return r; }
+  r.ok = smHas(T, v) || (smNear(T, v) && 'near');
+  if (!r.ok && typeof exp === 'string' && exp && exp !== v && smHas(T, exp)) r.note = `«${exp}» gözlənilən idi — ekranda ${smShow(k, v)} idi.`;
+  return r;
+}
+// "what happens" needs the object and a behaviour on screen (folded verbs: düşür, dəyişmir, görünür, qalır, açılır, basanda…)
+const SM_ACT = /(dus|deyis|gorun|qal|cix|acil|yox|silin|elave|kec|olur|olmur|getmir|gedir|yazil|itir|azal|artir|basanda|secilende)/;
+function smBugParts(t, bug) {
+  const T = fz(t), has = arr => arr.some(x => T.includes(fz(x)));
+  return [['Harada', has(bug.where)], ['Nə baş verir', has(bug.what) && SM_ACT.test(T)], ['Hansı şərtdə', has(bug.when)]];
+}
+function smCheck() {
+  const sc = SM.sc;
+  if (!SM.snap) { toast('Əvvəlcə addımları mağazada icra et.'); return; }
+  if (!SM.ans.trim()) { toast('Faktiki nəticəni yaz.'); return; }
+  if (!SM.status) { toast('Status seç: Passed və ya Failed.'); return; }
+  const T = fz(SM.ans);
+  const rows = Object.keys(SM.snap).map(k => smJudge(T, k, SM.snap[k], sc.expect[k]));
+  const truth = Object.keys(sc.expect).every(k => SM.snap[k] === sc.expect[k]) ? 'Passed' : 'Failed';
+  const bug = truth === 'Failed' && SM.status === 'Failed' && sc.bug ? { parts: smBugParts(SM.title, sc.bug), sw: swFind(SM.title, false), empty: !SM.title.trim() } : null;
+  const good = rows.every(r => r.ok === true) && SM.status === truth && (!bug || (!bug.empty && bug.parts.every(p => p[1])));
+  SM.fb = { rows, truth, sw: swFind(SM.ans, false), bug, good };
+  if (good) SM.passed[sc.id] = 1;
+  const el = $('#sm-fb'); if (el) el.innerHTML = smFbHTML();
+}
+const smMark = ok => ok === true ? `<span class="sm-ok">${icon('check')}</span>` : ok === 'near' ? '<span class="sm-near">≈</span>' : `<span class="sm-no">${icon('x')}</span>`;
+function smFbHTML() {
+  const f = SM.fb, sc = SM.sc; if (!f) return '';
+  const rows = f.rows.map(r => `<li>${smMark(r.ok)}<div><b>${esc(smLabel(r.k))}</b> — ekranda: ${esc(smShow(r.k, r.v))} · ${r.ok === true ? 'yazmısan' : r.ok === 'near' ? 'mətn tam dəqiq deyil, ekrandakı kimi köçür' : 'faktiki nəticədə yoxdur'}${r.note ? `<div class="sm-note">${esc(r.note)}</div>` : ''}</div></li>`).join('');
+  const diff = Object.keys(sc.expect).filter(k => SM.snap[k] !== sc.expect[k]).map(k => `${smLabel(k)}: gözlənilən ${smShow(k, sc.expect[k])}, ekranda ${smShow(k, SM.snap[k])}`);
+  const stOk = SM.status === f.truth, b = f.bug;
+  return `<div class="sm-fb-h">Faktiki nəticə ekranla tutuşduruldu</div><ul class="sm-rows">${rows}</ul>
+    ${f.sw.length ? `<div class="swc">${swList(f.sw)}</div>` : ''}
+    <div class="sm-st ${stOk ? 'ok' : 'no'}">${smMark(stOk)}<div><b>Status: ${f.truth}</b> — ${f.truth === 'Passed' ? 'faktiki nəticə gözlənilənlə üst-üstə düşür.' : `faktiki nəticə gözləniləndən fərqlidir. ${esc(diff.join('; '))}.`}${stOk ? '' : ` Sən ${SM.status} seçmisən.`}</div></div>
+    ${b ? `<div class="sm-bug"><div class="sm-fb-h">Bug başlığı: [harada] + [nə baş verir] + [hansı şərtdə]</div>
+      ${b.empty ? '<p class="muted">Başlıq yazılmayıb.</p>' : `<ul class="sm-rows">${b.parts.map(([n, ok]) => `<li>${smMark(ok)}<div><b>${n}</b>${ok ? '' : ' — başlıqda yoxdur'}</div></li>`).join('')}</ul>`}
+      ${b.sw.length ? `<div class="swc">${swList(b.sw)}</div>` : ''}</div>` : ''}
+    ${f.good ? `<div class="sm-good">${icon('check')}Əla — faktiki nəticə ekranla, status gözlənilənlə uyğundur.</div>` : ''}
+    <details class="cmp-why sm-model"><summary>${icon('eye')}Ekranda nə vardı? (nümunə cavab)</summary><p>${esc(smList(SM.snap))}.</p>
+      ${sc.bug && f.truth === 'Failed' ? `<p><b>Bug başlığı:</b> ${esc(sc.bug.model)}</p>` : ''}</details>`;
+}
+function smDevHTML() {
+  const st = SM.st, n = st.cart.length, pg = st.page;
+  const btn = (e, label, cls, extra) => `<button class="sm-btn${cls ? ' ' + cls : ''}" data-act="sm" data-e="${e}"${extra || ''}>${label}</button>`;
+  const err = st.err ? `<div class="sm-err" role="alert"><span>${esc(st.err)}</span><button data-act="sm" data-e="err-x" aria-label="Bağla">✕</button></div>` : '';
+  const inp = (f, type) => `<input class="sm-in${st.err ? ' bad' : ''}" data-sm-f="${f}" type="${type || 'text'}" placeholder="${SM_FIELDS[f]}" value="${esc(st.f[f])}" autocomplete="off" autocapitalize="off" spellcheck="false">`;
+  const line = (p, b) => `<div class="sm-item">${pg === 'products' ? '' : '<span class="sm-qty">1</span>'}<div><div class="sm-name">${esc(p.name)}</div><div class="sm-price">${money(p.price)}</div></div>${b || ''}</div>`;
+  const items = st.cart.map(id => prodById[id]);
+  const total = items.reduce((a, p) => a + p.price, 0), tax = Math.round(total * 8) / 100;
+  if (pg === 'login') return `<div class="sm-logo big">Mini Store</div><div class="sm-body">${inp('user')}${inp('pass', 'password')}${err}${btn('login', 'Login', 'main')}
+    <div class="sm-cred"><b>Accepted usernames are:</b><br>${STORE.users.join('<br>')}<br><b>Password for all users:</b><br>${esc(STORE.password)}</div></div>`;
+  const body = {
+    products: () => smOrder(st).map(p => line(p, st.cart.includes(p.id) ? btn('remove', 'Remove', 'rm', ` data-item="${p.id}" data-where="products"`) : btn('add', 'Add to cart', '', ` data-item="${p.id}" data-where="products"`))).join(''),
+    cart: () => `<div class="sm-ch"><span>QTY</span><span>Description</span></div>${items.map(p => line(p, btn('remove', 'Remove', 'rm', ` data-item="${p.id}" data-where="cart"`))).join('')}
+      <div class="sm-acts">${btn('shop', 'Continue Shopping')}${btn('checkout', 'Checkout', 'main')}</div>`,
+    info: () => `${inp('first')}${inp('last')}${inp('zip')}${err}<div class="sm-acts">${btn('cancel', 'Cancel')}${btn('continue', 'Continue', 'main')}</div>`,
+    overview: () => `<div class="sm-ch"><span>QTY</span><span>Description</span></div>${items.map(p => line(p)).join('')}
+      <div class="sm-sum">Payment Information: <b>Test card #0001</b><br>Item total: ${money(total)}<br>Tax: ${money(tax)}<br><b>Total: ${money(total + tax)}</b></div>
+      <div class="sm-acts">${btn('cancel', 'Cancel')}${btn('finish', 'Finish', 'main')}</div>`,
+    complete: () => `<div class="sm-done-h">Thank you for your order!</div><p class="sm-done-p">Your order has been dispatched.</p>${btn('home', 'Back Home', 'main')}`
+  }[pg]();
+  return `<div class="sm-bar"><button class="sm-ib" data-act="sm" data-e="menu" aria-label="Open Menu">☰</button><span class="sm-logo">Mini Store</span>
+      <button class="sm-ib sm-cart" data-act="sm" data-e="cart" aria-label="Səbət">${icon('cart')}${n ? `<span class="sm-badge">${n}</span>` : ''}</button></div>
+    ${st.menu ? `<div class="sm-menu"><button data-act="sm" data-e="shop">All Items</button><button data-act="sm" data-e="logout">Logout</button><button data-act="sm" data-e="reset">Reset App State</button></div>` : ''}
+    <div class="sm-ph"><span class="sm-title">${SM_PAGES[pg]}</span>${pg === 'products' ? `<select class="sm-sort" data-sm-sort aria-label="Sıralama">${SM_SORTS.map(([v, l]) => `<option value="${v}"${st.sort === v ? ' selected' : ''}>${l}</option>`).join('')}</select>` : ''}</div>
+    <div class="sm-body">${body}</div>`;
+}
+function smCaseHTML() {
+  const sc = SM.sc;
+  if (!sc) {
+    const ids = Object.keys(STORE.bugs), got = ids.filter(k => SM.found[k]);
+    return `<div class="card sm-case"><div class="sm-id">Exploratory testing</div><h2 class="sm-t">${esc(STORE.free.title)}</h2><p class="sm-p">${esc(STORE.free.charter)}</p>
+      <div class="sm-state${got.length === ids.length ? ' ok' : ''}">Tapılan bug-lar: <b>${got.length}/${ids.length}</b>${got.length ? `<ul class="sm-found">${got.map(k => `<li>${icon('check')}<span>${esc(STORE.bugs[k])}</span></li>`).join('')}</ul>` : '<br>Bug tapanda burada görünəcək. Hər tapıntı üçün bug report başlığını 12.2-dəki formula ilə yaz.'}</div>
+      <div class="row" style="margin-top:10px"><button class="btn sm ghost" data-act="sm-restart">${icon('refresh')}Mağazanı sıfırla</button></div></div>`;
+  }
+  const n = sc.steps.length;
+  const state = SM.off ? `<div class="sm-state off">${icon('x')}Bu hərəkət növbəti addım deyildi və ekranı dəyişdi — nəticə artıq bu test case-in nəticəsi deyil. “Yenidən başla” bas.</div>`
+    : SM.snap ? `<div class="sm-state ok">${icon('check')}Son addımdan sonrakı ekran qeydə alındı. İndi faktiki nəticəni yaz: ekranda nə görünür?</div>`
+    : `<div class="sm-state">Addımları aşağıdakı mağazada icra et: ${SM.done}/${n}.</div>`;
+  return `<div class="card sm-case"><div class="sm-id">${tcName(sc.id)}</div><h2 class="sm-t">${esc(sc.title)}</h2>
+    <dl class="sm-dl"><dt>İlkin şərt</dt><dd>${esc(sc.pre)}</dd>
+      ${sc.data.length ? `<dt>Test data</dt><dd><table class="sm-data">${sc.data.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table></dd>` : ''}
+      <dt>Addımlar</dt><dd><ol class="sm-steps">${sc.steps.map((s, i) => `<li class="${i < SM.done ? 'done' : i === SM.done && !SM.snap ? 'cur' : ''}">${esc(s.t)}${i < SM.done ? ` ${icon('check')}` : ''}</li>`).join('')}</ol></dd>
+      <dt>Gözlənilən nəticə</dt><dd>${esc(smList(sc.expect))}</dd></dl>
+    ${state}<div class="row" style="margin-top:10px"><button class="btn sm ghost" data-act="sm-restart">${icon('refresh')}Yenidən başla</button></div></div>`;
+}
+function smResHTML() {
+  return `<div class="sm-fb-h">Faktiki nəticə</div>
+    <textarea class="field" data-sm-ans rows="3" placeholder="Ekranda nə görünür? Məsələn: səhifə başlığı, düymənin yazısı, səbət nişanı">${esc(SM.ans)}</textarea>
+    <div class="sm-fb-h" style="margin-top:12px">Status</div>
+    <div class="seg sm-seg">${['Passed', 'Failed'].map(v => `<button data-act="sm-status" data-v="${v}" aria-pressed="${SM.status === v}">${v}</button>`).join('')}</div>
+    <div id="sm-bt"${SM.status === 'Failed' ? '' : ' hidden'}><div class="sm-fb-h" style="margin-top:12px">Bug report başlığı</div>
+      <input class="field sm-title-in" data-sm-title placeholder="[harada] + [nə baş verir] + [hansı şərtdə]" value="${esc(SM.title)}"></div>
+    <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sm-check">${icon('check')}Yoxla</button></div>
+    <div id="sm-fb" class="sm-fb" aria-live="polite">${smFbHTML()}</div>`;
+}
+function smRedraw(typing) {
+  const cs = $('#sm-case'); if (cs) cs.innerHTML = smCaseHTML();
+  const dv = $('#sm-dev'); if (dv && !typing) dv.innerHTML = smDevHTML();
+}
+function vStore(v) {
+  const id = scById[S.params.sc] ? S.params.sc : null;
+  if (SM.id !== id) smStart(id);
+  const sc = SM.sc;
+  setHeader({ back: true, kicker: 'Məşq mağazası', name: sc ? `${tcName(sc.id)} · ${sc.title}` : STORE.free.title });
+  const pick = [`<button class="chip${sc ? '' : ' acc'}" data-act="sm-open" data-sc="">${icon('search')}Kəşfiyyat</button>`]
+    .concat(STORE.scenarios.map(x => `<button class="chip${x === sc ? ' acc' : SM.passed[x.id] ? ' pass' : ''}" data-act="sm-open" data-sc="${x.id}">${SM.passed[x.id] ? icon('check') : ''}${tcName(x.id)}</button>`)).join('');
+  v.innerHTML = `<p class="muted sm-intro">Mini Store — saucedemo.com-dakı mağazaya bənzəyən sadələşdirilmiş model (real sayt deyil). Test case-in addımlarını burada icra et, faktiki nəticəni yaz: kitab onu ekranda olanla tutuşdurur.</p>
+    <div class="sm-pick">${pick}</div><div id="sm-case">${smCaseHTML()}</div><div class="sm-dev" id="sm-dev">${smDevHTML()}</div>
+    ${sc ? `<div class="card sm-res">${smResHTML()}</div>` : ''}`;
+}
+const simHTML = s => s.sim ? `<div class="sm-link"><div class="srt-k">${icon('play')}Məşq mağazası</div><p class="srt-hint">Bu test case-ləri mağaza modelində icra et və faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur.</p>
+  <div class="sm-links">${s.sim.map(id => id === 'free' ? `<button class="btn sm" data-act="sm-open" data-sc="">${icon('search')}${esc(STORE.free.title)}</button>`
+    : `<button class="btn sm" data-act="sm-open" data-sc="${id}"><b>${tcName(id)}</b> ${esc(scById[id].title)}</button>`).join('')}</div></div>` : '';
 /* ---------- glossary term popover ---------- */
 // interview.json: how to say the term in a job interview, one or two sentences
 const sayHTML = g => g.say ? `<div class="say"><div class="say-k">${icon('chat')}Müsahibədə belə de</div><p>${esc(g.say)}</p></div>` : '';
@@ -1098,6 +1344,9 @@ function vPractice(v) {
     </div></section>
   <section class="block"><div class="block-h"><h2>Fəsil testləri</h2><span class="muted" style="font-size:13px">${o.quizDone}/21 · orta ${o.avg}%</span></div>
     <div class="qgrid">${cells}</div></section>
+  <section class="block"><div class="block-h"><h2>Məşq mağazası</h2><span class="muted" style="font-size:13px">${Object.keys(SM.passed).length}/${STORE.scenarios.length} test case</span></div>
+    <div class="card"><div class="muted" style="font-size:13.5px">saucedemo.com-a bənzəyən kiçik mağaza modeli. Test case-in addımlarını icra et, faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur. problem_user-də gizli bug-lar var.</div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sm-open" data-sc="tc01">${icon('play')}Test case-lərlə başla</button><button class="btn" data-act="sm-open" data-sc="">${icon('search')}Kəşfiyyat sessiyası</button></div></div></section>
   <section class="block"><div class="block-h"><h2>Xülasə vərəqləri</h2><span class="muted" style="font-size:13px">fəsil başına 1 səhifə</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">Əsas fikirlər, sxem, tipik səhvlər, “Özünü yoxla” sualları və terminlər bir A4 səhifəsində. Təkrar və müsahibəyə hazırlıq üçün çap et və ya PDF kimi saxla.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sum" data-ch="all">${icon('print')}Bütün vərəqlər (${MAIN.length})</button></div>
@@ -1970,6 +2219,16 @@ document.addEventListener('click', ev => {
     }
     case 'sum': closeSheet(); go('summary', { ch: d.ch }, { push: !d.replace }); break;
     case 'sum-print': printSheets(); break;
+    case 'sm': smEvent(Object.assign({ ev: d.e }, d.item ? { item: d.item, where: d.where } : {})); smRedraw(); break;
+    case 'sm-open': closeSheet(); go('store', { sc: d.sc || null }, { push: S.view !== 'store' }); break;
+    case 'sm-restart': smStart(SM.id); render({ keepScroll: true }); break;
+    case 'sm-status': {
+      SM.status = d.v;
+      $$('[data-act="sm-status"]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === d.v)));
+      const bt = $('#sm-bt'); if (bt) bt.hidden = d.v !== 'Failed';
+      break;
+    }
+    case 'sm-check': smCheck(); break;
     case 'kon-quiz': if (AI.state === 'on') aiForKonspekt(d.ch); break;
     case 'ch-lesson': if (AI.state === 'on') aiForChapterLesson(d.ch); break;
     case 'qz-explain': if (AI.state === 'on') aiForMistakes(); break;
@@ -2110,6 +2369,7 @@ document.addEventListener('keydown', ev => {
     else if (ev.target.id === 'shin') { ev.preventDefault(); shSend(); }
     else if (ev.target.id === 'rpin') { ev.preventDefault(); const v = ev.target.value; if (!v.trim() || S.rpBusy) return; ev.target.value = ''; autoGrow(ev.target); rpCall('send', v); }
     else if (ev.target.id === 'apikey' && PWA) { ev.preventDefault(); const b = $('[data-act="key-save"]'); if (b && !b.disabled) saveKey(b); }
+    else if (ev.target.dataset && ev.target.dataset.smF) { ev.preventDefault(); smEvent({ ev: SM.st.page === 'login' ? 'login' : 'continue' }); smRedraw(); } // Enter submits the form, as on the site
   }
   if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.classList && ev.target.classList.contains('fc')) { ev.preventDefault(); ev.target.click(); }
 });
@@ -2144,7 +2404,10 @@ document.addEventListener('input', ev => {
   } else if (t.dataset.ixRange) {
     const sid = t.dataset.ixRange; IX[sid].v = +t.value;
     const out = t.parentNode.querySelector('.bva-out'); if (out) out.innerHTML = bvaOut(sid, secById[sid].ix);
-  } else if (t.id === 'glq') { S.glq = t.value; drawGlossary(); }
+  } else if (t.dataset.smF) smType(t);
+  else if (t.dataset.smAns !== undefined) SM.ans = t.value;
+  else if (t.dataset.smTitle !== undefined) SM.title = t.value;
+  else if (t.id === 'glq') { S.glq = t.value; drawGlossary(); }
   else if (t.id === 'sq') { doSearch(t.value); }
   else if (t.id === 'tin' || t.id === 'shin' || t.id === 'rpin') autoGrow(t);
 });
@@ -2152,6 +2415,7 @@ document.addEventListener('toggle', ev => { const el = ev.target; if (el && el.d
 document.addEventListener('change', ev => {
   const t = ev.target;
   if (t.dataset.ixTg) { IX[t.dataset.sid][t.dataset.ixTg] = t.checked; ixRedraw(t.dataset.sid); return; }
+  if (t.dataset.smSort !== undefined) { smEvent({ ev: 'sort', v: t.value }); smRedraw(); return; }
   if (t.dataset.chk) { const K = Store.doc('checks').k; if (t.checked) K[t.dataset.chk] = 1; else delete K[t.dataset.chk]; Store.changed('checks'); updChk(t.dataset.sec); }
   else if (t.id === 'tctx') { const ch = Store.doc('chat'); ch.ctx = t.value; Store.changed('chat'); toast('Kontekst dəyişdi: ' + (t.value === 'none' ? 'ümumi' : chLabel(chById[t.value]))); }
 });
@@ -2179,7 +2443,8 @@ applyPrefs();
 AI.setState('pending');
 // links from the offline app: #c3s4 opens a section; #c3s4-simple, #c3-lesson, #c3-konspekt and #g12-term also
 // start that Claude action once Claude is ready. Only ids from the book are accepted, so a link cannot carry its own prompt.
-// #c3-xulase and #xulase open the summary sheets (the claude.ai version links there when it cannot print).
+// #c3-xulase and #xulase open the summary sheets (the claude.ai version links there when it cannot print);
+// #magaza opens the practice store, #magaza-tc04 with that test case.
 let AUTO = null;
 const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 function routeHash() {
@@ -2201,6 +2466,7 @@ function routeHash() {
   else if (h === 'ga' || h === 'luget') { S.view = 'glossary'; S.params = {}; }
   else if (h === 'mesq' || h === 'practice') { S.tab = 'practice'; S.view = 'practice'; S.params = {}; }
   else if (h === 'xulase') { S.tab = 'practice'; S.view = 'summary'; S.params = { ch: 'all' }; }
+  else if (t === 'magaza') { S.tab = 'practice'; S.view = 'store'; S.params = { sc: own(scById, act) ? act : null }; }
   else if (h === 'muellim' || h === 'tutor') { S.tab = 'tutor'; S.view = 'tutor'; S.params = {}; S.tutorMode = 'chat'; }
   else if (h === 'rol' || h === 'roleplay') { S.tab = 'tutor'; S.view = 'tutor'; S.params = {}; S.tutorMode = 'rp'; }
   else if (h === 'progress' || h === 'ireliles') { S.tab = 'progress'; S.view = 'progress'; S.params = {}; }
