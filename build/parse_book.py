@@ -541,6 +541,34 @@ for sid, progs in json.load(open(os.path.join(BASE, 'trace.json'), encoding='utf
         tr_count += 1
     if sec:
         sec['tr'] = progs
+# ---------- 6h. practice API (api.json): a REST API over the practice store's data; tasks are checked against the request
+# log, planted bugs are found by sending the right request ----------
+api = json.load(open(os.path.join(BASE, 'api.json'), encoding='utf-8'))
+METHODS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')
+sec_ids = {s['id'] for c in chapters for s in c['sections']}
+api_ids = set()
+for t in api['tasks']:
+    ch = t.get('check', {})
+    reqs = [r for r in (ch.get('req'), ch.get('also')) if r]
+    ok = t.get('id') and t['id'] not in api_ids and t.get('t') and t.get('x') and t.get('hint') and t.get('sec') in sec_ids \
+        and (reqs or ch.get('bug')) and all(r.get('m') in METHODS and r.get('p') and isinstance(r.get('st'), int) for r in reqs) \
+        and (not ch.get('bug') or ch['bug'] in api['bugs'])
+    try:
+        [re.compile(r['p']) for r in reqs]
+    except (re.error, KeyError):
+        ok = False
+    if not ok:
+        print('ERR api task', t.get('id'), file=sys.stderr); errors += 1
+    api_ids.add(t.get('id'))
+for d in api['doc']:
+    if not (d.get('m') in METHODS and d.get('p', '').startswith('/') and d.get('d') and d.get('res') and all(isinstance(r[0], int) for r in d['res'])):
+        print('ERR api doc', d.get('m'), d.get('p'), file=sys.stderr); errors += 1
+for sid in api.pop('sections'):
+    sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+    if not sec:
+        print('ERR api section', sid, file=sys.stderr); errors += 1; continue
+    sec['api'] = 1
+print('api tasks', len(api['tasks']), 'bugs', len(api['bugs']))
 # ---------- 6b. new narrow diagrams (diagrams.py) ----------
 sys.path.insert(0, BASE)
 from diagrams import ALL as NEW_DIAGRAMS
@@ -651,7 +679,7 @@ for c in chapters:
             s['x']['short'], k = gl_wrap(s['x']['short'], rx, idx, 2); gl_total += k
 print('glossary links', gl_total)
 out = {'title': 'QA Kitabı: Sıfırdan Peşəkar Testerə', 'parts': parts, 'chapters': chapters,
-       'glossary': glossary, 'quizzes': quizzes, 'store': store}
+       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'api': api}
 json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 # ---------- 7. report ----------
