@@ -1,6 +1,6 @@
 {
   "password": "secret_sauce",
-  "users": ["standard_user", "locked_out_user", "problem_user"],
+  "users": ["standard_user", "locked_out_user", "problem_user", "error_user"],
   "products": [
     { "id": "backpack", "name": "Backpack", "price": 29.99 },
     { "id": "bikelight", "name": "Bike Light", "price": 9.99 },

@@ -1,0 +1,64 @@
+{
+  "intro": "DevTools — tester-in əsas aləti (13.9). Hər tapşırıqda istifadəçinin şikayəti var: baqı mağazada təkrarla, Network və Console-da sübut tap, 13.10-dakı cədvəllə defektin harada olduğunu müəyyən et.",
+  "bugs": {
+    "e400": "Products: error_user Onesie üçün “Add to cart” basanda POST /cart 400 qaytarır — brauzer productId əvəzinə product_id göndərir.",
+    "e500": "Checkout: Overview: error_user “Finish” basanda POST /orders 500 qaytarır, sifariş yaranmır.",
+    "eview": "Your Cart: error_user-də səbətdəki məhsullardan yalnız birincisi görünür, GET /cart isə hamısını qaytarır.",
+    "eprice": "Products: error_user-də Fleece Jacket-in qiyməti $4.99 görünür — GET /products bu qiyməti qaytarır (düzgünü $49.99)."
+  },
+  "rows": [
+    { "see": "Heç bir sorğu getmir", "then": "Frontend: düymə işləmir. Console-da xəta axtar" },
+    { "see": "Sorğu gedir, 500 qayıdır", "then": "Backend: serverdə xəta" },
+    { "see": "400 və ya 422 qayıdır", "then": "Göndərilən data yanlışdır: frontend səhv göndərir və ya ekranda xəta mesajı göstərilmir" },
+    { "see": "200 qayıdır, cavab düzgündür, ekran səhvdir", "then": "Frontend: data düzgün gəlir, amma səhv göstərilir" },
+    { "see": "200 qayıdır, amma cavabdakı data səhvdir", "then": "Backend: server səhv data qaytarır" }
+  ],
+  "tasks": [
+    {
+      "id": "dv1", "title": "Bolt T-Shirt səbətə düşmür",
+      "report": "İstifadəçi yazır: “Bolt T-Shirt üçün Add to cart basıram — heç nə olmur.” Hesab: problem_user.",
+      "start": { "page": "products", "user": "problem_user" }, "pre": "problem_user ilə daxil olunub, Products səhifəsi açıqdır.",
+      "steps": ["DevTools-da Network və Console-a bax.", "Bolt T-Shirt-in “Add to cart” düyməsini bas."],
+      "bug": "add", "net": "none", "con": "err", "row": 0, "side": "frontend",
+      "why": "Düyməni basanda Network-da yeni sorğu yaranmır, Console-da isə JavaScript xətası çıxır: kod serverə çatmadan brauzerdə qırılır. Server bu əməliyyatı heç görmür — defekt frontend-dədir.",
+      "model": "Products: problem_user Bolt T-Shirt üçün “Add to cart” basanda sorğu getmir, Console-da TypeError çıxır"
+    },
+    {
+      "id": "dv2", "title": "Sifariş tamamlanmır",
+      "report": "İstifadəçi yazır: “Finish basıram, səhifə dəyişmir, heç bir mesaj da yoxdur.” Hesab: error_user.",
+      "start": { "page": "overview", "user": "error_user", "cart": ["backpack"] }, "pre": "error_user ilə daxil olunub, səbətdə Backpack var, Checkout: Overview səhifəsi açıqdır.", "ev": "POST /orders → 500",
+      "steps": ["Network-da Fetch/XHR filtrini seç.", "“Finish” düyməsini bas.", "Yeni sorğunu aç: status və Response."],
+      "bug": "e500", "net": "req", "con": "err", "row": 1, "side": "backend",
+      "why": "POST /orders gedir və 500 qayıdır: brauzer sorğunu düzgün göndərib, server isə onu emal edə bilmir. Defekt backend-dədir. Response tabındakı xəta mətni və sorğunun cURL-i proqramçının işini xeyli qısaldır.",
+      "model": "Checkout: Overview: error_user “Finish” basanda POST /orders 500 qaytarır, sifariş yaranmır"
+    },
+    {
+      "id": "dv3", "title": "Onesie səbətə düşmür",
+      "report": "İstifadəçi yazır: “Onesie-ni səbətə ata bilmirəm, başqa məhsullar düşür.” Hesab: error_user.",
+      "start": { "page": "products", "user": "error_user" }, "pre": "error_user ilə daxil olunub, Products səhifəsi açıqdır, səbət boşdur.", "ev": "POST /cart → 400 (Onesie)",
+      "steps": ["Onesie-nin “Add to cart” düyməsini bas.", "POST /cart sorğusunu aç: Payload və Response tablarına bax.", "Müqayisə üçün başqa məhsulu da əlavə et və onun Payload-una bax."],
+      "bug": "e400", "net": "req", "con": "err", "row": 2, "side": "frontend",
+      "why": "Server 400 qaytarır və cavabda “productId is required” yazır. Payload-da isə productId əvəzinə product_id var: brauzer səhv data göndərir, server onu düzgün olaraq rədd edir. Defekt frontend-dədir — üstəlik ekranda heç bir xəta mesajı göstərilmir.",
+      "model": "Products: error_user Onesie üçün “Add to cart” basanda POST /cart 400 qaytarır (Payload-da productId əvəzinə product_id)"
+    },
+    {
+      "id": "dv4", "title": "Səbətdə bir məhsul itir",
+      "report": "İstifadəçi yazır: “Səbət nişanında 2 yazılıb, səbəti açanda bir məhsul görürəm.” Hesab: error_user.",
+      "start": { "page": "products", "user": "error_user", "cart": ["backpack", "bikelight"] }, "pre": "error_user ilə daxil olunub, səbətdə Backpack və Bike Light var, Products səhifəsi açıqdır.", "ev": "GET /cart → 200 (Your Cart səhifəsində)",
+      "steps": ["Səbət ikonuna bas.", "GET /cart sorğusunun Response tabına bax: cavabda neçə məhsul var?", "Cavabı ekrandakı siyahı ilə tutuşdur."],
+      "bug": "eview", "net": "req", "con": "none", "row": 3, "side": "frontend",
+      "why": "GET /cart 200 qaytarır və cavabda iki məhsul var, ekranda isə biri görünür: data düzgün gəlir, amma səhv göstərilir. Defekt frontend-dədir.",
+      "model": "Your Cart: error_user-də səbətdəki iki məhsuldan yalnız biri görünür, GET /cart isə ikisini qaytarır"
+    },
+    {
+      "id": "dv5", "title": "Fleece Jacket-in qiyməti səhvdir",
+      "report": "İstifadəçi yazır: “Fleece Jacket $4.99 görünür, dünən $49.99 idi.” Hesab: error_user. standard_user-də qiymət $49.99-dur.",
+      "start": { "page": "products", "user": "error_user" }, "pre": "error_user ilə daxil olunub, Products səhifəsi açıqdır.", "ev": "GET /products → 200", "focus": "Fleece Jacket",
+      "steps": ["Network-da səhifə yüklənəndə gedən sorğulara bax.", "GET /products sorğusunun Response tabında Fleece Jacket-i tap.", "Cavabdakı qiyməti ekrandakı ilə tutuşdur."],
+      "bug": "eprice", "net": "req", "con": "none", "row": 4, "side": "backend",
+      "why": "GET /products 200 qaytarır, amma cavabda Fleece Jacket-in qiyməti 4.99-dur: ekran serverdən gələni düzgün göstərir, səhv data serverdən gəlir. Defekt backend-dədir.",
+      "model": "Products: error_user-də Fleece Jacket $4.99 görünür — GET /products price: 4.99 qaytarır (düzgünü 49.99)"
+    }
+  ],
+  "sections": ["c13s9", "c13s10"]
+}
