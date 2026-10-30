@@ -21,7 +21,7 @@
   },
   "reports": {
     "add": {
-      "page": "products", "where": ["products"], "what": ["bolt", "fleece"], "when": ["problem_user", "problem user"],
+      "page": "products", "user": "problem_user", "where": ["products"], "what": ["bolt", "fleece"], "when": ["problem_user", "problem user"],
       "sev": ["Critical", "Major"], "pri": ["High"],
       "sevWhy": "Bolt T-Shirt və Fleece Jacket-i səbətə atmaq, deməli almaq da mümkün deyil, başqa yolu yoxdur — Critical. Digər məhsullar işlədiyi üçün Major da qəbul olunur.",
       "priWhy": "Alış funksiyası pozulub və birbaşa satışa təsir edir — High.",
@@ -40,7 +40,7 @@
       }
     },
     "remove": {
-      "page": "products", "where": ["products"], "what": ["bike light"], "when": ["problem_user", "problem user"],
+      "page": "products", "user": "problem_user", "where": ["products"], "what": ["bike light"], "when": ["problem_user", "problem user"],
       "sev": ["Major", "Minor"], "pri": ["Medium", "Low"],
       "sevWhy": "Bike Light-ı Products səhifəsindən silmək olmur, amma Your Cart səhifəsində silmək olur — yolu var, Major. Minor da qəbul olunur.",
       "priWhy": "Alışa mane olmur, amma istifadəçini çaşdırır — Medium (təklif).",
@@ -59,7 +59,7 @@
       }
     },
     "sort": {
-      "page": "products", "where": ["products"], "what": ["price (low to high)", "low to high", "price (high to low)", "high to low", "name (z to a)", "sıra", "sort"], "when": ["problem_user", "problem user"],
+      "page": "products", "user": "problem_user", "where": ["products"], "what": ["price (low to high)", "low to high", "price (high to low)", "high to low", "name (z to a)", "sıra", "sort"], "when": ["problem_user", "problem user"],
       "sev": ["Major", "Minor"], "pri": ["Medium", "Low"],
       "sevWhy": "Sıralama heç işləmir, amma məhsulları yenə tapmaq olur — yolu var, Major. Minor da qəbul olunur.",
       "priWhy": "Alışa mane olmur — Medium və ya Low.",
@@ -78,7 +78,7 @@
       }
     },
     "last": {
-      "page": "info", "where": ["checkout", "your information"], "what": ["last name"], "when": ["problem_user", "problem user"],
+      "page": "info", "user": "problem_user", "where": ["checkout", "your information"], "what": ["last name"], "when": ["problem_user", "problem user"],
       "sev": ["Critical", "Blocker"], "pri": ["High"],
       "sevWhy": "Last Name doldurulmur, ona görə problem_user sifarişi heç tamamlaya bilmir — Critical. Checkout-un sonrakı testləri də dayanır, Blocker da qəbul olunur.",
       "priWhy": "Alış tamamlanmır, şirkət pul itirir — High.",
@@ -95,7 +95,59 @@
         "freq": "3/3 (həmişə).",
         "sev": "Critical", "pri": "High"
       }
+    },
+    "rmcart": {
+      "page": "cart", "user": "", "where": ["your cart", "səbət"], "what": ["remove"], "when": ["1.1"],
+      "sev": ["Major", "Critical"], "pri": ["High"],
+      "sevWhy": "Your Cart səhifəsində məhsul silinmir, amma Products səhifəsində “Remove” işləyir — yolu var, Major. Bütün istifadəçilərə təsir etdiyi üçün Critical da qəbul olunur.",
+      "priWhy": "Əvvəl işləyən funksiya sınıb (regression), bütün istifadəçilərə təsir edir və reliz sabahdır — High.",
+      "pre": [{ "l": "hansı build (Mini Store 1.1)", "k": ["1.1"] }, { "l": "hansı səhifə (Your Cart)", "k": ["your cart"] }, { "l": "səbətdə nə var (Backpack)", "k": ["backpack"] }],
+      "need": [{ "l": "düymə (“Remove”)", "k": ["remove"] }],
+      "exp": [{ "l": "Backpack səbətdən silinir", "k": ["silin", "yox", "görünmür"] }],
+      "act": [{ "l": "Backpack siyahıda qalır", "k": ["qalır", "var"] }, { "l": "səbət nişanı", "k": ["nişan", "badge"] }],
+      "model": {
+        "title": "Your Cart: Backpack-in “Remove” düyməsini basanda məhsul siyahıda qalır, səbət nişanı dəyişmir (Mini Store 1.1)",
+        "pre": "Mini Store 1.1; standard_user / secret_sauce ilə daxil olunub; səbətdə Backpack var; Your Cart səhifəsi açıqdır.",
+        "steps": ["Backpack-in “Remove” düyməsini bas."],
+        "exp": "Backpack səbət siyahısından silinir, səbət nişanı görünmür.",
+        "act": "Backpack səbət siyahısında qalır, səbət nişanında 1 qalır.",
+        "freq": "3/3 (həmişə). Build 1.0-da işləyirdi (regression); Products səhifəsində “Remove” işləyir.",
+        "sev": "Major", "pri": "High"
+      }
     }
+  },
+  "release": {
+    "ver": "1.1",
+    "intro": "Mini Store 1.1 test mühitinə çıxdı: proqramçılar üç defekti düzəltdiklərini yazıblar (status Ready for Test). Reliz sabahdır. Sənin işin: build-in test üçün yararlı olduğunu yoxlamaq, düzəlişləri təsdiqləmək, köhnə funksiyaların sınmadığına əmin olmaq və komandaya fakt əsasında tövsiyə vermək.",
+    "tickets": [
+      { "bug": "add", "key": "MS-12", "status": "Ready for Test", "tc": "tc09", "verdict": "Verified",
+        "change": "Səbət kodu (CartService) yenidən yazıldı: məhsulu səbətə əlavə etmə və səbətdən silmə eyni moduldadır." },
+      { "bug": "sort", "key": "MS-14", "status": "Ready for Test", "tc": "tc10", "verdict": "Verified",
+        "change": "Products səhifəsində sıralama funksiyası düzəldildi." },
+      { "bug": "last", "key": "MS-15", "status": "Ready for Test", "tc": "tc11", "verdict": "Reopened",
+        "change": "Checkout: Your Information formunun sahələri düzəldildi." }
+    ],
+    "deferred": [
+      { "bug": "remove", "key": "MS-13", "status": "Deferred", "note": "PO bu defekti 1.2 relizinə saxlayıb: bu build-də dəyişiklik yoxdur." }
+    ],
+    "smoke": ["tc01", "tc04", "tc05"],
+    "regression": {
+      "tc02": { "need": false, "why": "Login koduna toxunulmayıb və giriş smoke-da (TC-01) yoxlanılıb — vaxt qalsa, işlət." },
+      "tc03": { "need": false, "why": "Login dəyişməyib — vacib deyil, vaxt qalsa, işlət." },
+      "tc06": { "need": true, "why": "Səbətdən silmə MS-12-də yenidən yazılan CartService-dədir — dəyişikliyin ən yaxın qonşusu." },
+      "tc07": { "need": true, "why": "Checkout formu MS-15-də dəyişib: məcburi sahələrin yoxlaması sınmayıb?" },
+      "tc08": { "need": true, "why": "Sifarişi tamamlamaq həm səbətdən, həm checkout-dan keçir — iki dəyişikliyin təsir sahəsindədir." }
+    },
+    "bugs": {
+      "tc06": { "r": "rmcart", "where": ["your cart", "səbət"], "what": ["remove"], "when": ["1.1"],
+        "model": "Your Cart: Backpack-in “Remove” düyməsini basanda məhsul siyahıda qalır, səbət nişanı dəyişmir (Mini Store 1.1)" }
+    },
+    "blockWhy": "Əvvəl işləyən funksiya sınıb (regression) və bütün istifadəçilərə təsir edir — tövsiyənin əsas səbəbi budur.",
+    "reopenWhy": "Bu relizdə söz verilmiş düzəliş işləmir: defekt proqramçıya qayıdır, PO bunu bilməlidir.",
+    "deferredWhy": "Məlum defektdir, PO onu 1.2-yə saxlayıb (Deferred) — bu relizin qərarına yeni fakt gətirmir.",
+    "decision": "build 1.1-də əvvəl işləyən funksiya sınıb və bir düzəliş retest-dən keçmir.",
+    "model": "Mini Store 1.1-i bu vəziyyətdə relizə buraxmamağı tövsiyə edirəm. Səbəblər: (1) regression — Your Cart səhifəsində “Remove” məhsulu silmir (TC-06, bütün istifadəçilər; bug report yazılıb); (2) MS-15 retest-dən keçmədi və Reopened oldu. MS-12 və MS-14 Verified. MS-13 məlum defektdir, 1.2-yə saxlanılıb. Smoke keçdi: build test üçün yararlıdır. Son qərarı Product Owner verir.",
+    "sections": ["c6s3", "c12s6"]
   },
   "scenarios": [
     {
