@@ -555,6 +555,36 @@ for sid, progs in json.load(open(os.path.join(BASE, 'trace.json'), encoding='utf
         tr_count += 1
     if sec:
         sec['tr'] = progs
+# ---------- 6g2. Playwright practice (playwright.json): locator exercises on the store and tests written by the reader;
+# the page runs them (t27.js runs every model answer). Here: the shape, the start states and the requirement regexes ----------
+playwright = json.load(open(os.path.join(BASE, 'playwright.json'), encoding='utf-8'))
+pw_ids = set()
+for l in playwright['locators']:
+    st = l.get('start', {})
+    ok = l.get('id') and l['id'] not in pw_ids and all(l.get(k) for k in ('title', 'goal', 'target', 'why')) and st.get('page') in PAGES \
+        and (st['page'] == 'login' or st.get('user') in store['users']) and set(st.get('cart', [])) <= pids
+    if not ok:
+        print('ERR playwright locator', l.get('id'), file=sys.stderr); errors += 1
+    pw_ids.add(l.get('id'))
+REQS = {'pass': (), 'fail': ('m',), 'has': ('re',), 'no': ('re',), 'state': ()}
+for t in playwright['tasks']:
+    ok = t.get('id') and t['id'] not in pw_ids and all(t.get(k) for k in ('title', 'goal', 'code', 'model', 'hints', 'reqs')) \
+        and all(r.get('t') in REQS and r.get('l') and all(r.get(k) for k in REQS[r['t']]) for r in t['reqs'])
+    for r in t.get('reqs', []):
+        try:
+            re.compile(r.get('re') or r.get('m') or '')
+        except re.error:
+            ok = False
+    if not ok:
+        print('ERR playwright task', t.get('id'), file=sys.stderr); errors += 1
+    pw_ids.add(t.get('id'))
+for kind, sids in playwright.pop('sections').items():
+    for sid in sids:
+        sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+        if not sec or kind not in ('loc', 'test'):
+            print('ERR playwright section', sid, file=sys.stderr); errors += 1; continue
+        sec['pwl'] = kind
+print('playwright locators', len(playwright['locators']), 'tasks', len(playwright['tasks']))
 # ---------- 6j. ISTQB CTFL v4.0 map (ctfl.json): every syllabus topic points to the book sections that teach it ----------
 ctfl = json.load(open(os.path.join(BASE, 'ctfl.json'), encoding='utf-8'))['chapters']
 all_sids = {s['id'] for c in chapters for s in c['sections']}
@@ -752,7 +782,7 @@ for c in chapters:
             s['x']['short'], k = gl_wrap(s['x']['short'], rx, idx, 2); gl_total += k
 print('glossary links', gl_total)
 out = {'title': 'QA Kitabı: Sıfırdan Peşəkar Testerə', 'parts': parts, 'chapters': chapters,
-       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'api': api, 'sql': sqlcfg, 'ctfl': ctfl}
+       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'playwright': playwright, 'api': api, 'sql': sqlcfg, 'ctfl': ctfl}
 json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 # ---------- 7. report ----------
