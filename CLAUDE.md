@@ -61,6 +61,14 @@ Screenshots land in `build/shots/` (gitignored).
   store's shop (`a`: goto / type / login / add) and check it (`c`: url, visible, error, badge, btn); the first failed check
   ends the test, as in Playwright. `parse_book.py` pre-highlights every line (Pygments for JS; locator / action /
   assertion spans for Playwright).
+- `build/git.json` — the Git practice (`#git`, `#git-g5`): file templates (`files`, arrays of lines), tasks with a start
+  repository (`commits` with `parents` / `set` / `br` / `mate`, `branches`, `head`, `work` / `index` overrides,
+  `remote.branches`, `tracking`, `upstream`, `init: false` and `cfg: false` for an empty folder without an identity) and
+  `checks` (init, head, branch, tree (+`re`, `not`), commits, lastOnly, untracked, ignored, msg, merge, pushed (+`re`),
+  upstream, contains, clean; `moved: true` = only after a new commit, so nothing is green at the start). The terminal
+  (`gitRun` in `app.js`) plays Git's commands on that model with Git's own messages (status, LCS diffs, a diff3 merge
+  with conflict markers, push / pull / rebase / revert); `reset --hard` and `push --force` are refused with a reason.
+  Done marks: `P().git`. `t28.js` solves every task in the terminal and the editor.
 - `build/quiz_*.json` — chapter quizzes. `build/diagrams.py` — SVG diagrams registered with `reg(slug, sid, anchor, cap, d)`,
   drawn with `svgkit.py` (text measured with the vendored fonts in `fonts/`, overlap and overflow checks).
 - `build/app.js` — the whole UI in one IIFE, no framework. `PWA = window.QA_PWA` exists only in the offline build:
