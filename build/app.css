@@ -839,6 +839,51 @@ details.say-d[open]>summary{border-bottom:0;border-radius:0}
 .sm-links{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
 .sm-links .btn{height:auto;min-height:36px;padding:7px 12px;justify-content:flex-start;text-align:left;white-space:normal}
 .sm-links .btn b{flex:none;white-space:nowrap;font-family:var(--f-mono);font-size:12.5px;color:var(--accent)}
+/* release test: build 1.1's notes, four stages (smoke, retest, regression, recommendation), runs in the store */
+.sm-ver{display:inline-block;margin-left:4px;padding:1px 6px;border-radius:6px;background:#2F3B52;color:#FFFFFF;font-size:11px;font-weight:600;vertical-align:2px;letter-spacing:0}
+.rel-bar{display:grid;grid-template-columns:22px 1fr;gap:6px 10px;align-items:start;padding:12px 14px}
+.rel-bar>svg.i{width:22px;height:22px;color:var(--accent);margin-top:1px}
+.rel-bar>div{display:flex;flex-direction:column;gap:2px;font-size:13.5px;line-height:1.45;color:var(--ink-2)}
+.rel-bar>div b{color:var(--ink);font-size:14.5px}
+.rel-bar>.btn{grid-column:2;justify-self:start}
+.rel-card{margin-top:12px}
+.rel-notes,.rel-tks,.rel-runs,.rel-picks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.rel-notes{gap:12px;margin-top:10px}
+.rel-notes li{display:flex;flex-direction:column;gap:4px;padding-top:10px;border-top:1px solid var(--line)}
+.rel-notes li:first-child{border-top:0;padding-top:0}
+.rel-tk-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.rel-tk-t{font-size:14.5px;line-height:1.45}
+.rel-ch{display:grid;grid-template-columns:16px 1fr;gap:6px;font-size:13px;line-height:1.45;color:var(--ink-2)}
+.rel-ch svg.i{width:15px;height:15px;margin-top:2px}
+.rel-st{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.rel-st.off{opacity:.62}
+.rel-sh{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:center}
+.rel-sh>div{display:flex;flex-direction:column;gap:1px;min-width:0}
+.rel-sh b{font-size:16px}
+.rel-sh>div span{font-size:13.5px;color:var(--ink-2)}
+.rel-n{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-family:var(--f-mono);font-weight:600;font-size:14px}
+.rel-st.done .rel-n{background:var(--pass-soft);color:var(--pass)}
+.rel-n svg.i{width:17px;height:17px;stroke-width:2.6}
+.rel-p{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+.rel-lock{margin:0;font-size:13.5px}
+.rel-hint{margin:0;font-size:13px}
+.rel-runs{gap:8px}
+.rel-run{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;padding:9px 11px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line)}
+.rel-tc{flex:1 1 220px;min-width:0;font-size:14px;line-height:1.4}
+.rel-tc b{font-family:var(--f-mono);font-size:12.5px;color:var(--accent)}
+.rel-res{display:flex;align-items:center;gap:8px;margin-left:auto}
+.rel-tks{gap:14px}
+.rel-tk{display:flex;flex-direction:column;gap:9px;padding-top:12px;border-top:1px solid var(--line)}
+.rel-tk:first-child{border-top:0;padding-top:0}
+.rel-tk .br-sel{width:100%;min-width:0;min-height:0}
+.rel-seg{max-width:300px}
+.rel-seg button[disabled]{opacity:.45;pointer-events:none}
+.rel-picks{gap:6px}
+.rel-pick{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:start;padding:8px 10px;border-radius:10px;border:1px solid var(--line);font-size:14px;line-height:1.45;cursor:pointer}
+.rel-pick input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--accent)}
+.rel-pick b{font-family:var(--f-mono);font-size:12.5px;color:var(--accent)}
+.rel-pick.miss{border-color:var(--warn-line);background:var(--warn-soft)}
+.rel-md{margin:0;padding:10px 12px;border-radius:10px;background:var(--code-bg);color:var(--code-ink);font-family:var(--f-mono);font-size:12px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 /* SQL practice: Run under chapter 16's code blocks, the console (task, editor, results, tables) */
 .sql-run{margin:-4px 0 14px;display:flex;flex-direction:column;gap:8px;font-family:var(--f-ui)}
 .sql-out{display:flex;flex-direction:column;gap:8px}

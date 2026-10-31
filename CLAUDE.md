@@ -54,7 +54,11 @@ Screenshots land in `build/shots/` (gitignored).
   `result`, `bug` = title parts for the [harada] + [nə baş verir] + [hansı şərtdə] check) and section links.
   The shop's behaviour and problem_user's bugs are in `app.js` (`smEvent`, `SM_BUG`); after the last step the screen is
   recorded and the written actual result is compared with it. `#magaza`, `#magaza-tc04`. `t18.js` runs every test case
-  and expects the computed status to equal `result`.
+  and expects the computed status to equal `result`. `release` is build 1.1 for the release test (`#reliz`,
+  `#reliz-tc06`): tickets (bug, key, the test case that retests it, its verdict), deferred defects, the smoke set,
+  regression candidates (`need` + `why`), the regression's own bug (`bugs`: title check; its full report sits in
+  `reports` with `user: ""`) and section links. 1.1's behaviour is in `smApply` (`st.ver`); checked runs land in
+  `REL.runs`. `t25.js` runs every test case on 1.1 against this data and walks the four stages.
 - `build/trace.json` — code tracer programs keyed by section id (example sections too). `lang: js` steps have the line
   `l`, variables set `v` (JS literals as text), dropped `x`, console output `o` and a note `n`; `t19.js` runs each
   program in Node and expects the same console lines and final top-level values. `lang: pw` steps drive the practice
