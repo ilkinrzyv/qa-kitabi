@@ -502,12 +502,31 @@ for sc in store['scenarios']:
     if not ok:
         print('ERR store scenario', sc.get('id'), file=sys.stderr); errors += 1
     sc_ids.add(sc.get('id'))
+# release test: build 1.1 with its tickets (each retested by one test case), the regression candidates and the
+# regression's own bug (a report of its own, outside the exploratory list of store['bugs'])
+rel = store.get('release', {})
+rel_bugs = rel.get('bugs', {})
+rel_ok = rel.get('ver') and all(rel.get(k) for k in ('intro', 'blockWhy', 'reopenWhy', 'deferredWhy', 'decision', 'model')) \
+    and rel.get('tickets') and all(t.get('bug') in store['bugs'] and t.get('key') and t.get('status') and t.get('change') and t.get('tc') in sc_ids
+                                   and t.get('verdict') in ('Verified', 'Reopened') for t in rel['tickets']) \
+    and all(t.get('bug') in store['bugs'] and t.get('key') and t.get('status') and t.get('note') for t in rel.get('deferred', [])) \
+    and rel.get('smoke') and set(rel['smoke']) <= sc_ids \
+    and rel.get('regression') and all(k in sc_ids and isinstance(v.get('need'), bool) and v.get('why') for k, v in rel['regression'].items()) \
+    and all(k in rel['regression'] and b.get('r') in store.get('reports', {}) and all(b.get(x) for x in ('where', 'what', 'when', 'model')) for k, b in rel_bugs.items())
+if not rel_ok:
+    print('ERR store release', file=sys.stderr); errors += 1
+for sid in rel.pop('sections', []):
+    sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+    if not sec:
+        print('ERR store release section', sid, file=sys.stderr); errors += 1; continue
+    sec['rel'] = 1
 # full bug reports, one per planted bug: the checker's keyword groups and a model report that must pass them
 SEVS, PRIS = ('Blocker', 'Critical', 'Major', 'Minor', 'Trivial'), ('High', 'Medium', 'Low')
 for bid, r in store.get('reports', {}).items():
     m = r.get('model', {})
     groups = lambda key: bool(r.get(key)) and all(g.get('l') and g.get('k') for g in r[key])
-    ok = bid in store['bugs'] and r.get('page') in PAGES and all(r.get(k) for k in ('where', 'what', 'when', 'sevWhy', 'priWhy')) \
+    ok = (bid in store['bugs'] or bid in {b.get('r') for b in rel_bugs.values()}) and r.get('user') in ('', *store['users']) \
+        and r.get('page') in PAGES and all(r.get(k) for k in ('where', 'what', 'when', 'sevWhy', 'priWhy')) \
         and set(r.get('sev') or ['?']) <= set(SEVS) and set(r.get('pri') or ['?']) <= set(PRIS) \
         and all(groups(k) for k in ('pre', 'need', 'exp', 'act')) \
         and all(m.get(k) for k in ('title', 'pre', 'steps', 'exp', 'act', 'freq')) and m.get('sev') in r['sev'] and m.get('pri') in r['pri']
@@ -519,6 +538,26 @@ for sid, ids in store['sections'].items():
         print('ERR store section', sid, ids, file=sys.stderr); errors += 1; continue
     sec['sim'] = ids
 del store['sections']
+# ---------- 6f2. DevTools practice (devtools.json): user complaints about the store; each planted bug is placed in 13.10's
+# table by its evidence in Network and Console ----------
+devtools = json.load(open(os.path.join(BASE, 'devtools.json'), encoding='utf-8'))
+dv_ids = set()
+for t in devtools['tasks']:
+    st = t.get('start', {})
+    ok = t.get('id') and t['id'] not in dv_ids and all(t.get(k) for k in ('title', 'report', 'pre', 'why', 'model')) and t.get('steps') \
+        and st.get('page') in PAGES and st.get('user') in store['users'] and set(st.get('cart', [])) <= pids \
+        and (t.get('bug') in store['bugs'] or t.get('bug') in devtools['bugs']) and t.get('net') in ('none', 'req') and t.get('con') in ('none', 'err') \
+        and (t['net'] == 'none' or t.get('ev')) and isinstance(t.get('row'), int) and 0 <= t['row'] < len(devtools['rows']) and t.get('side') in ('frontend', 'backend')
+    if not ok:
+        print('ERR devtools task', t.get('id'), file=sys.stderr); errors += 1
+    dv_ids.add(t.get('id'))
+if len(devtools['rows']) != 5 or not all(r.get('see') and r.get('then') for r in devtools['rows']) or not devtools.get('intro'):
+    print('ERR devtools rows', file=sys.stderr); errors += 1
+for sid in devtools.pop('sections'):
+    sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+    if not sec:
+        print('ERR devtools section', sid, file=sys.stderr); errors += 1; continue
+    sec['dt'] = 1
 # ---------- 6g. code tracer (trace.json, keyed by section id): JavaScript stepped line by line, Playwright tests run against
 # the practice store; every line is pre-highlighted (Playwright lines by role: locator, action, assertion) ----------
 PW_TOK = re.compile(r"(?P<loc>page\.(?:getBy\w+|locator)\((?:[^()]|\([^()]*\))*\))|(?P<as>expect\(|\)\.to\w+\((?:[^()]|\([^()]*\))*\))"
@@ -782,7 +821,7 @@ for c in chapters:
             s['x']['short'], k = gl_wrap(s['x']['short'], rx, idx, 2); gl_total += k
 print('glossary links', gl_total)
 out = {'title': 'QA Kitabı: Sıfırdan Peşəkar Testerə', 'parts': parts, 'chapters': chapters,
-       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'playwright': playwright, 'api': api, 'sql': sqlcfg, 'ctfl': ctfl}
+       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'devtools': devtools, 'playwright': playwright, 'api': api, 'sql': sqlcfg, 'ctfl': ctfl}
 json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 # ---------- 7. report ----------

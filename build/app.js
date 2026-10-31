@@ -450,7 +450,7 @@ function render(opts) {
   if (observer) { observer.disconnect(); observer = null; }
   hideSelPill();
   const v = $('#view');
-  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, pw: vPw };
+  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw };
   (views[S.view] || vHome)(v);
   if (opts.keepScroll) window.scrollTo(0, y);
   else if (!(S.view === 'reader' && S.params.sec)) window.scrollTo(0, 0);
@@ -811,10 +811,10 @@ function dtHTML(sid, c) {
 function textBody(c, s) {
   const lv = lvlOf(s.id);
   if (lv === 'short') {
-    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}
+    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}
       <button class="btn sm ghost more" data-act="lvl" data-sec="${s.id}" data-v="std">${icon('book')}Tam mətni oxu</button>${miniHTML(c, s, false)}`;
   }
-  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
+  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
 }
 function fbHTML(a) {
   let h = '';
@@ -902,7 +902,7 @@ function secHTML(c, s) {
   else if (s.kind === 'selfcheck') body = selfHTML(c, s);
   else if (s.kind === 'checklist') body = checklistHTML(s);
   else if (s.x) body = textBody(c, s);
-  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${trHTML(s)}`;
+  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${trHTML(s)}`;
   return `<section class="sec${learned ? ' learned' : ''}" id="${s.id}" data-sec="${s.id}" data-kind="${s.kind}">
     <header class="sec-h"><span class="sec-num">${esc(s.num || kindTag(s).toLocaleUpperCase('az'))}</span><h2>${esc(s.title)}</h2>${s.x ? lvlCtl(s.id, lvlOf(s.id)) : ''}</header>
     ${body}${footerHTML(c, s)}</section>`;
@@ -1070,37 +1070,48 @@ function printHelp() {
 /* ---------- practice store (store.json): a small shop modelled on saucedemo.com. The reader runs a test case in it and
    writes the actual result; the book compares that text with the screen as it was right after the last step ---------- */
 const STORE = BOOK.store;
+const REL_D = STORE.release;
 const prodById = Object.fromEntries(STORE.products.map(p => [p.id, p]));
 const scById = Object.fromEntries(STORE.scenarios.map(s => [s.id, s]));
 const SM_PAGES = { login: '', products: 'Products', cart: 'Your Cart', info: 'Checkout: Your Information', overview: 'Checkout: Overview', complete: 'Checkout: Complete!' };
 const SM_SORTS = [['az', 'Name (A to Z)'], ['za', 'Name (Z to A)'], ['lohi', 'Price (low to high)'], ['hilo', 'Price (high to low)']];
 const SM_FIELDS = { user: 'Username', pass: 'Password', first: 'First Name', last: 'Last Name', zip: 'Zip/Postal Code' };
 const SM_BUG = { noAdd: ['bolt', 'fleece'], noRemove: ['bikelight'] }; // problem_user's planted bugs; their labels are in store.json
-const SM = { id: undefined, found: {}, passed: {} }; // session only
+// error_user's planted bugs (devtools.json): the screen alone does not tell where they are, DevTools does
+const SM_ERR = { badAdd: 'onesie', price: { fleece: 4.99 } };
+const SM = { id: undefined, ver: '1.0', found: {}, passed: {}, dvt: { open: false, tab: 'net', filter: 'all', sub: 'hdrs', keep: false, sel: null, seq: 0, net: [], con: [] } }; // session only
 const money = n => '$' + n.toFixed(2);
 const tcName = id => id.replace(/^tc/, 'TC-');
-const smFresh = s0 => ({ page: s0.page, user: s0.user || '', cart: (s0.cart || []).slice(), sort: 'az', order: 'az', err: '', menu: false, f: { user: '', pass: '', first: '', last: '', zip: '' } });
-function smStart(id) {
-  const sc = scById[id] || null, nid = sc ? id : null;
+// the price the shop shows and sorts by is the one the server sends: wrong for error_user's Fleece Jacket
+const smPrice = (st, p) => (st.user === 'error_user' && SM_ERR.price[p.id]) || p.price;
+const smFresh = (s0, ver) => ({ page: s0.page, user: s0.user || '', cart: (s0.cart || []).slice(), sort: 'az', order: 'az', err: '', menu: false, ver: ver || '1.0', f: { user: '', pass: '', first: '', last: '', zip: '' } });
+function smStart(id, ver) {
+  const sc = scById[id] || null, nid = sc ? id : null, v = sc && ver === REL_D.ver ? ver : '1.0';
   // a restart keeps the open bug report: reproducing the bug again is how its frequency (3/3) is measured
-  Object.assign(SM, { id: nid, sc, done: 0, off: false, snap: null, fb: null, ans: '', status: '', title: '', touched: {}, st: smFresh(sc ? sc.start : { page: 'login' }),
-    rep: SM.id === nid ? SM.rep : null });
+  Object.assign(SM, { id: nid, ver: v, sc, dv: null, done: 0, off: false, snap: null, fb: null, ans: '', status: '', title: '', touched: {}, st: smFresh(sc ? sc.start : { page: 'login' }, v),
+    rep: SM.id === nid && SM.ver === v ? SM.rep : null });
+  dvtReset();
 }
+// the planted bug a failed test case shows: build 1.1 has its own (the regression), the rest keep store.json's
+const scBug = sc => (sc && (SM.ver === REL_D.ver && REL_D.bugs[sc.id] || sc.bug)) || null;
 function smOrder(st) {
   const name = (a, b) => a.name.localeCompare(b.name, 'en');
-  const by = { az: name, za: (a, b) => name(b, a), lohi: (a, b) => a.price - b.price || name(a, b), hilo: (a, b) => b.price - a.price || name(a, b) };
+  const pr = p => smPrice(st, p);
+  const by = { az: name, za: (a, b) => name(b, a), lohi: (a, b) => pr(a) - pr(b) || name(a, b), hilo: (a, b) => pr(b) - pr(a) || name(a, b) };
   return STORE.products.slice().sort(by[st.order]);
 }
 const smSig = st => [st.page, st.user, st.cart.join(), st.order].join('|');
 function smEvent(e) {
-  const before = smSig(SM.st);
+  const before = smSig(SM.st), b0 = { page: SM.st.page, cart: SM.st.cart.slice() }, f0 = Object.assign({}, SM.found);
   smApply(SM.st, e, SM.found);
+  dvtEvent(e, b0, k => (SM.found[k] || 0) > (f0[k] || 0)); // DevTools: what the shop sent for it
   smStep(e, before);
 }
 // the shop itself: one event changes one state (the practice store's, or the code tracer's browser); planted bugs that
-// fire are noted in `found`
+// fire are noted in `found`. Build 1.1 (store.json "release") fixes add and sort, not Last Name, and breaks Remove on
+// Your Cart for every user — the regression the release test has to catch
 function smApply(st, e, found) {
-  const prob = st.user === 'problem_user';
+  const prob = st.user === 'problem_user', errU = st.user === 'error_user', v11 = st.ver === REL_D.ver;
   switch (e.ev) {
     case 'login': {
       const u = st.f.user.trim(), p = st.f.pass; Object.assign(e, { user: u, pass: p });
@@ -1110,9 +1121,11 @@ function smApply(st, e, found) {
       if (!st.err) Object.assign(st, { user: u, page: 'products' });
       break;
     }
-    case 'add': if (prob && SM_BUG.noAdd.includes(e.item)) found.add = (found.add || 0) + 1; else if (!st.cart.includes(e.item)) st.cart.push(e.item); break;
-    case 'remove': if (prob && e.where === 'products' && SM_BUG.noRemove.includes(e.item)) found.remove = (found.remove || 0) + 1; else st.cart = st.cart.filter(x => x !== e.item); break;
-    case 'sort': st.sort = e.v; if (!prob) st.order = e.v; else if (e.v !== 'az') found.sort = (found.sort || 0) + 1; break;
+    case 'add': if (prob && !v11 && SM_BUG.noAdd.includes(e.item)) found.add = (found.add || 0) + 1;
+      else if (errU && e.item === SM_ERR.badAdd) found.e400 = (found.e400 || 0) + 1; else if (!st.cart.includes(e.item)) st.cart.push(e.item); break;
+    case 'remove': if (prob && e.where === 'products' && SM_BUG.noRemove.includes(e.item)) found.remove = (found.remove || 0) + 1;
+      else if (v11 && e.where === 'cart') found.rmcart = (found.rmcart || 0) + 1; else st.cart = st.cart.filter(x => x !== e.item); break;
+    case 'sort': st.sort = e.v; if (!prob || v11) st.order = e.v; else if (e.v !== 'az') found.sort = (found.sort || 0) + 1; break;
     case 'cart': Object.assign(st, { page: 'cart', menu: false }); break;
     case 'shop': Object.assign(st, { page: 'products', menu: false }); break;
     case 'checkout': Object.assign(st, { page: 'info', err: '' }); Object.assign(st.f, { first: '', last: '', zip: '' }); break;
@@ -1123,7 +1136,7 @@ function smApply(st, e, found) {
       if (!st.err) st.page = 'overview';
       break;
     }
-    case 'finish': Object.assign(st, { page: 'complete', cart: [] }); break;
+    case 'finish': if (errU) found.e500 = (found.e500 || 0) + 1; else Object.assign(st, { page: 'complete', cart: [] }); break;
     case 'home': st.page = 'products'; break;
     case 'logout': Object.assign(st, { page: 'login', user: '', err: '', menu: false }); Object.assign(st.f, { user: '', pass: '' }); break;
     case 'reset': Object.assign(st, { cart: [], sort: 'az', order: 'az', menu: false }); break;
@@ -1223,19 +1236,20 @@ function smCheck() {
   if (!SM.snap) { toast('Əvvəlcə addımları mağazada icra et.'); return; }
   if (!SM.ans.trim()) { toast('Faktiki nəticəni yaz.'); return; }
   if (!SM.status) { toast('Status seç: Passed və ya Failed.'); return; }
-  const T = fz(SM.ans);
+  const T = fz(SM.ans), sb = scBug(sc);
   const rows = Object.keys(SM.snap).map(k => smJudge(T, k, SM.snap[k], sc.expect[k]));
   const truth = Object.keys(sc.expect).every(k => SM.snap[k] === sc.expect[k]) ? 'Passed' : 'Failed';
-  const bug = truth === 'Failed' && SM.status === 'Failed' && sc.bug ? { parts: smBugParts(SM.title, sc.bug), sw: swFind(SM.title, false), empty: !SM.title.trim() } : null;
+  const bug = truth === 'Failed' && SM.status === 'Failed' && sb ? { parts: smBugParts(SM.title, sb), sw: swFind(SM.title, false), empty: !SM.title.trim() } : null;
   const good = rows.every(r => r.ok === true) && SM.status === truth && (!bug || (!bug.empty && bug.parts.every(p => p[1])));
   SM.fb = { rows, truth, sw: swFind(SM.ans, false), bug, good };
-  if (good) SM.passed[sc.id] = 1;
+  if (SM.ver === REL_D.ver) REL.runs[sc.id] = { st: SM.status, truth, good }; // the release panel reads the run from here
+  else if (good) SM.passed[sc.id] = 1;
   const el = $('#sm-fb'); if (el) el.innerHTML = smFbHTML();
   if (SM.rep) brRedraw();
 }
 const smMark = ok => ok === true ? `<span class="sm-ok">${icon('check')}</span>` : ok === 'near' ? '<span class="sm-near">≈</span>' : `<span class="sm-no">${icon('x')}</span>`;
 function smFbHTML() {
-  const f = SM.fb, sc = SM.sc; if (!f) return '';
+  const f = SM.fb, sc = SM.sc, sb = scBug(sc); if (!f) return '';
   const rows = f.rows.map(r => `<li>${smMark(r.ok)}<div><b>${esc(smLabel(r.k))}</b> — ekranda: ${esc(smShow(r.k, r.v))} · ${r.ok === true ? 'yazmısan' : r.ok === 'near' ? 'mətn tam dəqiq deyil, ekrandakı kimi köçür' : 'faktiki nəticədə yoxdur'}${r.note ? `<div class="sm-note">${esc(r.note)}</div>` : ''}</div></li>`).join('');
   const diff = Object.keys(sc.expect).filter(k => SM.snap[k] !== sc.expect[k]).map(k => `${smLabel(k)}: gözlənilən ${smShow(k, sc.expect[k])}, ekranda ${smShow(k, SM.snap[k])}`);
   const stOk = SM.status === f.truth, b = f.bug;
@@ -1245,24 +1259,25 @@ function smFbHTML() {
     ${b ? `<div class="sm-bug"><div class="sm-fb-h">Bug başlığı: [harada] + [nə baş verir] + [hansı şərtdə]</div>
       ${b.empty ? '<p class="muted">Başlıq yazılmayıb.</p>' : `<ul class="sm-rows">${b.parts.map(([n, ok]) => `<li>${smMark(ok)}<div><b>${n}</b>${ok ? '' : ' — başlıqda yoxdur'}</div></li>`).join('')}</ul>`}
       ${b.sw.length ? `<div class="swc">${swList(b.sw)}</div>` : ''}
-      ${SM.rep ? '' : `<div class="row" style="margin-top:10px"><button class="btn" data-act="br-open" data-b="${sc.bug.r}">${icon('bug')}Tam bug report yaz</button></div>`}</div>` : ''}
+      ${SM.rep ? '' : `<div class="row" style="margin-top:10px"><button class="btn" data-act="br-open" data-b="${sb.r}">${icon('bug')}Tam bug report yaz</button></div>`}</div>` : ''}
     ${f.good ? `<div class="sm-good">${icon('check')}Əla — faktiki nəticə ekranla, status gözlənilənlə uyğundur.</div>` : ''}
     <details class="cmp-why sm-model"><summary>${icon('eye')}Ekranda nə vardı? (nümunə cavab)</summary><p>${esc(smList(SM.snap))}.</p>
-      ${sc.bug && f.truth === 'Failed' ? `<p><b>Bug başlığı:</b> ${esc(sc.bug.model)}</p>` : ''}</details>`;
+      ${sb && f.truth === 'Failed' ? `<p><b>Bug başlığı:</b> ${esc(sb.model)}</p>` : ''}</details>`;
 }
 function smDevHTML(st = SM.st) {
   const n = st.cart.length, pg = st.page;
   const btn = (e, label, cls, extra) => `<button class="sm-btn${cls ? ' ' + cls : ''}" data-act="sm" data-e="${e}"${extra || ''}>${label}</button>`;
   const err = st.err ? `<div class="sm-err" role="alert"><span>${esc(st.err)}</span><button data-act="sm" data-e="err-x" aria-label="Bağla">✕</button></div>` : '';
   const inp = (f, type) => `<input class="sm-in${st.err ? ' bad' : ''}" data-sm-f="${f}" type="${type || 'text'}" placeholder="${SM_FIELDS[f]}" value="${esc(st.f[f])}" autocomplete="off" autocapitalize="off" spellcheck="false">`;
-  const line = (p, b) => `<div class="sm-item">${pg === 'products' ? '' : '<span class="sm-qty">1</span>'}<div><div class="sm-name">${esc(p.name)}</div><div class="sm-price">${money(p.price)}</div></div>${b || ''}</div>`;
+  const line = (p, b) => `<div class="sm-item">${pg === 'products' ? '' : '<span class="sm-qty">1</span>'}<div><div class="sm-name">${esc(p.name)}</div><div class="sm-price">${money(smPrice(st, p))}</div></div>${b || ''}</div>`;
   const items = st.cart.map(id => prodById[id]);
-  const total = items.reduce((a, p) => a + p.price, 0), tax = Math.round(total * 8) / 100;
-  if (pg === 'login') return `<div class="sm-logo big">Mini Store</div><div class="sm-body">${inp('user')}${inp('pass', 'password')}${err}${btn('login', 'Login', 'main')}
+  const total = items.reduce((a, p) => a + smPrice(st, p), 0), tax = Math.round(total * 8) / 100;
+  const ver = st.ver === REL_D.ver ? ` <span class="sm-ver">${st.ver}</span>` : '';
+  if (pg === 'login') return `<div class="sm-logo big">Mini Store${ver}</div><div class="sm-body">${inp('user')}${inp('pass', 'password')}${err}${btn('login', 'Login', 'main')}
     <div class="sm-cred"><b>Accepted usernames are:</b><br>${STORE.users.join('<br>')}<br><b>Password for all users:</b><br>${esc(STORE.password)}</div></div>`;
   const body = {
     products: () => smOrder(st).map(p => line(p, st.cart.includes(p.id) ? btn('remove', 'Remove', 'rm', ` data-item="${p.id}" data-where="products"`) : btn('add', 'Add to cart', '', ` data-item="${p.id}" data-where="products"`))).join(''),
-    cart: () => `<div class="sm-ch"><span>QTY</span><span>Description</span></div>${items.map(p => line(p, btn('remove', 'Remove', 'rm', ` data-item="${p.id}" data-where="cart"`))).join('')}
+    cart: () => `<div class="sm-ch"><span>QTY</span><span>Description</span></div>${(st.user === 'error_user' ? items.slice(0, 1) : items).map(p => line(p, btn('remove', 'Remove', 'rm', ` data-item="${p.id}" data-where="cart"`))).join('')}
       <div class="sm-acts">${btn('shop', 'Continue Shopping')}${btn('checkout', 'Checkout', 'main')}</div>`,
     info: () => `${inp('first')}${inp('last')}${inp('zip')}${err}<div class="sm-acts">${btn('cancel', 'Cancel')}${btn('continue', 'Continue', 'main')}</div>`,
     overview: () => `<div class="sm-ch"><span>QTY</span><span>Description</span></div>${items.map(p => line(p)).join('')}
@@ -1270,7 +1285,7 @@ function smDevHTML(st = SM.st) {
       <div class="sm-acts">${btn('cancel', 'Cancel')}${btn('finish', 'Finish', 'main')}</div>`,
     complete: () => `<div class="sm-done-h">Thank you for your order!</div><p class="sm-done-p">Your order has been dispatched.</p>${btn('home', 'Back Home', 'main')}`
   }[pg]();
-  return `<div class="sm-bar"><button class="sm-ib" data-act="sm" data-e="menu" aria-label="Open Menu">☰</button><span class="sm-logo">Mini Store</span>
+  return `<div class="sm-bar"><button class="sm-ib" data-act="sm" data-e="menu" aria-label="Open Menu">☰</button><span class="sm-logo">Mini Store${ver}</span>
       <button class="sm-ib sm-cart" data-act="sm" data-e="cart" aria-label="Səbət">${icon('cart')}${n ? `<span class="sm-badge">${n}</span>` : ''}</button></div>
     ${st.menu ? `<div class="sm-menu"><button data-act="sm" data-e="shop">All Items</button><button data-act="sm" data-e="logout">Logout</button><button data-act="sm" data-e="reset">Reset App State</button></div>` : ''}
     <div class="sm-ph"><span class="sm-title">${SM_PAGES[pg]}</span>${pg === 'products' ? `<select class="sm-sort" data-sm-sort aria-label="Sıralama">${SM_SORTS.map(([v, l]) => `<option value="${v}"${st.sort === v ? ' selected' : ''}>${l}</option>`).join('')}</select>` : ''}</div>
@@ -1284,11 +1299,11 @@ function smCaseHTML() {
       <div class="sm-state${got.length === ids.length ? ' ok' : ''}">Tapılan bug-lar: <b>${got.length}/${ids.length}</b>${got.length ? `<ul class="sm-found">${got.map(k => `<li>${icon('check')}<div><span>${esc(STORE.bugs[k])}</span>${SM.rep && SM.rep.bid === k ? '' : `<button class="btn sm" data-act="br-open" data-b="${k}">${icon('bug')}Bug report yaz</button>`}</div></li>`).join('')}</ul>` : '<br>Bug tapanda burada görünəcək. Hər tapıntı üçün tam bug report yaz: başlıq 12.2-dəki formula ilə.'}</div>
       <div class="row" style="margin-top:10px"><button class="btn sm ghost" data-act="sm-restart">${icon('refresh')}Mağazanı sıfırla</button></div></div>`;
   }
-  const n = sc.steps.length;
+  const n = sc.steps.length, role = SM.ver === REL_D.ver ? relRole(sc.id) : '';
   const state = SM.off ? `<div class="sm-state off">${icon('x')}Bu hərəkət növbəti addım deyildi və ekranı dəyişdi — nəticə artıq bu test case-in nəticəsi deyil. “Yenidən başla” bas.</div>`
     : SM.snap ? `<div class="sm-state ok">${icon('check')}Son addımdan sonrakı ekran qeydə alındı. İndi faktiki nəticəni yaz: ekranda nə görünür?</div>`
     : `<div class="sm-state">Addımları aşağıdakı mağazada icra et: ${SM.done}/${n}.</div>`;
-  return `<div class="card sm-case"><div class="sm-id">${tcName(sc.id)}</div><h2 class="sm-t">${esc(sc.title)}</h2>
+  return `<div class="card sm-case"><div class="sm-id">${tcName(sc.id)}${SM.ver === REL_D.ver ? ` · Mini Store ${SM.ver}${role ? ' · ' + esc(role) : ''}` : ''}</div><h2 class="sm-t">${esc(sc.title)}</h2>
     <dl class="sm-dl"><dt>İlkin şərt</dt><dd>${esc(sc.pre)}</dd>
       ${sc.data.length ? `<dt>Test data</dt><dd><table class="sm-data">${sc.data.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table></dd>` : ''}
       <dt>Addımlar</dt><dd><ol class="sm-steps">${sc.steps.map((s, i) => `<li class="${i < SM.done ? 'done' : i === SM.done && !SM.snap ? 'cur' : ''}">${esc(s.t)}${i < SM.done ? ` ${icon('check')}` : ''}</li>`).join('')}</ol></dd>
@@ -1308,16 +1323,22 @@ function smResHTML() {
 function smRedraw(typing) {
   const cs = $('#sm-case'); if (cs) cs.innerHTML = smCaseHTML();
   const dv = $('#sm-dev'); if (dv && !typing) dv.innerHTML = smDevHTML();
+  if (!typing) dvtRedraw();
 }
 function vStore(v) {
-  const id = scById[S.params.sc] ? S.params.sc : null;
-  if (SM.id !== id) smStart(id);
-  const sc = SM.sc;
-  setHeader({ back: true, kicker: 'Məşq mağazası', name: sc ? `${tcName(sc.id)} · ${sc.title}` : STORE.free.title });
-  const pick = [`<button class="chip${sc ? '' : ' acc'}" data-act="sm-open" data-sc="">${icon('search')}Kəşfiyyat</button>`]
-    .concat(STORE.scenarios.map(x => `<button class="chip${x === sc ? ' acc' : SM.passed[x.id] ? ' pass' : ''}" data-act="sm-open" data-sc="${x.id}">${SM.passed[x.id] ? icon('check') : ''}${tcName(x.id)}</button>`)).join('');
-  v.innerHTML = `<p class="muted sm-intro">Mini Store — saucedemo.com-dakı mağazaya bənzəyən sadələşdirilmiş model (real sayt deyil). Test case-in addımlarını burada icra et, faktiki nəticəni yaz: kitab onu ekranda olanla tutuşdurur.</p>
-    <div class="sm-pick">${pick}</div><div id="sm-case">${smCaseHTML()}</div><div class="sm-dev" id="sm-dev">${smDevHTML()}</div>
+  const id = scById[S.params.sc] ? S.params.sc : null, ver = id && S.params.ver === REL_D.ver ? REL_D.ver : '1.0';
+  if (SM.id !== id || SM.ver !== ver || SM.dv) smStart(id, ver);
+  const sc = SM.sc, rel = SM.ver === REL_D.ver;
+  setHeader({ back: true, kicker: rel ? `Reliz testi · ${SM.ver}` : 'Məşq mağazası', name: sc ? `${tcName(sc.id)} · ${sc.title}` : STORE.free.title });
+  // build 1.1: the chips keep the version, their marks are the release runs
+  const mark = x => (rel ? REL.runs[x.id] && REL.runs[x.id].good : SM.passed[x.id]) ? ' pass' : '';
+  const pick = (rel ? [] : [`<button class="chip${sc ? '' : ' acc'}" data-act="sm-open" data-sc="">${icon('search')}Kəşfiyyat</button>`])
+    .concat(STORE.scenarios.map(x => `<button class="chip${x === sc ? ' acc' : mark(x)}" data-act="sm-open" data-sc="${x.id}"${rel ? ` data-ver="${SM.ver}"` : ''}>${mark(x) ? icon('check') : ''}${tcName(x.id)}</button>`)).join('');
+  const intro = rel ? `<div class="card rel-bar">${icon('layers')}<div><b>Mini Store ${SM.ver} — reliz testi</b><span>Test case-i yeni build-də icra et, faktiki nəticəni və statusu yaz, “Yoxla” bas — nəticə reliz panelinə düşür.</span></div>
+      <button class="btn sm" data-act="rel-open">${icon('back')}Reliz paneli</button></div>`
+    : '<p class="muted sm-intro">Mini Store — saucedemo.com-dakı mağazaya bənzəyən sadələşdirilmiş model (real sayt deyil). Test case-in addımlarını burada icra et, faktiki nəticəni yaz: kitab onu ekranda olanla tutuşdurur.</p>';
+  v.innerHTML = `${intro}
+    <div class="sm-pick">${pick}</div><div id="sm-case">${smCaseHTML()}</div><div class="sm-dev" id="sm-dev">${smDevHTML()}</div>${dvtBoxHTML()}
     ${sc ? `<div class="card sm-res">${smResHTML()}</div>` : ''}<div id="br">${brHTML()}</div>`;
 }
 /* full bug report (store.json "reports"): every field of 12.1 for one planted bug, checked field by field. The screenshot
@@ -1327,10 +1348,11 @@ const BR_SEV = ['Blocker', 'Critical', 'Major', 'Minor', 'Trivial'], BR_PRI = ['
 const BR_F = { title: 'Başlıq (Summary)', env: 'Mühit (Environment)', sev: 'Severity', pri: 'Priority (təklif)', pre: 'İlkin şərtlər',
   steps: 'Təkrarlama addımları', exp: 'Gözlənilən nəticə', act: 'Faktiki nəticə', freq: 'Təkrarlanma tezliyi', shot: 'Əlavələr (sübut)' };
 const BR_SEEN = { add: st => st.page === 'products', remove: st => st.page === 'products' && st.cart.includes('bikelight'),
-  sort: st => st.page === 'products' && st.sort !== 'az', last: st => st.page === 'info' && !st.f.last };
+  sort: st => st.page === 'products' && st.sort !== 'az', last: st => st.page === 'info' && !st.f.last,
+  rmcart: st => st.page === 'cart' && st.ver === REL_D.ver && st.cart.length > 0 };
 const BR_ENV = /(chrome|firefox|safari|edge|opera|yandex|brauzer|windows|android|ios|iphone|ipad|macos|mac os|linux)/;
 function brOpen(bid) {
-  const sc = !!(SM.sc && SM.sc.bug && SM.sc.bug.r === bid);
+  const sb = scBug(SM.sc), sc = !!(sb && sb.r === bid);
   SM.rep = { bid, sc, f: { title: sc ? SM.title : '', env: '', sev: '', pri: '', pre: '', steps: '', exp: '', act: '', freq: '' }, shot: null, fb: null };
 }
 const brSteps = t => String(t || '').split(/\n+|\s+(?=\d+[).]\s)/).map(x => x.replace(/^\s*\d+[).]\s*/, '').trim()).filter(Boolean);
@@ -1343,9 +1365,9 @@ function uaEnv() {
   return [os, b].filter(Boolean).join(', ') || 'ƏS və brauzer';
 }
 function brShot() {
-  const r = SM.rep, st = JSON.parse(JSON.stringify(SM.st));
+  const r = SM.rep, st = JSON.parse(JSON.stringify(SM.st)), u = REP[r.bid].user; // u: the only user the bug happens to ('' = anyone)
   const d = new Date();
-  r.shot = { st, ok: !!SM.found[r.bid] && st.user === 'problem_user' && BR_SEEN[r.bid](st), at: [d.getHours(), d.getMinutes(), d.getSeconds()].map(pad2).join(':') };
+  r.shot = { st, ok: !!SM.found[r.bid] && (!u || st.user === u) && BR_SEEN[r.bid](st), at: [d.getHours(), d.getMinutes(), d.getSeconds()].map(pad2).join(':') };
 }
 function brCheck() {
   const r = SM.rep, R = REP[r.bid], f = r.f, rows = [];
@@ -1428,6 +1450,313 @@ function brRedraw() { const el = $('#br'); if (el) el.innerHTML = brHTML(); }
 const simHTML = s => s.sim ? `<div class="sm-link"><div class="srt-k">${icon('play')}Məşq mağazası</div><p class="srt-hint">Bu test case-ləri mağaza modelində icra et və faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur.</p>
   <div class="sm-links">${s.sim.map(id => id === 'free' ? `<button class="btn sm" data-act="sm-open" data-sc="">${icon('search')}${esc(STORE.free.title)}</button>`
     : `<button class="btn sm" data-act="sm-open" data-sc="${id}"><b>${tcName(id)}</b> ${esc(scById[id].title)}</button>`).join('')}</div></div>` : '';
+/* ---------- release test (store.json "release"): build 1.1 of the practice store arrives with three fixes. Smoke, retest,
+   regression and the recommendation, in the order of 6.3; every test case runs in the store on build 1.1 and its
+   checked run (status, truth) lands in REL.runs ---------- */
+const relFresh = () => ({ map: {}, mapChk: false, verdict: {}, reg: {}, regFb: false, regChk: false, runs: {}, go: '', why: {}, fb: null });
+const REL = relFresh(); // session only
+const relTk = REL_D.tickets, relCand = Object.keys(REL_D.regression);
+const REL_ST = [['Smoke test', 'Build test üçün yararlıdırmı?', 'Komandanın smoke dəsti: giriş, səbətə əlavə, səbət səhifəsi. Geniş, amma dayaz yoxlama (6.3) — biri düşsə, build test üçün qəbul olunmur və geri qaytarılır.'],
+  ['Retest', 'Düzəlişlər işləyirmi?', 'Hər “Fixed” defekt bug report-dakı eyni addımlar və eyni data ilə yoxlanılır. Keçdisə — Verified, düşdüsə — Reopened (12.6).'],
+  ['Regression', 'Başqa yer sınmayıb?', 'Hamısını yox, dəyişikliyin toxunduğu sahələri seç (təsir analizi): reliz qeydlərində nəyin dəyişdiyinə bax. Smoke dəstindəki test case-lər artıq icra olunub.'],
+  ['Tövsiyə', 'Reliz olar?', 'Tester relizi özü dayandırmır: faktları və tövsiyəsini komandaya verir, son qərarı Product Owner verir.']];
+const REL_ORD = ['1-ci', '2-ci', '3-cü'];
+// the role a test case plays in this release, once the reader has planned it
+function relRole(id) {
+  const t = REL.mapChk && relTk.find(x => x.tc === id);
+  return REL_D.smoke.includes(id) ? 'Smoke' : t ? 'Retest ' + t.key : REL.regChk && REL.reg[id] ? 'Regression' : '';
+}
+const relSel = () => relCand.filter(id => REL.reg[id]);
+function relDone() {
+  const s1 = REL_D.smoke.every(id => REL.runs[id]);
+  const s2 = s1 && REL.mapChk && relTk.every(t => REL.verdict[t.bug]);
+  const s3 = s2 && REL.regChk && relSel().every(id => REL.runs[id]);
+  return [s1, s2, s3, s3 && !!REL.fb];
+}
+// build 1.1 is not ready while a fix failed its retest or the regression broke something
+const relGoTruth = () => !Object.keys(REL_D.bugs).length && relTk.every(t => t.verdict === 'Verified');
+function relRunHTML(id, on) {
+  const r = REL.runs[id];
+  const res = r ? `<span class="chip ${r.st === 'Passed' ? 'pass' : 'fail'}">${r.st}</span>` : '<span class="chip">icra olunmayıb</span>';
+  return `<li class="rel-run"><div class="rel-tc"><b>${tcName(id)}</b> ${esc(scById[id].title)}${r && r.st !== r.truth ? '<div class="sm-note">Status ekranla uyğun deyil — test case-i yenidən icra et.</div>' : ''}</div>
+    <div class="rel-res">${res}<button class="btn sm${r ? ' ghost' : ''}" data-act="rel-run" data-sc="${id}"${on ? '' : ' disabled'}>${icon(r ? 'refresh' : 'play')}${r ? 'Yenidən' : 'İcra et'}</button></div></li>`;
+}
+function relNotesHTML() {
+  const tk = (t, cls, extra) => `<li${cls ? ` class="${cls}"` : ''}><div class="rel-tk-h"><span class="chip acc">${t.key}</span><span class="chip${cls ? ' warn' : ''}">${esc(t.status)}</span></div>
+    <div class="rel-tk-t">${esc(STORE.bugs[t.bug])}</div><div class="rel-ch">${icon(cls ? 'clock' : 'pencil')}<span>${esc(extra)}</span></div></li>`;
+  return `<div class="srt-k">${icon('list')}Reliz qeydləri <span lang="en">(release notes) · Mini Store ${REL_D.ver}</span></div>
+    <ul class="rel-notes">${relTk.map(t => tk(t, '', t.change)).join('')}${REL_D.deferred.map(t => tk(t, 'def', t.note)).join('')}</ul>`;
+}
+function relSmokeHTML() {
+  const done = REL_D.smoke.every(id => REL.runs[id]), ok = REL_D.smoke.every(id => REL.runs[id] && REL.runs[id].truth === 'Passed');
+  return `<ul class="rel-runs">${REL_D.smoke.map(id => relRunHTML(id, true)).join('')}</ul>
+    ${done ? `<div class="sm-state ${ok ? 'ok' : 'off'}">${icon(ok ? 'check' : 'x')}${ok ? 'Smoke keçdi: build test üçün yararlıdır — retest-ə keç.' : 'Smoke düşdü: build test üçün yararlı deyil.'}</div>` : ''}`;
+}
+function relVerdictNote(t, v) {
+  if (t.verdict === 'Verified') return v === 'Verified' ? 'Retest keçdi: defekt bu build-də təkrarlanmır → Verified, sonra Closed.'
+    : `${tcName(t.tc)} build ${REL_D.ver}-də keçdi (Passed): defekt düzəlib — Verified. Reopened yalnız retest düşəndə olur.`;
+  return v === 'Reopened' ? 'Retest düşdü: defekt eyni addımlarla yenə təkrarlanır → Reopened, defekt proqramçıya qayıdır. Şərhdə build-i və faktiki nəticəni yaz.'
+    : `${tcName(t.tc)} build ${REL_D.ver}-də düşdü (Failed): defekt qalır — Reopened. “Fixed” statusu düzəlişin işlədiyini sübut etmir.`;
+}
+function relRetestHTML(on) {
+  const opts = bug => STORE.scenarios.map(x => `<option value="${x.id}"${REL.map[bug] === x.id ? ' selected' : ''}>${tcName(x.id)} · ${esc(x.title)}</option>`).join('');
+  const rows = relTk.map(t => {
+    const ok = REL.map[t.bug] === t.tc, r = REL.runs[t.tc], v = REL.verdict[t.bug];
+    const after = !REL.mapChk ? '' : `<div class="sm-st ${ok ? 'ok' : 'no'}">${smMark(ok)}<div>${ok ? `Düzdür: ${tcName(t.tc)} bug report-dakı addımları və datanı təkrarlayır.` : `Düzgün seçim — ${tcName(t.tc)}: retest bug report-dakı eyni addımlar və eyni data ilə aparılır.`}</div></div>
+      <ul class="rel-runs">${relRunHTML(t.tc, on)}</ul>
+      <div class="br-f"><span class="br-l">Retest-in nəticəsi — defektin yeni statusu</span><div class="seg rel-seg">${['Verified', 'Reopened'].map(x => `<button data-act="rel-verdict" data-b="${t.bug}" data-v="${x}" aria-pressed="${v === x}"${r ? '' : ' disabled'}>${x}</button>`).join('')}</div></div>
+      ${v ? `<div class="sm-st ${v === t.verdict ? 'ok' : 'no'}">${smMark(v === t.verdict)}<div>${esc(relVerdictNote(t, v))}</div></div>` : r ? '' : '<p class="muted rel-hint">Əvvəlcə test case-i build 1.1-də icra et.</p>'}`;
+    return `<li class="rel-tk"><div class="rel-tk-h"><span class="chip acc">${t.key}</span><span class="rel-tk-t">${esc(STORE.bugs[t.bug])}</span></div>
+      <label class="br-f"><span class="br-l">Hansı test case ilə retest edəcəksən?</span><select class="field br-sel" data-rel-map="${t.bug}"${on && !REL.mapChk ? '' : ' disabled'}><option value="">— seç —</option>${opts(t.bug)}</select></label>${after}</li>`;
+  }).join('');
+  return `<ul class="rel-tks">${rows}</ul>${REL.mapChk ? '' : `<div class="row"><button class="btn primary" data-act="rel-map"${on ? '' : ' disabled'}>${icon('check')}Seçimi yoxla</button></div>`}`;
+}
+function relRegHTML(on) {
+  const rows = relCand.map(id => {
+    const c = REL_D.regression[id], s = !!REL.reg[id];
+    const fb = REL.regFb ? (c.need ? `<div class="sm-note${s ? ' i' : ''}">${s ? '' : 'Mütləq seç: '}${esc(c.why)}</div>` : `<div class="sm-note i">${esc(c.why)}</div>`) : '';
+    return `<li><label class="rel-pick${REL.regFb ? (c.need && !s ? ' miss' : '') : ''}"><input type="checkbox" data-rel-reg="${id}"${s ? ' checked' : ''}${on && !REL.regChk ? '' : ' disabled'}>
+      <span><b>${tcName(id)}</b> ${esc(scById[id].title)}${fb}</span>${REL.regFb && c.need ? smMark(s) : ''}</label></li>`;
+  }).join('');
+  const found = relSel().filter(id => REL.runs[id] && REL.runs[id].st === 'Failed' && REL.runs[id].truth === 'Failed');
+  return `<ul class="rel-picks">${rows}</ul>
+    ${REL.regChk ? `<div class="sm-state ok">${icon('check')}Plan hazırdır: ${relSel().length} test case. İndi onları build ${REL_D.ver}-də icra et.</div>
+      <ul class="rel-runs">${relSel().map(id => relRunHTML(id, on)).join('')}</ul>
+      ${found.length ? `<div class="sm-state off">${icon('bug')}Yeni defekt (regression): ${found.map(tcName).join(', ')}. Test case-i yenidən aç və “Tam bug report yaz” ilə hesabat yaz.</div>` : ''}`
+    : `${REL.regFb ? `<div class="sm-state off">${icon('x')}Dəyişikliyin toxunduğu bütün sahələr seçilməyib — planı düzəlt və yenidən yoxla.</div>` : ''}
+      <div class="row"><button class="btn primary" data-act="rel-plan"${on ? '' : ' disabled'}>${icon('check')}Planı yoxla</button></div>`}`;
+}
+// the facts the reader collected: failed smoke / regression runs, reopened fixes, known open defects
+function relFacts() {
+  const f = Object.keys(REL.runs).filter(id => !relTk.some(t => t.tc === id) && REL.runs[id].st === 'Failed')
+    .map(id => ({ id, t: `${tcName(id)} düşdü (Failed): ${scById[id].title}`, need: REL.runs[id].truth === 'Failed', why: REL.runs[id].truth === 'Failed' ? REL_D.blockWhy : 'Bu test case əslində keçib: statusu ekranla yoxla.' }));
+  relTk.filter(t => REL.verdict[t.bug] === 'Reopened').forEach(t => f.push({ id: t.bug, t: `${t.key} retest-dən keçmədi (Reopened)`, need: t.verdict === 'Reopened', why: t.verdict === 'Reopened' ? REL_D.reopenWhy : 'Retest əslində keçib — defekt Verified-dir.' }));
+  REL_D.deferred.forEach(t => f.push({ id: t.bug, t: `${t.key} hələ açıqdır (${t.status}): ${STORE.bugs[t.bug]}`, need: false, why: REL_D.deferredWhy }));
+  return f;
+}
+function relJudge() {
+  const facts = relFacts(), go = relGoTruth() ? 'go' : 'nogo';
+  const rows = facts.map(x => ({ t: x.t, ok: !!REL.why[x.id] === x.need, note: !!REL.why[x.id] === x.need ? '' : x.why }));
+  // blockers the reader never wrote down (a wrong status or verdict hid them)
+  const miss = [];
+  Object.keys(REL_D.bugs).forEach(id => { if (!(REL.runs[id] && REL.runs[id].st === 'Failed')) miss.push(`${tcName(id)}: ${REL_D.bugs[id].model}`); });
+  relTk.filter(t => t.verdict === 'Reopened' && REL.verdict[t.bug] !== 'Reopened').forEach(t => miss.push(`${t.key} retest-dən keçmir — Reopened olmalıdır.`));
+  const dec = REL.go === go;
+  return { dec, rows, miss, good: dec && rows.every(r => r.ok) && !miss.length };
+}
+function relMd() {
+  const row = (id, kind) => `| ${tcName(id)} ${scById[id].title} | ${kind} | ${REL.runs[id] ? REL.runs[id].st : '—'} |`;
+  const lines = ['## Test hesabatı: Mini Store ' + REL_D.ver, '', '| Test case | Növ | Status |', '| --- | --- | --- |']
+    .concat(REL_D.smoke.map(id => row(id, 'Smoke')), relTk.map(t => row(t.tc, 'Retest ' + t.key)), relSel().map(id => row(id, 'Regression')));
+  const newBugs = relSel().filter(id => REL.runs[id] && REL.runs[id].st === 'Failed').map(id => `${tcName(id)} — yeni defekt (regression)`);
+  const facts = relFacts().filter(x => REL.why[x.id]).map(x => x.t);
+  return lines.concat(['', `**Defektlər:** ${relTk.map(t => `${t.key} — ${REL.verdict[t.bug] || '?'}`).concat(newBugs).join('; ')}.`,
+    `**Bu relizə düşməyib:** ${REL_D.deferred.map(t => `${t.key} (${t.status})`).join(', ')}.`,
+    `**Tövsiyə:** ${REL.go === 'go' ? 'reliz olar' : REL.go === 'nogo' ? 'reliz olmaz' : '—'}${facts.length ? ' — ' + facts.join('; ') : ''}.`, '', 'Son qərarı Product Owner verir.']).join('\n');
+}
+function relDecHTML() {
+  const facts = relFacts(), b = REL.fb;
+  return `<div class="br-f"><span class="br-l">Tövsiyən</span><div class="seg rel-seg">${[['go', 'Reliz olar'], ['nogo', 'Reliz olmaz']].map(([k, l]) => `<button data-act="rel-go" data-v="${k}" aria-pressed="${REL.go === k}">${l}</button>`).join('')}</div></div>
+    <div class="br-f"><span class="br-l">Hansı faktlara əsaslanırsan?</span><ul class="rel-picks">${facts.map(x => `<li><label class="rel-pick"><input type="checkbox" data-rel-why="${x.id}"${REL.why[x.id] ? ' checked' : ''}><span>${esc(x.t)}</span></label></li>`).join('')}</ul></div>
+    <div class="row"><button class="btn primary" data-act="rel-check">${icon('check')}Tövsiyəni yoxla</button></div>
+    <div id="rel-fb" class="sm-fb" aria-live="polite">${b ? `<div class="sm-st ${b.dec ? 'ok' : 'no'}">${smMark(b.dec)}<div><b>${relGoTruth() ? 'Reliz olar' : 'Reliz olmaz'}</b> — ${esc(REL_D.decision)}</div></div>
+      <ul class="sm-rows">${b.rows.map(r => `<li>${smMark(r.ok)}<div>${esc(r.t)}${r.note ? `<div class="sm-note">${esc(r.note)}</div>` : ''}</div></li>`).join('')}</ul>
+      ${b.miss.length ? `<div class="sm-state off">${icon('x')}Gözdən qaçıb: ${esc(b.miss.join(' '))}</div>` : ''}
+      ${b.good ? `<div class="sm-good">${icon('check')}Əla — tövsiyən faktlara əsaslanır: komanda nəyin, niyə hazır olmadığını görür.</div>` : ''}
+      <details class="cmp-why sm-model"><summary>${icon('eye')}Nümunə tövsiyə</summary><p>${esc(REL_D.model)}</p></details>
+      <div class="sm-fb-h">Test hesabatı <span lang="en">(test completion report)</span></div><pre class="rel-md">${esc(relMd())}</pre>
+      <div class="row"><button class="btn" data-act="rel-copy">${icon('copy')}Markdown kimi kopyala</button></div>` : ''}</div>`;
+}
+function relStageHTML(i, on, done, body) {
+  const [name, q, hint] = REL_ST[i];
+  return `<section class="card rel-st${on ? '' : ' off'}${done ? ' done' : ''}" id="rel-${i + 1}"><div class="rel-sh"><span class="rel-n">${done ? icon('check') : i + 1}</span><div><b>${name}</b><span>${q}</span></div></div>
+    <p class="rel-p">${hint}</p>${on ? body : `<p class="muted rel-lock">Əvvəlcə ${REL_ORD[i - 1]} mərhələni bitir.</p>`}</section>`;
+}
+function vRelease(v) {
+  setHeader({ back: true, kicker: 'Reliz testi', name: `Mini Store ${REL_D.ver} · smoke, retest, regression` });
+  const [d1, d2, d3, d4] = relDone();
+  v.innerHTML = `<p class="muted sm-intro">${esc(REL_D.intro)}</p>
+    <div class="card rel-card">${relNotesHTML()}</div>
+    ${relStageHTML(0, true, d1, relSmokeHTML())}${relStageHTML(1, d1, d2, relRetestHTML(d1))}${relStageHTML(2, d2, d3, relRegHTML(d2))}${relStageHTML(3, d3, d4, relDecHTML())}
+    <div class="row"><button class="btn sm ghost" data-act="rel-reset">${icon('refresh')}Yenidən başla</button></div>`;
+}
+const relLinkHTML = s => s.rel ? `<div class="sm-link"><div class="srt-k">${icon('layers')}Reliz testi</div><p class="srt-hint">Mini Store ${REL_D.ver} gəldi: üç düzəliş, bir gizli regression. Smoke, retest, regression və reliz tövsiyəsini bir build üzərində ardıcıl et.</p>
+  <div class="sm-links"><button class="btn sm" data-act="rel-open">${icon('layers')}Reliz panelini aç</button></div></div>` : '';
+/* ---------- DevTools (devtools.json): the practice store's Network and Console panels, as in Chrome (13.9). The shop
+   talks to the practice API (api.json); every event logs the requests it sent and the console lines it printed. A planted
+   bug's request or console line carries the bug's key. The tasks are user complaints: reproduce, find the evidence,
+   place it in 13.10's table ---------- */
+const DVD = BOOK.devtools;
+const dvById = Object.fromEntries(DVD.tasks.map(t => [t.id, t]));
+const DVS = { id: null, req: '', con: '', row: -1, side: '', fb: null, done: {} }; // session only
+const SITE_URL = 'https://ministore.test';
+const DVT_F = [['all', 'All'], ['xhr', 'Fetch/XHR'], ['doc', 'Doc']];
+const dvName = id => id.replace(/^dv/, 'DV-');
+const pidOf = id => STORE.products.findIndex(p => p.id === id) + 1;
+const dvtTok = u => 'tok_' + ([...u].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7) >>> 0).toString(16).padStart(8, '0').slice(-8);
+const dvtName = x => x.url.replace(/^https:\/\/[^/]+/, '') || '/';
+const dvtProducts = st => STORE.products.map(p => ({ id: pidOf(p.id), name: p.name, price: smPrice(st, p) }));
+function dvtCart(st, ids) { const items = (ids || st.cart).map(id => ({ id: pidOf(id), name: prodById[id].name, price: smPrice(st, prodById[id]) })); return { items, total: round2(items.reduce((a, p) => a + p.price, 0)) }; }
+function dvtCon(lvl, t, src, bug) { const D = SM.dvt; D.con.push({ n: ++D.seq, lvl, t, src, bug: bug || null }); }
+// one request; a failed fetch also prints its line in the console, as Chrome does
+function dvtReq(type, m, url, st, body, res, bug) {
+  const D = SM.dvt, n = ++D.seq;
+  D.net.push({ n, type, m, url, st, body: body || null, res, bug: bug || null, user: SM.st.user, ms: type === 'document' ? 24 + n * 17 % 60 : 70 + n * 37 % 190 + (st >= 500 ? 420 : 0) });
+  if (st >= 400) dvtCon('error', `${m} ${url} ${st} (${HTTP_TXT[st]})`, 'api.js:18', bug);
+}
+const dvtApi = (m, path, st, body, res, bug) => dvtReq('fetch', m, API.baseUrl + path, st, body, res, bug);
+// a page load: the document, then the page's own requests. A new page clears both logs first unless Preserve log is on
+function dvtLoad(st, nav) {
+  const D = SM.dvt;
+  if (nav && !D.keep) Object.assign(D, { net: [], con: [], sel: null });
+  dvtReq('document', 'GET', SITE_URL + TR_URL[st.page], 200, null, null);
+  if (st.page === 'products') dvtApi('GET', '/products', 200, null, dvtProducts(st), st.user === 'error_user' ? 'eprice' : null);
+  if (['products', 'cart', 'overview'].includes(st.page)) dvtApi('GET', '/cart', 200, null, dvtCart(st), st.page === 'cart' && st.user === 'error_user' && st.cart.length > 1 ? 'eview' : null);
+}
+function dvtReset() { Object.assign(SM.dvt, { net: [], con: [], sel: null }); dvtLoad(SM.st); }
+// what the shop sent for one event (smApply already ran); fired(k): planted bug k happened just now
+function dvtEvent(e, b0, fired) {
+  const st = SM.st;
+  if (e.ev === 'login' && e.user && e.pass) { // empty fields are caught by the form itself: nothing is sent
+    const code = !st.err ? 200 : /locked out/.test(st.err) ? 403 : 401;
+    dvtApi('POST', '/login', code, { username: e.user, password: e.pass }, code === 200 ? { token: dvtTok(e.user), username: e.user } : { error: st.err.replace(/^Epic sadface: /, '') });
+  } else if (e.ev === 'add') {
+    if (fired('add')) dvtCon('error', "Uncaught TypeError: Cannot read properties of undefined (reading 'id')", 'inventory.js:57', 'add');
+    else if (fired('e400')) dvtApi('POST', '/cart', 400, { product_id: pidOf(e.item) }, { error: 'productId is required' }, 'e400');
+    else dvtApi('POST', '/cart', 201, { productId: pidOf(e.item) }, dvtCart(st));
+  } else if (e.ev === 'remove' && !fired('remove')) { // problem_user's Remove on Products fails in the page: nothing is sent
+    dvtApi('DELETE', '/cart/' + pidOf(e.item), 200, null, dvtCart(st));
+  } else if (e.ev === 'finish') {
+    const f = st.f, body = { firstName: f.first || 'Ali', lastName: f.last || 'Aliyev', zip: f.zip || '1000' }; // a case that starts on Overview filled the form before
+    if (fired('e500')) dvtApi('POST', '/orders', 500, body, { error: 'Internal Server Error' }, 'e500');
+    else { const c = dvtCart(st, b0.cart); dvtApi('POST', '/orders', 201, body, Object.assign({ id: 1000 + SM.dvt.seq }, body, c, { tax: round2(c.total * 0.08), status: 'created' })); }
+  }
+  if (st.page !== b0.page) dvtLoad(st, true);
+}
+function dvtHdrs(x) {
+  if (x.type === 'document') return [['accept', 'text/html']];
+  const p = dvtName(x);
+  return [['accept', 'application/json']].concat(/^\/(cart|orders)/.test(p) ? [['authorization', 'Bearer ' + dvtTok(x.user)]] : [], x.body ? [['content-type', 'application/json']] : []);
+}
+// Copy as cURL (bash), the way Chrome writes it
+function dvtCurl(x) {
+  const q = s => `'${String(s).replace(/'/g, "'\\''")}'`;
+  return [`curl ${q(x.url)}`].concat(x.m !== 'GET' ? [`-X ${x.m}`] : [], dvtHdrs(x).map(([k, v]) => `-H ${q(k + ': ' + v)}`), x.body ? [`--data-raw ${q(JSON.stringify(x.body))}`] : []).join(' \\\n  ');
+}
+function dvtReqHTML(x) {
+  const D = SM.dvt, tabs = [['hdrs', 'Headers']].concat(x.body ? [['pay', 'Payload']] : [], [['res', 'Response']]);
+  const sub = tabs.some(t => t[0] === D.sub) ? D.sub : 'hdrs';
+  const kv = rows => `<table class="dvt-kv">${rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table>`;
+  const body = sub === 'hdrs' ? `<div class="dvt-sh">General</div>${kv([['Request URL', x.url], ['Request Method', x.m], ['Status Code', `${x.st} ${HTTP_TXT[x.st]}`]])}
+      <div class="dvt-sh">Response Headers</div>${kv([['content-type', x.type === 'document' ? 'text/html; charset=utf-8' : 'application/json; charset=utf-8']])}
+      <div class="dvt-sh">Request Headers</div>${kv(dvtHdrs(x))}`
+    : `<pre class="dvt-pre">${sub === 'pay' ? jsonHL(JSON.stringify(x.body, null, 2)) : x.type === 'document' ? '&lt;!doctype html&gt;&lt;html lang="en"&gt;…&lt;/html&gt;' : jsonHL(JSON.stringify(x.res, null, 2))}</pre>`;
+  return `<div class="dvt-req"><div class="dvt-rh"><b><span class="dvt-m">${x.m}</span> ${esc(dvtName(x))}</b><button class="btn sm ghost" data-act="dvt-curl" data-n="${x.n}">${icon('copy')}Copy as cURL</button></div>
+    <div class="dvt-sub" role="group" aria-label="Sorğunun hissələri">${tabs.map(([k, l]) => `<button data-act="dvt-sub" data-v="${k}" aria-pressed="${sub === k}">${l}</button>`).join('')}</div>${body}</div>`;
+}
+function dvtNetHTML() {
+  const D = SM.dvt, list = D.net.filter(x => D.filter === 'all' || (D.filter === 'xhr') === (x.type === 'fetch')), x = D.net.find(y => y.n === D.sel);
+  const rows = list.map(y => `<tr class="${y.st >= 400 ? 'bad' : ''}${y.n === D.sel ? ' sel' : ''}"><td><button class="dvt-nm" data-act="dvt-req" data-n="${y.n}">${esc(dvtName(y))}</button></td><td>${y.st}</td><td>${y.type}</td><td>${y.ms} ms</td></tr>`).join('');
+  return `<div class="dvt-flt">${dvtToolHTML()}<span class="dvt-sep" aria-hidden="true"></span>${DVT_F.map(([k, l]) => `<button data-act="dvt-filter" data-v="${k}" aria-pressed="${D.filter === k}">${l}</button>`).join('')}</div>
+    ${list.length ? `<div class="dvt-scroll"><table class="dvt-tbl"><thead><tr><th>Name</th><th>Status</th><th>Type</th><th>Time</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      : `<p class="dvt-empty">${D.net.length ? 'Bu filtrdə sorğu yoxdur.' : 'Sorğu yoxdur. Mağazada bir hərəkət et — sorğular burada görünəcək.'}</p>`}
+    <div class="dvt-foot">${list.length} / ${D.net.length} requests</div>${x ? dvtReqHTML(x) : ''}`;
+}
+function dvtConHTML() {
+  const C = SM.dvt.con;
+  return `<div class="dvt-flt">${dvtToolHTML()}</div>` + (C.length ? `<ul class="dvt-con">${C.map(c => `<li class="${c.lvl}"><span class="dvt-ci">${c.lvl === 'error' ? icon('x') : ''}</span><span class="dvt-msg">${esc(c.t)}</span><span class="dvt-src">${esc(c.src)}</span></li>`).join('')}</ul>`
+    : '<p class="dvt-empty">Konsol boşdur.</p>');
+}
+// Clear empties the open panel; Preserve log keeps both logs when the page changes
+const dvtToolHTML = () => `<button class="dvt-clr" data-act="dvt-clear">Clear</button><label class="dvt-keep"><input type="checkbox" data-dvt-keep${SM.dvt.keep ? ' checked' : ''}>Preserve log</label>`;
+function dvtHTML() {
+  const D = SM.dvt, errs = D.con.filter(c => c.lvl === 'error').length;
+  return `<div class="dvt-bar"><div class="dvt-tabs" role="group" aria-label="DevTools panelləri">${[['net', 'Network'], ['con', 'Console']].map(([k, l]) => `<button data-act="dvt-tab" data-v="${k}" aria-pressed="${D.tab === k}">${l}${k === 'con' && errs ? `<span class="dvt-errn">${errs}</span>` : ''}</button>`).join('')}</div>
+</div>
+    <div class="dvt-body">${D.tab === 'net' ? dvtNetHTML() : dvtConHTML()}</div>`;
+}
+// the store's own toggle; the DevTools practice keeps the panel open
+const dvtBoxHTML = () => `<div class="dvt-tg"><button class="btn sm${SM.dvt.open ? '' : ' ghost'}" data-act="dvt-open" aria-pressed="${SM.dvt.open}">${icon('search')}${SM.dvt.open ? 'DevTools-u bağla' : 'DevTools-u aç: Network və Console'}</button></div>${SM.dvt.open ? `<div id="dvt" class="dvt">${dvtHTML()}</div>` : ''}`;
+function dvtRedraw() {
+  const el = $('#dvt'); if (el) el.innerHTML = dvtHTML();
+  const f = $('#dv-form'); if (f) f.innerHTML = dvFormHTML();
+}
+function dvStart(id) {
+  smStart(null);
+  SM.dv = id; SM.st = smFresh(dvById[id].start); dvtReset();
+  Object.assign(DVS, { id, req: '', con: '', row: -1, side: '', fb: null });
+}
+const dvLabel = x => `#${x.n} ${x.m} ${dvtName(x)} · ${x.st}`;
+function dvFormHTML() {
+  const D = SM.dvt, f = DVS.fb, errs = D.con.filter(c => c.lvl === 'error');
+  // a cleared log takes its entries with it: a choice that is gone is no choice
+  if (DVS.req && DVS.req !== 'none' && !D.net.some(x => String(x.n) === DVS.req)) DVS.req = '';
+  if (DVS.con && DVS.con !== 'none' && !errs.some(c => String(c.n) === DVS.con)) DVS.con = '';
+  const sel = (k, opts) => `<select class="field dv-sel" data-dv="${k}"><option value="">— seç —</option>${opts.map(([v, l]) => `<option value="${v}"${DVS[k] === v ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+  const q = (n, t, ctl) => `<div class="br-f"><span class="br-l">${n}. ${t}</span>${ctl}</div>`;
+  return `<div class="sm-fb-h">Diaqnoz</div>
+    ${q(1, 'Network-da baqı göstərən sorğu', sel('req', [['none', 'Heç bir sorğu getmədi']].concat(D.net.map(x => [String(x.n), dvLabel(x)]))))}
+    ${q(2, 'Console-da baqın xətası', sel('con', [['none', 'Qırmızı xəta yoxdur']].concat(errs.map(c => [String(c.n), `#${c.n} ${c.t.length > 72 ? c.t.slice(0, 72) + '…' : c.t}`]))))}
+    ${q(3, 'Network-da nə görürsən? (13.10)', `<div class="dv-rows">${DVD.rows.map((r, i) => `<label class="dv-opt"><input type="radio" name="dv-row" data-dv-row="${i}"${DVS.row === i ? ' checked' : ''}><span><b>${esc(r.see)}</b> → ${esc(r.then)}</span></label>`).join('')}</div>`)}
+    ${q(4, 'Defekt haradadır?', `<div class="seg dv-seg">${[['frontend', 'Frontend'], ['backend', 'Backend']].map(([k, l]) => `<button data-act="dv-side" data-v="${k}" aria-pressed="${DVS.side === k}">${l}</button>`).join('')}</div>`)}
+    <div class="row"><button class="btn primary" data-act="dv-check">${icon('check')}Yoxla</button></div>
+    <div id="dv-fb" class="sm-fb" aria-live="polite">${f ? dvFbHTML() : ''}</div>`;
+}
+function dvCheck() {
+  const t = dvById[DVS.id], D = SM.dvt;
+  if (!DVS.req || !DVS.con || DVS.row < 0 || !DVS.side) { toast('Dörd sualın hamısını cavabla.'); return; }
+  const x = D.net.find(y => String(y.n) === DVS.req), c = D.con.find(y => String(y.n) === DVS.con);
+  const seen = D.net.some(y => y.bug === t.bug) || D.con.some(y => y.bug === t.bug);
+  const reqOk = t.net === 'none' ? DVS.req === 'none' : !!(x && x.bug === t.bug);
+  const conOk = t.con === 'none' ? DVS.con === 'none' : !!(c && c.bug === t.bug);
+  const again = 'Əvvəlcə baqı təkrarla: addımları mağazada et, sonra sübutu seç.';
+  const rows = [
+    { k: 'Network sübutu', ok: reqOk, note: reqOk ? '' : t.net === 'none' ? (seen ? 'Düyməni basanda yeni sorğu yaranmır — seçdiyin sorğu başqa hərəkətə (məsələn, səhifənin yüklənməsinə) aiddir.' : again)
+      : !seen ? again : x ? `Bu sorğu baqı göstərmir. Baqı göstərən: ${t.ev}.` : `Sorğu gedir: ${t.ev}. Network-a bax.` },
+    { k: 'Console', ok: conOk, note: conOk ? '' : t.con === 'none' ? 'Bu baqda Console-da xəta yoxdur — seçdiyin xəta başqa hərəkətə aiddir (məsələn, yanlış şifrə ilə girişə).'
+      : !seen ? again : c ? 'Bu xəta başqa hərəkətə aiddir — baqı təkrarlayanda çıxan xətanı seç.' : 'Console-da qırmızı xəta var — Console tabına bax.' },
+    { k: 'Network-da nə görürsən (13.10)', ok: DVS.row === t.row, note: DVS.row === t.row ? '' : `Düzgün sətir: “${DVD.rows[t.row].see}”.` },
+    { k: 'Defekt haradadır', ok: DVS.side === t.side, note: DVS.side === t.side ? '' : `Defekt ${t.side === 'frontend' ? 'frontend-dədir: brauzer' : 'backend-dədir: server'} səhv edir.` }
+  ];
+  DVS.fb = { rows, good: rows.every(r => r.ok) };
+  if (DVS.fb.good) DVS.done[t.id] = 1;
+}
+// what goes into the bug report's attachments (13.12, step 4)
+function dvEvidence(t) {
+  const D = SM.dvt, x = D.net.find(y => y.bug === t.bug), c = D.con.find(y => y.bug === t.bug);
+  const res = r => { const a = Array.isArray(r) && t.focus ? r.filter(i => i.name === t.focus) : r, s = JSON.stringify(a); return a !== r ? `[…, ${s.slice(1, -1)}, …]` : s; };
+  const L = [`Başlıq: ${t.model}`];
+  if (x) { L.push(`Sorğu: ${x.m} ${x.url}`, `Status: ${x.st} ${HTTP_TXT[x.st]}`); if (x.body) L.push('Payload: ' + JSON.stringify(x.body)); L.push('Response: ' + res(x.res)); }
+  else L.push('Network: düyməni basanda sorğu getmir.');
+  if (c) L.push(`Console: ${c.t} (${c.src})`);
+  return { text: L.concat('Əlavə: ekran şəkli və ya qısa video').join('\n'), x };
+}
+function dvFbHTML() {
+  const t = dvById[DVS.id], f = DVS.fb, ev = f.good ? dvEvidence(t) : null;
+  return `<ul class="sm-rows">${f.rows.map(r => `<li>${smMark(r.ok)}<div><b>${esc(r.k)}</b>${r.note ? `<div class="sm-note">${esc(r.note)}</div>` : ''}</div></li>`).join('')}</ul>
+    ${f.good ? `<div class="sm-good">${icon('check')}Əla — sübut tapılıb, defektin yeri bəllidir.</div>` : ''}
+    <details class="cmp-why sm-model"${f.good ? ' open' : ''}><summary>${icon('eye')}Niyə belədir?</summary><p>${esc(t.why)}</p></details>
+    ${ev ? `<div class="sm-fb-h">Bug report-a əlavə et (13.12)</div><pre class="dvt-pre dv-ev">${esc(ev.text)}</pre>
+      <div class="row"><button class="btn" data-act="dv-copy">${icon('copy')}Kopyala</button>${ev.x ? `<button class="btn ghost" data-act="dvt-curl" data-n="${ev.x.n}">${icon('copy')}Copy as cURL</button>` : ''}</div>` : ''}`;
+}
+function dvCaseHTML() {
+  const t = dvById[DVS.id];
+  return `<div class="card sm-case"><div class="sm-id">${dvName(t.id)} · ${esc(t.start.user)}</div><h2 class="sm-t">${esc(t.title)}</h2><p class="dv-rep">${esc(t.report)}</p>
+    <dl class="sm-dl"><dt>İlkin şərt</dt><dd>${esc(t.pre)}</dd><dt>Addımlar</dt><dd><ol class="sm-steps">${t.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol></dd></dl>
+    <div class="row" style="margin-top:10px"><button class="btn sm ghost" data-act="dv-restart">${icon('refresh')}Yenidən başla</button></div></div>`;
+}
+function vDevtools(v) {
+  const id = dvById[S.params.dv] ? S.params.dv : DVD.tasks[0].id;
+  if (SM.dv !== id) dvStart(id);
+  const t = dvById[id];
+  setHeader({ back: true, kicker: 'DevTools məşqi', name: `${dvName(id)} · ${t.title}` });
+  const pick = DVD.tasks.map(x => `<button class="chip${x.id === id ? ' acc' : DVS.done[x.id] ? ' pass' : ''}" data-act="dv-open" data-dv="${x.id}">${DVS.done[x.id] ? icon('check') : ''}${dvName(x.id)}</button>`).join('');
+  v.innerHTML = `<p class="muted sm-intro">${esc(DVD.intro)}</p><div class="sm-pick">${pick}</div>
+    <div id="dv-case">${dvCaseHTML()}</div><div class="sm-dev" id="sm-dev">${smDevHTML()}</div>
+    <div id="dvt" class="dvt">${dvtHTML()}</div><div class="card dv-form" id="dv-form">${dvFormHTML()}</div>`;
+}
+const dvtLinkHTML = s => s.dt ? `<div class="sm-link"><div class="srt-k">${icon('search')}DevTools məşqi</div><p class="srt-hint">Məşq mağazasında Network və Console-u aç: beş istifadəçi şikayəti, hər biri 13.10-dakı cədvəlin bir sətri.</p>
+  <div class="sm-links">${DVD.tasks.map(t => `<button class="btn sm" data-act="dv-open" data-dv="${t.id}"><b>${DVS.done[t.id] ? '✓' : dvName(t.id)}</b> ${esc(t.title)}</button>`).join('')}</div></div>` : '';
 /* ---------- code tracer (trace.json): JavaScript runs line by line with its variables and console; a Playwright test runs
    against the practice store's shop, its lines coloured by role (locator, action, assertion) ---------- */
 const TR = {}; // steps taken per program (session only)
@@ -2683,6 +3012,12 @@ function vPractice(v) {
   <section class="block"><div class="block-h"><h2>Məşq mağazası</h2><span class="muted" style="font-size:13px">${Object.keys(SM.passed).length}/${STORE.scenarios.length} test case</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">saucedemo.com-a bənzəyən kiçik mağaza modeli. Test case-in addımlarını icra et, faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur. problem_user-də gizli bug-lar var: tapdığın hər biri üçün tam bug report yaz.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sm-open" data-sc="tc01">${icon('play')}Test case-lərlə başla</button><button class="btn" data-act="sm-open" data-sc="">${icon('search')}Kəşfiyyat sessiyası</button></div></div></section>
+  <section class="block"><div class="block-h"><h2>Reliz testi</h2><span class="muted" style="font-size:13px">${relDone().filter(Boolean).length}/4 mərhələ</span></div>
+    <div class="card"><div class="muted" style="font-size:13.5px">Mini Store ${REL_D.ver} gəldi: proqramçılar üç defekti düzəltdiklərini yazıblar. Smoke testlə build-i yoxla, düzəlişləri retest et, regression üçün test case seç və komandaya fakt əsasında reliz tövsiyəsi ver.</div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="rel-open">${icon('layers')}Reliz panelini aç</button></div></div></section>
+  <section class="block"><div class="block-h"><h2>DevTools məşqi</h2><span class="muted" style="font-size:13px">${Object.keys(DVS.done).length}/${DVD.tasks.length} tapşırıq</span></div>
+    <div class="card"><div class="muted" style="font-size:13.5px">Mağazanın Network və Console panelləri, Chrome-dakı kimi: sorğular, status kodları, Payload, Response, Preserve log, Copy as cURL. İstifadəçi şikayətini təkrarla, sübut tap və defektin frontend-də, yoxsa backend-də olduğunu müəyyən et.</div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="dv-open">${icon('search')}DevTools-u aç</button></div></div></section>
   <section class="block"><div class="block-h"><h2>SQL məşqi</h2><span class="muted" style="font-size:13px">${SQLC.tasks.filter(t => SQX.done[t.id]).length}/${SQLC.tasks.length} tapşırıq</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">SQLite brauzerdə işləyir — heç nə yükləmək lazım deyil. 16-cı fəslin customers və orders bazası: sorğu yaz, nəticəni cədvəl kimi gör, tapşırıqları avtomatik yoxlat.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sql-open">${icon('play')}SQL konsolunu aç</button></div></div></section>
@@ -3728,8 +4063,25 @@ document.addEventListener('click', ev => {
     case 'pw-shot': PW.shot = d.v; $('#pw-out').innerHTML = pwOutHTML(); break;
     case 'pw-code-reset': openConfirm('Başlanğıc kod', 'Yazdığın kod silinəcək, tapşırığın başlanğıc kodu qayıdacaq.', 'Qaytar', () => { delete pwDoc().code[PW.task]; Store.changed('pw'); PW.run = null; render({ keepScroll: true }); }); break;
     case 'pw-use-model': openConfirm('Nümunə həll', 'Nümunə redaktora yazılacaq, öz kodun silinəcək.', 'Yaz', () => { pwDoc().code[PW.task] = pwTaskById[PW.task].model.join('\n'); Store.changed('pw'); PW.run = null; render({ keepScroll: true }); }); break;
-    case 'sm-open': closeSheet(); go('store', { sc: d.sc || null }, { push: S.view !== 'store' }); break;
-    case 'sm-restart': smStart(SM.id); render({ keepScroll: true }); break;
+    case 'sm-open': closeSheet(); go('store', { sc: d.sc || null, ver: d.ver || null }, { push: S.view !== 'store' }); break;
+    case 'sm-restart': smStart(SM.id, SM.ver); render({ keepScroll: true }); break;
+    case 'rel-open': closeSheet(); if (S.view === 'store' && S.stack.length && S.stack[S.stack.length - 1].view === 'release') back(); else go('release', {}, { push: S.view !== 'release' }); break;
+    case 'rel-run': smStart(d.sc, REL_D.ver); go('store', { sc: d.sc, ver: REL_D.ver }); break;
+    case 'rel-map': if (relTk.some(t => !REL.map[t.bug])) toast('Hər defekt üçün test case seç.'); else { REL.mapChk = true; rerender(); } break;
+    case 'rel-verdict': REL.verdict[d.b] = d.v; rerender(); break;
+    case 'rel-plan': {
+      if (!relSel().length) { toast('Regression üçün ən azı bir test case seç.'); break; }
+      REL.regFb = true; REL.regChk = relCand.every(id => !REL_D.regression[id].need || REL.reg[id]); rerender(); break;
+    }
+    case 'rel-go': REL.go = d.v; $$('[data-act="rel-go"]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === d.v))); break;
+    case 'rel-check': {
+      if (!REL.go) { toast('Tövsiyəni seç: reliz olar və ya olmaz.'); break; }
+      REL.fb = relJudge(); rerender();
+      const fb = $('#rel-fb'); if (fb) fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      break;
+    }
+    case 'rel-copy': try { navigator.clipboard.writeText(relMd()).then(() => toast('Test hesabatı kopyalandı.'), () => toast('Kopyalamaq alınmadı')); } catch (e) { toast('Kopyalamaq alınmadı'); } break;
+    case 'rel-reset': openConfirm('Yenidən başla', 'Reliz testinin bütün seçimləri və icraları silinəcək.', 'Yenidən başla', () => { Object.assign(REL, relFresh()); render({ top: true }); }); break;
     case 'sm-status': {
       SM.status = d.v;
       $$('[data-act="sm-status"]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === d.v)));
@@ -3737,6 +4089,27 @@ document.addEventListener('click', ev => {
       break;
     }
     case 'sm-check': smCheck(); break;
+    case 'dvt-open': SM.dvt.open = !SM.dvt.open; rerender(); break;
+    case 'dvt-tab': SM.dvt.tab = d.v; dvtRedraw(); break;
+    case 'dvt-filter': SM.dvt.filter = d.v; dvtRedraw(); break;
+    case 'dvt-req': SM.dvt.sel = SM.dvt.sel === +d.n ? null : +d.n; dvtRedraw(); break;
+    case 'dvt-sub': SM.dvt.sub = d.v; dvtRedraw(); break;
+    case 'dvt-clear': if (SM.dvt.tab === 'net') Object.assign(SM.dvt, { net: [], sel: null }); else SM.dvt.con = []; dvtRedraw(); break;
+    case 'dvt-curl': {
+      const x = SM.dvt.net.find(y => y.n === +d.n); if (!x) break;
+      try { navigator.clipboard.writeText(dvtCurl(x)).then(() => toast('cURL kopyalandı — bug report-a və ya terminala yapışdır.'), () => toast('Kopyalamaq alınmadı')); } catch (e) { toast('Kopyalamaq alınmadı'); }
+      break;
+    }
+    case 'dv-open': closeSheet(); go('devtools', { dv: d.dv || DVS.id }, { push: S.view !== 'devtools' }); break;
+    case 'dv-restart': { const done = DVS.done; dvStart(SM.dv); DVS.done = done; render({ keepScroll: true }); break; }
+    case 'dv-side': DVS.side = d.v; $$('[data-act="dv-side"]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === d.v))); break;
+    case 'dv-check': {
+      dvCheck(); const fb = $('#dv-fb'); if (!fb || !DVS.fb) break;
+      fb.innerHTML = dvFbHTML(); fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      $$('#view .sm-pick .chip').forEach(b => { if (DVS.done[b.dataset.dv] && b.dataset.dv !== DVS.id) b.classList.add('pass'); });
+      break;
+    }
+    case 'dv-copy': { const t = dvById[DVS.id]; try { navigator.clipboard.writeText(dvEvidence(t).text).then(() => toast('Sübut kopyalandı — bug report-un “Əlavələr” sahəsinə yapışdır.'), () => toast('Kopyalamaq alınmadı')); } catch (e) { toast('Kopyalamaq alınmadı'); } break; }
     case 'ctfl-open': closeSheet(); go('ctfl', {}, { push: S.view !== 'ctfl' }); break;
     case 'exam-open': closeSheet(); go('exam', {}, { push: S.view !== 'exam' }); break;
     case 'exam-mode': S.examMode = d.v; rerender(); break;
@@ -4031,6 +4404,12 @@ document.addEventListener('change', ev => {
     if (t.closest('#pw-dev')) { smApply(PW.st, { ev: 'sort', v: t.value }, {}); pwShopRedraw(); return; }
     smEvent({ ev: 'sort', v: t.value }); smRedraw(); return;
   }
+  if (t.dataset.relMap) { REL.map[t.dataset.relMap] = t.value; return; }
+  if (t.dataset.relReg) { REL.reg[t.dataset.relReg] = t.checked; return; }
+  if (t.dataset.relWhy) { REL.why[t.dataset.relWhy] = t.checked; return; }
+  if (t.dataset.dvtKeep !== undefined) { SM.dvt.keep = t.checked; return; }
+  if (t.dataset.dv) { DVS[t.dataset.dv] = t.value; return; }
+  if (t.dataset.dvRow !== undefined) { DVS.row = +t.dataset.dvRow; return; }
   if (t.dataset.chk) { const K = Store.doc('checks').k; if (t.checked) K[t.dataset.chk] = 1; else delete K[t.dataset.chk]; Store.changed('checks'); updChk(t.dataset.sec); }
   else if (t.id === 'tctx') { const ch = Store.doc('chat'); ch.ctx = t.value; Store.changed('chat'); toast('Kontekst dəyişdi: ' + (t.value === 'none' ? 'ümumi' : chLabel(chById[t.value]))); }
 });
@@ -4059,7 +4438,9 @@ AI.setState('pending');
 // links from the offline app: #c3s4 opens a section; #c3s4-simple, #c3-lesson, #c3-konspekt and #g12-term also
 // start that Claude action once Claude is ready. Only ids from the book are accepted, so a link cannot carry its own prompt.
 // #c3-xulase and #xulase open the summary sheets (the claude.ai version links there when it cannot print);
-// #magaza opens the practice store, #magaza-tc04 with that test case; #playwright-pw3 a Playwright task, #lokator-l5 a locator.
+// #magaza opens the practice store, #magaza-tc04 with that test case; #reliz the release test, #reliz-tc06 that test case
+// on build 1.1; #devtools the DevTools practice, #devtools-dv3 that task; #playwright-pw3 a Playwright task, #lokator-l5
+// a locator.
 let AUTO = null;
 const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 function routeHash() {
@@ -4082,6 +4463,8 @@ function routeHash() {
   else if (h === 'mesq' || h === 'practice') { S.tab = 'practice'; S.view = 'practice'; S.params = {}; }
   else if (h === 'xulase') { S.tab = 'practice'; S.view = 'summary'; S.params = { ch: 'all' }; }
   else if (t === 'magaza') { S.tab = 'practice'; S.view = 'store'; S.params = { sc: own(scById, act) ? act : null }; }
+  else if (t === 'reliz') { S.tab = 'practice'; if (own(scById, act)) { S.view = 'store'; S.params = { sc: act, ver: REL_D.ver }; } else { S.view = 'release'; S.params = {}; } }
+  else if (t === 'devtools') { S.tab = 'practice'; S.view = 'devtools'; S.params = { dv: own(dvById, act) ? act : null }; }
   else if (t === 'playwright' || t === 'lokator') {
     S.tab = 'practice'; S.view = 'pw'; S.params = {}; PW.tab = t === 'lokator' ? 'loc' : 'test';
     if (t === 'playwright' && own(pwTaskById, act)) Object.assign(PW, { task: act, run: null });
