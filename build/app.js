@@ -450,7 +450,7 @@ function render(opts) {
   if (observer) { observer.disconnect(); observer = null; }
   hideSelPill();
   const v = $('#view');
-  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw };
+  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw, git: vGit };
   (views[S.view] || vHome)(v);
   if (opts.keepScroll) window.scrollTo(0, y);
   else if (!(S.view === 'reader' && S.params.sec)) window.scrollTo(0, 0);
@@ -811,10 +811,10 @@ function dtHTML(sid, c) {
 function textBody(c, s) {
   const lv = lvlOf(s.id);
   if (lv === 'short') {
-    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}
+    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}
       <button class="btn sm ghost more" data-act="lvl" data-sec="${s.id}" data-v="std">${icon('book')}Tam mətni oxu</button>${miniHTML(c, s, false)}`;
   }
-  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
+  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
 }
 function fbHTML(a) {
   let h = '';
@@ -902,7 +902,7 @@ function secHTML(c, s) {
   else if (s.kind === 'selfcheck') body = selfHTML(c, s);
   else if (s.kind === 'checklist') body = checklistHTML(s);
   else if (s.x) body = textBody(c, s);
-  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${trHTML(s)}`;
+  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}`;
   return `<section class="sec${learned ? ' learned' : ''}" id="${s.id}" data-sec="${s.id}" data-kind="${s.kind}">
     <header class="sec-h"><span class="sec-num">${esc(s.num || kindTag(s).toLocaleUpperCase('az'))}</span><h2>${esc(s.title)}</h2>${s.x ? lvlCtl(s.id, lvlOf(s.id)) : ''}</header>
     ${body}${footerHTML(c, s)}</section>`;
@@ -2967,6 +2967,719 @@ function labLinkHTML(s) {
   return `<div class="sm-link"><div class="srt-k">${icon('send')}Məşq API-si</div><p class="srt-hint">${ts.length ? 'Bu bölmənin tapşırıqlarını Mini Store API-sində et — sorğu göndər, cavabı və yoxlamaları gör.' : 'Sorğunun hissələrini canlı gör: metod, URL, başlıqlar, gövdə; cavabda status, başlıqlar və JSON.'}</p>
     <div class="sm-links">${ts.length ? ts.map(t => `<button class="btn sm" data-act="lab-open"><b>${LAB.done[t.id] ? '✓' : t.id.toUpperCase()}</b> ${esc(t.t)}</button>`).join('') : `<button class="btn sm" data-act="lab-open">${icon('send')}Məşq API-sini aç</button>`}</div></div>`;
 }
+/* ---------- Git practice (git.json): a terminal and a repository inside the page. Commands are parsed and played on a
+   small model of Git — working tree, index, commits, branches, HEAD, a remote on "GitHub" — with Git's own messages.
+   Nothing runs on the reader's computer ---------- */
+const GITD = BOOK.git;
+const gitTaskById = Object.fromEntries(GITD.tasks.map(t => [t.id, t]));
+const GIT = { task: GITD.tasks[0].id, r: null, log: [], hist: [], hi: -1, edit: null }; // session only; done marks in P().git
+const gitText = k => GITD.files[k] ? GITD.files[k].join('\n') + '\n' : k;
+const GIT_DIR = GITD.path.replace(/\\/g, '/'), GIT_URL0 = GITD.url.replace(/\.git$/, '');
+function gitHash(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0').slice(0, 7); }
+const gitLong = id => (id + [1, 2, 3, 4, 5, 6].map(k => gitHash(id + k)).join('')).slice(0, 40);
+const gitDone = () => { const p = P(); return p.git || (p.git = {}); };
+function gitNew(t) {
+  const s = t.start, r = { init: s.init !== false, user: s.cfg === false ? null : GITD.who, cfg: {}, commits: {}, seq: 0, branches: Object.assign({}, s.branches || {}), head: s.head || 'master',
+    index: {}, work: {}, remote: s.remote ? { branches: Object.assign({}, s.remote.branches) } : null, origin: s.remote && s.init !== false ? GITD.url : null,
+    tracking: Object.assign({}, s.tracking || {}), upstream: {}, merging: null, stash: [], pushed: false };
+  (s.commits || []).forEach(c => {
+    const p = c.parents || [], tree = Object.assign({}, p[0] ? r.commits[p[0]].tree : {});
+    Object.entries(c.set || {}).forEach(([f, v]) => { if (v === null) delete tree[f]; else tree[f] = gitText(v); });
+    r.commits[c.id] = { id: c.id, msg: c.msg, parents: p, tree, br: c.br || 'main', seq: ++r.seq, who: c.mate ? GITD.mate : GITD.who };
+  });
+  (s.upstream || []).forEach(b => { r.upstream[b] = true; });
+  const ht = gitTree(r);
+  r.index = r.init ? Object.assign({}, ht) : {}; r.work = Object.assign({}, ht);
+  Object.entries(s.index || {}).forEach(([f, v]) => { if (v === null) delete r.index[f]; else r.index[f] = gitText(v); });
+  Object.entries(s.work || {}).forEach(([f, v]) => { if (v === null) delete r.work[f]; else r.work[f] = gitText(v); });
+  return r;
+}
+// ---- the object model: trees, ancestry, refs
+const gitHeadId = r => r.branches[r.head] || null;
+const gitTree = (r, id) => { const c = r.commits[id === undefined ? gitHeadId(r) : id]; return c ? c.tree : {}; };
+function gitAnc(r, id) { const seen = new Set(), st = id ? [id] : []; while (st.length) { const x = st.pop(); if (!seen.has(x)) { seen.add(x); r.commits[x].parents.forEach(p => st.push(p)); } } return seen; }
+const gitIsAnc = (r, a, b) => !!a && !!b && gitAnc(r, b).has(a); // a is b or one of its ancestors
+function gitBase(r, a, b) { const A = gitAnc(r, a); let best = null; gitAnc(r, b).forEach(x => { if (A.has(x) && (!best || r.commits[x].seq > r.commits[best].seq)) best = x; }); return best; }
+const gitKnown = r => { const s = new Set(); Object.values(r.branches).concat(Object.values(r.tracking)).forEach(id => gitAnc(r, id).forEach(x => s.add(x))); return s; };
+function gitRef(r, s) {
+  const m = /^(.*?)((~\d*)|\^+)?$/.exec(String(s || '')), base = m[1], n = m[2] ? (m[2][0] === '~' ? +(m[2].slice(1) || 1) : m[2].length) : 0;
+  let id = base === 'HEAD' || base === '@' ? gitHeadId(r) : r.branches[base] || (base.startsWith('origin/') ? r.tracking[base.slice(7)] : null) || null;
+  if (!id && /^[0-9a-f]{4,40}$/.test(base)) { const hits = [...gitKnown(r)].filter(k => base.startsWith(k) || k.startsWith(base)); id = hits.length === 1 ? hits[0] : null; }
+  for (let k = 0; id && k < n; k++) id = r.commits[id].parents[0] || null;
+  return id;
+}
+// .gitignore of the working tree: name patterns at any depth, dir/ for folders, /anchored, * wildcards, !negation
+function gitGlob(p, path) {
+  const dir = p.endsWith('/'), q = p.replace(/^\/|\/$/g, ''), anch = p.startsWith('/') || q.includes('/'), parts = path.split('/');
+  const re = new RegExp('^' + q.split('*').map(x => x.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('[^/]*') + '$');
+  if (anch) { const k = q.split('/').length; return re.test(parts.slice(0, k).join('/')) && (!dir || parts.length > k); }
+  return (dir ? parts.slice(0, -1) : parts).some(x => re.test(x));
+}
+function gitIgnored(r, path) {
+  let ig = false;
+  (r.work['.gitignore'] || '').split('\n').map(x => x.trim()).filter(x => x && x[0] !== '#').forEach(p0 => { const neg = p0[0] === '!', p = neg ? p0.slice(1) : p0; if (gitGlob(p, path)) ig = !neg; });
+  return ig;
+}
+// ---- text: lines, an LCS edit script, unified diffs, a three-way merge with conflict markers
+const gitLines = s => s === undefined || s === '' ? [] : s.replace(/\n$/, '').split('\n');
+function gitLcs(a, b) {
+  const n = a.length, m = b.length, L = Array.from({ length: n + 1 }, () => new Int16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = a[i] === b[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const out = []; let i = 0, j = 0;
+  while (i < n && j < m) { if (a[i] === b[j]) { out.push(['=', a[i]]); i++; j++; } else if (L[i + 1][j] >= L[i][j + 1]) out.push(['-', a[i++]]); else out.push(['+', b[j++]]); }
+  while (i < n) out.push(['-', a[i++]]); while (j < m) out.push(['+', b[j++]]);
+  return out;
+}
+function gitCount(a, b) { const d = gitLcs(gitLines(a), gitLines(b)); return [d.filter(x => x[0] === '+').length, d.filter(x => x[0] === '-').length]; }
+function gitUnified(path, a, b) {
+  const d = gitLcs(gitLines(a), gitLines(b)); if (!d.some(x => x[0] !== '=')) return [];
+  const out = [['dh', `diff --git a/${path} b/${path}`]].concat(a === undefined ? [['dh', 'new file mode 100644']] : b === undefined ? [['dh', 'deleted file mode 100644']] : [],
+    [['dh', `index ${a === undefined ? '0000000' : gitHash(a)}..${b === undefined ? '0000000' : gitHash(b)}${a !== undefined && b !== undefined ? ' 100644' : ''}`], ['dh', `--- ${a === undefined ? '/dev/null' : 'a/' + path}`], ['dh', `+++ ${b === undefined ? '/dev/null' : 'b/' + path}`]]);
+  let o = 0, n = 0; const L = d.map(x => ({ k: x[0], s: x[1], o: x[0] !== '+' ? ++o : o, n: x[0] !== '-' ? ++n : n })), H = [];
+  L.forEach((x, i) => { if (x.k === '=') return; const lo = Math.max(0, i - 3), hi = Math.min(L.length - 1, i + 3), h = H[H.length - 1]; if (h && lo <= h.hi + 1) h.hi = hi; else H.push({ lo, hi }); });
+  H.forEach(h => {
+    const seg = L.slice(h.lo, h.hi + 1), oc = seg.filter(x => x.k !== '+').length, nc = seg.filter(x => x.k !== '-').length;
+    const os = oc ? seg.find(x => x.k !== '+').o : seg[0].o, ns = nc ? seg.find(x => x.k !== '-').n : seg[0].n;
+    out.push(['da', `@@ -${os}${oc === 1 ? '' : ',' + oc} +${ns}${nc === 1 ? '' : ',' + nc} @@`]);
+    seg.forEach(x => out.push([x.k === '+' ? 'dp' : x.k === '-' ? 'dm' : 'o', (x.k === '=' ? ' ' : x.k) + x.s]));
+  });
+  return out;
+}
+// the base lines a side replaced: [{ b0, b1, lines }]
+function gitHunks(B, X) {
+  const H = []; let bi = 0, cur = null;
+  gitLcs(B, X).forEach(([k, s]) => {
+    if (k === '=') { if (cur) { cur.b1 = bi; H.push(cur); cur = null; } bi++; return; }
+    if (!cur) cur = { b0: bi, b1: bi, lines: [] };
+    if (k === '-') bi++; else cur.lines.push(s);
+  });
+  if (cur) { cur.b1 = bi; H.push(cur); }
+  return H;
+}
+function gitMerge3(base, ours, theirs, name) {
+  if (ours === theirs) return { text: ours };
+  if (base === ours) return { text: theirs };
+  if (base === theirs) return { text: ours };
+  if (ours === undefined || theirs === undefined) return { text: ours === undefined ? theirs : ours, conflict: 'modify/delete' };
+  const B = gitLines(base), sides = [gitHunks(B, gitLines(ours)), gitHunks(B, gitLines(theirs))], out = [];
+  const ov = (a, b) => (a.b0 < b.b1 && b.b0 < a.b1) || a.b0 === b.b0 || (a.b0 === a.b1 && b.b0 < a.b0 && a.b0 < b.b1) || (b.b0 === b.b1 && a.b0 < b.b0 && b.b0 < a.b1);
+  const take = (side, lo, hi) => { let cur = lo; const o = []; side.forEach(h => { o.push(...B.slice(cur, h.b0), ...h.lines); cur = h.b1; }); return o.concat(B.slice(cur, hi)); };
+  let pos = 0, conflict = false;
+  for (;;) {
+    const firsts = sides.map(s => s[0]).filter(Boolean); if (!firsts.length) break;
+    const g = [[], []]; let reg = { b0: Math.min(...firsts.map(h => h.b0)), b1: -1 };
+    reg.b1 = reg.b0;
+    for (let grew = true; grew;) {
+      grew = false;
+      sides.forEach((s, k) => { while (s.length && (g[0].length + g[1].length === 0 ? s[0].b0 === reg.b0 : ov(s[0], reg))) { const h = s.shift(); g[k].push(h); reg = { b0: Math.min(reg.b0, h.b0), b1: Math.max(reg.b1, h.b1) }; grew = true; } });
+    }
+    out.push(...B.slice(pos, reg.b0));
+    const a = take(g[0], reg.b0, reg.b1), b = take(g[1], reg.b0, reg.b1);
+    if (!g[1].length || (g[0].length && a.join('\n') === b.join('\n'))) out.push(...a);
+    else if (!g[0].length) out.push(...b);
+    else { conflict = true; out.push('<<<<<<< HEAD', ...a, '=======', ...b, '>>>>>>> ' + name); }
+    pos = reg.b1;
+  }
+  out.push(...B.slice(pos));
+  return { text: out.length ? out.join('\n') + '\n' : '', conflict: conflict && 'content' };
+}
+// ---- status
+function gitSt(r) {
+  const H = gitTree(r), I = r.index, W = r.work, con = r.merging ? r.merging.conflicts : [];
+  const staged = [], unstaged = [], untracked = [];
+  new Set(Object.keys(H).concat(Object.keys(I))).forEach(p => { if (!con.includes(p) && I[p] !== H[p]) staged.push([p, H[p] === undefined ? 'new file' : I[p] === undefined ? 'deleted' : 'modified']); });
+  Object.keys(I).forEach(p => { if (!con.includes(p) && W[p] !== I[p]) unstaged.push([p, W[p] === undefined ? 'deleted' : 'modified']); });
+  Object.keys(W).forEach(p => { if (!(p in I) && !con.includes(p) && !gitIgnored(r, p)) untracked.push(p); });
+  const by = (x, y) => (x[0] || x) < (y[0] || y) ? -1 : 1;
+  return { staged: staged.sort(by), unstaged: unstaged.sort(by), untracked: untracked.sort(), con };
+}
+function gitCollapse(r, list) { // untracked folders show as folder/, as git status does
+  const tracked = Object.keys(r.index), out = new Set();
+  list.forEach(p => { const parts = p.split('/'); let show = p; for (let i = 1; i < parts.length; i++) { const d = parts.slice(0, i).join('/') + '/'; if (!tracked.some(t => t.startsWith(d))) { show = d; break; } } out.add(show); });
+  return [...out].sort();
+}
+function gitAB(r, b) {
+  const L = r.branches[b], T = r.tracking[b]; if (!L || !T || !r.upstream[b]) return null;
+  const A = gitAnc(r, L), B = gitAnc(r, T);
+  return { ahead: [...A].filter(x => !B.has(x)).length, behind: [...B].filter(x => !A.has(x)).length };
+}
+const gitN = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+function gitStatusOut(r) {
+  const st = gitSt(r), o = [`On branch ${r.head}`], ab = gitAB(r, r.head), born = !!gitHeadId(r);
+  if (ab) {
+    if (!ab.ahead && !ab.behind) o.push(`Your branch is up to date with 'origin/${r.head}'.`);
+    else if (!ab.behind) o.push(`Your branch is ahead of 'origin/${r.head}' by ${gitN(ab.ahead, 'commit')}.`, '  (use "git push" to publish your local commits)');
+    else if (!ab.ahead) o.push(`Your branch is behind 'origin/${r.head}' by ${gitN(ab.behind, 'commit')}, and can be fast-forwarded.`, '  (use "git pull" to update your local branch)');
+    else o.push(`Your branch and 'origin/${r.head}' have diverged,`, `and have ${ab.ahead} and ${ab.behind} different commits each, respectively.`, '  (use "git pull" if you want to integrate the remote branch with yours)');
+  }
+  if (!born) o.push('', 'No commits yet');
+  if (r.merging) o.push(...(st.con.length ? ['You have unmerged paths.', '  (fix conflicts and run "git commit")', '  (use "git merge --abort" to abort the merge)'] : ['All conflicts fixed but you are still merging.', '  (use "git commit" to conclude merge)']));
+  // one blank line between blocks, none right under "On branch …"
+  const gap = () => { if (o.length > 1 && o[o.length - 1] !== '') o.push(''); };
+  const sec = (head, tips, rows) => { if (rows.length) { gap(); o.push(head, ...tips.map(x => '  ' + x), ...rows.map(x => '\t' + x), ''); } };
+  sec('Changes to be committed:', [born ? '(use "git restore --staged <file>..." to unstage)' : '(use "git rm --cached <file>..." to unstage)'], st.staged.map(([p, k]) => `${(k + ':').padEnd(12)}${p}`));
+  sec('Unmerged paths:', ['(use "git add <file>..." to mark resolution)'], st.con.map(p => `both modified:   ${p}`));
+  sec('Changes not staged for commit:', ['(use "git add <file>..." to update what will be committed)', '(use "git restore <file>..." to discard changes in working directory)'], st.unstaged.map(([p, k]) => `${(k + ':').padEnd(12)}${p}`));
+  sec('Untracked files:', ['(use "git add <file>..." to include in what will be committed)'], gitCollapse(r, st.untracked));
+  const last = !st.staged.length && !st.con.length ? (st.unstaged.length ? 'no changes added to commit (use "git add" and/or "git commit -a")'
+    : st.untracked.length ? 'nothing added to commit but untracked files present (use "git add" to track)'
+    : r.merging ? '' : born ? 'nothing to commit, working tree clean' : 'nothing to commit (create/copy files and use "git add" to track)') : '';
+  if (last) { gap(); o.push(last); } else if (o[o.length - 1] === '') o.pop();
+  return o;
+}
+// ---- commits, checkout of a tree, merge, rebase
+function gitMake(r, msg, parents, tree, who) {
+  let id = gitHash(msg + parents.join() + JSON.stringify(tree) + r.seq); while (r.commits[id]) id = gitHash(id + '!');
+  r.commits[id] = { id, msg, parents, tree: Object.assign({}, tree), br: r.head, seq: ++r.seq, who: who || r.user };
+  r.branches[r.head] = id; return id;
+}
+function gitSummary(r, A, B) { // " 1 file changed, …" and create / delete mode lines
+  let f = 0, ins = 0, del = 0; const modes = [];
+  new Set(Object.keys(A).concat(Object.keys(B))).forEach(p => {
+    if (A[p] === B[p]) return; f++; const [x, y] = gitCount(A[p], B[p]); ins += x; del += y;
+    if (A[p] === undefined) modes.push(` create mode 100644 ${p}`); else if (B[p] === undefined) modes.push(` delete mode 100644 ${p}`);
+  });
+  return [` ${gitN(f, 'file')} changed` + (ins || !del ? `, ${ins} insertion${ins === 1 ? '' : 's'}(+)` : '') + (del || !ins ? `, ${del} deletion${del === 1 ? '' : 's'}(-)` : '')].concat(modes.sort());
+}
+function gitStatLines(A, B) {
+  const rows = [...new Set(Object.keys(A).concat(Object.keys(B)))].filter(p => A[p] !== B[p]).sort().map(p => { const [x, y] = gitCount(A[p], B[p]); return ` ${p} | ${x + y} ${'+'.repeat(Math.min(x, 30))}${'-'.repeat(Math.min(y, 30))}`; });
+  return rows.concat(gitSummary(null, A, B));
+}
+// paths that differ between two trees and are dirty now: a checkout or merge would overwrite them
+function gitClash(r, from, to) { const W = r.work, I = r.index; return [...new Set(Object.keys(from).concat(Object.keys(to)))].filter(p => from[p] !== to[p] && (W[p] !== from[p] || (p in I ? I[p] : undefined) !== from[p]) && !(W[p] === to[p])).sort(); }
+function gitCheckoutTree(r, from, to) { // move the index and the clean files from one tree to another
+  new Set(Object.keys(from).concat(Object.keys(to))).forEach(p => {
+    if (from[p] === to[p]) return;
+    if (to[p] === undefined) { delete r.index[p]; delete r.work[p]; } else { r.index[p] = to[p]; r.work[p] = to[p]; }
+  });
+}
+function gitMergeRef(r, theirs, name, msg, o, e) {
+  const ours = gitHeadId(r);
+  if (gitIsAnc(r, theirs, ours)) { o('Already up to date.'); return true; }
+  const T = gitTree(r, theirs), H = gitTree(r, ours);
+  if (!ours || gitIsAnc(r, ours, theirs)) { // fast-forward
+    const clash = gitClash(r, H, T);
+    if (clash.length) { e(['error: Your local changes to the following files would be overwritten by merge:', ...clash.map(p => '\t' + p), 'Please commit your changes or stash them before you merge.', 'Aborting']); return false; }
+    o(`Updating ${ours}..${theirs}`, 'Fast-forward', ...gitStatLines(H, T)); gitCheckoutTree(r, H, T); r.branches[r.head] = theirs; return true;
+  }
+  const base = gitBase(r, ours, theirs), B = gitTree(r, base), M = {}, con = [];
+  new Set(Object.keys(B).concat(Object.keys(H), Object.keys(T))).forEach(p => { const m = gitMerge3(B[p], H[p], T[p], name); if (m.text !== undefined) M[p] = m.text; if (m.conflict) con.push([p, m.conflict]); });
+  const clash = gitClash(r, H, M);
+  if (clash.length) { e(['error: Your local changes to the following files would be overwritten by merge:', ...clash.map(p => '\t' + p), 'Please commit your changes or stash them before you merge.', 'Aborting']); return false; }
+  if (!con.length) {
+    if (!gitWho(r, e)) return false;
+    gitCheckoutTree(r, H, M); const id = gitMake(r, msg, [ours, theirs], M);
+    o("Merge made by the 'ort' strategy.", ...gitStatLines(H, r.commits[id].tree)); return true;
+  }
+  r.merging = { theirs, name, msg, conflicts: con.map(c => c[0]), saved: { work: Object.assign({}, r.work), index: Object.assign({}, r.index) } };
+  Object.keys(M).concat(Object.keys(H)).forEach(p => {
+    const c = con.find(x => x[0] === p);
+    if (c) { r.work[p] = M[p]; return; }
+    if (M[p] !== H[p]) { if (M[p] === undefined) { delete r.work[p]; delete r.index[p]; } else { r.work[p] = M[p]; r.index[p] = M[p]; } }
+  });
+  con.forEach(([p, k]) => o(`Auto-merging ${p}`, `CONFLICT (${k}): Merge conflict in ${p}`));
+  e(['Automatic merge failed; fix conflicts and then commit the result.']);
+  return false;
+}
+function gitWho(r, e) {
+  if (r.user && r.user.name && r.user.email) return true;
+  e(['Author identity unknown', '', '*** Please tell me who you are.', '', 'Run', '', '  git config --global user.email "you@example.com"', '  git config --global user.name "Your Name"', '',
+    "to set your account's default identity.", 'Omit --global to set the identity only in this repository.', '', "fatal: unable to auto-detect email address (got 'qa@DESKTOP-QA.(none)')"],
+    'Git hər commit-ə müəllifin adını və emailini yazır (20.6). Əvvəlcə bu iki əmri öz adınla işə sal.');
+  return false;
+}
+// ---- the terminal: one line in, Git's output out
+function gitSplit(line) { const a = []; let m; const re = /"((?:\\.|[^"\\])*)"|'([^']*)'|(\S+)/g; while ((m = re.exec(line))) a.push(m[1] !== undefined ? m[1].replace(/\\"/g, '"') : m[2] !== undefined ? m[2] : m[3]); return a; }
+const GIT_CMDS = ['init', 'status', 'add', 'restore', 'commit', 'log', 'diff', 'show', 'branch', 'switch', 'checkout', 'merge', 'push', 'pull', 'fetch', 'remote', 'revert', 'reset', 'rm', 'stash', 'config', 'help', 'version'];
+function gitRun(line) {
+  const r = GIT.r, out = [], o = (...s) => s.forEach(x => out.push(['o', x])), e = (s, hint) => { s.forEach(x => out.push(['e', x])); if (hint) out.push(['h', hint]); }, h = s => out.push(['h', s]);
+  const a = gitSplit(line.trim()); if (!a.length) return out;
+  const cmd = a[0].toLowerCase();
+  if (cmd !== 'git') { gitShell(r, a, line, o, e, h); return out; }
+  const sub = a[1] || '', args = a.slice(2), has = f => args.includes(f), plain = args.filter(x => !x.startsWith('-'));
+  if (!sub || sub === '--help') { o('usage: git <command> [<args>]', '', 'Bu məşqdə: init, status, add, restore, commit, log, diff, show, branch, switch, checkout,', 'merge, push, pull, fetch, remote, revert, rm, stash, config.'); return out; }
+  if (sub === '--version' || sub === 'version') { o('git version 2.47.1.windows.1'); return out; }
+  if (!GIT_CMDS.includes(sub) && !['rebase', 'cherry-pick', 'bisect', 'clone', 'tag', 'blame'].includes(sub)) {
+    const near = gitNear(sub);
+    e([`git: '${sub}' is not a git command. See 'git --help'.`].concat(near ? ['', 'The most similar command is', '\t' + near] : []));
+    return out;
+  }
+  if (['rebase', 'cherry-pick', 'bisect', 'clone', 'tag', 'blame'].includes(sub)) { h(`git ${sub} bu məşqdə yoxdur: tapşırıqlar kitabın 20.1–20.6 bölmələrindəki əmrlərlə həll olunur.`); return out; }
+  if (sub === 'config') {
+    const k = plain[0], v = plain[1];
+    if (has('--list') || has('-l')) { o(...(r.user ? [`user.name=${r.user.name}`, `user.email=${r.user.email}`] : []).concat(Object.entries(r.cfg).map(([x, y]) => `${x}=${y}`))); return out; }
+    if (!k) { e(['error: key does not contain a section: '], 'Məsələn: git config --global user.name "Ad Soyad"'); return out; }
+    if (k === 'user.name' || k === 'user.email') {
+      if (v === undefined) { const x = r.user && r.user[k.slice(5)]; if (x) o(x); return out; }
+      r.user = Object.assign({ name: '', email: '' }, r.user || {}, { [k.slice(5)]: v }); return out;
+    }
+    if (v === undefined) { if (r.cfg[k] !== undefined) o(r.cfg[k]); return out; }
+    r.cfg[k] = v; return out;
+  }
+  if (sub === 'init') {
+    if (r.init) { o(`Reinitialized existing Git repository in ${GIT_DIR}/.git/`); return out; }
+    Object.assign(r, { init: true, head: 'master', index: {} });
+    out.push(['hint', "hint: Using 'master' as the name for the initial branch. This default branch name"], ['hint', 'hint: is subject to change. To configure the initial branch name to use in all'],
+      ['hint', 'hint: of your new repositories, which will suppress this warning, call:'], ['hint', 'hint:'], ['hint', 'hint: \tgit config --global init.defaultBranch <name>'], ['hint', 'hint:'],
+      ['hint', "hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and"], ['hint', "hint: 'development'. The just-created branch can be renamed via this command:"], ['hint', 'hint:'], ['hint', 'hint: \tgit branch -m <name>']);
+    o(`Initialized empty Git repository in ${GIT_DIR}/.git/`); return out;
+  }
+  if (!r.init) { e(['fatal: not a git repository (or any of the parent directories): .git'], 'Bu qovluq hələ Git repo-su deyil: əvvəlcə git init.'); return out; }
+  switch (sub) {
+    case 'status': (has('-s') || has('--short') ? gitShort(r) : gitStatusOut(r)).forEach(x => o(x)); break;
+    case 'add': {
+      if (!plain.length && !has('-A') && !has('--all')) { o('Nothing specified, nothing added.', "hint: Maybe you wanted to say 'git add .'?"); break; }
+      const all = has('-A') || has('--all') || plain.includes('.'), force = has('-f') || has('--force'), paths = new Set(), ign = [];
+      const known = [...new Set(Object.keys(r.work).concat(Object.keys(r.index)))];
+      (all ? ['.'] : plain).forEach(spec => {
+        const sp = spec.replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/$/, ''), hit = known.filter(p => spec === '.' || p === sp || p.startsWith(sp + '/'));
+        if (!hit.length) { e([`fatal: pathspec '${spec}' did not match any files`]); paths.add(null); return; }
+        // ignored files are skipped quietly; a path that is nothing but ignored files is named, as Git does
+        const keep = hit.filter(p => p in r.index || force || !gitIgnored(r, p));
+        if (spec !== '.' && !keep.length) ign.push(sp);
+        keep.forEach(p => paths.add(p));
+      });
+      if (paths.has(null)) break;
+      paths.forEach(p => { if (r.work[p] === undefined) delete r.index[p]; else r.index[p] = r.work[p]; if (r.merging) r.merging.conflicts = r.merging.conflicts.filter(x => x !== p); });
+      if (ign.length) e(['The following paths are ignored by one of your .gitignore files:', ...ign, 'hint: Use -f if you really want to add them.', 'hint: Turn this message off by running', 'hint: "git config advice.addIgnoredFile false"'], '.gitignore bu faylı qəsdən kənarda saxlayır: şifrə, log və yaradılan fayllar repo-ya düşməməlidir (20.3).');
+      break;
+    }
+    case 'restore': {
+      const staged = has('--staged') || has('-S'), H = gitTree(r);
+      if (!plain.length) { e(['fatal: you must specify path(s) to restore']); break; }
+      for (const spec of plain) {
+        const sp = spec.replace(/^\.\//, '').replace(/\/$/, ''), hit = [...new Set(Object.keys(r.index).concat(Object.keys(H), staged ? [] : Object.keys(r.work)))].filter(p => spec === '.' || p === sp || p.startsWith(sp + '/'));
+        if (!hit.length || hit.every(p => !(p in r.index) && !(p in H))) { e([`error: pathspec '${spec}' did not match any file(s) known to git`]); return out; }
+        hit.forEach(p => { if (staged) { if (H[p] === undefined) delete r.index[p]; else r.index[p] = H[p]; } else if (p in r.index) r.work[p] = r.index[p]; });
+      }
+      break;
+    }
+    case 'rm': {
+      const cached = has('--cached');
+      plain.forEach(spec => { const sp = spec.replace(/\/$/, ''), hit = Object.keys(r.index).filter(p => p === sp || p.startsWith(sp + '/'));
+        if (!hit.length) { e([`fatal: pathspec '${spec}' did not match any files`]); return; }
+        hit.forEach(p => { delete r.index[p]; if (!cached) delete r.work[p]; o(`rm '${p}'`); }); });
+      break;
+    }
+    case 'commit': gitCommitCmd(r, args, o, e, h); break;
+    case 'log': gitLogCmd(r, args, o, e); break;
+    case 'diff': {
+      const staged = has('--staged') || has('--cached'), H = gitTree(r), A = staged ? H : r.index, B = staged ? r.index : r.work;
+      const paths = [...new Set(Object.keys(A).concat(Object.keys(B)))].filter(p => (staged || p in r.index) && (!plain.length || plain.some(s => p === s || p.startsWith(s.replace(/\/$/, '') + '/')))).sort();
+      paths.forEach(p => gitUnified(p, A[p], B[p]).forEach(x => out.push(x)));
+      break;
+    }
+    case 'show': {
+      const id = gitRef(r, plain[0] || 'HEAD'); if (!id) { e([`fatal: ambiguous argument '${plain[0]}': unknown revision or path not in the working tree.`]); break; }
+      gitLogOne(r, id, o); const c = r.commits[id], P0 = gitTree(r, c.parents[0] || null);
+      [...new Set(Object.keys(P0).concat(Object.keys(c.tree)))].sort().forEach(p => gitUnified(p, P0[p], c.tree[p]).forEach(x => out.push(x)));
+      break;
+    }
+    case 'branch': gitBranchCmd(r, args, plain, o, e); break;
+    case 'switch': case 'checkout': gitSwitchCmd(r, sub, args, plain, o, e, h); break;
+    case 'merge': {
+      if (has('--abort')) { if (!r.merging) { e(['fatal: There is no merge to abort (MERGE_HEAD missing).']); break; } Object.assign(r, { work: r.merging.saved.work, index: r.merging.saved.index, merging: null }); break; }
+      if (r.merging) { e(['error: Merging is not possible because you have unmerged files.', "hint: Fix them up in the work tree, and then use 'git add/rm <file>'", 'hint: as appropriate to mark resolution and make a commit.', 'fatal: Exiting because of an unresolved conflict.']); break; }
+      const name = plain[0], id = name && gitRef(r, name);
+      if (!id) { e([`merge: ${name || ''} - not something we can merge`]); break; }
+      gitMergeRef(r, id, name, name.startsWith('origin/') ? `Merge remote-tracking branch '${name}'` : `Merge branch '${name}'`, o, e);
+      break;
+    }
+    case 'remote': {
+      const [act, name, url] = plain;
+      if (!act || has('-v')) { if (r.origin) o(...(has('-v') ? [`origin\t${r.origin} (fetch)`, `origin\t${r.origin} (push)`] : ['origin'])); break; }
+      if (act === 'add') {
+        if (!name || !url) { e(['usage: git remote add <name> <url>']); break; }
+        if (r.origin) { e(['error: remote origin already exists.'], 'Remote artıq var: git remote -v ilə bax (20.6).'); break; }
+        if (name !== 'origin') { h('Bu məşqdə remote-un adı origin olmalıdır (20.6).'); break; }
+        r.origin = url; break;
+      }
+      if (act === 'remove' || act === 'rm') { r.origin = null; r.tracking = {}; r.upstream = {}; break; }
+      if (act === 'set-url' && url) { r.origin = url; break; }
+      e([`error: Unknown subcommand: ${act}`]); break;
+    }
+    case 'fetch': if (gitRemoteOk(r, e)) gitFetch(r, o); break;
+    case 'push': gitPushCmd(r, args, plain, o, e, h); break;
+    case 'pull': gitPullCmd(r, args, plain, o, e, h); break;
+    case 'revert': gitRevertCmd(r, plain, o, e); break;
+    case 'reset': {
+      if (has('--hard') || has('--soft') || has('--mixed') || plain.some(x => /^(HEAD[~^]|[0-9a-f]{7})/.test(x))) {
+        e(['git reset: bu məşqdə bağlıdır'], 'reset --hard commit olunmamış dəyişiklikləri birdəfəlik silir, push olunmuş tarixçəni isə yenidən yazır və komanda yoldaşlarının işini pozur (20.2). Lokal dəyişikliyi geri qaytarmaq üçün git restore, push olunmuş commit üçün git revert işlət.');
+        break;
+      }
+      const H = gitTree(r), sp = plain.filter(x => x !== 'HEAD');
+      Object.keys(Object.assign({}, r.index, H)).filter(p => !sp.length || sp.some(s => p === s || p.startsWith(s.replace(/\/$/, '') + '/'))).forEach(p => { if (H[p] === undefined) delete r.index[p]; else r.index[p] = H[p]; });
+      const st = gitSt(r); if (st.unstaged.length) o('Unstaged changes after reset:', ...st.unstaged.map(([p]) => `M\t${p}`));
+      break;
+    }
+    case 'stash': gitStashCmd(r, plain, o, e); break;
+    case 'help': o('Bu məşqdəki əmrlər: git init, status, add, restore [--staged], commit -m, log [--oneline], diff [--staged], show, branch, switch [-c], checkout [-b], merge, remote add, push [-u], pull [--rebase], fetch, revert, rm --cached, stash.'); break;
+  }
+  return out;
+}
+const gitNear = w => { let best = null, bd = 3; GIT_CMDS.forEach(x => { const d = gitLev(w, x); if (d < bd) { bd = d; best = x; } }); return best; };
+function gitLev(a, b) { const d = Array.from({ length: a.length + 1 }, (_, i) => [i]); for (let j = 1; j <= b.length; j++) d[0][j] = j; for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[a.length][b.length]; }
+function gitShort(r) {
+  const st = gitSt(r), H = gitTree(r), rows = {};
+  st.staged.forEach(([p, k]) => { rows[p] = [k === 'new file' ? 'A' : k === 'deleted' ? 'D' : 'M', ' ']; });
+  st.unstaged.forEach(([p, k]) => { rows[p] = [(rows[p] || [' '])[0], k === 'deleted' ? 'D' : 'M']; });
+  st.con.forEach(p => { rows[p] = ['U', 'U']; });
+  return Object.keys(rows).sort().map(p => rows[p].join('') + ' ' + p).concat(gitCollapse(r, st.untracked).map(p => '?? ' + p));
+}
+function gitCommitCmd(r, args, o, e, h) {
+  const msgs = []; let all = false, amend = false;
+  for (let i = 0; i < args.length; i++) { const x = args[i];
+    if (x === '-m' || x === '--message') msgs.push(args[++i] || ''); else if (/^-[a-z]*m$/.test(x) && x.length > 2) { if (x.includes('a')) all = true; msgs.push(args[++i] || ''); }
+    else if (x === '-a' || x === '--all') all = true; else if (x === '--amend') amend = true; else if (x.startsWith('-m')) msgs.push(x.slice(2)); }
+  if (!gitWho(r, e)) return;
+  if (r.merging && r.merging.conflicts.length) { e(['error: Committing is not possible because you have unmerged files.', "hint: Fix them up in the work tree, and then use 'git add/rm <file>'", 'hint: as appropriate to mark resolution and make a commit.', 'fatal: Exiting because of an unresolved conflict.'], 'Konflikti faylda həll et, işarələri sil, sonra git add.'); return; }
+  if (!msgs.length && !r.merging && !amend) { e(['Aborting commit due to empty commit message.'], 'Bu terminalda redaktor açılmır: mesajı -m ilə yaz, məsələn git commit -m "Add cart test".'); return; }
+  if (msgs.length && !msgs.join('').trim()) { e(['Aborting commit due to empty commit message.']); return; }
+  if (all) Object.keys(r.index).forEach(p => { if (r.work[p] === undefined) delete r.index[p]; else r.index[p] = r.work[p]; });
+  const H = gitTree(r), head = gitHeadId(r), changed = new Set(Object.keys(H).concat(Object.keys(r.index))), diff = [...changed].some(p => H[p] !== r.index[p]);
+  if (amend) {
+    if (!head) { e(['fatal: You have nothing to amend.']); return; }
+    const old = r.commits[head], P0 = gitTree(r, old.parents[0] || null), msg = msgs.length ? msgs.join('\n\n') : old.msg;
+    if (r.remote && Object.values(r.remote.branches).some(x => gitIsAnc(r, head, x))) h('Diqqət: bu commit artıq push olunub — amend tarixçəni dəyişir (20.2). Push etmək üçün --force lazım olacaq, komandada bunu etmə.');
+    const tip = old.parents; r.branches[r.head] = tip[0] || null; if (!tip[0]) delete r.branches[r.head];
+    const id = gitMake(r, msg, tip, r.index);
+    o(`[${r.head} ${id}] ${msg.split('\n')[0]}`, ` Date: ${gitDate(r.commits[id])}`, ...gitSummary(r, P0, r.index)); return;
+  }
+  if (!diff && !r.merging) { gitStatusOut(r).forEach(x => o(x)); return; }
+  const msg = msgs.length ? msgs.join('\n\n') : r.merging.msg, parents = head ? [head] : [];
+  if (r.merging) parents.push(r.merging.theirs);
+  const id = gitMake(r, msg, parents, r.index); r.merging = null;
+  o(`[${r.head}${head ? '' : ' (root-commit)'} ${id}] ${msg.split('\n')[0]}`, ...gitSummary(r, H, r.index));
+  if (/^(fix|update|changes?|dəyişiklik|düzəliş|asdf|test|commit|wip|\.+|final\d*)$/i.test(msg.trim())) h('Commit mesajı nəyi dəyişdiyini deməlidir: “Fix locked user error assertion”, “Add cart test” (20.4).');
+}
+const GIT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], GIT_MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function gitDate(c) { const d = new Date(Date.UTC(2026, 9, 20, 9, 12) + c.seq * 47 * 60000); return `${GIT_DAYS[d.getUTCDay()]} ${GIT_MON[d.getUTCMonth()]} ${d.getUTCDate()} ${[d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds()].map(pad2).join(':')} 2026 +0400`; }
+function gitDeco(r, id) {
+  const L = [];
+  Object.keys(r.branches).sort((x, y) => (x === r.head ? -1 : y === r.head ? 1 : x < y ? -1 : 1)).forEach(b => { if (r.branches[b] === id) L.push(b === r.head ? `HEAD -> ${b}` : b); });
+  Object.keys(r.tracking).sort().forEach(b => { if (r.tracking[b] === id) L.push('origin/' + b); });
+  return L;
+}
+function gitLogOne(r, id, o, line) {
+  const c = r.commits[id], d = gitDeco(r, id), dec = d.length ? ` (${d.join(', ')})` : '';
+  if (line) { o(`${id}${dec} ${c.msg.split('\n')[0]}`); return; }
+  o(`commit ${gitLong(id)}${dec}`); if (c.parents.length > 1) o(`Merge: ${c.parents.join(' ')}`);
+  o(`Author: ${c.who.name} <${c.who.email}>`, `Date:   ${gitDate(c)}`, '', ...c.msg.split('\n').map(x => '    ' + x), '');
+}
+function gitLogCmd(r, args, o, e) {
+  const one = args.includes('--oneline'), all = args.includes('--all'), graph = args.includes('--graph'), nArg = args.find(x => /^-\d+$/.test(x)), n = nArg ? +nArg.slice(1) : Infinity;
+  const ref = args.find(x => !x.startsWith('-')), start = ref ? gitRef(r, ref) : gitHeadId(r);
+  if (!gitHeadId(r) && !ref) { e([`fatal: your current branch '${r.head}' does not have any commits yet`]); return; }
+  if (ref && !start) { e([`fatal: ambiguous argument '${ref}': unknown revision or path not in the working tree.`]); return; }
+  const set = all ? gitKnown(r) : gitAnc(r, start);
+  [...set].map(x => r.commits[x]).sort((x, y) => y.seq - x.seq).slice(0, n).forEach(c => one ? gitLogOne(r, c.id, x => o((graph ? '* ' : '') + x), true) : gitLogOne(r, c.id, o));
+}
+function gitBranchCmd(r, args, plain, o, e) {
+  const has = f => args.includes(f);
+  if (has('-M') || has('-m')) {
+    const nu = plain[plain.length - 1], old = plain.length > 1 ? plain[0] : r.head;
+    if (!nu) { e(['fatal: branch name required']); return; }
+    if (r.branches[old]) { r.branches[nu] = r.branches[old]; if (old !== nu) delete r.branches[old]; }
+    if (r.head === old) r.head = nu; return;
+  }
+  if (has('-d') || has('-D')) {
+    const b = plain[0];
+    if (!r.branches[b]) { e([`error: branch '${b}' not found`]); return; }
+    if (b === r.head) { e([`error: cannot delete branch '${b}' used by worktree at '${GIT_DIR}'`]); return; }
+    if (has('-d') && !gitIsAnc(r, r.branches[b], gitHeadId(r))) { e([`error: the branch '${b}' is not fully merged.`, `hint: If you are sure you want to delete it, run 'git branch -D ${b}'`], 'Budağın commit-ləri hələ heç yerə birləşdirilməyib: silsən, onlar itəcək.'); return; }
+    o(`Deleted branch ${b} (was ${r.branches[b]}).`); delete r.branches[b]; return;
+  }
+  if (plain.length) {
+    const b = plain[0], at = plain[1] ? gitRef(r, plain[1]) : gitHeadId(r);
+    if (!at) { e([`fatal: not a valid object name: '${plain[1] || r.head}'`], 'Budaq commit-ə işarə edir: əvvəlcə ilk commit-i et.'); return; }
+    if (r.branches[b]) { e([`fatal: a branch named '${b}' already exists`]); return; }
+    r.branches[b] = at; return;
+  }
+  const names = Object.keys(r.branches).sort();
+  if (!names.length) return;
+  o(...names.map(b => (b === r.head ? '* ' : '  ') + b));
+  if (has('-a') || has('-r')) o(...Object.keys(r.tracking).sort().map(b => '  remotes/origin/' + b));
+}
+function gitSwitchCmd(r, sub, args, plain, o, e, h) {
+  const create = args.includes('-c') || args.includes('-b') || args.includes('-C'), name = plain[0];
+  if (sub === 'checkout' && args.includes('--')) { const H = r.index; plain.forEach(p => { if (p in H) r.work[p] = H[p]; }); return; }
+  if (!name) { e([sub === 'switch' ? 'fatal: missing branch or commit argument' : 'error: no branch name']); return; }
+  if (r.merging) { e([`error: you need to resolve your current index first`, ...r.merging.conflicts.map(p => `${p}: needs merge`)]); return; }
+  if (create) {
+    if (r.branches[name]) { e([`fatal: a branch named '${name}' already exists`]); return; }
+    const at = gitHeadId(r);
+    if (at) r.branches[name] = at; r.head = name;
+    o(`Switched to a new branch '${name}'`); return;
+  }
+  if (name === r.head) { o(`Already on '${name}'`); return; }
+  let id = r.branches[name];
+  if (!id && r.tracking[name]) { r.branches[name] = r.tracking[name]; r.upstream[name] = true; id = r.branches[name]; o(`branch '${name}' set up to track 'origin/${name}'.`); }
+  if (!id) {
+    if (sub === 'checkout' && (name in r.work || name in r.index)) { if (name in r.index) r.work[name] = r.index[name]; o(`Updated 1 path from the index`); return; }
+    e([sub === 'switch' ? `fatal: invalid reference: ${name}` : `error: pathspec '${name}' did not match any file(s) known to git`], `Belə budaq yoxdur. Budaqlar: ${Object.keys(r.branches).join(', ') || '—'}. Yeni budaq: git switch -c ${name}`); return;
+  }
+  const H = gitTree(r), T = gitTree(r, id), clash = gitClash(r, H, T);
+  if (clash.length) { e(['error: Your local changes to the following files would be overwritten by checkout:', ...clash.map(p => '\t' + p), 'Please commit your changes or stash them before you switch branches.', 'Aborting'], 'Dəyişiklikləri əvvəlcə commit et (və ya git stash).'); return; }
+  gitCheckoutTree(r, H, T); r.head = name;
+  o(`Switched to branch '${name}'`);
+  const ab = gitAB(r, name); if (ab) o(!ab.ahead && !ab.behind ? `Your branch is up to date with 'origin/${name}'.` : ab.ahead && !ab.behind ? `Your branch is ahead of 'origin/${name}' by ${gitN(ab.ahead, 'commit')}.` : `Your branch is behind 'origin/${name}' by ${gitN(ab.behind, 'commit')}, and can be fast-forwarded.`);
+}
+function gitRemoteOk(r, e) {
+  if (!r.origin) { e(["fatal: 'origin' does not appear to be a git repository", 'fatal: Could not read from remote repository.', '', 'Please make sure you have the correct access rights', 'and the repository exists.'], 'Əvvəlcə remote-u əlavə et: git remote add origin <URL> (20.6).'); return false; }
+  if (r.origin.replace(/\.git$/, '').replace(/\/$/, '').toLowerCase() !== GIT_URL0.toLowerCase()) { e(['remote: Repository not found.', `fatal: repository '${r.origin}/' not found`], `URL-i yoxla: ${GITD.url} (git remote set-url origin <URL>).`); return false; }
+  return true;
+}
+function gitFetch(r, o) {
+  const lines = [];
+  Object.entries(r.remote.branches).forEach(([b, id]) => { const old = r.tracking[b]; if (old === id) return; lines.push(old ? `   ${old}..${id}  ${b.padEnd(10)} -> origin/${b}` : ` * [new branch]      ${b.padEnd(10)} -> origin/${b}`); r.tracking[b] = id; });
+  if (lines.length) o(`From ${GIT_URL0}`, ...lines);
+}
+function gitPushCmd(r, args, plain, o, e, h) {
+  if (args.some(x => /^(--force|-f|--force-with-lease)$/.test(x))) { e(['git push --force: bu məşqdə bağlıdır'], 'push --force GitHub-dakı tarixçəni sənin lokal tarixçənlə əvəz edir: komanda yoldaşlarının commit-ləri itə bilər (20.2). Əvvəlcə git pull, sonra adi git push.'); return; }
+  const setUp = args.includes('-u') || args.includes('--set-upstream');
+  if (!r.origin && !plain.length) { e(['fatal: No configured push destination.', 'Either specify the URL from the command-line or configure a remote repository using', '', '    git remote add <name> <url>', '', 'and then push using the remote name', '', '    git push <name>', ''], 'Əvvəlcə remote: git remote add origin <URL> (20.6).'); return; }
+  if (plain[0] && plain[0] !== 'origin') { e([`fatal: '${plain[0]}' does not appear to be a git repository`, 'fatal: Could not read from remote repository.']); return; }
+  if (!gitRemoteOk(r, e)) return;
+  const b = plain[1] || r.head;
+  if (!plain[1] && !r.upstream[r.head] && !setUp) { e([`fatal: The current branch ${r.head} has no upstream branch.`, 'To push the current branch and set the remote as upstream, use', '', `    git push --set-upstream origin ${r.head}`, '', 'To have this happen automatically for branches without a tracking', "upstream, see 'push.autoSetupRemote' in 'git help config'.", ''], `İlk push-da: git push -u origin ${r.head}`); return; }
+  const local = r.branches[b];
+  if (!local) { e([`error: src refspec ${b} does not match any`, `error: failed to push some refs to '${GITD.url}'`], b === 'main' && r.branches.master ? 'Lokal budaq master adlanır: əvvəlcə git branch -M main (20.6).' : 'Bu adda lokal budaq və ya commit yoxdur: əvvəlcə commit et, git branch ilə adı yoxla.'); return; }
+  if (!r.pushed) { h('Real kompüterdə ilk push-da brauzerdə GitHub girişi açılır (Git Credential Manager) — burada giriş artıq edilib.'); r.pushed = true; }
+  const rem = r.remote.branches[b];
+  if (rem === local) { o('Everything up-to-date'); }
+  else if (rem && !gitIsAnc(r, rem, local)) {
+    const fetched = r.tracking[b] === rem;
+    o(`To ${GITD.url}`); e([` ! [rejected]        ${b} -> ${b} (${fetched ? 'non-fast-forward' : 'fetch first'})`, `error: failed to push some refs to '${GITD.url}'`].concat(fetched
+      ? ['hint: Updates were rejected because the tip of your current branch is behind', "hint: its remote counterpart. If you want to integrate the remote changes,", "hint: use 'git pull' before pushing again.", "hint: See the 'Note about fast-forwards' in 'git push --help' for details."]
+      : ['hint: Updates were rejected because the remote contains work that you do not', 'hint: have locally. This is usually caused by another repository pushing to', "hint: the same ref. If you want to integrate the remote changes, use", "hint: 'git pull' before pushing again.", "hint: See the 'Note about fast-forwards' in 'git push --help' for details."]),
+      'GitHub-da sənin lokalda olmayan commit var (komanda yoldaşı push edib). Əvvəlcə onu götür: git pull --rebase və ya git pull --no-rebase, sonra yenidən push (20.6).');
+    return;
+  } else {
+    o(`To ${GITD.url}`, rem ? `   ${rem}..${local}  ${b} -> ${b}` : ` * [new branch]      ${b} -> ${b}`);
+    r.remote.branches[b] = local; r.tracking[b] = local;
+  }
+  if (setUp && !r.upstream[b]) { r.upstream[b] = true; r.tracking[b] = local; o(`branch '${b}' set up to track 'origin/${b}'.`); }
+}
+function gitPullCmd(r, args, plain, o, e, h) {
+  if (plain[0] && plain[0] !== 'origin') { e([`fatal: '${plain[0]}' does not appear to be a git repository`]); return; }
+  if (!gitRemoteOk(r, e)) return;
+  const b = plain[1] || r.head;
+  if (!plain[1] && !r.upstream[r.head]) { e(['There is no tracking information for the current branch.', 'Please specify which branch you want to merge with.', 'See git-pull(1) for details.', '', '    git pull <remote> <branch>', '', 'If you wish to set tracking information for this branch you can do so with:', '', `    git branch --set-upstream-to=origin/<branch> ${r.head}`, '']); return; }
+  if (r.merging) { e(['error: You have not concluded your merge (MERGE_HEAD exists).', 'hint: Please, commit your changes before merging.', 'fatal: Exiting because of unfinished merge.']); return; }
+  gitFetch(r, o);
+  const theirs = r.tracking[b], ours = gitHeadId(r);
+  if (!theirs) { e([`fatal: couldn't find remote ref ${b}`]); return; }
+  if (gitIsAnc(r, theirs, ours)) { o('Already up to date.'); return; }
+  const rebase = args.includes('--rebase') || args.includes('-r') || r.cfg['pull.rebase'] === 'true', noRebase = args.includes('--no-rebase') || args.includes('--ff') || r.cfg['pull.rebase'] === 'false';
+  if (ours && !gitIsAnc(r, ours, theirs) && !rebase && !noRebase) {
+    e(['hint: You have divergent branches and need to specify how to reconcile them.', 'hint: You can do so by running one of the following commands sometime before', 'hint: your next pull:', 'hint:', 'hint:   git config pull.rebase false  # merge', 'hint:   git config pull.rebase true   # rebase', 'hint:   git config pull.ff only       # fast-forward only', 'hint:', "hint: You can replace \"git config\" with \"git config --global\" to set a default", 'hint: preference for all repositories. You can also pass --rebase, --no-rebase,', 'hint: or --ff-only on the command line to override the configured default per', 'hint: invocation.', 'fatal: Need to specify how to reconcile divergent branches.'],
+      'Lokal və GitHub-dakı tarixçə ayrılıb. Kitabdakı kimi: git pull --rebase origin main (öz commit-in GitHub-dakının üstünə qoyulur) və ya git pull --no-rebase (merge commit yaranır).');
+    return;
+  }
+  if (rebase && ours && !gitIsAnc(r, ours, theirs)) { gitRebaseOnto(r, theirs, o, e); return; }
+  gitMergeRef(r, theirs, `origin/${b}`, `Merge branch '${b}' of ${GIT_URL0}`, o, e);
+}
+// replay the local commits on top of the remote ones (each with a new id), as git pull --rebase does
+function gitRebaseOnto(r, onto, o, e) {
+  const ours = gitHeadId(r), T = gitAnc(r, onto), mine = [...gitAnc(r, ours)].filter(x => !T.has(x)).map(x => r.commits[x]).sort((x, y) => x.seq - y.seq);
+  if (mine.some(c => c.parents.length > 1)) { e(['error: bu məşqdə merge commit-i olan tarixçə rebase olunmur'], 'git pull --no-rebase işlət.'); return; }
+  if (gitSt(r).staged.length || gitSt(r).unstaged.length) { e(['error: cannot pull with rebase: You have unstaged changes.', 'error: please commit or stash them.']); return; }
+  const H0 = gitTree(r); let tip = onto, tree = Object.assign({}, gitTree(r, onto));
+  for (const c of mine) {
+    const P0 = gitTree(r, c.parents[0]), nt = Object.assign({}, tree);
+    for (const p of new Set(Object.keys(P0).concat(Object.keys(c.tree)))) {
+      if (P0[p] === c.tree[p]) continue;
+      const m = gitMerge3(P0[p], tree[p], c.tree[p], c.id);
+      if (m.conflict) { e([`error: could not apply ${c.id}... ${c.msg}`], 'Bu məşqdə rebase konfliktləri yoxdur: git rebase --abort əvəzinə git pull --no-rebase işlət.'); return; }
+      if (m.text === undefined) delete nt[p]; else nt[p] = m.text;
+    }
+    const id = gitHash(c.msg + tip + r.seq); r.commits[id] = { id, msg: c.msg, parents: [tip], tree: nt, br: c.br, seq: ++r.seq, who: c.who };
+    tip = id; tree = nt;
+  }
+  r.branches[r.head] = tip; gitCheckoutTree(r, H0, tree);
+  o(`Successfully rebased and updated refs/heads/${r.head}.`);
+}
+function gitRevertCmd(r, plain, o, e) {
+  const id = gitRef(r, plain[0]);
+  if (!plain[0] || !id) { e([plain[0] ? `fatal: bad revision '${plain[0]}'` : 'usage: git revert <commit>'], 'Commit-in hash-ını git log --oneline ilə tap.'); return; }
+  const c = r.commits[id], st = gitSt(r);
+  if (c.parents.length > 1) { e([`error: commit ${id} is a merge but no -m option was given.`, 'fatal: revert failed']); return; }
+  if (st.staged.length || st.unstaged.length) { e(['error: your local changes would be overwritten by revert.', 'hint: commit your changes or stash them to proceed.', 'fatal: revert failed']); return; }
+  if (!gitWho(r, e)) return;
+  const P0 = gitTree(r, c.parents[0] || null), H = gitTree(r), nt = Object.assign({}, H);
+  for (const p of new Set(Object.keys(P0).concat(Object.keys(c.tree)))) {
+    if (P0[p] === c.tree[p]) continue;
+    const m = gitMerge3(c.tree[p], H[p], P0[p], 'parent of ' + id);
+    if (m.conflict) { e([`error: could not revert ${id}... ${c.msg}`, 'hint: after resolving the conflicts, mark the corrected paths'], 'Bu commit-dən sonra eyni sətirlər yenə dəyişib: bu məşqdə belə revert dəstəklənmir.'); return; }
+    if (m.text === undefined) delete nt[p]; else nt[p] = m.text;
+  }
+  const msg = `Revert "${c.msg.split('\n')[0]}"\n\nThis reverts commit ${gitLong(id)}.`;
+  gitCheckoutTree(r, H, nt); const nid = gitMake(r, msg, [gitHeadId(r)], nt);
+  o(`[${r.head} ${nid}] ${msg.split('\n')[0]}`, ...gitSummary(r, H, nt));
+}
+function gitStashCmd(r, plain, o, e) {
+  const act = plain[0] || 'push', H = gitTree(r), st = gitSt(r);
+  if (act === 'list') { r.stash.forEach((s, i) => o(`stash@{${i}}: WIP on ${s.br}: ${s.base} ${r.commits[s.base].msg.split('\n')[0]}`)); return; }
+  if (act === 'push' || act === 'save') {
+    if (!st.staged.length && !st.unstaged.length) { o('No local changes to save'); return; }
+    const head = gitHeadId(r); if (!head) { e(['You do not have the initial commit yet']); return; }
+    r.stash.unshift({ base: head, br: r.head, work: Object.assign({}, r.work), index: Object.assign({}, r.index) });
+    Object.keys(Object.assign({}, r.index, H)).forEach(p => { if (H[p] === undefined) { delete r.index[p]; delete r.work[p]; } else { r.index[p] = H[p]; r.work[p] = H[p]; } });
+    o(`Saved working directory and index state WIP on ${r.head}: ${head} ${r.commits[head].msg.split('\n')[0]}`); return;
+  }
+  if (act === 'pop' || act === 'apply') {
+    const s = r.stash[0]; if (!s) { e(['error: No stash entries found.']); return; }
+    const B = gitTree(r, s.base);
+    for (const p of new Set(Object.keys(B).concat(Object.keys(s.work)))) {
+      if (gitIgnored(r, p) && !(p in s.index)) continue;
+      if (B[p] === s.work[p]) continue;
+      const m = gitMerge3(B[p], r.work[p], s.work[p], 'Stashed changes');
+      if (m.conflict) { e([`error: Your local changes to the following files would be overwritten by merge:`, '\t' + p, 'Please commit your changes or stash them before you merge.', 'Aborting']); return; }
+      if (m.text === undefined) delete r.work[p]; else r.work[p] = m.text;
+    }
+    gitStatusOut(r).forEach(x => o(x));
+    if (act === 'pop') { o(`Dropped refs/stash@{0} (${gitLong(gitHash(JSON.stringify(s.work)))})`); r.stash.shift(); }
+    return;
+  }
+  e([`error: unknown subcommand: ${act}`]);
+}
+// a few shell commands, PowerShell and bash names alike; `code <file>` opens the editor
+function gitShell(r, a, line, o, e, h) {
+  const cmd = a[0].toLowerCase(), args = a.slice(1), files = Object.keys(r.work).sort();
+  const norm = p => String(p || '').replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/$/, '');
+  if (cmd === 'clear' || cmd === 'cls') { GIT.log = []; return; }
+  if (cmd === 'pwd') { o(GITD.path); return; }
+  if (cmd === 'help') { o('Terminal: git …, ls, cat <fayl>, code <fayl> (redaktorda aç), New-Item <fayl>, echo "mətn" > <fayl>, rm <fayl>, clear.', 'Faylı açmaq üçün aşağıdakı «Fayllar» siyahısında ona toxunmaq da olar.'); return; }
+  if (cmd === 'ls' || cmd === 'dir' || cmd === 'get-childitem') {
+    const all = args.some(x => /^-(a|force)$/i.test(x)), dir = norm(args.find(x => !x.startsWith('-')) || ''), pre = dir ? dir + '/' : '', names = new Set();
+    if (!pre && all && r.init) names.add('.git/'); // hidden, as on Windows
+    files.filter(p => p.startsWith(pre)).forEach(p => { const rest = p.slice(pre.length), k = rest.indexOf('/'); names.add(k < 0 ? rest : rest.slice(0, k + 1)); });
+    if (dir && !names.size) { e([`ls: cannot access '${dir}': No such file or directory`]); return; }
+    o(...[...names].sort()); return;
+  }
+  if (cmd === 'cat' || cmd === 'type' || cmd === 'get-content') { args.forEach(f => { const p = norm(f); if (r.work[p] === undefined) e([`cat: ${f}: No such file or directory`]); else gitLines(r.work[p]).forEach(x => o(x)); }); return; }
+  if (cmd === 'code' || cmd === 'notepad') { const p = norm(args[0]); if (!p) { e(['code: fayl adı lazımdır']); return; } if (r.work[p] === undefined) r.work[p] = ''; GIT.edit = p; return; }
+  if (cmd === 'touch' || cmd === 'new-item' || cmd === 'ni') { const p = norm(args.find(x => !x.startsWith('-'))); if (!p) { e([`${cmd}: fayl adı lazımdır`]); return; } if (r.work[p] === undefined) r.work[p] = ''; if (cmd === 'touch') h('PowerShell-də touch yoxdur, New-Item <fayl> yazılır — bu məşq hər ikisini qəbul edir.'); return; }
+  if (cmd === 'rm' || cmd === 'del' || cmd === 'remove-item') { args.filter(x => !x.startsWith('-')).forEach(f => { const p = norm(f), hit = files.filter(x => x === p || x.startsWith(p + '/')); if (!hit.length) e([`rm: cannot remove '${f}': No such file or directory`]); hit.forEach(x => { delete r.work[x]; }); }); return; }
+  if (cmd === 'echo' || cmd === 'write-output') {
+    const m = /^\s*\S+\s+(.*?)\s*(>>?)\s*(\S+)\s*$/.exec(line);
+    if (!m) { o(args.join(' ')); return; }
+    const text = gitSplit(m[1]).join(' '), p = norm(m[3]); r.work[p] = (m[2] === '>>' ? r.work[p] || '' : '') + text + '\n'; return;
+  }
+  if (cmd === 'cd') { h('Bu məşqdə bir qovluq var: ' + GITD.path); return; }
+  e([`${a[0]} : The term '${a[0]}' is not recognized as the name of a cmdlet, function, script file, or operable program.`], 'Bu terminal git əmrlərini və bir neçə sadə əmri tanıyır: help yaz.');
+}
+// ---- checks: what the task wants of the repository
+function gitChecks(t) {
+  const r = GIT.r, moved = gitHeadId(r) !== ((t.start.branches || {})[t.start.head] || null); // a "moved" check counts once there is a new commit
+  return t.checks.map(c => {
+    let ok = false;
+    const tree = ref => { const id = gitRef(r, ref); return id ? r.commits[id].tree : null; };
+    switch (c.t) {
+      case 'init': ok = r.init; break;
+      case 'head': ok = r.init && r.head === c.name && !!r.branches[c.name]; break;
+      case 'branch': ok = !!r.branches[c.name]; break;
+      case 'tree': { const T = tree(c.ref), v = T && T[c.path], hit = !!T && v !== undefined && (!c.re || new RegExp(c.re).test(v)); ok = c.not ? !!T && !hit : hit; break; }
+      case 'commits': ok = !!r.branches[c.branch] && gitAnc(r, r.branches[c.branch]).size >= c.min; break;
+      case 'lastOnly': { const id = r.branches.main, cm = id && r.commits[id], P0 = cm && gitTree(r, cm.parents[0] || null); ok = !!cm && [...new Set(Object.keys(P0).concat(Object.keys(cm.tree)))].filter(p => P0[p] !== cm.tree[p]).sort().join() === c.files.slice().sort().join(); break; }
+      case 'untracked': ok = r.work[c.path] !== undefined && !(c.path in r.index) && !gitIgnored(r, c.path); break;
+      case 'ignored': ok = r.work[c.path] !== undefined && !(c.path in r.index) && gitIgnored(r, c.path); break;
+      case 'msg': { const cm = r.commits[gitHeadId(r)]; ok = !!cm && cm.seq > Math.max(0, ...Object.values(r.commits).filter(x => t.start.commits && t.start.commits.some(s => s.id === x.id)).map(x => x.seq)) && (c.re ? new RegExp(c.re).test(cm.msg) : cm.msg.trim().length >= 10 && !/^(fix|update|changes?|dəyişiklik|düzəliş|asdf|wip|final\d*)$/i.test(cm.msg.trim())); break; }
+      case 'merge': { const cm = r.commits[gitHeadId(r)]; ok = !!cm && cm.parents.length === 2; break; }
+      case 'pushed': ok = !!r.remote && !!r.branches[c.branch] && r.remote.branches[c.branch] === r.branches[c.branch] && (!c.re || new RegExp(c.re).test(r.commits[r.branches[c.branch]].msg)); break;
+      case 'upstream': ok = !!r.upstream[c.branch]; break;
+      case 'contains': ok = !!gitRef(r, c.ref) && [...gitAnc(r, gitRef(r, c.ref))].some(x => new RegExp(c.re).test(r.commits[x].msg)); break;
+      case 'clean': { const st = gitSt(r); ok = r.init && !r.merging && !st.staged.length && !st.unstaged.length && !st.untracked.length; break; }
+    }
+    return { l: c.l, ok: ok && (!c.moved || moved) };
+  });
+}
+// ---- the view
+function gitLoad(id) { Object.assign(GIT, { task: id, r: gitNew(gitTaskById[id]), log: [], hi: -1, edit: null }); }
+const GIT_PS = () => `PS ${GITD.path}${GIT.r && GIT.r.init ? ` [${GIT.r.head}]` : ''}>`;
+function gitLogHTML() {
+  return GIT.log.map(([k, s, ps]) => k === 'cmd' ? `<div class="git-l cmd"><span class="git-ps">${esc(ps)}</span> ${esc(s)}</div>`
+    : k === 'h' ? `<div class="git-l h">${icon('bulb')}<span>${esc(s)}</span></div>` : `<div class="git-l ${k}">${esc(s) || ' '}</div>`).join('');
+}
+function gitCaseHTML() {
+  const t = gitTaskById[GIT.task], i = GITD.tasks.indexOf(t), C = gitChecks(t), done = C.every(x => x.ok);
+  if (done && !gitDone()[t.id]) { gitDone()[t.id] = 1; Store.changed('progress'); }
+  return `<div class="card sm-case"><div class="sm-id">G-${i + 1} · ${esc(t.title)}</div><p class="sm-p">${esc(t.goal)}</p>
+    <ul class="sm-rows git-checks">${C.map(x => `<li>${smMark(x.ok)}<div>${esc(x.l)}</div></li>`).join('')}</ul>
+    ${done ? `<div class="sm-good">${icon('check')}Tapşırıq yerinə yetirildi.</div>` : ''}
+    <details class="cmp-why"><summary>${icon('bulb')}İpucu</summary><ul class="pw-goals git-hints">${t.hints.map(x => `<li>${esc(x)}</li>`).join('')}</ul></details>
+    <div class="row" style="margin-top:10px"><button class="btn sm ghost" data-act="git-reset">${icon('refresh')}Yenidən başla</button></div></div>`;
+}
+function gitFilesHTML() {
+  const r = GIT.r, H = gitTree(r), st = gitSt(r), code = {};
+  if (r.init) gitShort(r).forEach(x => { const p = x.slice(3); code[p] = x.slice(0, 2); });
+  const paths = [...new Set(Object.keys(r.work).concat(Object.keys(r.index), Object.keys(H)))].sort();
+  const row = p => {
+    const c = code[p] || (code[gitCollapse(r, [p])[0]] === '??' && st.untracked.includes(p) ? '??' : r.init && r.work[p] !== undefined && !(p in r.index) && gitIgnored(r, p) ? '!!' : '  ');
+    const cls = c === '??' ? 'u' : c === '!!' ? 'i' : c === 'UU' ? 'c' : c.trim() ? 'm' : '';
+    return `<li><button class="git-f ${cls}" data-act="git-open" data-f="${esc(p)}"${r.work[p] === undefined ? ' disabled' : ''}><code>${esc(c)}</code><span>${esc(p)}</span></button></li>`;
+  };
+  return `<div class="tr-h">Fayllar · <span lang="en">git status -s</span></div><ul class="git-files">${paths.map(row).join('')}</ul>
+    <p class="muted git-legend"><code>??</code> untracked · <code>A&nbsp;</code> staging-də yeni · <code>&nbsp;M</code> dəyişib · <code>M&nbsp;</code> staging-də · <code>UU</code> konflikt · <code>!!</code> .gitignore · faylı açmaq üçün toxun</p>`;
+}
+function gitGraphHTML() {
+  const r = GIT.r, vis = gitKnown(r), list = [...vis].map(x => r.commits[x]).sort((a, b) => b.seq - a.seq);
+  if (!list.length) return `<div class="tr-h"><span lang="en">Commit</span>-lər</div><p class="tr-empty">${r.init ? 'Hələ commit yoxdur.' : 'Repo yoxdur: git init.'}</p>`;
+  const order = []; ['main', 'master'].concat(list.slice().reverse().map(c => c.br)).forEach(b => { if (!order.includes(b) && list.some(c => c.br === b)) order.push(b); });
+  const lane = c => order.indexOf(c.br), RH = 34, W = 12 + order.length * 16, Y = i => 17 + i * RH, X = c => 10 + lane(c) * 16, idx = Object.fromEntries(list.map((c, i) => [c.id, i]));
+  const edges = list.flatMap(c => c.parents.filter(p => p in idx).map(p => { const a = list[idx[p]], x1 = X(c), y1 = Y(idx[c.id]), x2 = X(a), y2 = Y(idx[p]);
+    return `<path class="git-e l${lane(x1 === x2 ? c : (c.parents[0] === p ? c : a)) % 4}" d="M${x1} ${y1} C ${x1} ${y1 + RH * .6}, ${x2} ${y2 - RH * .6}, ${x2} ${y2}"/>`; })).join('');
+  const dots = list.map((c, i) => `<circle class="git-c l${lane(c) % 4}${c.id === gitHeadId(r) ? ' head' : ''}" cx="${X(c)}" cy="${Y(i)}" r="${c.parents.length > 1 ? 6 : 5}"/>`).join('');
+  const rows = list.map(c => `<div class="git-row" style="height:${RH}px"><code>${c.id}</code>${gitDeco(r, c.id).map(d => `<span class="git-ref${d.startsWith('HEAD') ? ' head' : d.startsWith('origin/') ? ' rem' : ''}">${esc(d)}</span>`).join('')}<span class="git-msg">${esc(c.msg.split('\n')[0])}</span></div>`).join('');
+  return `<div class="tr-h"><span lang="en">Commit</span>-lər · <span lang="en">git log --graph</span></div><div class="git-graph" style="--gw:${W}px"><svg width="${W}" height="${list.length * RH}" aria-hidden="true">${edges}${dots}</svg><div>${rows}</div></div>`;
+}
+function gitRemoteHTML() {
+  const r = GIT.r; if (!r.remote) return '';
+  const tips = Object.entries(r.remote.branches);
+  const rows = tips.map(([b, id]) => { const loc = r.branches[b], st = !loc ? '' : loc === id ? 'lokal ilə eynidir' : gitIsAnc(r, id, loc) ? 'lokal irəlidədir: push lazımdır' : gitIsAnc(r, loc, id) ? 'GitHub-da yeni commit var: pull lazımdır' : 'tarixçələr ayrılıb: pull, sonra push';
+    return `<li><span class="git-ref rem">${esc(b)}</span><code>${id}</code><span class="git-msg">${esc(r.commits[id].msg.split('\n')[0])}</span>${st ? `<div class="git-sync">${esc(st)}</div>` : ''}</li>`; }).join('');
+  return `<div class="tr-h" lang="en">GitHub · origin</div><div class="git-url">${esc(GITD.url)}</div>
+    ${r.origin ? '' : '<p class="muted git-note">Lokal repo hələ bu remote-a bağlı deyil: git remote add origin &lt;URL&gt;</p>'}
+    ${rows ? `<ul class="git-rem">${rows}</ul>` : '<p class="tr-empty">Repo boşdur.</p>'}`;
+}
+function gitEdHTML() {
+  const p = GIT.edit; if (!p || !GIT.r || GIT.r.work[p] === undefined) return '';
+  return `<div class="card git-ed"><div class="git-ed-h"><b>${esc(p)}</b><span class="muted">redaktor (VS Code kimi)</span></div>
+    <textarea class="field git-ta" id="git-ta" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off" aria-label="${esc(p)}">${esc(GIT.r.work[p])}</textarea>
+    <div class="row"><button class="btn primary sm" data-act="git-save">${icon('save')}Saxla</button><button class="btn ghost sm" data-act="git-close">Bağla</button></div></div>`;
+}
+function gitPanesHTML() { return `<div class="tr-box">${gitFilesHTML()}</div><div class="tr-box">${gitGraphHTML()}</div>${GIT.r.remote ? `<div class="tr-box">${gitRemoteHTML()}</div>` : ''}`; }
+function gitRedraw(term) {
+  const set = (id, html) => { const el = $('#' + id); if (el) el.innerHTML = html; };
+  set('git-case', gitCaseHTML()); set('git-ed', gitEdHTML()); set('git-panes', gitPanesHTML());
+  const ps = $('#git-ps'); if (ps) ps.textContent = GIT_PS();
+  if (term) { const out = $('#git-out'); if (out) { out.innerHTML = gitLogHTML(); out.scrollTop = out.scrollHeight; } }
+  $$('#view .sm-pick .chip').forEach(b => { if (gitDone()[b.dataset.id] && b.dataset.id !== GIT.task) b.classList.add('pass'); });
+}
+function gitExec(line) {
+  GIT.log.push(['cmd', line, GIT_PS()]);
+  if (line.trim()) { GIT.hist.push(line); GIT.hi = -1; }
+  const out = gitRun(line); GIT.log.push(...out);
+  if (GIT.log.length > 400) GIT.log = GIT.log.slice(-400);
+  gitRedraw(true);
+  if (GIT.edit) { const ta = $('#git-ta'); if (ta) ta.focus(); }
+}
+const GIT_QUICK = ['git status', 'git log --oneline', 'git diff', 'git branch'];
+function vGit(v) {
+  if (!GIT.r) gitLoad(GIT.task);
+  const t = gitTaskById[GIT.task];
+  setHeader({ back: true, kicker: 'Fəsil 20 · məşq', name: `Git: ${t.title}` });
+  v.innerHTML = `<p class="muted sm-intro">${esc(GITD.intro)}</p>
+    <div class="sm-pick">${GITD.tasks.map((x, i) => `<button class="chip${x.id === GIT.task ? ' acc' : gitDone()[x.id] ? ' pass' : ''}" data-act="git-task" data-id="${x.id}">${gitDone()[x.id] ? icon('check') : ''}G-${i + 1}</button>`).join('')}</div>
+    <div id="git-case">${gitCaseHTML()}</div>
+    <div class="git-term"><div class="git-out" id="git-out" aria-live="polite">${gitLogHTML()}</div>
+      <label class="git-in-row"><span class="git-ps" id="git-ps">${esc(GIT_PS())}</span><input id="git-in" class="git-in" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Terminal əmri" placeholder="git status"></label></div>
+    <div class="git-quick">${GIT_QUICK.map(c => `<button class="btn sm ghost" data-act="git-q" data-c="${esc(c)}"><code>${esc(c)}</code></button>`).join('')}</div>
+    <div id="git-ed">${gitEdHTML()}</div><div class="git-panes" id="git-panes">${gitPanesHTML()}</div>`;
+  const out = $('#git-out'); if (out) out.scrollTop = out.scrollHeight;
+}
+const gitLinkHTML = s => s.git ? `<div class="sm-link"><div class="srt-k">${icon('steps')}Git məşqi</div><p class="srt-hint">Terminalda Git əmrlərini yaz və nəticəni gör: fayllar, staging, commit qrafiki və GitHub. Kompüterində heç nə dəyişmir.</p>
+  <div class="sm-links">${GITD.tasks.map((t, i) => `<button class="btn sm" data-act="git-open-task" data-id="${t.id}"><b>${gitDone()[t.id] ? '✓' : 'G-' + (i + 1)}</b> ${esc(t.title)}</button>`).join('')}</div></div>` : '';
 /* ---------- glossary term popover ---------- */
 // interview.json: how to say the term in a job interview, one or two sentences
 const sayHTML = g => g.say ? `<div class="say"><div class="say-k">${icon('chat')}Müsahibədə belə de</div><p>${esc(g.say)}</p></div>` : '';
@@ -3030,6 +3743,9 @@ function vPractice(v) {
   <section class="block"><div class="block-h"><h2><span lang="en">Playwright</span> məşqi</h2><span class="muted" style="font-size:13px">${Object.keys(pwDoc().loc).length}/${PWD.locators.length} lokator · ${Object.keys(pwDoc().done).length}/${PWD.tasks.length} test</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">Lokatoru mağazada sına: neçə element tapdı, strict mode nə deyir. Sonra testi özün yaz və işə sal — xəta mesajları, trace və saucedemo-dakı data-test atributları real Playwright-dakı kimidir.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="pw-open" data-tab="loc">${icon('target')}Lokator məşqi</button><button class="btn" data-act="pw-open" data-tab="test">${icon('play')}Test yaz</button></div></div></section>
+  <section class="block"><div class="block-h"><h2>Git məşqi</h2><span class="muted" style="font-size:13px">${GITD.tasks.filter(t => gitDone()[t.id]).length}/${GITD.tasks.length} tapşırıq</span></div>
+    <div class="card"><div class="muted" style="font-size:13.5px">Terminal və repo brauzerdədir: git init, add, commit, budaqlar, merge və konflikt, push və pull, revert. Git-in öz mesajlarını oxu, nəticəni fayllarda, commit qrafikində və GitHub-da gör.</div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="git-open-task" data-id="${GIT.task}">${icon('steps')}Terminalı aç</button></div></div></section>
   <section class="block"><div class="block-h"><h2>Xülasə vərəqləri</h2><span class="muted" style="font-size:13px">fəsil başına 1 səhifə</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">Əsas fikirlər, sxem, tipik səhvlər, “Özünü yoxla” sualları və terminlər bir A4 səhifəsində. Təkrar və müsahibəyə hazırlıq üçün çap et və ya PDF kimi saxla.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sum" data-ch="all">${icon('print')}Bütün vərəqlər (${MAIN.length})</button></div>
@@ -4110,6 +4826,17 @@ document.addEventListener('click', ev => {
       break;
     }
     case 'dv-copy': { const t = dvById[DVS.id]; try { navigator.clipboard.writeText(dvEvidence(t).text).then(() => toast('Sübut kopyalandı — bug report-un “Əlavələr” sahəsinə yapışdır.'), () => toast('Kopyalamaq alınmadı')); } catch (e) { toast('Kopyalamaq alınmadı'); } break; }
+    case 'git-task': if (d.id !== GIT.task) { gitLoad(d.id); render({ keepScroll: true }); } break;
+    case 'git-open-task': closeSheet(); if (d.id !== GIT.task || !GIT.r) gitLoad(d.id); go('git', {}, { push: S.view !== 'git' }); break;
+    case 'git-reset': openConfirm('Yenidən başla', 'Bu tapşırığın repo-su ilk vəziyyətinə qayıdacaq, terminal təmizlənəcək.', 'Yenidən başla', () => { gitLoad(GIT.task); render({ keepScroll: true }); }); break;
+    case 'git-q': gitExec(d.c); break;
+    case 'git-open': { GIT.edit = d.f; gitRedraw(false); const ed = $('#git-ed'); if (ed) ed.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); break; }
+    case 'git-save': {
+      const ta = $('#git-ta'); if (!ta || !GIT.edit) break;
+      const v = ta.value.replace(/\r\n/g, '\n'); GIT.r.work[GIT.edit] = v && !v.endsWith('\n') ? v + '\n' : v;
+      gitRedraw(false); toast('Saxlanıldı: ' + GIT.edit); break;
+    }
+    case 'git-close': GIT.edit = null; gitRedraw(false); break;
     case 'ctfl-open': closeSheet(); go('ctfl', {}, { push: S.view !== 'ctfl' }); break;
     case 'exam-open': closeSheet(); go('exam', {}, { push: S.view !== 'exam' }); break;
     case 'exam-mode': S.examMode = d.v; rerender(); break;
@@ -4329,6 +5056,15 @@ document.addEventListener('keydown', ev => {
     if (ev.key === 'Tab' && !ev.shiftKey) { ev.preventDefault(); const t = ev.target; t.setRangeText('  ', t.selectionStart, t.selectionEnd, 'end'); t.dispatchEvent(new Event('input', { bubbles: true })); return; }
     return;
   }
+  if (ev.target.id === 'git-in') { // the Git terminal: Enter runs, the arrows walk the history
+    if (ev.key === 'Enter') { ev.preventDefault(); const v = ev.target.value; ev.target.value = ''; gitExec(v); return; }
+    if (ev.key === 'ArrowUp' || ev.key === 'ArrowDown') {
+      ev.preventDefault(); const H = GIT.hist; if (!H.length) return;
+      GIT.hi = ev.key === 'ArrowUp' ? (GIT.hi < 0 ? H.length - 1 : Math.max(0, GIT.hi - 1)) : GIT.hi < 0 ? -1 : GIT.hi + 1 >= H.length ? -1 : GIT.hi + 1;
+      ev.target.value = GIT.hi < 0 ? '' : H[GIT.hi]; return;
+    }
+  }
+  if (ev.target.id === 'git-ta' && ev.key === 's' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); $('[data-act="git-save"]').click(); return; }
   if (ev.key === 'Enter' && !ev.shiftKey) {
     if (ev.target.id === 'tin') { ev.preventDefault(); const v = ev.target.value; ev.target.value = ''; autoGrow(ev.target); tutorSend(v); }
     else if (ev.target.id === 'shin') { ev.preventDefault(); shSend(); }
@@ -4440,7 +5176,7 @@ AI.setState('pending');
 // #c3-xulase and #xulase open the summary sheets (the claude.ai version links there when it cannot print);
 // #magaza opens the practice store, #magaza-tc04 with that test case; #reliz the release test, #reliz-tc06 that test case
 // on build 1.1; #devtools the DevTools practice, #devtools-dv3 that task; #playwright-pw3 a Playwright task, #lokator-l5
-// a locator.
+// a locator; #git the Git practice, #git-g5 that task.
 let AUTO = null;
 const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 function routeHash() {
@@ -4470,6 +5206,7 @@ function routeHash() {
     if (t === 'playwright' && own(pwTaskById, act)) Object.assign(PW, { task: act, run: null });
     if (t === 'lokator' && own(pwLocById, act)) Object.assign(PW, { loc: act, st: pwStart(pwLocById[act]), q: '', alts: null });
   }
+  else if (t === 'git') { S.tab = 'practice'; S.view = 'git'; S.params = {}; if (own(gitTaskById, act) && act !== GIT.task) gitLoad(act); }
   else if (h === 'istqb') { S.tab = 'practice'; S.view = 'ctfl'; S.params = {}; }
   else if (h === 'imtahan') { S.tab = 'practice'; S.view = 'exam'; S.params = {}; }
   else if (h === 'sql') { S.tab = 'practice'; S.view = 'sql'; S.params = {}; }

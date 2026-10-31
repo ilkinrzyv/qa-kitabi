@@ -624,6 +624,35 @@ for kind, sids in playwright.pop('sections').items():
             print('ERR playwright section', sid, file=sys.stderr); errors += 1; continue
         sec['pwl'] = kind
 print('playwright locators', len(playwright['locators']), 'tasks', len(playwright['tasks']))
+# ---------- 6g3. Git practice (git.json): start repositories (commits from file templates), task checks, section links;
+# t28.js plays every task's solution in the page ----------
+gitcfg = json.load(open(os.path.join(BASE, 'git.json'), encoding='utf-8'))
+GIT_CHECKS = {'init', 'head', 'branch', 'tree', 'commits', 'lastOnly', 'untracked', 'ignored', 'msg', 'merge', 'pushed', 'upstream', 'contains', 'clean'}
+g_ids = set()
+for t in gitcfg['tasks']:
+    st = t.get('start', {})
+    cids = [c.get('id') for c in st.get('commits', [])]
+    known = lambda v: v is None or v in gitcfg['files']
+    ok = t.get('id') and t['id'] not in g_ids and all(t.get(k) for k in ('title', 'goal', 'hints', 'checks')) \
+        and all(c.get('id') and c.get('msg') and all(p_ in cids[:i] for p_ in c.get('parents', [])) and all(known(v) for v in c.get('set', {}).values()) for i, c in enumerate(st.get('commits', []))) \
+        and all(v in cids for v in st.get('branches', {}).values()) and (not cids or st.get('head') in st.get('branches', {})) \
+        and all(known(v) for k in ('work', 'index') for v in st.get(k, {}).values()) \
+        and all(v in cids for v in st.get('remote', {}).get('branches', {}).values()) and all(v in cids for v in st.get('tracking', {}).values()) \
+        and all(c.get('t') in GIT_CHECKS and c.get('l') for c in t['checks'])
+    for c in t.get('checks', []):
+        try:
+            re.compile(c.get('re') or '')
+        except re.error:
+            ok = False
+    if not ok:
+        print('ERR git task', t.get('id'), file=sys.stderr); errors += 1
+    g_ids.add(t.get('id'))
+for sid in gitcfg.pop('sections'):
+    sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+    if not sec:
+        print('ERR git section', sid, file=sys.stderr); errors += 1; continue
+    sec['git'] = 1
+print('git tasks', len(gitcfg['tasks']))
 # ---------- 6j. ISTQB CTFL v4.0 map (ctfl.json): every syllabus topic points to the book sections that teach it ----------
 ctfl = json.load(open(os.path.join(BASE, 'ctfl.json'), encoding='utf-8'))['chapters']
 all_sids = {s['id'] for c in chapters for s in c['sections']}
@@ -821,7 +850,7 @@ for c in chapters:
             s['x']['short'], k = gl_wrap(s['x']['short'], rx, idx, 2); gl_total += k
 print('glossary links', gl_total)
 out = {'title': 'QA Kitabı: Sıfırdan Peşəkar Testerə', 'parts': parts, 'chapters': chapters,
-       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'devtools': devtools, 'playwright': playwright, 'api': api, 'sql': sqlcfg, 'ctfl': ctfl}
+       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'devtools': devtools, 'playwright': playwright, 'api': api, 'sql': sqlcfg, 'git': gitcfg, 'ctfl': ctfl}
 json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 # ---------- 7. report ----------

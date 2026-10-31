@@ -1,0 +1,310 @@
+{
+  "intro": "Git terminalda öyrənilir. Burada terminal və repo brauzerin içindədir: əmrləri yaz, Git-in öz mesajlarını oxu və nəticəni yanda gör — fayllar, staging, commit qrafiki və GitHub. Kompüterində heç nə dəyişmir.",
+  "path": "C:\\qa\\playwright-practice",
+  "url": "https://github.com/qa-telebe/playwright-practice.git",
+  "who": { "name": "QA Tələbə", "email": "qa@example.com" },
+  "mate": { "name": "Aysel Məmmədova", "email": "aysel@example.com" },
+  "files": {
+    "login": [
+      "import { test, expect } from '@playwright/test';",
+      "",
+      "test('standard_user ilə uğurlu giriş', async ({ page }) => {",
+      "  await page.goto('https://www.saucedemo.com/');",
+      "  await page.getByPlaceholder('Username').fill('standard_user');",
+      "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+      "  await page.getByRole('button', { name: 'Login' }).click();",
+      "  await expect(page).toHaveURL(/inventory/);",
+      "});"
+    ],
+    "login2": [
+      "import { test, expect } from '@playwright/test';",
+      "",
+      "test('standard_user ilə uğurlu giriş', async ({ page }) => {",
+      "  await page.goto('https://www.saucedemo.com/');",
+      "  await page.getByPlaceholder('Username').fill('standard_user');",
+      "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+      "  await page.getByRole('button', { name: 'Login' }).click();",
+      "  await expect(page).toHaveURL(/inventory/);",
+      "});",
+      "",
+      "test('bloklanmış istifadəçi xəta görür', async ({ page }) => {",
+      "  await page.goto('https://www.saucedemo.com/');",
+      "  await page.getByPlaceholder('Username').fill('locked_out_user');",
+      "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+      "  await page.getByRole('button', { name: 'Login' }).click();",
+      "  await expect(page.locator('[data-test=\"error\"]')).toContainText('locked');",
+      "});"
+    ],
+    "loginFixDebug": [
+      "import { test, expect } from '@playwright/test';",
+      "",
+      "test('standard_user ilə uğurlu giriş', async ({ page }) => {",
+      "  await page.goto('https://www.saucedemo.com/');",
+      "  await page.getByPlaceholder('Username').fill('standard_user');",
+      "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+      "  await page.getByRole('button', { name: 'Login' }).click();",
+      "  await expect(page).toHaveURL(/inventory/);",
+      "});",
+      "",
+      "test('bloklanmış istifadəçi xəta görür', async ({ page }) => {",
+      "  await page.goto('https://www.saucedemo.com/');",
+      "  await page.getByPlaceholder('Username').fill('locked_out_user');",
+      "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+      "  await page.getByRole('button', { name: 'Login' }).click();",
+      "  console.log('DEBUG', await page.title());",
+      "  await expect(page.locator('[data-test=\"error\"]')).toContainText('locked out');",
+      "});"
+    ],
+    "loginBadUrl": [
+      "import { test, expect } from '@playwright/test';",
+      "",
+      "test('standard_user ilə uğurlu giriş', async ({ page }) => {",
+      "  await page.goto('https://www.saucedemo.co/');",
+      "  await page.getByPlaceholder('Username').fill('standard_user');",
+      "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+      "  await page.getByRole('button', { name: 'Login' }).click();",
+      "  await expect(page).toHaveURL(/inventory/);",
+      "});",
+      "",
+      "test('bloklanmış istifadəçi xəta görür', async ({ page }) => {",
+      "  await page.goto('https://www.saucedemo.co/');",
+      "  await page.getByPlaceholder('Username').fill('locked_out_user');",
+      "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+      "  await page.getByRole('button', { name: 'Login' }).click();",
+      "  await expect(page.locator('[data-test=\"error\"]')).toContainText('locked');",
+      "});"
+    ],
+    "cart1": [
+      "import { test, expect } from '@playwright/test';",
+      "",
+      "test('məhsul səbətə əlavə olunur', async ({ page }) => {",
+      "  await page.goto('https://www.saucedemo.com/');",
+      "  await page.getByPlaceholder('Username').fill('standard_user');",
+      "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+      "  await page.getByRole('button', { name: 'Login' }).click();",
+      "  await page.getByTestId('add-to-cart-sauce-labs-backpack').click();",
+      "  const cartBadge = page.locator('.shopping_cart_badge');",
+      "  await expect(cartBadge).toHaveText('1');",
+      "});"
+    ],
+    "cartMain": [
+      "import { test, expect } from '@playwright/test';",
+      "",
+      "test('məhsul səbətə əlavə olunur', async ({ page }) => {",
+      "  await page.goto('https://www.saucedemo.com/');",
+      "  await page.getByPlaceholder('Username').fill('standard_user');",
+      "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+      "  await page.getByRole('button', { name: 'Login' }).click();",
+      "  await page.getByTestId('add-to-cart-sauce-labs-backpack').click();",
+      "  const cartBadge = page.locator('.shopping_cart_badge');",
+      "  await expect(cartBadge).toHaveText('1', { timeout: 10000 });",
+      "});"
+    ],
+    "cartTwo": [
+      "import { test, expect } from '@playwright/test';",
+      "",
+      "test('məhsul səbətə əlavə olunur', async ({ page }) => {",
+      "  await page.goto('https://www.saucedemo.com/');",
+      "  await page.getByPlaceholder('Username').fill('standard_user');",
+      "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+      "  await page.getByRole('button', { name: 'Login' }).click();",
+      "  await page.getByTestId('add-to-cart-sauce-labs-backpack').click();",
+      "  await page.getByTestId('add-to-cart-sauce-labs-bike-light').click();",
+      "  const cartBadge = page.locator('.shopping_cart_badge');",
+      "  await expect(cartBadge).toHaveText('2');",
+      "});"
+    ],
+    "checkout": [
+      "import { test, expect } from '@playwright/test';",
+      "",
+      "test('sifarişi tamamlamaq', async ({ page }) => {",
+      "  await page.goto('https://www.saucedemo.com/');",
+      "  await page.getByPlaceholder('Username').fill('standard_user');",
+      "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+      "  await page.getByRole('button', { name: 'Login' }).click();",
+      "  await page.getByTestId('add-to-cart-sauce-labs-backpack').click();",
+      "  await page.locator('.shopping_cart_link').click();",
+      "  await page.getByRole('button', { name: 'Checkout' }).click();",
+      "  await expect(page.getByText('Checkout: Your Information')).toBeVisible();",
+      "});"
+    ],
+    "logout": [
+      "import { test, expect } from '@playwright/test';",
+      "",
+      "test('istifadəçi çıxış edir', async ({ page }) => {",
+      "  await page.goto('https://www.saucedemo.com/');",
+      "  await page.getByPlaceholder('Username').fill('standard_user');",
+      "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+      "  await page.getByRole('button', { name: 'Login' }).click();",
+      "  await page.getByRole('button', { name: 'Open Menu' }).click();",
+      "  await page.getByText('Logout').click();",
+      "  await expect(page).toHaveURL('https://www.saucedemo.com/');",
+      "});"
+    ],
+    "pkg": [
+      "{",
+      "  \"name\": \"playwright-practice\",",
+      "  \"version\": \"1.0.0\",",
+      "  \"scripts\": { \"test\": \"playwright test\" },",
+      "  \"devDependencies\": { \"@playwright/test\": \"^1.56.0\" }",
+      "}"
+    ],
+    "config": [
+      "import { defineConfig } from '@playwright/test';",
+      "",
+      "export default defineConfig({",
+      "  testDir: './tests',",
+      "  use: { testIdAttribute: 'data-test' },",
+      "});"
+    ],
+    "ignore": ["node_modules/", "/test-results/", "/playwright-report/"],
+    "notes": ["Sabah: checkout testini yaz.", "Bunu commit etmə — öz qeydlərimdir."],
+    "debugLog": ["[10:41:02] login test: 2.3s", "[10:41:05] cart test: 3.1s"],
+    "env": ["PASSWORD=secret_sauce"],
+    "lock": ["{ \"lockfileVersion\": 3 }"],
+    "lastRun": ["{ \"status\": \"passed\" }"],
+    "nm": ["{ \"name\": \"@playwright/test\" }"]
+  },
+  "tasks": [
+    {
+      "id": "g1", "title": "Layihəni GitHub-a yüklə",
+      "goal": "Playwright layihəsi hazırdır, GitHub-da boş repo yaradılıb. 20.6-dakı kimi: repo yarat, faylları commit et, budağı main adlandır, remote-u əlavə et və push et. node_modules repo-ya düşməməlidir.",
+      "hints": ["git init → git add . → git commit -m \"Initial Playwright tests\"", "Git “Please tell me who you are” desə: git config --global user.name \"Ad Soyad\" və user.email", "git branch -M main → git remote add origin <URL> → git push -u origin main"],
+      "start": {
+        "init": false, "cfg": false, "remote": { "branches": {} },
+        "work": { "tests/login.spec.js": "login", "package.json": "pkg", "package-lock.json": "lock", "playwright.config.js": "config", ".gitignore": "ignore",
+          "node_modules/@playwright/test/package.json": "nm", "test-results/.last-run.json": "lastRun" }
+      },
+      "checks": [
+        { "t": "init", "l": "Repo yaradılıb (git init)" },
+        { "t": "head", "name": "main", "l": "Budaq main adlanır" },
+        { "t": "tree", "ref": "main", "path": "tests/login.spec.js", "l": "Test faylı commit olunub" },
+        { "t": "tree", "ref": "main", "path": "node_modules/@playwright/test/package.json", "not": true, "l": "node_modules commit-ə düşməyib" },
+        { "t": "pushed", "branch": "main", "l": "main GitHub-a push olunub" },
+        { "t": "upstream", "branch": "main", "l": "main origin/main-i izləyir (-u)" }
+      ]
+    },
+    {
+      "id": "g2", "title": "Yalnız lazım olanı commit et",
+      "goal": "tests/login.spec.js-də bloklanmış istifadəçi testini düzəltdin, amma debug üçün console.log sətri də qalıb. Yanında öz qeydlərin üçün notes.txt yaratmısan. Yalnız test düzəlişini commit et (20.2).",
+      "hints": ["git status və git diff ilə nəyin dəyişdiyinə bax.", "Fayla toxun (və ya: code tests/login.spec.js) və console.log sətrini sil.", "git add tests/login.spec.js — nöqtə ilə yox, faylın adı ilə."],
+      "start": {
+        "commits": [
+          { "id": "3f2a1b9", "msg": "Initial Playwright tests", "set": { "tests/login.spec.js": "login", "package.json": "pkg", "playwright.config.js": "config", ".gitignore": "ignore" } },
+          { "id": "8c4d2e7", "msg": "Add locked user login test", "parents": ["3f2a1b9"], "set": { "tests/login.spec.js": "login2" } }
+        ],
+        "branches": { "main": "8c4d2e7" }, "head": "main",
+        "work": { "tests/login.spec.js": "loginFixDebug", "notes.txt": "notes" }
+      },
+      "checks": [
+        { "t": "commits", "branch": "main", "min": 3, "l": "Yeni commit var" },
+        { "t": "lastOnly", "files": ["tests/login.spec.js"], "l": "Son commit-də yalnız tests/login.spec.js var", "moved": true },
+        { "t": "tree", "ref": "main", "path": "tests/login.spec.js", "re": "locked out", "l": "Test düzəlişi commit olunub" },
+        { "t": "tree", "ref": "main", "path": "tests/login.spec.js", "re": "console\\.log", "not": true, "l": "console.log commit-ə düşməyib", "moved": true },
+        { "t": "untracked", "path": "notes.txt", "l": "notes.txt commit olunmayıb (untracked qalıb)", "moved": true },
+        { "t": "msg", "l": "Commit mesajı nə dəyişdiyini deyir (20.4)" }
+      ]
+    },
+    {
+      "id": "g3", "title": "Staging-dən çıxar və .gitignore",
+      "goal": "Səhvən git add . etdin: staging-də tests/cart.spec.js (lazımdır), debug.log və .env (lazım deyil — .env-də şifrə var) var. Hələ commit etməmisən. Lazımsızları staging-dən çıxar, gələcək üçün .gitignore-a əlavə et və yalnız lazım olanı commit et (20.2, 20.3).",
+      "hints": ["git restore --staged debug.log .env", ".gitignore-u aç və iki sətir əlavə et: .env və *.log", "git add tests/cart.spec.js .gitignore → git commit -m \"…\""],
+      "start": {
+        "commits": [
+          { "id": "3f2a1b9", "msg": "Initial Playwright tests", "set": { "tests/login.spec.js": "login", "package.json": "pkg", "playwright.config.js": "config", ".gitignore": "ignore" } }
+        ],
+        "branches": { "main": "3f2a1b9" }, "head": "main",
+        "work": { "tests/cart.spec.js": "cart1", "debug.log": "debugLog", ".env": "env" },
+        "index": { "tests/cart.spec.js": "cart1", "debug.log": "debugLog", ".env": "env" }
+      },
+      "checks": [
+        { "t": "tree", "ref": "main", "path": "tests/cart.spec.js", "l": "tests/cart.spec.js commit olunub" },
+        { "t": "tree", "ref": "main", "path": ".env", "not": true, "l": ".env commit-ə düşməyib", "moved": true },
+        { "t": "tree", "ref": "main", "path": "debug.log", "not": true, "l": "debug.log commit-ə düşməyib", "moved": true },
+        { "t": "ignored", "path": ".env", "l": ".env .gitignore-dadır" },
+        { "t": "ignored", "path": "debug.log", "l": "*.log .gitignore-dadır" },
+        { "t": "clean", "l": "git status təmizdir" }
+      ]
+    },
+    {
+      "id": "g4", "title": "Budaq və merge",
+      "goal": "Yeni test (tests/cart.spec.js) yazmısan, amma main-ə birbaşa commit etmək olmaz (20.4). feature/cart-test budağı aç, testi orada commit et, sonra main-ə qayıt və budağı birləşdir.",
+      "hints": ["git switch -c feature/cart-test", "git add tests/cart.spec.js → git commit -m \"Add cart badge test\"", "git switch main → git merge feature/cart-test"],
+      "start": {
+        "commits": [
+          { "id": "3f2a1b9", "msg": "Initial Playwright tests", "set": { "tests/login.spec.js": "login", "package.json": "pkg", "playwright.config.js": "config", ".gitignore": "ignore" } }
+        ],
+        "branches": { "main": "3f2a1b9" }, "head": "main",
+        "work": { "tests/cart.spec.js": "cart1" }
+      },
+      "checks": [
+        { "t": "branch", "name": "feature/cart-test", "l": "feature/cart-test budağı var" },
+        { "t": "tree", "ref": "feature/cart-test", "path": "tests/cart.spec.js", "l": "Test budaqda commit olunub" },
+        { "t": "head", "name": "main", "l": "main-ə qayıdılıb", "moved": true },
+        { "t": "tree", "ref": "main", "path": "tests/cart.spec.js", "l": "Budaq main-ə birləşdirilib" },
+        { "t": "clean", "l": "git status təmizdir" }
+      ]
+    },
+    {
+      "id": "g5", "title": "Konflikti həll et",
+      "goal": "feature/two-products budağı testə ikinci məhsulu və toHaveText('2') gətirib. Bu vaxt main-də eyni yoxlamaya timeout əlavə olunub. Budağı main-ə birləşdir və konflikti həll et: hər iki tərəfin dəyişikliyi qalmalıdır (20.1).",
+      "hints": ["git merge feature/two-products → CONFLICT", "tests/cart.spec.js-i aç: <<<<<<< HEAD ilə ======= arası main-in, ======= ilə >>>>>>> arası budağın versiyasıdır.", "Nəticə bir sətirdir: toHaveText('2', { timeout: 10000 }). İşarələri sil, saxla, sonra git add və git commit."],
+      "start": {
+        "commits": [
+          { "id": "3f2a1b9", "msg": "Initial Playwright tests", "set": { "tests/login.spec.js": "login", "tests/cart.spec.js": "cart1", "package.json": "pkg", "playwright.config.js": "config", ".gitignore": "ignore" } },
+          { "id": "b71e0a4", "msg": "Add second product to cart test", "parents": ["3f2a1b9"], "br": "feature/two-products", "set": { "tests/cart.spec.js": "cartTwo" } },
+          { "id": "5d9c3f1", "msg": "Increase cart badge timeout", "parents": ["3f2a1b9"], "set": { "tests/cart.spec.js": "cartMain" } }
+        ],
+        "branches": { "main": "5d9c3f1", "feature/two-products": "b71e0a4" }, "head": "main"
+      },
+      "checks": [
+        { "t": "merge", "l": "Merge commit yaradılıb (iki valideyn)" },
+        { "t": "tree", "ref": "main", "path": "tests/cart.spec.js", "re": "<<<<<<<|=======|>>>>>>>", "not": true, "l": "Konflikt işarələri silinib", "moved": true },
+        { "t": "tree", "ref": "main", "path": "tests/cart.spec.js", "re": "add-to-cart-sauce-labs-bike-light", "l": "Budağın ikinci məhsul addımı qalıb" },
+        { "t": "tree", "ref": "main", "path": "tests/cart.spec.js", "re": "toHaveText\\('2', \\{ timeout: 10000 \\}\\)", "l": "Yoxlamada həm budağın '2'-si, həm main-in timeout-u var" },
+        { "t": "clean", "l": "git status təmizdir", "moved": true }
+      ]
+    },
+    {
+      "id": "g6", "title": "Push rədd olundu",
+      "goal": "Çıxış testini commit etdin və push etmək istəyirsən. Bu vaxt komanda yoldaşın GitHub-a checkout testini push edib. Push rədd olunacaq: səbəbi oxu, komanda yoldaşının dəyişikliyini götür və yenidən push et (20.6).",
+      "hints": ["git push → ! [rejected] … (fetch first)", "git pull --rebase (və ya git pull --no-rebase) — GitHub-dakı commit-i götürür", "Sonra yenidən git push"],
+      "start": {
+        "commits": [
+          { "id": "3f2a1b9", "msg": "Initial Playwright tests", "set": { "tests/login.spec.js": "login", "package.json": "pkg", "playwright.config.js": "config", ".gitignore": "ignore" } },
+          { "id": "e2a7c50", "msg": "Add checkout test", "parents": ["3f2a1b9"], "mate": true, "set": { "tests/checkout.spec.js": "checkout" } },
+          { "id": "a6f81d3", "msg": "Add logout test", "parents": ["3f2a1b9"], "set": { "tests/logout.spec.js": "logout" } }
+        ],
+        "branches": { "main": "a6f81d3" }, "head": "main",
+        "remote": { "branches": { "main": "e2a7c50" } }, "tracking": { "main": "3f2a1b9" }, "upstream": ["main"]
+      },
+      "checks": [
+        { "t": "tree", "ref": "main", "path": "tests/checkout.spec.js", "l": "Komanda yoldaşının testi lokalda var" },
+        { "t": "tree", "ref": "main", "path": "tests/logout.spec.js", "l": "Sənin testin də yerindədir", "moved": true },
+        { "t": "pushed", "branch": "main", "l": "main GitHub-a push olunub" },
+        { "t": "clean", "l": "git status təmizdir", "moved": true }
+      ]
+    },
+    {
+      "id": "g7", "title": "Səhv commit-i geri al",
+      "goal": "«Change login URL» commit-i push olunub və bütün login testlərini sındırıb: URL-də .com əvəzinə .co yazılıb. Tarixçəni silmədən səhvi geri al və düzəlişi push et (20.2: push olunmuş commit üçün git revert).",
+      "hints": ["git log --oneline — səhv commit-in hash-ını tap.", "git show <hash> — nəyi dəyişdiyinə bax.", "git revert <hash> → git push. reset --hard və push --force komandanın tarixçəsini pozur."],
+      "start": {
+        "commits": [
+          { "id": "3f2a1b9", "msg": "Initial Playwright tests", "set": { "tests/login.spec.js": "login", "package.json": "pkg", "playwright.config.js": "config", ".gitignore": "ignore" } },
+          { "id": "8c4d2e7", "msg": "Add locked user login test", "parents": ["3f2a1b9"], "set": { "tests/login.spec.js": "login2" } },
+          { "id": "c0ffe12", "msg": "Change login URL", "parents": ["8c4d2e7"], "set": { "tests/login.spec.js": "loginBadUrl" } }
+        ],
+        "branches": { "main": "c0ffe12" }, "head": "main",
+        "remote": { "branches": { "main": "c0ffe12" } }, "tracking": { "main": "c0ffe12" }, "upstream": ["main"]
+      },
+      "checks": [
+        { "t": "msg", "re": "^Revert \"Change login URL\"", "l": "Revert commit-i yaradılıb" },
+        { "t": "tree", "ref": "main", "path": "tests/login.spec.js", "re": "saucedemo\\.co/", "not": true, "l": "URL düzəlib" },
+        { "t": "contains", "ref": "main", "re": "^Change login URL$", "l": "Səhv commit tarixçədə qalıb (tarixçə silinməyib)", "moved": true },
+        { "t": "pushed", "branch": "main", "re": "^Revert", "l": "Düzəliş (revert) GitHub-a push olunub" }
+      ]
+    }
+  ],
+  "sections": ["c20s1", "c20s2", "c20s3", "c20s4", "c20s6"]
+}

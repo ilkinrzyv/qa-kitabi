@@ -5,7 +5,7 @@
   "scripts": {
     "icons": "node make_icons.js",
     "widgets": "node render.mjs",
-    "test:app": "node t1.js && node t2.js && node t3.js && node t4.js && node t5.js && node t6.js && node t7.js && node t8.js && node t9.js && node t10.js && node t11.js && node t12.js && node t13.js && node t14.js && node t15.js && node t16.js && node t17.js && node t18.js && node t19.js && node t20.js && node t21.js && node t22.js && node t23.js && node t24.js && node t25.js && node t26.js && node t27.js",
+    "test:app": "node t1.js && node t2.js && node t3.js && node t4.js && node t5.js && node t6.js && node t7.js && node t8.js && node t9.js && node t10.js && node t11.js && node t12.js && node t13.js && node t14.js && node t15.js && node t16.js && node t17.js && node t18.js && node t19.js && node t20.js && node t21.js && node t22.js && node t23.js && node t24.js && node t25.js && node t26.js && node t27.js && node t28.js",
     "test:pwa": "node tp1.js && node tp2.js && node tp3.js && node tp4.js"
   },
   "devDependencies": {

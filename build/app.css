@@ -1141,6 +1141,63 @@ pre.code .nt,pre.code .gh{color:var(--tk-tag)}
 pre.code .na,pre.code .nc,pre.code .no{color:var(--tk-attr)}
 pre.code .err{color:inherit;background:none}
 
+/* Git practice: a PowerShell-like terminal (dark in both themes), the files with their status codes, the commit graph */
+.git-term{margin-top:12px;border-radius:12px;background:#1E1F22;color:#D4D4D4;border:1px solid #2E3036;overflow:hidden;font-family:var(--f-mono);font-size:12.5px;line-height:1.5}
+.git-out{max-height:340px;min-height:120px;overflow:auto;padding:10px 12px 4px;tab-size:4;-moz-tab-size:4}
+.git-l{white-space:pre-wrap;overflow-wrap:anywhere}
+.git-l.cmd{margin-top:6px;color:#FFFFFF}
+.git-l.cmd:first-child{margin-top:0}
+.git-l.e{color:#F48771}
+.git-l.hint{color:#D7BA7D}
+.git-l.h{display:grid;grid-template-columns:16px 1fr;gap:6px;margin:4px 0;padding:6px 8px;border-radius:8px;background:#26313F;color:#9CDCFE;font-family:var(--f-ui);font-size:13px;line-height:1.45}
+.git-l.h svg.i{width:15px;height:15px;margin-top:2px}
+.git-l.dh{color:#E5E5E5;font-weight:600}
+.git-l.da{color:#4EC9B0}
+.git-l.dp{color:#89D185}
+.git-l.dm{color:#F48771}
+.git-ps{color:#CCCCCC;white-space:nowrap}
+.git-in-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:6px 12px 10px;cursor:text}
+.git-in{flex:1;min-width:160px;height:30px;padding:0;border:0;outline:0;background:transparent;color:#FFFFFF;font:inherit;font-size:13px;caret-color:#FFFFFF}
+.git-quick{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.git-quick .btn{min-height:30px;padding:0 8px}
+.git-quick code{font-family:var(--f-mono);font-size:12px}
+.git-ed{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.git-ed-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;font-family:var(--f-mono);font-size:13px}
+.git-ed-h .muted{font-family:var(--f-ui);font-size:12.5px}
+.git-ta{min-height:220px;font-family:var(--f-mono);font-size:12.5px;line-height:1.5;white-space:pre;overflow:auto;resize:vertical}
+.git-panes{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
+.git-files{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.git-f{display:grid;grid-template-columns:2.4em 1fr;gap:6px;width:100%;padding:3px 4px;border-radius:6px;text-align:left;font-family:var(--f-mono);font-size:12.5px;color:var(--ink)}
+.git-f:hover{background:var(--bg-2)}
+.git-f[disabled]{opacity:.55}
+.git-f code{white-space:pre;color:var(--ink-3)}
+.git-f.u code,.git-f.u span{color:var(--pass)}
+.git-f.m code{color:var(--warn)}
+.git-f.c code,.git-f.c span{color:var(--fail)}
+.git-f.i span{color:var(--ink-3)}
+.git-legend{margin:8px 0 0;font-size:12px;line-height:1.6}
+.git-legend code{font-family:var(--f-mono);font-size:11.5px;white-space:pre}
+.git-graph{position:relative;padding-left:var(--gw)}
+.git-graph svg{position:absolute;left:0;top:0}
+.git-e{fill:none;stroke-width:2}
+.git-c{stroke:var(--surface-2);stroke-width:2}
+.git-c.head{stroke:var(--ink);stroke-width:2.5}
+.git-e.l0{stroke:var(--accent)}.git-c.l0{fill:var(--accent)}
+.git-e.l1{stroke:var(--pass)}.git-c.l1{fill:var(--pass)}
+.git-e.l2{stroke:var(--warn)}.git-c.l2{fill:var(--warn)}
+.git-e.l3{stroke:var(--fail)}.git-c.l3{fill:var(--fail)}
+.git-row{display:flex;align-items:center;gap:6px;min-width:0;padding-left:6px;font-size:13px;white-space:nowrap;overflow:hidden}
+.git-row code,.git-rem code{font-family:var(--f-mono);font-size:12px;color:var(--ink-3)}
+.git-msg{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.git-ref{flex:none;padding:1px 6px;border-radius:6px;font-family:var(--f-mono);font-size:11px;font-weight:600;background:var(--pass-soft);color:var(--pass)}
+.git-ref.head{background:var(--accent-soft);color:var(--accent)}
+.git-ref.rem{background:var(--warn-soft);color:var(--warn)}
+.git-url{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);overflow-wrap:anywhere}
+.git-note{margin:6px 0 0;font-size:12.5px}
+.git-rem{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.git-rem li{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:13px}
+.git-sync{flex-basis:100%;font-size:12.5px;color:var(--ink-2)}
+
 @media (min-width:700px){
   .hero{padding:26px 26px 22px}
   .hero .h1{font-size:34px}
