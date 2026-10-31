@@ -449,7 +449,7 @@ function render(opts) {
   if (observer) { observer.disconnect(); observer = null; }
   hideSelPill();
   const v = $('#view');
-  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease };
+  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools };
   (views[S.view] || vHome)(v);
   if (opts.keepScroll) window.scrollTo(0, y);
   else if (!(S.view === 'reader' && S.params.sec)) window.scrollTo(0, 0);
@@ -810,10 +810,10 @@ function dtHTML(sid, c) {
 function textBody(c, s) {
   const lv = lvlOf(s.id);
   if (lv === 'short') {
-    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}
+    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}
       <button class="btn sm ghost more" data-act="lvl" data-sec="${s.id}" data-v="std">${icon('book')}Tam mətni oxu</button>${miniHTML(c, s, false)}`;
   }
-  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
+  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
 }
 function fbHTML(a) {
   let h = '';
@@ -901,7 +901,7 @@ function secHTML(c, s) {
   else if (s.kind === 'selfcheck') body = selfHTML(c, s);
   else if (s.kind === 'checklist') body = checklistHTML(s);
   else if (s.x) body = textBody(c, s);
-  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}`;
+  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}`;
   return `<section class="sec${learned ? ' learned' : ''}" id="${s.id}" data-sec="${s.id}" data-kind="${s.kind}">
     <header class="sec-h"><span class="sec-num">${esc(s.num || kindTag(s).toLocaleUpperCase('az'))}</span><h2>${esc(s.title)}</h2>${s.x ? lvlCtl(s.id, lvlOf(s.id)) : ''}</header>
     ${body}${footerHTML(c, s)}</section>`;
@@ -1076,34 +1076,41 @@ const SM_PAGES = { login: '', products: 'Products', cart: 'Your Cart', info: 'Ch
 const SM_SORTS = [['az', 'Name (A to Z)'], ['za', 'Name (Z to A)'], ['lohi', 'Price (low to high)'], ['hilo', 'Price (high to low)']];
 const SM_FIELDS = { user: 'Username', pass: 'Password', first: 'First Name', last: 'Last Name', zip: 'Zip/Postal Code' };
 const SM_BUG = { noAdd: ['bolt', 'fleece'], noRemove: ['bikelight'] }; // problem_user's planted bugs; their labels are in store.json
-const SM = { id: undefined, ver: '1.0', found: {}, passed: {} }; // session only
+// error_user's planted bugs (devtools.json): the screen alone does not tell where they are, DevTools does
+const SM_ERR = { badAdd: 'onesie', price: { fleece: 4.99 } };
+const SM = { id: undefined, ver: '1.0', found: {}, passed: {}, dvt: { open: false, tab: 'net', filter: 'all', sub: 'hdrs', keep: false, sel: null, seq: 0, net: [], con: [] } }; // session only
 const money = n => '$' + n.toFixed(2);
 const tcName = id => id.replace(/^tc/, 'TC-');
+// the price the shop shows and sorts by is the one the server sends: wrong for error_user's Fleece Jacket
+const smPrice = (st, p) => (st.user === 'error_user' && SM_ERR.price[p.id]) || p.price;
 const smFresh = (s0, ver) => ({ page: s0.page, user: s0.user || '', cart: (s0.cart || []).slice(), sort: 'az', order: 'az', err: '', menu: false, ver: ver || '1.0', f: { user: '', pass: '', first: '', last: '', zip: '' } });
 function smStart(id, ver) {
   const sc = scById[id] || null, nid = sc ? id : null, v = sc && ver === REL_D.ver ? ver : '1.0';
   // a restart keeps the open bug report: reproducing the bug again is how its frequency (3/3) is measured
-  Object.assign(SM, { id: nid, ver: v, sc, done: 0, off: false, snap: null, fb: null, ans: '', status: '', title: '', touched: {}, st: smFresh(sc ? sc.start : { page: 'login' }, v),
+  Object.assign(SM, { id: nid, ver: v, sc, dv: null, done: 0, off: false, snap: null, fb: null, ans: '', status: '', title: '', touched: {}, st: smFresh(sc ? sc.start : { page: 'login' }, v),
     rep: SM.id === nid && SM.ver === v ? SM.rep : null });
+  dvtReset();
 }
 // the planted bug a failed test case shows: build 1.1 has its own (the regression), the rest keep store.json's
 const scBug = sc => (sc && (SM.ver === REL_D.ver && REL_D.bugs[sc.id] || sc.bug)) || null;
 function smOrder(st) {
   const name = (a, b) => a.name.localeCompare(b.name, 'en');
-  const by = { az: name, za: (a, b) => name(b, a), lohi: (a, b) => a.price - b.price || name(a, b), hilo: (a, b) => b.price - a.price || name(a, b) };
+  const pr = p => smPrice(st, p);
+  const by = { az: name, za: (a, b) => name(b, a), lohi: (a, b) => pr(a) - pr(b) || name(a, b), hilo: (a, b) => pr(b) - pr(a) || name(a, b) };
   return STORE.products.slice().sort(by[st.order]);
 }
 const smSig = st => [st.page, st.user, st.cart.join(), st.order].join('|');
 function smEvent(e) {
-  const before = smSig(SM.st);
+  const before = smSig(SM.st), b0 = { page: SM.st.page, cart: SM.st.cart.slice() }, f0 = Object.assign({}, SM.found);
   smApply(SM.st, e, SM.found);
+  dvtEvent(e, b0, k => (SM.found[k] || 0) > (f0[k] || 0)); // DevTools: what the shop sent for it
   smStep(e, before);
 }
 // the shop itself: one event changes one state (the practice store's, or the code tracer's browser); planted bugs that
 // fire are noted in `found`. Build 1.1 (store.json "release") fixes add and sort, not Last Name, and breaks Remove on
 // Your Cart for every user — the regression the release test has to catch
 function smApply(st, e, found) {
-  const prob = st.user === 'problem_user', v11 = st.ver === REL_D.ver;
+  const prob = st.user === 'problem_user', errU = st.user === 'error_user', v11 = st.ver === REL_D.ver;
   switch (e.ev) {
     case 'login': {
       const u = st.f.user.trim(), p = st.f.pass; Object.assign(e, { user: u, pass: p });
@@ -1113,7 +1120,8 @@ function smApply(st, e, found) {
       if (!st.err) Object.assign(st, { user: u, page: 'products' });
       break;
     }
-    case 'add': if (prob && !v11 && SM_BUG.noAdd.includes(e.item)) found.add = (found.add || 0) + 1; else if (!st.cart.includes(e.item)) st.cart.push(e.item); break;
+    case 'add': if (prob && !v11 && SM_BUG.noAdd.includes(e.item)) found.add = (found.add || 0) + 1;
+      else if (errU && e.item === SM_ERR.badAdd) found.e400 = (found.e400 || 0) + 1; else if (!st.cart.includes(e.item)) st.cart.push(e.item); break;
     case 'remove': if (prob && e.where === 'products' && SM_BUG.noRemove.includes(e.item)) found.remove = (found.remove || 0) + 1;
       else if (v11 && e.where === 'cart') found.rmcart = (found.rmcart || 0) + 1; else st.cart = st.cart.filter(x => x !== e.item); break;
     case 'sort': st.sort = e.v; if (!prob || v11) st.order = e.v; else if (e.v !== 'az') found.sort = (found.sort || 0) + 1; break;
@@ -1127,7 +1135,7 @@ function smApply(st, e, found) {
       if (!st.err) st.page = 'overview';
       break;
     }
-    case 'finish': Object.assign(st, { page: 'complete', cart: [] }); break;
+    case 'finish': if (errU) found.e500 = (found.e500 || 0) + 1; else Object.assign(st, { page: 'complete', cart: [] }); break;
     case 'home': st.page = 'products'; break;
     case 'logout': Object.assign(st, { page: 'login', user: '', err: '', menu: false }); Object.assign(st.f, { user: '', pass: '' }); break;
     case 'reset': Object.assign(st, { cart: [], sort: 'az', order: 'az', menu: false }); break;
@@ -1257,15 +1265,15 @@ function smDevHTML(st = SM.st) {
   const btn = (e, label, cls, extra) => `<button class="sm-btn${cls ? ' ' + cls : ''}" data-act="sm" data-e="${e}"${extra || ''}>${label}</button>`;
   const err = st.err ? `<div class="sm-err" role="alert"><span>${esc(st.err)}</span><button data-act="sm" data-e="err-x" aria-label="Bağla">✕</button></div>` : '';
   const inp = (f, type) => `<input class="sm-in${st.err ? ' bad' : ''}" data-sm-f="${f}" type="${type || 'text'}" placeholder="${SM_FIELDS[f]}" value="${esc(st.f[f])}" autocomplete="off" autocapitalize="off" spellcheck="false">`;
-  const line = (p, b) => `<div class="sm-item">${pg === 'products' ? '' : '<span class="sm-qty">1</span>'}<div><div class="sm-name">${esc(p.name)}</div><div class="sm-price">${money(p.price)}</div></div>${b || ''}</div>`;
+  const line = (p, b) => `<div class="sm-item">${pg === 'products' ? '' : '<span class="sm-qty">1</span>'}<div><div class="sm-name">${esc(p.name)}</div><div class="sm-price">${money(smPrice(st, p))}</div></div>${b || ''}</div>`;
   const items = st.cart.map(id => prodById[id]);
-  const total = items.reduce((a, p) => a + p.price, 0), tax = Math.round(total * 8) / 100;
+  const total = items.reduce((a, p) => a + smPrice(st, p), 0), tax = Math.round(total * 8) / 100;
   const ver = st.ver === REL_D.ver ? ` <span class="sm-ver">${st.ver}</span>` : '';
   if (pg === 'login') return `<div class="sm-logo big">Mini Store${ver}</div><div class="sm-body">${inp('user')}${inp('pass', 'password')}${err}${btn('login', 'Login', 'main')}
     <div class="sm-cred"><b>Accepted usernames are:</b><br>${STORE.users.join('<br>')}<br><b>Password for all users:</b><br>${esc(STORE.password)}</div></div>`;
   const body = {
     products: () => smOrder(st).map(p => line(p, st.cart.includes(p.id) ? btn('remove', 'Remove', 'rm', ` data-item="${p.id}" data-where="products"`) : btn('add', 'Add to cart', '', ` data-item="${p.id}" data-where="products"`))).join(''),
-    cart: () => `<div class="sm-ch"><span>QTY</span><span>Description</span></div>${items.map(p => line(p, btn('remove', 'Remove', 'rm', ` data-item="${p.id}" data-where="cart"`))).join('')}
+    cart: () => `<div class="sm-ch"><span>QTY</span><span>Description</span></div>${(st.user === 'error_user' ? items.slice(0, 1) : items).map(p => line(p, btn('remove', 'Remove', 'rm', ` data-item="${p.id}" data-where="cart"`))).join('')}
       <div class="sm-acts">${btn('shop', 'Continue Shopping')}${btn('checkout', 'Checkout', 'main')}</div>`,
     info: () => `${inp('first')}${inp('last')}${inp('zip')}${err}<div class="sm-acts">${btn('cancel', 'Cancel')}${btn('continue', 'Continue', 'main')}</div>`,
     overview: () => `<div class="sm-ch"><span>QTY</span><span>Description</span></div>${items.map(p => line(p)).join('')}
@@ -1311,10 +1319,11 @@ function smResHTML() {
 function smRedraw(typing) {
   const cs = $('#sm-case'); if (cs) cs.innerHTML = smCaseHTML();
   const dv = $('#sm-dev'); if (dv && !typing) dv.innerHTML = smDevHTML();
+  if (!typing) dvtRedraw();
 }
 function vStore(v) {
   const id = scById[S.params.sc] ? S.params.sc : null, ver = id && S.params.ver === REL_D.ver ? REL_D.ver : '1.0';
-  if (SM.id !== id || SM.ver !== ver) smStart(id, ver);
+  if (SM.id !== id || SM.ver !== ver || SM.dv) smStart(id, ver);
   const sc = SM.sc, rel = SM.ver === REL_D.ver;
   setHeader({ back: true, kicker: rel ? `Reliz testi · ${SM.ver}` : 'Məşq mağazası', name: sc ? `${tcName(sc.id)} · ${sc.title}` : STORE.free.title });
   // build 1.1: the chips keep the version, their marks are the release runs
@@ -1325,7 +1334,7 @@ function vStore(v) {
       <button class="btn sm" data-act="rel-open">${icon('back')}Reliz paneli</button></div>`
     : '<p class="muted sm-intro">Mini Store — saucedemo.com-dakı mağazaya bənzəyən sadələşdirilmiş model (real sayt deyil). Test case-in addımlarını burada icra et, faktiki nəticəni yaz: kitab onu ekranda olanla tutuşdurur.</p>';
   v.innerHTML = `${intro}
-    <div class="sm-pick">${pick}</div><div id="sm-case">${smCaseHTML()}</div><div class="sm-dev" id="sm-dev">${smDevHTML()}</div>
+    <div class="sm-pick">${pick}</div><div id="sm-case">${smCaseHTML()}</div><div class="sm-dev" id="sm-dev">${smDevHTML()}</div>${dvtBoxHTML()}
     ${sc ? `<div class="card sm-res">${smResHTML()}</div>` : ''}<div id="br">${brHTML()}</div>`;
 }
 /* full bug report (store.json "reports"): every field of 12.1 for one planted bug, checked field by field. The screenshot
@@ -1569,6 +1578,181 @@ function vRelease(v) {
 }
 const relLinkHTML = s => s.rel ? `<div class="sm-link"><div class="srt-k">${icon('layers')}Reliz testi</div><p class="srt-hint">Mini Store ${REL_D.ver} gəldi: üç düzəliş, bir gizli regression. Smoke, retest, regression və reliz tövsiyəsini bir build üzərində ardıcıl et.</p>
   <div class="sm-links"><button class="btn sm" data-act="rel-open">${icon('layers')}Reliz panelini aç</button></div></div>` : '';
+/* ---------- DevTools (devtools.json): the practice store's Network and Console panels, as in Chrome (13.9). The shop
+   talks to the practice API (api.json); every event logs the requests it sent and the console lines it printed. A planted
+   bug's request or console line carries the bug's key. The tasks are user complaints: reproduce, find the evidence,
+   place it in 13.10's table ---------- */
+const DVD = BOOK.devtools;
+const dvById = Object.fromEntries(DVD.tasks.map(t => [t.id, t]));
+const DVS = { id: null, req: '', con: '', row: -1, side: '', fb: null, done: {} }; // session only
+const SITE_URL = 'https://ministore.test';
+const DVT_F = [['all', 'All'], ['xhr', 'Fetch/XHR'], ['doc', 'Doc']];
+const dvName = id => id.replace(/^dv/, 'DV-');
+const pidOf = id => STORE.products.findIndex(p => p.id === id) + 1;
+const dvtTok = u => 'tok_' + ([...u].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7) >>> 0).toString(16).padStart(8, '0').slice(-8);
+const dvtName = x => x.url.replace(/^https:\/\/[^/]+/, '') || '/';
+const dvtProducts = st => STORE.products.map(p => ({ id: pidOf(p.id), name: p.name, price: smPrice(st, p) }));
+function dvtCart(st, ids) { const items = (ids || st.cart).map(id => ({ id: pidOf(id), name: prodById[id].name, price: smPrice(st, prodById[id]) })); return { items, total: round2(items.reduce((a, p) => a + p.price, 0)) }; }
+function dvtCon(lvl, t, src, bug) { const D = SM.dvt; D.con.push({ n: ++D.seq, lvl, t, src, bug: bug || null }); }
+// one request; a failed fetch also prints its line in the console, as Chrome does
+function dvtReq(type, m, url, st, body, res, bug) {
+  const D = SM.dvt, n = ++D.seq;
+  D.net.push({ n, type, m, url, st, body: body || null, res, bug: bug || null, user: SM.st.user, ms: type === 'document' ? 24 + n * 17 % 60 : 70 + n * 37 % 190 + (st >= 500 ? 420 : 0) });
+  if (st >= 400) dvtCon('error', `${m} ${url} ${st} (${HTTP_TXT[st]})`, 'api.js:18', bug);
+}
+const dvtApi = (m, path, st, body, res, bug) => dvtReq('fetch', m, API.baseUrl + path, st, body, res, bug);
+// a page load: the document, then the page's own requests. A new page clears both logs first unless Preserve log is on
+function dvtLoad(st, nav) {
+  const D = SM.dvt;
+  if (nav && !D.keep) Object.assign(D, { net: [], con: [], sel: null });
+  dvtReq('document', 'GET', SITE_URL + TR_URL[st.page], 200, null, null);
+  if (st.page === 'products') dvtApi('GET', '/products', 200, null, dvtProducts(st), st.user === 'error_user' ? 'eprice' : null);
+  if (['products', 'cart', 'overview'].includes(st.page)) dvtApi('GET', '/cart', 200, null, dvtCart(st), st.page === 'cart' && st.user === 'error_user' && st.cart.length > 1 ? 'eview' : null);
+}
+function dvtReset() { Object.assign(SM.dvt, { net: [], con: [], sel: null }); dvtLoad(SM.st); }
+// what the shop sent for one event (smApply already ran); fired(k): planted bug k happened just now
+function dvtEvent(e, b0, fired) {
+  const st = SM.st;
+  if (e.ev === 'login' && e.user && e.pass) { // empty fields are caught by the form itself: nothing is sent
+    const code = !st.err ? 200 : /locked out/.test(st.err) ? 403 : 401;
+    dvtApi('POST', '/login', code, { username: e.user, password: e.pass }, code === 200 ? { token: dvtTok(e.user), username: e.user } : { error: st.err.replace(/^Epic sadface: /, '') });
+  } else if (e.ev === 'add') {
+    if (fired('add')) dvtCon('error', "Uncaught TypeError: Cannot read properties of undefined (reading 'id')", 'inventory.js:57', 'add');
+    else if (fired('e400')) dvtApi('POST', '/cart', 400, { product_id: pidOf(e.item) }, { error: 'productId is required' }, 'e400');
+    else dvtApi('POST', '/cart', 201, { productId: pidOf(e.item) }, dvtCart(st));
+  } else if (e.ev === 'remove' && !fired('remove')) { // problem_user's Remove on Products fails in the page: nothing is sent
+    dvtApi('DELETE', '/cart/' + pidOf(e.item), 200, null, dvtCart(st));
+  } else if (e.ev === 'finish') {
+    const f = st.f, body = { firstName: f.first || 'Ali', lastName: f.last || 'Aliyev', zip: f.zip || '1000' }; // a case that starts on Overview filled the form before
+    if (fired('e500')) dvtApi('POST', '/orders', 500, body, { error: 'Internal Server Error' }, 'e500');
+    else { const c = dvtCart(st, b0.cart); dvtApi('POST', '/orders', 201, body, Object.assign({ id: 1000 + SM.dvt.seq }, body, c, { tax: round2(c.total * 0.08), status: 'created' })); }
+  }
+  if (st.page !== b0.page) dvtLoad(st, true);
+}
+function dvtHdrs(x) {
+  if (x.type === 'document') return [['accept', 'text/html']];
+  const p = dvtName(x);
+  return [['accept', 'application/json']].concat(/^\/(cart|orders)/.test(p) ? [['authorization', 'Bearer ' + dvtTok(x.user)]] : [], x.body ? [['content-type', 'application/json']] : []);
+}
+// Copy as cURL (bash), the way Chrome writes it
+function dvtCurl(x) {
+  const q = s => `'${String(s).replace(/'/g, "'\\''")}'`;
+  return [`curl ${q(x.url)}`].concat(x.m !== 'GET' ? [`-X ${x.m}`] : [], dvtHdrs(x).map(([k, v]) => `-H ${q(k + ': ' + v)}`), x.body ? [`--data-raw ${q(JSON.stringify(x.body))}`] : []).join(' \\\n  ');
+}
+function dvtReqHTML(x) {
+  const D = SM.dvt, tabs = [['hdrs', 'Headers']].concat(x.body ? [['pay', 'Payload']] : [], [['res', 'Response']]);
+  const sub = tabs.some(t => t[0] === D.sub) ? D.sub : 'hdrs';
+  const kv = rows => `<table class="dvt-kv">${rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table>`;
+  const body = sub === 'hdrs' ? `<div class="dvt-sh">General</div>${kv([['Request URL', x.url], ['Request Method', x.m], ['Status Code', `${x.st} ${HTTP_TXT[x.st]}`]])}
+      <div class="dvt-sh">Response Headers</div>${kv([['content-type', x.type === 'document' ? 'text/html; charset=utf-8' : 'application/json; charset=utf-8']])}
+      <div class="dvt-sh">Request Headers</div>${kv(dvtHdrs(x))}`
+    : `<pre class="dvt-pre">${sub === 'pay' ? jsonHL(JSON.stringify(x.body, null, 2)) : x.type === 'document' ? '&lt;!doctype html&gt;&lt;html lang="en"&gt;…&lt;/html&gt;' : jsonHL(JSON.stringify(x.res, null, 2))}</pre>`;
+  return `<div class="dvt-req"><div class="dvt-rh"><b><span class="dvt-m">${x.m}</span> ${esc(dvtName(x))}</b><button class="btn sm ghost" data-act="dvt-curl" data-n="${x.n}">${icon('copy')}Copy as cURL</button></div>
+    <div class="dvt-sub" role="group" aria-label="Sorğunun hissələri">${tabs.map(([k, l]) => `<button data-act="dvt-sub" data-v="${k}" aria-pressed="${sub === k}">${l}</button>`).join('')}</div>${body}</div>`;
+}
+function dvtNetHTML() {
+  const D = SM.dvt, list = D.net.filter(x => D.filter === 'all' || (D.filter === 'xhr') === (x.type === 'fetch')), x = D.net.find(y => y.n === D.sel);
+  const rows = list.map(y => `<tr class="${y.st >= 400 ? 'bad' : ''}${y.n === D.sel ? ' sel' : ''}"><td><button class="dvt-nm" data-act="dvt-req" data-n="${y.n}">${esc(dvtName(y))}</button></td><td>${y.st}</td><td>${y.type}</td><td>${y.ms} ms</td></tr>`).join('');
+  return `<div class="dvt-flt">${dvtToolHTML()}<span class="dvt-sep" aria-hidden="true"></span>${DVT_F.map(([k, l]) => `<button data-act="dvt-filter" data-v="${k}" aria-pressed="${D.filter === k}">${l}</button>`).join('')}</div>
+    ${list.length ? `<div class="dvt-scroll"><table class="dvt-tbl"><thead><tr><th>Name</th><th>Status</th><th>Type</th><th>Time</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      : `<p class="dvt-empty">${D.net.length ? 'Bu filtrdə sorğu yoxdur.' : 'Sorğu yoxdur. Mağazada bir hərəkət et — sorğular burada görünəcək.'}</p>`}
+    <div class="dvt-foot">${list.length} / ${D.net.length} requests</div>${x ? dvtReqHTML(x) : ''}`;
+}
+function dvtConHTML() {
+  const C = SM.dvt.con;
+  return `<div class="dvt-flt">${dvtToolHTML()}</div>` + (C.length ? `<ul class="dvt-con">${C.map(c => `<li class="${c.lvl}"><span class="dvt-ci">${c.lvl === 'error' ? icon('x') : ''}</span><span class="dvt-msg">${esc(c.t)}</span><span class="dvt-src">${esc(c.src)}</span></li>`).join('')}</ul>`
+    : '<p class="dvt-empty">Konsol boşdur.</p>');
+}
+// Clear empties the open panel; Preserve log keeps both logs when the page changes
+const dvtToolHTML = () => `<button class="dvt-clr" data-act="dvt-clear">Clear</button><label class="dvt-keep"><input type="checkbox" data-dvt-keep${SM.dvt.keep ? ' checked' : ''}>Preserve log</label>`;
+function dvtHTML() {
+  const D = SM.dvt, errs = D.con.filter(c => c.lvl === 'error').length;
+  return `<div class="dvt-bar"><div class="dvt-tabs" role="group" aria-label="DevTools panelləri">${[['net', 'Network'], ['con', 'Console']].map(([k, l]) => `<button data-act="dvt-tab" data-v="${k}" aria-pressed="${D.tab === k}">${l}${k === 'con' && errs ? `<span class="dvt-errn">${errs}</span>` : ''}</button>`).join('')}</div>
+</div>
+    <div class="dvt-body">${D.tab === 'net' ? dvtNetHTML() : dvtConHTML()}</div>`;
+}
+// the store's own toggle; the DevTools practice keeps the panel open
+const dvtBoxHTML = () => `<div class="dvt-tg"><button class="btn sm${SM.dvt.open ? '' : ' ghost'}" data-act="dvt-open" aria-pressed="${SM.dvt.open}">${icon('search')}${SM.dvt.open ? 'DevTools-u bağla' : 'DevTools-u aç: Network və Console'}</button></div>${SM.dvt.open ? `<div id="dvt" class="dvt">${dvtHTML()}</div>` : ''}`;
+function dvtRedraw() {
+  const el = $('#dvt'); if (el) el.innerHTML = dvtHTML();
+  const f = $('#dv-form'); if (f) f.innerHTML = dvFormHTML();
+}
+function dvStart(id) {
+  smStart(null);
+  SM.dv = id; SM.st = smFresh(dvById[id].start); dvtReset();
+  Object.assign(DVS, { id, req: '', con: '', row: -1, side: '', fb: null });
+}
+const dvLabel = x => `#${x.n} ${x.m} ${dvtName(x)} · ${x.st}`;
+function dvFormHTML() {
+  const D = SM.dvt, f = DVS.fb, errs = D.con.filter(c => c.lvl === 'error');
+  // a cleared log takes its entries with it: a choice that is gone is no choice
+  if (DVS.req && DVS.req !== 'none' && !D.net.some(x => String(x.n) === DVS.req)) DVS.req = '';
+  if (DVS.con && DVS.con !== 'none' && !errs.some(c => String(c.n) === DVS.con)) DVS.con = '';
+  const sel = (k, opts) => `<select class="field dv-sel" data-dv="${k}"><option value="">— seç —</option>${opts.map(([v, l]) => `<option value="${v}"${DVS[k] === v ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+  const q = (n, t, ctl) => `<div class="br-f"><span class="br-l">${n}. ${t}</span>${ctl}</div>`;
+  return `<div class="sm-fb-h">Diaqnoz</div>
+    ${q(1, 'Network-da baqı göstərən sorğu', sel('req', [['none', 'Heç bir sorğu getmədi']].concat(D.net.map(x => [String(x.n), dvLabel(x)]))))}
+    ${q(2, 'Console-da baqın xətası', sel('con', [['none', 'Qırmızı xəta yoxdur']].concat(errs.map(c => [String(c.n), `#${c.n} ${c.t.length > 72 ? c.t.slice(0, 72) + '…' : c.t}`]))))}
+    ${q(3, 'Network-da nə görürsən? (13.10)', `<div class="dv-rows">${DVD.rows.map((r, i) => `<label class="dv-opt"><input type="radio" name="dv-row" data-dv-row="${i}"${DVS.row === i ? ' checked' : ''}><span><b>${esc(r.see)}</b> → ${esc(r.then)}</span></label>`).join('')}</div>`)}
+    ${q(4, 'Defekt haradadır?', `<div class="seg dv-seg">${[['frontend', 'Frontend'], ['backend', 'Backend']].map(([k, l]) => `<button data-act="dv-side" data-v="${k}" aria-pressed="${DVS.side === k}">${l}</button>`).join('')}</div>`)}
+    <div class="row"><button class="btn primary" data-act="dv-check">${icon('check')}Yoxla</button></div>
+    <div id="dv-fb" class="sm-fb" aria-live="polite">${f ? dvFbHTML() : ''}</div>`;
+}
+function dvCheck() {
+  const t = dvById[DVS.id], D = SM.dvt;
+  if (!DVS.req || !DVS.con || DVS.row < 0 || !DVS.side) { toast('Dörd sualın hamısını cavabla.'); return; }
+  const x = D.net.find(y => String(y.n) === DVS.req), c = D.con.find(y => String(y.n) === DVS.con);
+  const seen = D.net.some(y => y.bug === t.bug) || D.con.some(y => y.bug === t.bug);
+  const reqOk = t.net === 'none' ? DVS.req === 'none' : !!(x && x.bug === t.bug);
+  const conOk = t.con === 'none' ? DVS.con === 'none' : !!(c && c.bug === t.bug);
+  const again = 'Əvvəlcə baqı təkrarla: addımları mağazada et, sonra sübutu seç.';
+  const rows = [
+    { k: 'Network sübutu', ok: reqOk, note: reqOk ? '' : t.net === 'none' ? (seen ? 'Düyməni basanda yeni sorğu yaranmır — seçdiyin sorğu başqa hərəkətə (məsələn, səhifənin yüklənməsinə) aiddir.' : again)
+      : !seen ? again : x ? `Bu sorğu baqı göstərmir. Baqı göstərən: ${t.ev}.` : `Sorğu gedir: ${t.ev}. Network-a bax.` },
+    { k: 'Console', ok: conOk, note: conOk ? '' : t.con === 'none' ? 'Bu baqda Console-da xəta yoxdur — seçdiyin xəta başqa hərəkətə aiddir (məsələn, yanlış şifrə ilə girişə).'
+      : !seen ? again : c ? 'Bu xəta başqa hərəkətə aiddir — baqı təkrarlayanda çıxan xətanı seç.' : 'Console-da qırmızı xəta var — Console tabına bax.' },
+    { k: 'Network-da nə görürsən (13.10)', ok: DVS.row === t.row, note: DVS.row === t.row ? '' : `Düzgün sətir: “${DVD.rows[t.row].see}”.` },
+    { k: 'Defekt haradadır', ok: DVS.side === t.side, note: DVS.side === t.side ? '' : `Defekt ${t.side === 'frontend' ? 'frontend-dədir: brauzer' : 'backend-dədir: server'} səhv edir.` }
+  ];
+  DVS.fb = { rows, good: rows.every(r => r.ok) };
+  if (DVS.fb.good) DVS.done[t.id] = 1;
+}
+// what goes into the bug report's attachments (13.12, step 4)
+function dvEvidence(t) {
+  const D = SM.dvt, x = D.net.find(y => y.bug === t.bug), c = D.con.find(y => y.bug === t.bug);
+  const res = r => { const a = Array.isArray(r) && t.focus ? r.filter(i => i.name === t.focus) : r, s = JSON.stringify(a); return a !== r ? `[…, ${s.slice(1, -1)}, …]` : s; };
+  const L = [`Başlıq: ${t.model}`];
+  if (x) { L.push(`Sorğu: ${x.m} ${x.url}`, `Status: ${x.st} ${HTTP_TXT[x.st]}`); if (x.body) L.push('Payload: ' + JSON.stringify(x.body)); L.push('Response: ' + res(x.res)); }
+  else L.push('Network: düyməni basanda sorğu getmir.');
+  if (c) L.push(`Console: ${c.t} (${c.src})`);
+  return { text: L.concat('Əlavə: ekran şəkli və ya qısa video').join('\n'), x };
+}
+function dvFbHTML() {
+  const t = dvById[DVS.id], f = DVS.fb, ev = f.good ? dvEvidence(t) : null;
+  return `<ul class="sm-rows">${f.rows.map(r => `<li>${smMark(r.ok)}<div><b>${esc(r.k)}</b>${r.note ? `<div class="sm-note">${esc(r.note)}</div>` : ''}</div></li>`).join('')}</ul>
+    ${f.good ? `<div class="sm-good">${icon('check')}Əla — sübut tapılıb, defektin yeri bəllidir.</div>` : ''}
+    <details class="cmp-why sm-model"${f.good ? ' open' : ''}><summary>${icon('eye')}Niyə belədir?</summary><p>${esc(t.why)}</p></details>
+    ${ev ? `<div class="sm-fb-h">Bug report-a əlavə et (13.12)</div><pre class="dvt-pre dv-ev">${esc(ev.text)}</pre>
+      <div class="row"><button class="btn" data-act="dv-copy">${icon('copy')}Kopyala</button>${ev.x ? `<button class="btn ghost" data-act="dvt-curl" data-n="${ev.x.n}">${icon('copy')}Copy as cURL</button>` : ''}</div>` : ''}`;
+}
+function dvCaseHTML() {
+  const t = dvById[DVS.id];
+  return `<div class="card sm-case"><div class="sm-id">${dvName(t.id)} · ${esc(t.start.user)}</div><h2 class="sm-t">${esc(t.title)}</h2><p class="dv-rep">${esc(t.report)}</p>
+    <dl class="sm-dl"><dt>İlkin şərt</dt><dd>${esc(t.pre)}</dd><dt>Addımlar</dt><dd><ol class="sm-steps">${t.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol></dd></dl>
+    <div class="row" style="margin-top:10px"><button class="btn sm ghost" data-act="dv-restart">${icon('refresh')}Yenidən başla</button></div></div>`;
+}
+function vDevtools(v) {
+  const id = dvById[S.params.dv] ? S.params.dv : DVD.tasks[0].id;
+  if (SM.dv !== id) dvStart(id);
+  const t = dvById[id];
+  setHeader({ back: true, kicker: 'DevTools məşqi', name: `${dvName(id)} · ${t.title}` });
+  const pick = DVD.tasks.map(x => `<button class="chip${x.id === id ? ' acc' : DVS.done[x.id] ? ' pass' : ''}" data-act="dv-open" data-dv="${x.id}">${DVS.done[x.id] ? icon('check') : ''}${dvName(x.id)}</button>`).join('');
+  v.innerHTML = `<p class="muted sm-intro">${esc(DVD.intro)}</p><div class="sm-pick">${pick}</div>
+    <div id="dv-case">${dvCaseHTML()}</div><div class="sm-dev" id="sm-dev">${smDevHTML()}</div>
+    <div id="dvt" class="dvt">${dvtHTML()}</div><div class="card dv-form" id="dv-form">${dvFormHTML()}</div>`;
+}
+const dvtLinkHTML = s => s.dt ? `<div class="sm-link"><div class="srt-k">${icon('search')}DevTools məşqi</div><p class="srt-hint">Məşq mağazasında Network və Console-u aç: beş istifadəçi şikayəti, hər biri 13.10-dakı cədvəlin bir sətri.</p>
+  <div class="sm-links">${DVD.tasks.map(t => `<button class="btn sm" data-act="dv-open" data-dv="${t.id}"><b>${DVS.done[t.id] ? '✓' : dvName(t.id)}</b> ${esc(t.title)}</button>`).join('')}</div></div>` : '';
 /* ---------- code tracer (trace.json): JavaScript runs line by line with its variables and console; a Playwright test runs
    against the practice store's shop, its lines coloured by role (locator, action, assertion) ---------- */
 const TR = {}; // steps taken per program (session only)
@@ -2194,6 +2378,9 @@ function vPractice(v) {
   <section class="block"><div class="block-h"><h2>Reliz testi</h2><span class="muted" style="font-size:13px">${relDone().filter(Boolean).length}/4 mərhələ</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">Mini Store ${REL_D.ver} gəldi: proqramçılar üç defekti düzəltdiklərini yazıblar. Smoke testlə build-i yoxla, düzəlişləri retest et, regression üçün test case seç və komandaya fakt əsasında reliz tövsiyəsi ver.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="rel-open">${icon('layers')}Reliz panelini aç</button></div></div></section>
+  <section class="block"><div class="block-h"><h2>DevTools məşqi</h2><span class="muted" style="font-size:13px">${Object.keys(DVS.done).length}/${DVD.tasks.length} tapşırıq</span></div>
+    <div class="card"><div class="muted" style="font-size:13.5px">Mağazanın Network və Console panelləri, Chrome-dakı kimi: sorğular, status kodları, Payload, Response, Preserve log, Copy as cURL. İstifadəçi şikayətini təkrarla, sübut tap və defektin frontend-də, yoxsa backend-də olduğunu müəyyən et.</div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="dv-open">${icon('search')}DevTools-u aç</button></div></div></section>
   <section class="block"><div class="block-h"><h2>SQL məşqi</h2><span class="muted" style="font-size:13px">${SQLC.tasks.filter(t => SQX.done[t.id]).length}/${SQLC.tasks.length} tapşırıq</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">SQLite brauzerdə işləyir — heç nə yükləmək lazım deyil. 16-cı fəslin customers və orders bazası: sorğu yaz, nəticəni cədvəl kimi gör, tapşırıqları avtomatik yoxlat.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sql-open">${icon('play')}SQL konsolunu aç</button></div></div></section>
@@ -3240,6 +3427,27 @@ document.addEventListener('click', ev => {
       break;
     }
     case 'sm-check': smCheck(); break;
+    case 'dvt-open': SM.dvt.open = !SM.dvt.open; rerender(); break;
+    case 'dvt-tab': SM.dvt.tab = d.v; dvtRedraw(); break;
+    case 'dvt-filter': SM.dvt.filter = d.v; dvtRedraw(); break;
+    case 'dvt-req': SM.dvt.sel = SM.dvt.sel === +d.n ? null : +d.n; dvtRedraw(); break;
+    case 'dvt-sub': SM.dvt.sub = d.v; dvtRedraw(); break;
+    case 'dvt-clear': if (SM.dvt.tab === 'net') Object.assign(SM.dvt, { net: [], sel: null }); else SM.dvt.con = []; dvtRedraw(); break;
+    case 'dvt-curl': {
+      const x = SM.dvt.net.find(y => y.n === +d.n); if (!x) break;
+      try { navigator.clipboard.writeText(dvtCurl(x)).then(() => toast('cURL kopyalandı — bug report-a və ya terminala yapışdır.'), () => toast('Kopyalamaq alınmadı')); } catch (e) { toast('Kopyalamaq alınmadı'); }
+      break;
+    }
+    case 'dv-open': closeSheet(); go('devtools', { dv: d.dv || DVS.id }, { push: S.view !== 'devtools' }); break;
+    case 'dv-restart': { const done = DVS.done; dvStart(SM.dv); DVS.done = done; render({ keepScroll: true }); break; }
+    case 'dv-side': DVS.side = d.v; $$('[data-act="dv-side"]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === d.v))); break;
+    case 'dv-check': {
+      dvCheck(); const fb = $('#dv-fb'); if (!fb || !DVS.fb) break;
+      fb.innerHTML = dvFbHTML(); fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      $$('#view .sm-pick .chip').forEach(b => { if (DVS.done[b.dataset.dv] && b.dataset.dv !== DVS.id) b.classList.add('pass'); });
+      break;
+    }
+    case 'dv-copy': { const t = dvById[DVS.id]; try { navigator.clipboard.writeText(dvEvidence(t).text).then(() => toast('Sübut kopyalandı — bug report-un “Əlavələr” sahəsinə yapışdır.'), () => toast('Kopyalamaq alınmadı')); } catch (e) { toast('Kopyalamaq alınmadı'); } break; }
     case 'ctfl-open': closeSheet(); go('ctfl', {}, { push: S.view !== 'ctfl' }); break;
     case 'exam-open': closeSheet(); go('exam', {}, { push: S.view !== 'exam' }); break;
     case 'exam-mode': S.examMode = d.v; rerender(); break;
@@ -3519,6 +3727,9 @@ document.addEventListener('change', ev => {
   if (t.dataset.relMap) { REL.map[t.dataset.relMap] = t.value; return; }
   if (t.dataset.relReg) { REL.reg[t.dataset.relReg] = t.checked; return; }
   if (t.dataset.relWhy) { REL.why[t.dataset.relWhy] = t.checked; return; }
+  if (t.dataset.dvtKeep !== undefined) { SM.dvt.keep = t.checked; return; }
+  if (t.dataset.dv) { DVS[t.dataset.dv] = t.value; return; }
+  if (t.dataset.dvRow !== undefined) { DVS.row = +t.dataset.dvRow; return; }
   if (t.dataset.chk) { const K = Store.doc('checks').k; if (t.checked) K[t.dataset.chk] = 1; else delete K[t.dataset.chk]; Store.changed('checks'); updChk(t.dataset.sec); }
   else if (t.id === 'tctx') { const ch = Store.doc('chat'); ch.ctx = t.value; Store.changed('chat'); toast('Kontekst dəyişdi: ' + (t.value === 'none' ? 'ümumi' : chLabel(chById[t.value]))); }
 });
@@ -3548,7 +3759,7 @@ AI.setState('pending');
 // start that Claude action once Claude is ready. Only ids from the book are accepted, so a link cannot carry its own prompt.
 // #c3-xulase and #xulase open the summary sheets (the claude.ai version links there when it cannot print);
 // #magaza opens the practice store, #magaza-tc04 with that test case; #reliz the release test, #reliz-tc06 that test case
-// on build 1.1.
+// on build 1.1; #devtools the DevTools practice, #devtools-dv3 that task.
 let AUTO = null;
 const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 function routeHash() {
@@ -3572,6 +3783,7 @@ function routeHash() {
   else if (h === 'xulase') { S.tab = 'practice'; S.view = 'summary'; S.params = { ch: 'all' }; }
   else if (t === 'magaza') { S.tab = 'practice'; S.view = 'store'; S.params = { sc: own(scById, act) ? act : null }; }
   else if (t === 'reliz') { S.tab = 'practice'; if (own(scById, act)) { S.view = 'store'; S.params = { sc: act, ver: REL_D.ver }; } else { S.view = 'release'; S.params = {}; } }
+  else if (t === 'devtools') { S.tab = 'practice'; S.view = 'devtools'; S.params = { dv: own(dvById, act) ? act : null }; }
   else if (h === 'istqb') { S.tab = 'practice'; S.view = 'ctfl'; S.params = {}; }
   else if (h === 'imtahan') { S.tab = 'practice'; S.view = 'exam'; S.params = {}; }
   else if (h === 'sql') { S.tab = 'practice'; S.view = 'sql'; S.params = {}; }

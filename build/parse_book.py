@@ -538,6 +538,26 @@ for sid, ids in store['sections'].items():
         print('ERR store section', sid, ids, file=sys.stderr); errors += 1; continue
     sec['sim'] = ids
 del store['sections']
+# ---------- 6f2. DevTools practice (devtools.json): user complaints about the store; each planted bug is placed in 13.10's
+# table by its evidence in Network and Console ----------
+devtools = json.load(open(os.path.join(BASE, 'devtools.json'), encoding='utf-8'))
+dv_ids = set()
+for t in devtools['tasks']:
+    st = t.get('start', {})
+    ok = t.get('id') and t['id'] not in dv_ids and all(t.get(k) for k in ('title', 'report', 'pre', 'why', 'model')) and t.get('steps') \
+        and st.get('page') in PAGES and st.get('user') in store['users'] and set(st.get('cart', [])) <= pids \
+        and (t.get('bug') in store['bugs'] or t.get('bug') in devtools['bugs']) and t.get('net') in ('none', 'req') and t.get('con') in ('none', 'err') \
+        and (t['net'] == 'none' or t.get('ev')) and isinstance(t.get('row'), int) and 0 <= t['row'] < len(devtools['rows']) and t.get('side') in ('frontend', 'backend')
+    if not ok:
+        print('ERR devtools task', t.get('id'), file=sys.stderr); errors += 1
+    dv_ids.add(t.get('id'))
+if len(devtools['rows']) != 5 or not all(r.get('see') and r.get('then') for r in devtools['rows']) or not devtools.get('intro'):
+    print('ERR devtools rows', file=sys.stderr); errors += 1
+for sid in devtools.pop('sections'):
+    sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+    if not sec:
+        print('ERR devtools section', sid, file=sys.stderr); errors += 1; continue
+    sec['dt'] = 1
 # ---------- 6g. code tracer (trace.json, keyed by section id): JavaScript stepped line by line, Playwright tests run against
 # the practice store; every line is pre-highlighted (Playwright lines by role: locator, action, assertion) ----------
 PW_TOK = re.compile(r"(?P<loc>page\.(?:getBy\w+|locator)\((?:[^()]|\([^()]*\))*\))|(?P<as>expect\(|\)\.to\w+\((?:[^()]|\([^()]*\))*\))"
@@ -771,7 +791,7 @@ for c in chapters:
             s['x']['short'], k = gl_wrap(s['x']['short'], rx, idx, 2); gl_total += k
 print('glossary links', gl_total)
 out = {'title': 'QA Kitabı: Sıfırdan Peşəkar Testerə', 'parts': parts, 'chapters': chapters,
-       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'api': api, 'sql': sqlcfg, 'ctfl': ctfl}
+       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'devtools': devtools, 'api': api, 'sql': sqlcfg, 'ctfl': ctfl}
 json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 # ---------- 7. report ----------
