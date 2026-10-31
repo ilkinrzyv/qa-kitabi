@@ -10,7 +10,7 @@ Claude (müəllim, rol oyunları, “Claude ilə” düymələri) yalnız intern
    Açar yoxdursa, tətbiqdəki Claude düymələri bu versiyanı eyni bölmədə açır və eyni əməliyyatı başladır.
 2. **Öz Anthropic API açarınla** (istəyə görə) — cavablar birbaşa tətbiqin içində gəlir.
 
-Versiya: `2026.10.30-90bb4b2` · cihazda tutduğu yer: təxminən 3,7 MB.
+Versiya: `2026.10.31-a5b2df3` · cihazda tutduğu yer: təxminən 3,8 MB.
 
 ## 1. Saytda yerləşdir (bir dəfə)
 

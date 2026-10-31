@@ -449,7 +449,7 @@ function render(opts) {
   if (observer) { observer.disconnect(); observer = null; }
   hideSelPill();
   const v = $('#view');
-  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, devtools: vDevtools };
+  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools };
   (views[S.view] || vHome)(v);
   if (opts.keepScroll) window.scrollTo(0, y);
   else if (!(S.view === 'reader' && S.params.sec)) window.scrollTo(0, 0);
@@ -810,10 +810,10 @@ function dtHTML(sid, c) {
 function textBody(c, s) {
   const lv = lvlOf(s.id);
   if (lv === 'short') {
-    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}
+    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}
       <button class="btn sm ghost more" data-act="lvl" data-sec="${s.id}" data-v="std">${icon('book')}Tam mətni oxu</button>${miniHTML(c, s, false)}`;
   }
-  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
+  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
 }
 function fbHTML(a) {
   let h = '';
@@ -901,7 +901,7 @@ function secHTML(c, s) {
   else if (s.kind === 'selfcheck') body = selfHTML(c, s);
   else if (s.kind === 'checklist') body = checklistHTML(s);
   else if (s.x) body = textBody(c, s);
-  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}`;
+  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${trHTML(s)}`;
   return `<section class="sec${learned ? ' learned' : ''}" id="${s.id}" data-sec="${s.id}" data-kind="${s.kind}">
     <header class="sec-h"><span class="sec-num">${esc(s.num || kindTag(s).toLocaleUpperCase('az'))}</span><h2>${esc(s.title)}</h2>${s.x ? lvlCtl(s.id, lvlOf(s.id)) : ''}</header>
     ${body}${footerHTML(c, s)}</section>`;
@@ -1069,6 +1069,7 @@ function printHelp() {
 /* ---------- practice store (store.json): a small shop modelled on saucedemo.com. The reader runs a test case in it and
    writes the actual result; the book compares that text with the screen as it was right after the last step ---------- */
 const STORE = BOOK.store;
+const REL_D = STORE.release;
 const prodById = Object.fromEntries(STORE.products.map(p => [p.id, p]));
 const scById = Object.fromEntries(STORE.scenarios.map(s => [s.id, s]));
 const SM_PAGES = { login: '', products: 'Products', cart: 'Your Cart', info: 'Checkout: Your Information', overview: 'Checkout: Overview', complete: 'Checkout: Complete!' };
@@ -1077,19 +1078,21 @@ const SM_FIELDS = { user: 'Username', pass: 'Password', first: 'First Name', las
 const SM_BUG = { noAdd: ['bolt', 'fleece'], noRemove: ['bikelight'] }; // problem_user's planted bugs; their labels are in store.json
 // error_user's planted bugs (devtools.json): the screen alone does not tell where they are, DevTools does
 const SM_ERR = { badAdd: 'onesie', price: { fleece: 4.99 } };
-const SM = { id: undefined, found: {}, passed: {}, dvt: { open: false, tab: 'net', filter: 'all', sub: 'hdrs', keep: false, sel: null, seq: 0, net: [], con: [] } }; // session only
+const SM = { id: undefined, ver: '1.0', found: {}, passed: {}, dvt: { open: false, tab: 'net', filter: 'all', sub: 'hdrs', keep: false, sel: null, seq: 0, net: [], con: [] } }; // session only
 const money = n => '$' + n.toFixed(2);
 const tcName = id => id.replace(/^tc/, 'TC-');
 // the price the shop shows and sorts by is the one the server sends: wrong for error_user's Fleece Jacket
 const smPrice = (st, p) => (st.user === 'error_user' && SM_ERR.price[p.id]) || p.price;
-const smFresh = s0 => ({ page: s0.page, user: s0.user || '', cart: (s0.cart || []).slice(), sort: 'az', order: 'az', err: '', menu: false, f: { user: '', pass: '', first: '', last: '', zip: '' } });
-function smStart(id) {
-  const sc = scById[id] || null, nid = sc ? id : null;
+const smFresh = (s0, ver) => ({ page: s0.page, user: s0.user || '', cart: (s0.cart || []).slice(), sort: 'az', order: 'az', err: '', menu: false, ver: ver || '1.0', f: { user: '', pass: '', first: '', last: '', zip: '' } });
+function smStart(id, ver) {
+  const sc = scById[id] || null, nid = sc ? id : null, v = sc && ver === REL_D.ver ? ver : '1.0';
   // a restart keeps the open bug report: reproducing the bug again is how its frequency (3/3) is measured
-  Object.assign(SM, { id: nid, sc, dv: null, done: 0, off: false, snap: null, fb: null, ans: '', status: '', title: '', touched: {}, st: smFresh(sc ? sc.start : { page: 'login' }),
-    rep: SM.id === nid ? SM.rep : null });
+  Object.assign(SM, { id: nid, ver: v, sc, dv: null, done: 0, off: false, snap: null, fb: null, ans: '', status: '', title: '', touched: {}, st: smFresh(sc ? sc.start : { page: 'login' }, v),
+    rep: SM.id === nid && SM.ver === v ? SM.rep : null });
   dvtReset();
 }
+// the planted bug a failed test case shows: build 1.1 has its own (the regression), the rest keep store.json's
+const scBug = sc => (sc && (SM.ver === REL_D.ver && REL_D.bugs[sc.id] || sc.bug)) || null;
 function smOrder(st) {
   const name = (a, b) => a.name.localeCompare(b.name, 'en');
   const pr = p => smPrice(st, p);
@@ -1104,9 +1107,10 @@ function smEvent(e) {
   smStep(e, before);
 }
 // the shop itself: one event changes one state (the practice store's, or the code tracer's browser); planted bugs that
-// fire are noted in `found`
+// fire are noted in `found`. Build 1.1 (store.json "release") fixes add and sort, not Last Name, and breaks Remove on
+// Your Cart for every user — the regression the release test has to catch
 function smApply(st, e, found) {
-  const prob = st.user === 'problem_user', errU = st.user === 'error_user';
+  const prob = st.user === 'problem_user', errU = st.user === 'error_user', v11 = st.ver === REL_D.ver;
   switch (e.ev) {
     case 'login': {
       const u = st.f.user.trim(), p = st.f.pass; Object.assign(e, { user: u, pass: p });
@@ -1116,10 +1120,11 @@ function smApply(st, e, found) {
       if (!st.err) Object.assign(st, { user: u, page: 'products' });
       break;
     }
-    case 'add': if (prob && SM_BUG.noAdd.includes(e.item)) found.add = (found.add || 0) + 1;
+    case 'add': if (prob && !v11 && SM_BUG.noAdd.includes(e.item)) found.add = (found.add || 0) + 1;
       else if (errU && e.item === SM_ERR.badAdd) found.e400 = (found.e400 || 0) + 1; else if (!st.cart.includes(e.item)) st.cart.push(e.item); break;
-    case 'remove': if (prob && e.where === 'products' && SM_BUG.noRemove.includes(e.item)) found.remove = (found.remove || 0) + 1; else st.cart = st.cart.filter(x => x !== e.item); break;
-    case 'sort': st.sort = e.v; if (!prob) st.order = e.v; else if (e.v !== 'az') found.sort = (found.sort || 0) + 1; break;
+    case 'remove': if (prob && e.where === 'products' && SM_BUG.noRemove.includes(e.item)) found.remove = (found.remove || 0) + 1;
+      else if (v11 && e.where === 'cart') found.rmcart = (found.rmcart || 0) + 1; else st.cart = st.cart.filter(x => x !== e.item); break;
+    case 'sort': st.sort = e.v; if (!prob || v11) st.order = e.v; else if (e.v !== 'az') found.sort = (found.sort || 0) + 1; break;
     case 'cart': Object.assign(st, { page: 'cart', menu: false }); break;
     case 'shop': Object.assign(st, { page: 'products', menu: false }); break;
     case 'checkout': Object.assign(st, { page: 'info', err: '' }); Object.assign(st.f, { first: '', last: '', zip: '' }); break;
@@ -1227,19 +1232,20 @@ function smCheck() {
   if (!SM.snap) { toast('Əvvəlcə addımları mağazada icra et.'); return; }
   if (!SM.ans.trim()) { toast('Faktiki nəticəni yaz.'); return; }
   if (!SM.status) { toast('Status seç: Passed və ya Failed.'); return; }
-  const T = fz(SM.ans);
+  const T = fz(SM.ans), sb = scBug(sc);
   const rows = Object.keys(SM.snap).map(k => smJudge(T, k, SM.snap[k], sc.expect[k]));
   const truth = Object.keys(sc.expect).every(k => SM.snap[k] === sc.expect[k]) ? 'Passed' : 'Failed';
-  const bug = truth === 'Failed' && SM.status === 'Failed' && sc.bug ? { parts: smBugParts(SM.title, sc.bug), sw: swFind(SM.title, false), empty: !SM.title.trim() } : null;
+  const bug = truth === 'Failed' && SM.status === 'Failed' && sb ? { parts: smBugParts(SM.title, sb), sw: swFind(SM.title, false), empty: !SM.title.trim() } : null;
   const good = rows.every(r => r.ok === true) && SM.status === truth && (!bug || (!bug.empty && bug.parts.every(p => p[1])));
   SM.fb = { rows, truth, sw: swFind(SM.ans, false), bug, good };
-  if (good) SM.passed[sc.id] = 1;
+  if (SM.ver === REL_D.ver) REL.runs[sc.id] = { st: SM.status, truth, good }; // the release panel reads the run from here
+  else if (good) SM.passed[sc.id] = 1;
   const el = $('#sm-fb'); if (el) el.innerHTML = smFbHTML();
   if (SM.rep) brRedraw();
 }
 const smMark = ok => ok === true ? `<span class="sm-ok">${icon('check')}</span>` : ok === 'near' ? '<span class="sm-near">≈</span>' : `<span class="sm-no">${icon('x')}</span>`;
 function smFbHTML() {
-  const f = SM.fb, sc = SM.sc; if (!f) return '';
+  const f = SM.fb, sc = SM.sc, sb = scBug(sc); if (!f) return '';
   const rows = f.rows.map(r => `<li>${smMark(r.ok)}<div><b>${esc(smLabel(r.k))}</b> — ekranda: ${esc(smShow(r.k, r.v))} · ${r.ok === true ? 'yazmısan' : r.ok === 'near' ? 'mətn tam dəqiq deyil, ekrandakı kimi köçür' : 'faktiki nəticədə yoxdur'}${r.note ? `<div class="sm-note">${esc(r.note)}</div>` : ''}</div></li>`).join('');
   const diff = Object.keys(sc.expect).filter(k => SM.snap[k] !== sc.expect[k]).map(k => `${smLabel(k)}: gözlənilən ${smShow(k, sc.expect[k])}, ekranda ${smShow(k, SM.snap[k])}`);
   const stOk = SM.status === f.truth, b = f.bug;
@@ -1249,10 +1255,10 @@ function smFbHTML() {
     ${b ? `<div class="sm-bug"><div class="sm-fb-h">Bug başlığı: [harada] + [nə baş verir] + [hansı şərtdə]</div>
       ${b.empty ? '<p class="muted">Başlıq yazılmayıb.</p>' : `<ul class="sm-rows">${b.parts.map(([n, ok]) => `<li>${smMark(ok)}<div><b>${n}</b>${ok ? '' : ' — başlıqda yoxdur'}</div></li>`).join('')}</ul>`}
       ${b.sw.length ? `<div class="swc">${swList(b.sw)}</div>` : ''}
-      ${SM.rep ? '' : `<div class="row" style="margin-top:10px"><button class="btn" data-act="br-open" data-b="${sc.bug.r}">${icon('bug')}Tam bug report yaz</button></div>`}</div>` : ''}
+      ${SM.rep ? '' : `<div class="row" style="margin-top:10px"><button class="btn" data-act="br-open" data-b="${sb.r}">${icon('bug')}Tam bug report yaz</button></div>`}</div>` : ''}
     ${f.good ? `<div class="sm-good">${icon('check')}Əla — faktiki nəticə ekranla, status gözlənilənlə uyğundur.</div>` : ''}
     <details class="cmp-why sm-model"><summary>${icon('eye')}Ekranda nə vardı? (nümunə cavab)</summary><p>${esc(smList(SM.snap))}.</p>
-      ${sc.bug && f.truth === 'Failed' ? `<p><b>Bug başlığı:</b> ${esc(sc.bug.model)}</p>` : ''}</details>`;
+      ${sb && f.truth === 'Failed' ? `<p><b>Bug başlığı:</b> ${esc(sb.model)}</p>` : ''}</details>`;
 }
 function smDevHTML(st = SM.st) {
   const n = st.cart.length, pg = st.page;
@@ -1262,7 +1268,8 @@ function smDevHTML(st = SM.st) {
   const line = (p, b) => `<div class="sm-item">${pg === 'products' ? '' : '<span class="sm-qty">1</span>'}<div><div class="sm-name">${esc(p.name)}</div><div class="sm-price">${money(smPrice(st, p))}</div></div>${b || ''}</div>`;
   const items = st.cart.map(id => prodById[id]);
   const total = items.reduce((a, p) => a + smPrice(st, p), 0), tax = Math.round(total * 8) / 100;
-  if (pg === 'login') return `<div class="sm-logo big">Mini Store</div><div class="sm-body">${inp('user')}${inp('pass', 'password')}${err}${btn('login', 'Login', 'main')}
+  const ver = st.ver === REL_D.ver ? ` <span class="sm-ver">${st.ver}</span>` : '';
+  if (pg === 'login') return `<div class="sm-logo big">Mini Store${ver}</div><div class="sm-body">${inp('user')}${inp('pass', 'password')}${err}${btn('login', 'Login', 'main')}
     <div class="sm-cred"><b>Accepted usernames are:</b><br>${STORE.users.join('<br>')}<br><b>Password for all users:</b><br>${esc(STORE.password)}</div></div>`;
   const body = {
     products: () => smOrder(st).map(p => line(p, st.cart.includes(p.id) ? btn('remove', 'Remove', 'rm', ` data-item="${p.id}" data-where="products"`) : btn('add', 'Add to cart', '', ` data-item="${p.id}" data-where="products"`))).join(''),
@@ -1274,7 +1281,7 @@ function smDevHTML(st = SM.st) {
       <div class="sm-acts">${btn('cancel', 'Cancel')}${btn('finish', 'Finish', 'main')}</div>`,
     complete: () => `<div class="sm-done-h">Thank you for your order!</div><p class="sm-done-p">Your order has been dispatched.</p>${btn('home', 'Back Home', 'main')}`
   }[pg]();
-  return `<div class="sm-bar"><button class="sm-ib" data-act="sm" data-e="menu" aria-label="Open Menu">☰</button><span class="sm-logo">Mini Store</span>
+  return `<div class="sm-bar"><button class="sm-ib" data-act="sm" data-e="menu" aria-label="Open Menu">☰</button><span class="sm-logo">Mini Store${ver}</span>
       <button class="sm-ib sm-cart" data-act="sm" data-e="cart" aria-label="Səbət">${icon('cart')}${n ? `<span class="sm-badge">${n}</span>` : ''}</button></div>
     ${st.menu ? `<div class="sm-menu"><button data-act="sm" data-e="shop">All Items</button><button data-act="sm" data-e="logout">Logout</button><button data-act="sm" data-e="reset">Reset App State</button></div>` : ''}
     <div class="sm-ph"><span class="sm-title">${SM_PAGES[pg]}</span>${pg === 'products' ? `<select class="sm-sort" data-sm-sort aria-label="Sıralama">${SM_SORTS.map(([v, l]) => `<option value="${v}"${st.sort === v ? ' selected' : ''}>${l}</option>`).join('')}</select>` : ''}</div>
@@ -1288,11 +1295,11 @@ function smCaseHTML() {
       <div class="sm-state${got.length === ids.length ? ' ok' : ''}">Tapılan bug-lar: <b>${got.length}/${ids.length}</b>${got.length ? `<ul class="sm-found">${got.map(k => `<li>${icon('check')}<div><span>${esc(STORE.bugs[k])}</span>${SM.rep && SM.rep.bid === k ? '' : `<button class="btn sm" data-act="br-open" data-b="${k}">${icon('bug')}Bug report yaz</button>`}</div></li>`).join('')}</ul>` : '<br>Bug tapanda burada görünəcək. Hər tapıntı üçün tam bug report yaz: başlıq 12.2-dəki formula ilə.'}</div>
       <div class="row" style="margin-top:10px"><button class="btn sm ghost" data-act="sm-restart">${icon('refresh')}Mağazanı sıfırla</button></div></div>`;
   }
-  const n = sc.steps.length;
+  const n = sc.steps.length, role = SM.ver === REL_D.ver ? relRole(sc.id) : '';
   const state = SM.off ? `<div class="sm-state off">${icon('x')}Bu hərəkət növbəti addım deyildi və ekranı dəyişdi — nəticə artıq bu test case-in nəticəsi deyil. “Yenidən başla” bas.</div>`
     : SM.snap ? `<div class="sm-state ok">${icon('check')}Son addımdan sonrakı ekran qeydə alındı. İndi faktiki nəticəni yaz: ekranda nə görünür?</div>`
     : `<div class="sm-state">Addımları aşağıdakı mağazada icra et: ${SM.done}/${n}.</div>`;
-  return `<div class="card sm-case"><div class="sm-id">${tcName(sc.id)}</div><h2 class="sm-t">${esc(sc.title)}</h2>
+  return `<div class="card sm-case"><div class="sm-id">${tcName(sc.id)}${SM.ver === REL_D.ver ? ` · Mini Store ${SM.ver}${role ? ' · ' + esc(role) : ''}` : ''}</div><h2 class="sm-t">${esc(sc.title)}</h2>
     <dl class="sm-dl"><dt>İlkin şərt</dt><dd>${esc(sc.pre)}</dd>
       ${sc.data.length ? `<dt>Test data</dt><dd><table class="sm-data">${sc.data.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table></dd>` : ''}
       <dt>Addımlar</dt><dd><ol class="sm-steps">${sc.steps.map((s, i) => `<li class="${i < SM.done ? 'done' : i === SM.done && !SM.snap ? 'cur' : ''}">${esc(s.t)}${i < SM.done ? ` ${icon('check')}` : ''}</li>`).join('')}</ol></dd>
@@ -1315,13 +1322,18 @@ function smRedraw(typing) {
   if (!typing) dvtRedraw();
 }
 function vStore(v) {
-  const id = scById[S.params.sc] ? S.params.sc : null;
-  if (SM.id !== id || SM.dv) smStart(id);
-  const sc = SM.sc;
-  setHeader({ back: true, kicker: 'Məşq mağazası', name: sc ? `${tcName(sc.id)} · ${sc.title}` : STORE.free.title });
-  const pick = [`<button class="chip${sc ? '' : ' acc'}" data-act="sm-open" data-sc="">${icon('search')}Kəşfiyyat</button>`]
-    .concat(STORE.scenarios.map(x => `<button class="chip${x === sc ? ' acc' : SM.passed[x.id] ? ' pass' : ''}" data-act="sm-open" data-sc="${x.id}">${SM.passed[x.id] ? icon('check') : ''}${tcName(x.id)}</button>`)).join('');
-  v.innerHTML = `<p class="muted sm-intro">Mini Store — saucedemo.com-dakı mağazaya bənzəyən sadələşdirilmiş model (real sayt deyil). Test case-in addımlarını burada icra et, faktiki nəticəni yaz: kitab onu ekranda olanla tutuşdurur.</p>
+  const id = scById[S.params.sc] ? S.params.sc : null, ver = id && S.params.ver === REL_D.ver ? REL_D.ver : '1.0';
+  if (SM.id !== id || SM.ver !== ver || SM.dv) smStart(id, ver);
+  const sc = SM.sc, rel = SM.ver === REL_D.ver;
+  setHeader({ back: true, kicker: rel ? `Reliz testi · ${SM.ver}` : 'Məşq mağazası', name: sc ? `${tcName(sc.id)} · ${sc.title}` : STORE.free.title });
+  // build 1.1: the chips keep the version, their marks are the release runs
+  const mark = x => (rel ? REL.runs[x.id] && REL.runs[x.id].good : SM.passed[x.id]) ? ' pass' : '';
+  const pick = (rel ? [] : [`<button class="chip${sc ? '' : ' acc'}" data-act="sm-open" data-sc="">${icon('search')}Kəşfiyyat</button>`])
+    .concat(STORE.scenarios.map(x => `<button class="chip${x === sc ? ' acc' : mark(x)}" data-act="sm-open" data-sc="${x.id}"${rel ? ` data-ver="${SM.ver}"` : ''}>${mark(x) ? icon('check') : ''}${tcName(x.id)}</button>`)).join('');
+  const intro = rel ? `<div class="card rel-bar">${icon('layers')}<div><b>Mini Store ${SM.ver} — reliz testi</b><span>Test case-i yeni build-də icra et, faktiki nəticəni və statusu yaz, “Yoxla” bas — nəticə reliz panelinə düşür.</span></div>
+      <button class="btn sm" data-act="rel-open">${icon('back')}Reliz paneli</button></div>`
+    : '<p class="muted sm-intro">Mini Store — saucedemo.com-dakı mağazaya bənzəyən sadələşdirilmiş model (real sayt deyil). Test case-in addımlarını burada icra et, faktiki nəticəni yaz: kitab onu ekranda olanla tutuşdurur.</p>';
+  v.innerHTML = `${intro}
     <div class="sm-pick">${pick}</div><div id="sm-case">${smCaseHTML()}</div><div class="sm-dev" id="sm-dev">${smDevHTML()}</div>${dvtBoxHTML()}
     ${sc ? `<div class="card sm-res">${smResHTML()}</div>` : ''}<div id="br">${brHTML()}</div>`;
 }
@@ -1332,10 +1344,11 @@ const BR_SEV = ['Blocker', 'Critical', 'Major', 'Minor', 'Trivial'], BR_PRI = ['
 const BR_F = { title: 'Başlıq (Summary)', env: 'Mühit (Environment)', sev: 'Severity', pri: 'Priority (təklif)', pre: 'İlkin şərtlər',
   steps: 'Təkrarlama addımları', exp: 'Gözlənilən nəticə', act: 'Faktiki nəticə', freq: 'Təkrarlanma tezliyi', shot: 'Əlavələr (sübut)' };
 const BR_SEEN = { add: st => st.page === 'products', remove: st => st.page === 'products' && st.cart.includes('bikelight'),
-  sort: st => st.page === 'products' && st.sort !== 'az', last: st => st.page === 'info' && !st.f.last };
+  sort: st => st.page === 'products' && st.sort !== 'az', last: st => st.page === 'info' && !st.f.last,
+  rmcart: st => st.page === 'cart' && st.ver === REL_D.ver && st.cart.length > 0 };
 const BR_ENV = /(chrome|firefox|safari|edge|opera|yandex|brauzer|windows|android|ios|iphone|ipad|macos|mac os|linux)/;
 function brOpen(bid) {
-  const sc = !!(SM.sc && SM.sc.bug && SM.sc.bug.r === bid);
+  const sb = scBug(SM.sc), sc = !!(sb && sb.r === bid);
   SM.rep = { bid, sc, f: { title: sc ? SM.title : '', env: '', sev: '', pri: '', pre: '', steps: '', exp: '', act: '', freq: '' }, shot: null, fb: null };
 }
 const brSteps = t => String(t || '').split(/\n+|\s+(?=\d+[).]\s)/).map(x => x.replace(/^\s*\d+[).]\s*/, '').trim()).filter(Boolean);
@@ -1348,9 +1361,9 @@ function uaEnv() {
   return [os, b].filter(Boolean).join(', ') || 'ƏS və brauzer';
 }
 function brShot() {
-  const r = SM.rep, st = JSON.parse(JSON.stringify(SM.st));
+  const r = SM.rep, st = JSON.parse(JSON.stringify(SM.st)), u = REP[r.bid].user; // u: the only user the bug happens to ('' = anyone)
   const d = new Date();
-  r.shot = { st, ok: !!SM.found[r.bid] && st.user === 'problem_user' && BR_SEEN[r.bid](st), at: [d.getHours(), d.getMinutes(), d.getSeconds()].map(pad2).join(':') };
+  r.shot = { st, ok: !!SM.found[r.bid] && (!u || st.user === u) && BR_SEEN[r.bid](st), at: [d.getHours(), d.getMinutes(), d.getSeconds()].map(pad2).join(':') };
 }
 function brCheck() {
   const r = SM.rep, R = REP[r.bid], f = r.f, rows = [];
@@ -1433,6 +1446,138 @@ function brRedraw() { const el = $('#br'); if (el) el.innerHTML = brHTML(); }
 const simHTML = s => s.sim ? `<div class="sm-link"><div class="srt-k">${icon('play')}Məşq mağazası</div><p class="srt-hint">Bu test case-ləri mağaza modelində icra et və faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur.</p>
   <div class="sm-links">${s.sim.map(id => id === 'free' ? `<button class="btn sm" data-act="sm-open" data-sc="">${icon('search')}${esc(STORE.free.title)}</button>`
     : `<button class="btn sm" data-act="sm-open" data-sc="${id}"><b>${tcName(id)}</b> ${esc(scById[id].title)}</button>`).join('')}</div></div>` : '';
+/* ---------- release test (store.json "release"): build 1.1 of the practice store arrives with three fixes. Smoke, retest,
+   regression and the recommendation, in the order of 6.3; every test case runs in the store on build 1.1 and its
+   checked run (status, truth) lands in REL.runs ---------- */
+const relFresh = () => ({ map: {}, mapChk: false, verdict: {}, reg: {}, regFb: false, regChk: false, runs: {}, go: '', why: {}, fb: null });
+const REL = relFresh(); // session only
+const relTk = REL_D.tickets, relCand = Object.keys(REL_D.regression);
+const REL_ST = [['Smoke test', 'Build test üçün yararlıdırmı?', 'Komandanın smoke dəsti: giriş, səbətə əlavə, səbət səhifəsi. Geniş, amma dayaz yoxlama (6.3) — biri düşsə, build test üçün qəbul olunmur və geri qaytarılır.'],
+  ['Retest', 'Düzəlişlər işləyirmi?', 'Hər “Fixed” defekt bug report-dakı eyni addımlar və eyni data ilə yoxlanılır. Keçdisə — Verified, düşdüsə — Reopened (12.6).'],
+  ['Regression', 'Başqa yer sınmayıb?', 'Hamısını yox, dəyişikliyin toxunduğu sahələri seç (təsir analizi): reliz qeydlərində nəyin dəyişdiyinə bax. Smoke dəstindəki test case-lər artıq icra olunub.'],
+  ['Tövsiyə', 'Reliz olar?', 'Tester relizi özü dayandırmır: faktları və tövsiyəsini komandaya verir, son qərarı Product Owner verir.']];
+const REL_ORD = ['1-ci', '2-ci', '3-cü'];
+// the role a test case plays in this release, once the reader has planned it
+function relRole(id) {
+  const t = REL.mapChk && relTk.find(x => x.tc === id);
+  return REL_D.smoke.includes(id) ? 'Smoke' : t ? 'Retest ' + t.key : REL.regChk && REL.reg[id] ? 'Regression' : '';
+}
+const relSel = () => relCand.filter(id => REL.reg[id]);
+function relDone() {
+  const s1 = REL_D.smoke.every(id => REL.runs[id]);
+  const s2 = s1 && REL.mapChk && relTk.every(t => REL.verdict[t.bug]);
+  const s3 = s2 && REL.regChk && relSel().every(id => REL.runs[id]);
+  return [s1, s2, s3, s3 && !!REL.fb];
+}
+// build 1.1 is not ready while a fix failed its retest or the regression broke something
+const relGoTruth = () => !Object.keys(REL_D.bugs).length && relTk.every(t => t.verdict === 'Verified');
+function relRunHTML(id, on) {
+  const r = REL.runs[id];
+  const res = r ? `<span class="chip ${r.st === 'Passed' ? 'pass' : 'fail'}">${r.st}</span>` : '<span class="chip">icra olunmayıb</span>';
+  return `<li class="rel-run"><div class="rel-tc"><b>${tcName(id)}</b> ${esc(scById[id].title)}${r && r.st !== r.truth ? '<div class="sm-note">Status ekranla uyğun deyil — test case-i yenidən icra et.</div>' : ''}</div>
+    <div class="rel-res">${res}<button class="btn sm${r ? ' ghost' : ''}" data-act="rel-run" data-sc="${id}"${on ? '' : ' disabled'}>${icon(r ? 'refresh' : 'play')}${r ? 'Yenidən' : 'İcra et'}</button></div></li>`;
+}
+function relNotesHTML() {
+  const tk = (t, cls, extra) => `<li${cls ? ` class="${cls}"` : ''}><div class="rel-tk-h"><span class="chip acc">${t.key}</span><span class="chip${cls ? ' warn' : ''}">${esc(t.status)}</span></div>
+    <div class="rel-tk-t">${esc(STORE.bugs[t.bug])}</div><div class="rel-ch">${icon(cls ? 'clock' : 'pencil')}<span>${esc(extra)}</span></div></li>`;
+  return `<div class="srt-k">${icon('list')}Reliz qeydləri <span lang="en">(release notes) · Mini Store ${REL_D.ver}</span></div>
+    <ul class="rel-notes">${relTk.map(t => tk(t, '', t.change)).join('')}${REL_D.deferred.map(t => tk(t, 'def', t.note)).join('')}</ul>`;
+}
+function relSmokeHTML() {
+  const done = REL_D.smoke.every(id => REL.runs[id]), ok = REL_D.smoke.every(id => REL.runs[id] && REL.runs[id].truth === 'Passed');
+  return `<ul class="rel-runs">${REL_D.smoke.map(id => relRunHTML(id, true)).join('')}</ul>
+    ${done ? `<div class="sm-state ${ok ? 'ok' : 'off'}">${icon(ok ? 'check' : 'x')}${ok ? 'Smoke keçdi: build test üçün yararlıdır — retest-ə keç.' : 'Smoke düşdü: build test üçün yararlı deyil.'}</div>` : ''}`;
+}
+function relVerdictNote(t, v) {
+  if (t.verdict === 'Verified') return v === 'Verified' ? 'Retest keçdi: defekt bu build-də təkrarlanmır → Verified, sonra Closed.'
+    : `${tcName(t.tc)} build ${REL_D.ver}-də keçdi (Passed): defekt düzəlib — Verified. Reopened yalnız retest düşəndə olur.`;
+  return v === 'Reopened' ? 'Retest düşdü: defekt eyni addımlarla yenə təkrarlanır → Reopened, defekt proqramçıya qayıdır. Şərhdə build-i və faktiki nəticəni yaz.'
+    : `${tcName(t.tc)} build ${REL_D.ver}-də düşdü (Failed): defekt qalır — Reopened. “Fixed” statusu düzəlişin işlədiyini sübut etmir.`;
+}
+function relRetestHTML(on) {
+  const opts = bug => STORE.scenarios.map(x => `<option value="${x.id}"${REL.map[bug] === x.id ? ' selected' : ''}>${tcName(x.id)} · ${esc(x.title)}</option>`).join('');
+  const rows = relTk.map(t => {
+    const ok = REL.map[t.bug] === t.tc, r = REL.runs[t.tc], v = REL.verdict[t.bug];
+    const after = !REL.mapChk ? '' : `<div class="sm-st ${ok ? 'ok' : 'no'}">${smMark(ok)}<div>${ok ? `Düzdür: ${tcName(t.tc)} bug report-dakı addımları və datanı təkrarlayır.` : `Düzgün seçim — ${tcName(t.tc)}: retest bug report-dakı eyni addımlar və eyni data ilə aparılır.`}</div></div>
+      <ul class="rel-runs">${relRunHTML(t.tc, on)}</ul>
+      <div class="br-f"><span class="br-l">Retest-in nəticəsi — defektin yeni statusu</span><div class="seg rel-seg">${['Verified', 'Reopened'].map(x => `<button data-act="rel-verdict" data-b="${t.bug}" data-v="${x}" aria-pressed="${v === x}"${r ? '' : ' disabled'}>${x}</button>`).join('')}</div></div>
+      ${v ? `<div class="sm-st ${v === t.verdict ? 'ok' : 'no'}">${smMark(v === t.verdict)}<div>${esc(relVerdictNote(t, v))}</div></div>` : r ? '' : '<p class="muted rel-hint">Əvvəlcə test case-i build 1.1-də icra et.</p>'}`;
+    return `<li class="rel-tk"><div class="rel-tk-h"><span class="chip acc">${t.key}</span><span class="rel-tk-t">${esc(STORE.bugs[t.bug])}</span></div>
+      <label class="br-f"><span class="br-l">Hansı test case ilə retest edəcəksən?</span><select class="field br-sel" data-rel-map="${t.bug}"${on && !REL.mapChk ? '' : ' disabled'}><option value="">— seç —</option>${opts(t.bug)}</select></label>${after}</li>`;
+  }).join('');
+  return `<ul class="rel-tks">${rows}</ul>${REL.mapChk ? '' : `<div class="row"><button class="btn primary" data-act="rel-map"${on ? '' : ' disabled'}>${icon('check')}Seçimi yoxla</button></div>`}`;
+}
+function relRegHTML(on) {
+  const rows = relCand.map(id => {
+    const c = REL_D.regression[id], s = !!REL.reg[id];
+    const fb = REL.regFb ? (c.need ? `<div class="sm-note${s ? ' i' : ''}">${s ? '' : 'Mütləq seç: '}${esc(c.why)}</div>` : `<div class="sm-note i">${esc(c.why)}</div>`) : '';
+    return `<li><label class="rel-pick${REL.regFb ? (c.need && !s ? ' miss' : '') : ''}"><input type="checkbox" data-rel-reg="${id}"${s ? ' checked' : ''}${on && !REL.regChk ? '' : ' disabled'}>
+      <span><b>${tcName(id)}</b> ${esc(scById[id].title)}${fb}</span>${REL.regFb && c.need ? smMark(s) : ''}</label></li>`;
+  }).join('');
+  const found = relSel().filter(id => REL.runs[id] && REL.runs[id].st === 'Failed' && REL.runs[id].truth === 'Failed');
+  return `<ul class="rel-picks">${rows}</ul>
+    ${REL.regChk ? `<div class="sm-state ok">${icon('check')}Plan hazırdır: ${relSel().length} test case. İndi onları build ${REL_D.ver}-də icra et.</div>
+      <ul class="rel-runs">${relSel().map(id => relRunHTML(id, on)).join('')}</ul>
+      ${found.length ? `<div class="sm-state off">${icon('bug')}Yeni defekt (regression): ${found.map(tcName).join(', ')}. Test case-i yenidən aç və “Tam bug report yaz” ilə hesabat yaz.</div>` : ''}`
+    : `${REL.regFb ? `<div class="sm-state off">${icon('x')}Dəyişikliyin toxunduğu bütün sahələr seçilməyib — planı düzəlt və yenidən yoxla.</div>` : ''}
+      <div class="row"><button class="btn primary" data-act="rel-plan"${on ? '' : ' disabled'}>${icon('check')}Planı yoxla</button></div>`}`;
+}
+// the facts the reader collected: failed smoke / regression runs, reopened fixes, known open defects
+function relFacts() {
+  const f = Object.keys(REL.runs).filter(id => !relTk.some(t => t.tc === id) && REL.runs[id].st === 'Failed')
+    .map(id => ({ id, t: `${tcName(id)} düşdü (Failed): ${scById[id].title}`, need: REL.runs[id].truth === 'Failed', why: REL.runs[id].truth === 'Failed' ? REL_D.blockWhy : 'Bu test case əslində keçib: statusu ekranla yoxla.' }));
+  relTk.filter(t => REL.verdict[t.bug] === 'Reopened').forEach(t => f.push({ id: t.bug, t: `${t.key} retest-dən keçmədi (Reopened)`, need: t.verdict === 'Reopened', why: t.verdict === 'Reopened' ? REL_D.reopenWhy : 'Retest əslində keçib — defekt Verified-dir.' }));
+  REL_D.deferred.forEach(t => f.push({ id: t.bug, t: `${t.key} hələ açıqdır (${t.status}): ${STORE.bugs[t.bug]}`, need: false, why: REL_D.deferredWhy }));
+  return f;
+}
+function relJudge() {
+  const facts = relFacts(), go = relGoTruth() ? 'go' : 'nogo';
+  const rows = facts.map(x => ({ t: x.t, ok: !!REL.why[x.id] === x.need, note: !!REL.why[x.id] === x.need ? '' : x.why }));
+  // blockers the reader never wrote down (a wrong status or verdict hid them)
+  const miss = [];
+  Object.keys(REL_D.bugs).forEach(id => { if (!(REL.runs[id] && REL.runs[id].st === 'Failed')) miss.push(`${tcName(id)}: ${REL_D.bugs[id].model}`); });
+  relTk.filter(t => t.verdict === 'Reopened' && REL.verdict[t.bug] !== 'Reopened').forEach(t => miss.push(`${t.key} retest-dən keçmir — Reopened olmalıdır.`));
+  const dec = REL.go === go;
+  return { dec, rows, miss, good: dec && rows.every(r => r.ok) && !miss.length };
+}
+function relMd() {
+  const row = (id, kind) => `| ${tcName(id)} ${scById[id].title} | ${kind} | ${REL.runs[id] ? REL.runs[id].st : '—'} |`;
+  const lines = ['## Test hesabatı: Mini Store ' + REL_D.ver, '', '| Test case | Növ | Status |', '| --- | --- | --- |']
+    .concat(REL_D.smoke.map(id => row(id, 'Smoke')), relTk.map(t => row(t.tc, 'Retest ' + t.key)), relSel().map(id => row(id, 'Regression')));
+  const newBugs = relSel().filter(id => REL.runs[id] && REL.runs[id].st === 'Failed').map(id => `${tcName(id)} — yeni defekt (regression)`);
+  const facts = relFacts().filter(x => REL.why[x.id]).map(x => x.t);
+  return lines.concat(['', `**Defektlər:** ${relTk.map(t => `${t.key} — ${REL.verdict[t.bug] || '?'}`).concat(newBugs).join('; ')}.`,
+    `**Bu relizə düşməyib:** ${REL_D.deferred.map(t => `${t.key} (${t.status})`).join(', ')}.`,
+    `**Tövsiyə:** ${REL.go === 'go' ? 'reliz olar' : REL.go === 'nogo' ? 'reliz olmaz' : '—'}${facts.length ? ' — ' + facts.join('; ') : ''}.`, '', 'Son qərarı Product Owner verir.']).join('\n');
+}
+function relDecHTML() {
+  const facts = relFacts(), b = REL.fb;
+  return `<div class="br-f"><span class="br-l">Tövsiyən</span><div class="seg rel-seg">${[['go', 'Reliz olar'], ['nogo', 'Reliz olmaz']].map(([k, l]) => `<button data-act="rel-go" data-v="${k}" aria-pressed="${REL.go === k}">${l}</button>`).join('')}</div></div>
+    <div class="br-f"><span class="br-l">Hansı faktlara əsaslanırsan?</span><ul class="rel-picks">${facts.map(x => `<li><label class="rel-pick"><input type="checkbox" data-rel-why="${x.id}"${REL.why[x.id] ? ' checked' : ''}><span>${esc(x.t)}</span></label></li>`).join('')}</ul></div>
+    <div class="row"><button class="btn primary" data-act="rel-check">${icon('check')}Tövsiyəni yoxla</button></div>
+    <div id="rel-fb" class="sm-fb" aria-live="polite">${b ? `<div class="sm-st ${b.dec ? 'ok' : 'no'}">${smMark(b.dec)}<div><b>${relGoTruth() ? 'Reliz olar' : 'Reliz olmaz'}</b> — ${esc(REL_D.decision)}</div></div>
+      <ul class="sm-rows">${b.rows.map(r => `<li>${smMark(r.ok)}<div>${esc(r.t)}${r.note ? `<div class="sm-note">${esc(r.note)}</div>` : ''}</div></li>`).join('')}</ul>
+      ${b.miss.length ? `<div class="sm-state off">${icon('x')}Gözdən qaçıb: ${esc(b.miss.join(' '))}</div>` : ''}
+      ${b.good ? `<div class="sm-good">${icon('check')}Əla — tövsiyən faktlara əsaslanır: komanda nəyin, niyə hazır olmadığını görür.</div>` : ''}
+      <details class="cmp-why sm-model"><summary>${icon('eye')}Nümunə tövsiyə</summary><p>${esc(REL_D.model)}</p></details>
+      <div class="sm-fb-h">Test hesabatı <span lang="en">(test completion report)</span></div><pre class="rel-md">${esc(relMd())}</pre>
+      <div class="row"><button class="btn" data-act="rel-copy">${icon('copy')}Markdown kimi kopyala</button></div>` : ''}</div>`;
+}
+function relStageHTML(i, on, done, body) {
+  const [name, q, hint] = REL_ST[i];
+  return `<section class="card rel-st${on ? '' : ' off'}${done ? ' done' : ''}" id="rel-${i + 1}"><div class="rel-sh"><span class="rel-n">${done ? icon('check') : i + 1}</span><div><b>${name}</b><span>${q}</span></div></div>
+    <p class="rel-p">${hint}</p>${on ? body : `<p class="muted rel-lock">Əvvəlcə ${REL_ORD[i - 1]} mərhələni bitir.</p>`}</section>`;
+}
+function vRelease(v) {
+  setHeader({ back: true, kicker: 'Reliz testi', name: `Mini Store ${REL_D.ver} · smoke, retest, regression` });
+  const [d1, d2, d3, d4] = relDone();
+  v.innerHTML = `<p class="muted sm-intro">${esc(REL_D.intro)}</p>
+    <div class="card rel-card">${relNotesHTML()}</div>
+    ${relStageHTML(0, true, d1, relSmokeHTML())}${relStageHTML(1, d1, d2, relRetestHTML(d1))}${relStageHTML(2, d2, d3, relRegHTML(d2))}${relStageHTML(3, d3, d4, relDecHTML())}
+    <div class="row"><button class="btn sm ghost" data-act="rel-reset">${icon('refresh')}Yenidən başla</button></div>`;
+}
+const relLinkHTML = s => s.rel ? `<div class="sm-link"><div class="srt-k">${icon('layers')}Reliz testi</div><p class="srt-hint">Mini Store ${REL_D.ver} gəldi: üç düzəliş, bir gizli regression. Smoke, retest, regression və reliz tövsiyəsini bir build üzərində ardıcıl et.</p>
+  <div class="sm-links"><button class="btn sm" data-act="rel-open">${icon('layers')}Reliz panelini aç</button></div></div>` : '';
 /* ---------- DevTools (devtools.json): the practice store's Network and Console panels, as in Chrome (13.9). The shop
    talks to the practice API (api.json); every event logs the requests it sent and the console lines it printed. A planted
    bug's request or console line carries the bug's key. The tasks are user complaints: reproduce, find the evidence,
@@ -2230,6 +2375,9 @@ function vPractice(v) {
   <section class="block"><div class="block-h"><h2>Məşq mağazası</h2><span class="muted" style="font-size:13px">${Object.keys(SM.passed).length}/${STORE.scenarios.length} test case</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">saucedemo.com-a bənzəyən kiçik mağaza modeli. Test case-in addımlarını icra et, faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur. problem_user-də gizli bug-lar var: tapdığın hər biri üçün tam bug report yaz.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sm-open" data-sc="tc01">${icon('play')}Test case-lərlə başla</button><button class="btn" data-act="sm-open" data-sc="">${icon('search')}Kəşfiyyat sessiyası</button></div></div></section>
+  <section class="block"><div class="block-h"><h2>Reliz testi</h2><span class="muted" style="font-size:13px">${relDone().filter(Boolean).length}/4 mərhələ</span></div>
+    <div class="card"><div class="muted" style="font-size:13.5px">Mini Store ${REL_D.ver} gəldi: proqramçılar üç defekti düzəltdiklərini yazıblar. Smoke testlə build-i yoxla, düzəlişləri retest et, regression üçün test case seç və komandaya fakt əsasında reliz tövsiyəsi ver.</div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="rel-open">${icon('layers')}Reliz panelini aç</button></div></div></section>
   <section class="block"><div class="block-h"><h2>DevTools məşqi</h2><span class="muted" style="font-size:13px">${Object.keys(DVS.done).length}/${DVD.tasks.length} tapşırıq</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">Mağazanın Network və Console panelləri, Chrome-dakı kimi: sorğular, status kodları, Payload, Response, Preserve log, Copy as cURL. İstifadəçi şikayətini təkrarla, sübut tap və defektin frontend-də, yoxsa backend-də olduğunu müəyyən et.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="dv-open">${icon('search')}DevTools-u aç</button></div></div></section>
@@ -3253,8 +3401,25 @@ document.addEventListener('click', ev => {
     case 'sum': closeSheet(); go('summary', { ch: d.ch }, { push: !d.replace }); break;
     case 'sum-print': printSheets(); break;
     case 'sm': smEvent(Object.assign({ ev: d.e }, d.item ? { item: d.item, where: d.where } : {})); smRedraw(); break;
-    case 'sm-open': closeSheet(); go('store', { sc: d.sc || null }, { push: S.view !== 'store' }); break;
-    case 'sm-restart': smStart(SM.id); render({ keepScroll: true }); break;
+    case 'sm-open': closeSheet(); go('store', { sc: d.sc || null, ver: d.ver || null }, { push: S.view !== 'store' }); break;
+    case 'sm-restart': smStart(SM.id, SM.ver); render({ keepScroll: true }); break;
+    case 'rel-open': closeSheet(); if (S.view === 'store' && S.stack.length && S.stack[S.stack.length - 1].view === 'release') back(); else go('release', {}, { push: S.view !== 'release' }); break;
+    case 'rel-run': smStart(d.sc, REL_D.ver); go('store', { sc: d.sc, ver: REL_D.ver }); break;
+    case 'rel-map': if (relTk.some(t => !REL.map[t.bug])) toast('Hər defekt üçün test case seç.'); else { REL.mapChk = true; rerender(); } break;
+    case 'rel-verdict': REL.verdict[d.b] = d.v; rerender(); break;
+    case 'rel-plan': {
+      if (!relSel().length) { toast('Regression üçün ən azı bir test case seç.'); break; }
+      REL.regFb = true; REL.regChk = relCand.every(id => !REL_D.regression[id].need || REL.reg[id]); rerender(); break;
+    }
+    case 'rel-go': REL.go = d.v; $$('[data-act="rel-go"]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === d.v))); break;
+    case 'rel-check': {
+      if (!REL.go) { toast('Tövsiyəni seç: reliz olar və ya olmaz.'); break; }
+      REL.fb = relJudge(); rerender();
+      const fb = $('#rel-fb'); if (fb) fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      break;
+    }
+    case 'rel-copy': try { navigator.clipboard.writeText(relMd()).then(() => toast('Test hesabatı kopyalandı.'), () => toast('Kopyalamaq alınmadı')); } catch (e) { toast('Kopyalamaq alınmadı'); } break;
+    case 'rel-reset': openConfirm('Yenidən başla', 'Reliz testinin bütün seçimləri və icraları silinəcək.', 'Yenidən başla', () => { Object.assign(REL, relFresh()); render({ top: true }); }); break;
     case 'sm-status': {
       SM.status = d.v;
       $$('[data-act="sm-status"]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === d.v)));
@@ -3559,6 +3724,9 @@ document.addEventListener('change', ev => {
   const t = ev.target;
   if (t.dataset.ixTg) { IX[t.dataset.sid][t.dataset.ixTg] = t.checked; ixRedraw(t.dataset.sid); return; }
   if (t.dataset.smSort !== undefined) { smEvent({ ev: 'sort', v: t.value }); smRedraw(); return; }
+  if (t.dataset.relMap) { REL.map[t.dataset.relMap] = t.value; return; }
+  if (t.dataset.relReg) { REL.reg[t.dataset.relReg] = t.checked; return; }
+  if (t.dataset.relWhy) { REL.why[t.dataset.relWhy] = t.checked; return; }
   if (t.dataset.dvtKeep !== undefined) { SM.dvt.keep = t.checked; return; }
   if (t.dataset.dv) { DVS[t.dataset.dv] = t.value; return; }
   if (t.dataset.dvRow !== undefined) { DVS.row = +t.dataset.dvRow; return; }
@@ -3590,7 +3758,8 @@ AI.setState('pending');
 // links from the offline app: #c3s4 opens a section; #c3s4-simple, #c3-lesson, #c3-konspekt and #g12-term also
 // start that Claude action once Claude is ready. Only ids from the book are accepted, so a link cannot carry its own prompt.
 // #c3-xulase and #xulase open the summary sheets (the claude.ai version links there when it cannot print);
-// #magaza opens the practice store, #magaza-tc04 with that test case; #devtools the DevTools practice, #devtools-dv3 that task.
+// #magaza opens the practice store, #magaza-tc04 with that test case; #reliz the release test, #reliz-tc06 that test case
+// on build 1.1; #devtools the DevTools practice, #devtools-dv3 that task.
 let AUTO = null;
 const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 function routeHash() {
@@ -3613,6 +3782,7 @@ function routeHash() {
   else if (h === 'mesq' || h === 'practice') { S.tab = 'practice'; S.view = 'practice'; S.params = {}; }
   else if (h === 'xulase') { S.tab = 'practice'; S.view = 'summary'; S.params = { ch: 'all' }; }
   else if (t === 'magaza') { S.tab = 'practice'; S.view = 'store'; S.params = { sc: own(scById, act) ? act : null }; }
+  else if (t === 'reliz') { S.tab = 'practice'; if (own(scById, act)) { S.view = 'store'; S.params = { sc: act, ver: REL_D.ver }; } else { S.view = 'release'; S.params = {}; } }
   else if (t === 'devtools') { S.tab = 'practice'; S.view = 'devtools'; S.params = { dv: own(dvById, act) ? act : null }; }
   else if (h === 'istqb') { S.tab = 'practice'; S.view = 'ctfl'; S.params = {}; }
   else if (h === 'imtahan') { S.tab = 'practice'; S.view = 'exam'; S.params = {}; }

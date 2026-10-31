@@ -502,12 +502,31 @@ for sc in store['scenarios']:
     if not ok:
         print('ERR store scenario', sc.get('id'), file=sys.stderr); errors += 1
     sc_ids.add(sc.get('id'))
+# release test: build 1.1 with its tickets (each retested by one test case), the regression candidates and the
+# regression's own bug (a report of its own, outside the exploratory list of store['bugs'])
+rel = store.get('release', {})
+rel_bugs = rel.get('bugs', {})
+rel_ok = rel.get('ver') and all(rel.get(k) for k in ('intro', 'blockWhy', 'reopenWhy', 'deferredWhy', 'decision', 'model')) \
+    and rel.get('tickets') and all(t.get('bug') in store['bugs'] and t.get('key') and t.get('status') and t.get('change') and t.get('tc') in sc_ids
+                                   and t.get('verdict') in ('Verified', 'Reopened') for t in rel['tickets']) \
+    and all(t.get('bug') in store['bugs'] and t.get('key') and t.get('status') and t.get('note') for t in rel.get('deferred', [])) \
+    and rel.get('smoke') and set(rel['smoke']) <= sc_ids \
+    and rel.get('regression') and all(k in sc_ids and isinstance(v.get('need'), bool) and v.get('why') for k, v in rel['regression'].items()) \
+    and all(k in rel['regression'] and b.get('r') in store.get('reports', {}) and all(b.get(x) for x in ('where', 'what', 'when', 'model')) for k, b in rel_bugs.items())
+if not rel_ok:
+    print('ERR store release', file=sys.stderr); errors += 1
+for sid in rel.pop('sections', []):
+    sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+    if not sec:
+        print('ERR store release section', sid, file=sys.stderr); errors += 1; continue
+    sec['rel'] = 1
 # full bug reports, one per planted bug: the checker's keyword groups and a model report that must pass them
 SEVS, PRIS = ('Blocker', 'Critical', 'Major', 'Minor', 'Trivial'), ('High', 'Medium', 'Low')
 for bid, r in store.get('reports', {}).items():
     m = r.get('model', {})
     groups = lambda key: bool(r.get(key)) and all(g.get('l') and g.get('k') for g in r[key])
-    ok = bid in store['bugs'] and r.get('page') in PAGES and all(r.get(k) for k in ('where', 'what', 'when', 'sevWhy', 'priWhy')) \
+    ok = (bid in store['bugs'] or bid in {b.get('r') for b in rel_bugs.values()}) and r.get('user') in ('', *store['users']) \
+        and r.get('page') in PAGES and all(r.get(k) for k in ('where', 'what', 'when', 'sevWhy', 'priWhy')) \
         and set(r.get('sev') or ['?']) <= set(SEVS) and set(r.get('pri') or ['?']) <= set(PRIS) \
         and all(groups(k) for k in ('pre', 'need', 'exp', 'act')) \
         and all(m.get(k) for k in ('title', 'pre', 'steps', 'exp', 'act', 'freq')) and m.get('sev') in r['sev'] and m.get('pri') in r['pri']
