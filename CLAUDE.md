@@ -54,13 +54,30 @@ Screenshots land in `build/shots/` (gitignored).
   `result`, `bug` = title parts for the [harada] + [nə baş verir] + [hansı şərtdə] check) and section links.
   The shop's behaviour and problem_user's bugs are in `app.js` (`smEvent`, `SM_BUG`); after the last step the screen is
   recorded and the written actual result is compared with it. `#magaza`, `#magaza-tc04`. `t18.js` runs every test case
-  and expects the computed status to equal `result`.
+  and expects the computed status to equal `result`. `release` is build 1.1 for the release test (`#reliz`,
+  `#reliz-tc06`): tickets (bug, key, the test case that retests it, its verdict), deferred defects, the smoke set,
+  regression candidates (`need` + `why`), the regression's own bug (`bugs`: title check; its full report sits in
+  `reports` with `user: ""`) and section links. 1.1's behaviour is in `smApply` (`st.ver`); checked runs land in
+  `REL.runs`. `t25.js` runs every test case on 1.1 against this data and walks the four stages.
+- `build/devtools.json` — the DevTools practice (`#devtools`, `#devtools-dv3`): error_user's bug labels, 13.10's five
+  rows and the tasks (`start`, `pre`, `steps`, `bug`, `net`/`con` = whether the evidence is a request / a console error,
+  `ev`, `row`, `side`, `why`, `model`). The shop logs what it sends in `dvtEvent` / `dvtLoad` (`app.js`, practice API
+  paths); a planted bug's request or console line carries the bug's key, and that is what the diagnosis checks. A new
+  page clears both logs unless Preserve log is on. The store has the same panel behind a toggle. `t26.js`.
 - `build/trace.json` — code tracer programs keyed by section id (example sections too). `lang: js` steps have the line
   `l`, variables set `v` (JS literals as text), dropped `x`, console output `o` and a note `n`; `t19.js` runs each
   program in Node and expects the same console lines and final top-level values. `lang: pw` steps drive the practice
   store's shop (`a`: goto / type / login / add) and check it (`c`: url, visible, error, badge, btn); the first failed check
   ends the test, as in Playwright. `parse_book.py` pre-highlights every line (Pygments for JS; locator / action /
   assertion spans for Playwright).
+- `build/playwright.json` — the Playwright practice (`#lokator-l5`, `#playwright-pw3`): locator exercises (`start`
+  state, `target` = the model locator, `why`) and test tasks (`code` = starter, `model`, `hints`, `reqs`: pass / fail
+  (`m` = the matcher it must fail on) / has / no (regex on the code) / state (page, cart)). The reader's code is parsed,
+  never eval'd (`pwLex` / `pwParser` / `pwEval` in `app.js`): page, locators (role + accessible name, text, placeholder,
+  label, test id = `data-test`, CSS, XPath, filter / first / last / nth), actions and web-first assertions with
+  Playwright's strict mode, timeouts and error texts; missing `await` is a lint error. `pwDecorate` gives the shop's DOM
+  saucedemo's data-test ids, so the book's code runs as written. Code and done marks are the `pw` store doc (exported).
+  `t27.js` runs every model answer and the book's own Playwright programs from trace.json.
 - `build/git.json` — the Git practice (`#git`, `#git-g5`): file templates (`files`, arrays of lines), tasks with a start
   repository (`commits` with `parents` / `set` / `br` / `mate`, `branches`, `head`, `work` / `index` overrides,
   `remote.branches`, `tracking`, `upstream`, `init: false` and `cfg: false` for an empty folder without an identity) and
