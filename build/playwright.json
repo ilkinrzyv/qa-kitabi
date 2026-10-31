@@ -1,0 +1,311 @@
+{
+  "intro": "Playwright testini özün yaz və Məşq mağazasında işə sal. Kod brauzerdə, mağazanın modelində icra olunur: lokatorlar, hərəkətlər və yoxlamalar real Playwright kimi işləyir — strict mode, timeout və xəta mesajları da daxil. Mağazanın elementlərində saucedemo.com-dakı data-test atributları var, ona görə 19.6-dakı kod olduğu kimi işləyir.",
+  "locators": [
+    {
+      "id": "l1", "title": "Login düyməsi", "start": { "page": "login" },
+      "goal": "Login səhifəsində «Login» düyməsini tapan lokator yaz.",
+      "target": "page.getByRole('button', { name: 'Login' })",
+      "why": "Düymə rolu və görünən adı ilə tapılır: dizayn və CSS dəyişəndə də işləyir (19.5)."
+    },
+    {
+      "id": "l2", "title": "Şifrə sahəsi", "start": { "page": "login" },
+      "goal": "Password sahəsini tapan lokator yaz. getByRole('textbox', { name: 'Password' }) ilə də yoxla və nəticəni müqayisə et.",
+      "target": "page.getByPlaceholder('Password')",
+      "why": "Şifrə sahəsinin (type=\"password\") ARIA rolu yoxdur — o, textbox sayılmır. Ona görə getByRole onu tapmır; placeholder, label və ya test id işlət."
+    },
+    {
+      "id": "l3", "title": "Xəta mesajı", "start": { "page": "login", "err": "Epic sadface: Username is required" },
+      "goal": "Ekrandakı qırmızı xəta mesajını tapan lokator yaz.",
+      "target": "page.locator('[data-test=\"error\"]')",
+      "why": "Mesajın mətni dəyişə bilər, data-test atributu isə sabit qalır. getByText('Epic sadface') də işləyir."
+    },
+    {
+      "id": "l4", "title": "Səhifə başlığı", "start": { "page": "products", "user": "standard_user" },
+      "goal": "«Products» başlığını tapan lokator yaz.",
+      "target": "page.getByText('Products')",
+      "why": "Görünən mətnlə tapmaq istifadəçinin gördüyünü yoxlamaqdır. Mətn səhifədə bir dəfə görünür, ona görə lokator birmənalıdır."
+    },
+    {
+      "id": "l5", "title": "Fleece Jacket-in düyməsi", "start": { "page": "products", "user": "standard_user" },
+      "goal": "Yalnız Fleece Jacket-in «Add to cart» düyməsini tapan lokator yaz. getByRole('button', { name: 'Add to cart' }) neçə element tapır?",
+      "target": "page.getByTestId('inventory-item').filter({ hasText: 'Fleece Jacket' }).getByRole('button', { name: 'Add to cart' })",
+      "why": "Səhifədə altı «Add to cart» düyməsi var: adla axtarış altısını tapır və click() strict mode xətası verir. Əvvəl məhsulun kartını filter() ilə seç, sonra onun içində düyməni tap. getByTestId('add-to-cart-sauce-labs-fleece-jacket') də birmənalıdır."
+    },
+    {
+      "id": "l6", "title": "Səbət nişanı", "start": { "page": "products", "user": "standard_user", "cart": ["backpack"] },
+      "goal": "Səbət ikonunun üstündəki «1» nişanını tapan lokator yaz. getByText('1') niyə yaramır?",
+      "target": "page.getByTestId('shopping-cart-badge')",
+      "why": "getByText('1') hissəvi uyğunluq axtarır: «1» qiymətlərdə də var ($15.99), ona görə bir neçə element tapılır. Test id və ya { exact: true } lokatoru birmənalı edir."
+    },
+    {
+      "id": "l7", "title": "Sıralama siyahısı", "start": { "page": "products", "user": "standard_user" },
+      "goal": "Məhsulları sıralayan açılan siyahını (select) tapan lokator yaz.",
+      "target": "page.getByRole('combobox')",
+      "why": "Açılan siyahının rolu combobox-dur. Səhifədə bir dənədir, ona görə adı olmadan da birmənalıdır; seçim selectOption('lohi') ilə edilir."
+    },
+    {
+      "id": "l8", "title": "Səbətdə Bike Light-ın qiyməti", "start": { "page": "cart", "user": "standard_user", "cart": ["backpack", "bikelight"] },
+      "goal": "Your Cart səhifəsində yalnız Bike Light-ın qiymətini tapan lokator yaz.",
+      "target": "page.getByTestId('inventory-item').filter({ hasText: 'Bike Light' }).getByTestId('inventory-item-price')",
+      "why": "Qiymətlərin hamısı eyni test id-ni daşıyır. Əvvəl lazım olan məhsulun sətrini filter() ilə seç, sonra onun içində qiyməti tap: lokator zənciri məhsul sırası dəyişəndə də düzgün işləyir."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "pw1", "title": "Uğurlu giriş",
+      "goal": "standard_user ilə daxil ol. Products səhifəsinin açıldığını iki yoxlama ilə sübut et: URL və «Products» başlığı.",
+      "code": [
+        "import { test, expect } from '@playwright/test';",
+        "",
+        "test('standard_user ilə uğurlu giriş', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  // Username və Password sahələrini doldur",
+        "",
+        "  // Login düyməsini bas",
+        "",
+        "  // Yoxla: URL-də inventory, ekranda Products",
+        "",
+        "});"
+      ],
+      "hints": ["Sahəni placeholder ilə tap: page.getByPlaceholder('Username').fill('standard_user')", "Düymə: page.getByRole('button', { name: 'Login' }).click()", "URL: await expect(page).toHaveURL(/inventory/)"],
+      "reqs": [
+        { "t": "pass", "l": "Test keçir" },
+        { "t": "state", "page": "products", "l": "Products səhifəsi açılıb" },
+        { "t": "has", "re": "toHaveURL\\(", "l": "URL yoxlanılır (toHaveURL)" },
+        { "t": "has", "re": "Products['\"]\\)\\)\\s*\\.(toBeVisible|toHaveText)|toHaveText\\(['\"]Products", "l": "«Products» başlığı yoxlanılır" }
+      ],
+      "model": [
+        "import { test, expect } from '@playwright/test';",
+        "",
+        "test('standard_user ilə uğurlu giriş', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  await page.getByPlaceholder('Username').fill('standard_user');",
+        "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+        "  await page.getByRole('button', { name: 'Login' }).click();",
+        "",
+        "  await expect(page).toHaveURL(/inventory/);",
+        "  await expect(page.getByText('Products')).toBeVisible();",
+        "});"
+      ]
+    },
+    {
+      "id": "pw2", "title": "Yanlış şifrə",
+      "goal": "standard_user və yanlış şifrə ilə daxil olmağa çalış. Xəta mesajının tam mətnini yoxla.",
+      "code": [
+        "import { test, expect } from '@playwright/test';",
+        "",
+        "test('yanlış şifrə ilə giriş xəta verir', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "",
+        "});"
+      ],
+      "hints": ["Xəta elementi: page.locator('[data-test=\"error\"]')", "Tam mətn toHaveText ilə yoxlanılır, hissə — toContainText ilə. Mətni ekrandan olduğu kimi köçür."],
+      "reqs": [
+        { "t": "pass", "l": "Test keçir" },
+        { "t": "state", "page": "login", "l": "Giriş olmayıb: Login səhifəsində qalıb" },
+        { "t": "has", "re": "toHaveText\\(['\"]Epic sadface: Username and password do not match any user in this service['\"]\\)", "l": "Xəta mətni tam yoxlanılır (toHaveText)" }
+      ],
+      "model": [
+        "import { test, expect } from '@playwright/test';",
+        "",
+        "test('yanlış şifrə ilə giriş xəta verir', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  await page.getByPlaceholder('Username').fill('standard_user');",
+        "  await page.getByPlaceholder('Password').fill('wrong_password');",
+        "  await page.getByRole('button', { name: 'Login' }).click();",
+        "",
+        "  await expect(page.locator('[data-test=\"error\"]'))",
+        "    .toHaveText('Epic sadface: Username and password do not match any user in this service');",
+        "});"
+      ]
+    },
+    {
+      "id": "pw3", "title": "Strict mode: düzgün düymə",
+      "goal": "Backpack-i səbətə əlavə et və nişanda 1 olduğunu yoxla. Hazır kod strict mode xətası verir: işə sal, xətanı oxu və lokatoru düzəlt.",
+      "code": [
+        "import { test, expect } from '@playwright/test';",
+        "",
+        "test('Backpack səbətə əlavə olunur', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  await page.getByPlaceholder('Username').fill('standard_user');",
+        "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+        "  await page.getByRole('button', { name: 'Login' }).click();",
+        "",
+        "  await page.getByRole('button', { name: 'Add to cart' }).click();",
+        "  await expect(page.locator('.shopping_cart_badge')).toHaveText('1');",
+        "});"
+      ],
+      "hints": ["Xəta neçə element tapıldığını yazır: lokator birmənalı deyil.", "Məhsulun kartını seç: page.getByTestId('inventory-item').filter({ hasText: 'Backpack' })", "first() də keçər, amma sıralama dəyişəndə test başqa məhsulu əlavə edər."],
+      "reqs": [
+        { "t": "pass", "l": "Test keçir" },
+        { "t": "state", "cart": ["backpack"], "l": "Səbətdə yalnız Backpack var" },
+        { "t": "no", "re": "\\.(first|last|nth)\\(", "l": "first() / nth() yox: məhsul adı ilə seçilir" }
+      ],
+      "model": [
+        "import { test, expect } from '@playwright/test';",
+        "",
+        "test('Backpack səbətə əlavə olunur', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  await page.getByPlaceholder('Username').fill('standard_user');",
+        "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+        "  await page.getByRole('button', { name: 'Login' }).click();",
+        "",
+        "  await page.getByTestId('inventory-item')",
+        "    .filter({ hasText: 'Backpack' })",
+        "    .getByRole('button', { name: 'Add to cart' })",
+        "    .click();",
+        "  await expect(page.locator('.shopping_cart_badge')).toHaveText('1');",
+        "});"
+      ]
+    },
+    {
+      "id": "pw4", "title": "Səbətdən silmək",
+      "goal": "Backpack-i əlavə et, səbətə keç və oradan sil. Səbət nişanının yox olduğunu və siyahının boş qaldığını yoxla.",
+      "code": [
+        "import { test, expect } from '@playwright/test';",
+        "",
+        "test('məhsulu səbətdən silmək', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  await page.getByPlaceholder('Username').fill('standard_user');",
+        "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+        "  await page.getByRole('button', { name: 'Login' }).click();",
+        "",
+        "});"
+      ],
+      "hints": ["Səbət ikonu: page.locator('.shopping_cart_link')", "Görünməyən element: await expect(lokator).toBeHidden()", "Siyahıdakı sətirlərin sayı: await expect(page.getByTestId('inventory-item')).toHaveCount(0)"],
+      "reqs": [
+        { "t": "pass", "l": "Test keçir" },
+        { "t": "state", "page": "cart", "cart": [], "l": "Your Cart səhifəsi açıqdır, səbət boşdur" },
+        { "t": "has", "re": "toBeHidden\\(|not\\.toBeVisible\\(|toHaveCount\\(0\\)", "l": "Nişanın və ya siyahının boş olduğu yoxlanılır" }
+      ],
+      "model": [
+        "import { test, expect } from '@playwright/test';",
+        "",
+        "test('məhsulu səbətdən silmək', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  await page.getByPlaceholder('Username').fill('standard_user');",
+        "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+        "  await page.getByRole('button', { name: 'Login' }).click();",
+        "",
+        "  await page.getByTestId('add-to-cart-sauce-labs-backpack').click();",
+        "  await page.locator('.shopping_cart_link').click();",
+        "  await page.getByRole('button', { name: 'Remove' }).click();",
+        "",
+        "  await expect(page.locator('.shopping_cart_badge')).toBeHidden();",
+        "  await expect(page.getByTestId('inventory-item')).toHaveCount(0);",
+        "});"
+      ]
+    },
+    {
+      "id": "pw5", "title": "Checkout sonadək",
+      "goal": "Backpack-i al: səbət → Checkout → məlumatlar → Continue → Finish. Sonda «Thank you for your order!» başlığını yoxla.",
+      "code": [
+        "import { test, expect } from '@playwright/test';",
+        "",
+        "test('sifarişi tamamlamaq', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  await page.getByPlaceholder('Username').fill('standard_user');",
+        "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+        "  await page.getByRole('button', { name: 'Login' }).click();",
+        "",
+        "});"
+      ],
+      "hints": ["Məlumat sahələri: getByPlaceholder('First Name'), 'Last Name', 'Zip/Postal Code'", "Düymələr: getByRole('button', { name: 'Checkout' }), 'Continue', 'Finish'", "Başlıq: page.getByRole('heading', { name: 'Thank you for your order!' })"],
+      "reqs": [
+        { "t": "pass", "l": "Test keçir" },
+        { "t": "state", "page": "complete", "l": "Sifariş tamamlanıb (Checkout: Complete!)" },
+        { "t": "has", "re": "Thank you for your order", "l": "Son mesaj yoxlanılır" }
+      ],
+      "model": [
+        "import { test, expect } from '@playwright/test';",
+        "",
+        "test('sifarişi tamamlamaq', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  await page.getByPlaceholder('Username').fill('standard_user');",
+        "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+        "  await page.getByRole('button', { name: 'Login' }).click();",
+        "",
+        "  await page.getByTestId('add-to-cart-sauce-labs-backpack').click();",
+        "  await page.locator('.shopping_cart_link').click();",
+        "  await page.getByRole('button', { name: 'Checkout' }).click();",
+        "  await page.getByPlaceholder('First Name').fill('Ali');",
+        "  await page.getByPlaceholder('Last Name').fill('Aliyev');",
+        "  await page.getByPlaceholder('Zip/Postal Code').fill('1000');",
+        "  await page.getByRole('button', { name: 'Continue' }).click();",
+        "  await page.getByRole('button', { name: 'Finish' }).click();",
+        "",
+        "  await expect(page.getByRole('heading', { name: 'Thank you for your order!' })).toBeVisible();",
+        "});"
+      ]
+    },
+    {
+      "id": "pw6", "title": "Bug-ı tutan test",
+      "goal": "Eyni testi problem_user ilə yaz: Bolt T-Shirt-i əlavə et və nişanda 1 gözlə. Test düşməlidir — qırmızı test burada testin bug-ı tutduğunu göstərir.",
+      "code": [
+        "import { test, expect } from '@playwright/test';",
+        "",
+        "test('Bolt T-Shirt səbətə əlavə olunur (problem_user)', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "",
+        "});"
+      ],
+      "hints": ["Düymə: page.getByTestId('add-to-cart-sauce-labs-bolt-t-shirt')", "Gözlənilən nəticə: await expect(page.locator('.shopping_cart_badge')).toHaveText('1')"],
+      "reqs": [
+        { "t": "fail", "m": "toHaveText|toBeVisible", "l": "Test yoxlamada düşür: bug tutuldu" },
+        { "t": "has", "re": "problem_user", "l": "problem_user ilə" },
+        { "t": "has", "re": "bolt-t-shirt|Bolt T-Shirt", "l": "Bolt T-Shirt əlavə olunur" }
+      ],
+      "model": [
+        "import { test, expect } from '@playwright/test';",
+        "",
+        "test('Bolt T-Shirt səbətə əlavə olunur (problem_user)', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  await page.getByPlaceholder('Username').fill('problem_user');",
+        "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+        "  await page.getByRole('button', { name: 'Login' }).click();",
+        "",
+        "  await page.getByTestId('add-to-cart-sauce-labs-bolt-t-shirt').click();",
+        "  await expect(page.locator('.shopping_cart_badge')).toHaveText('1');",
+        "});"
+      ]
+    },
+    {
+      "id": "pw7", "title": "Flaky testi düzəlt",
+      "goal": "Bu test bəzən keçir, bəzən düşür. İşə sal, xəbərdarlıqları oxu və səbəbləri düzəlt (19.8, 19.9).",
+      "code": [
+        "import { test, expect } from '@playwright/test';",
+        "",
+        "test('Onesie səbətə əlavə olunur', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  page.getByPlaceholder('Username').fill('standard_user');",
+        "  page.getByPlaceholder('Password').fill('secret_sauce');",
+        "  await page.getByRole('button', { name: 'Login' }).click();",
+        "  await page.waitForTimeout(3000);",
+        "",
+        "  page.getByTestId('add-to-cart-sauce-labs-onesie').click();",
+        "  expect(page.locator('.shopping_cart_badge')).toHaveText('1');",
+        "});"
+      ],
+      "hints": ["Hər hərəkətin və yoxlamanın qarşısında await olmalıdır.", "waitForTimeout lazım deyil: Playwright elementi özü gözləyir (auto-waiting)."],
+      "reqs": [
+        { "t": "pass", "l": "Test keçir" },
+        { "t": "no", "re": "waitForTimeout", "l": "Sabit gözləmə (waitForTimeout) yoxdur" },
+        { "t": "state", "cart": ["onesie"], "l": "Səbətdə Onesie var" }
+      ],
+      "model": [
+        "import { test, expect } from '@playwright/test';",
+        "",
+        "test('Onesie səbətə əlavə olunur', async ({ page }) => {",
+        "  await page.goto('https://www.saucedemo.com/');",
+        "  await page.getByPlaceholder('Username').fill('standard_user');",
+        "  await page.getByPlaceholder('Password').fill('secret_sauce');",
+        "  await page.getByRole('button', { name: 'Login' }).click();",
+        "",
+        "  await page.getByTestId('add-to-cart-sauce-labs-onesie').click();",
+        "  await expect(page.locator('.shopping_cart_badge')).toHaveText('1');",
+        "});"
+      ]
+    }
+  ],
+  "sections": { "loc": ["c19s5"], "test": ["c19s6", "c19s8", "c19s9"] }
+}

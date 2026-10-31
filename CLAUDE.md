@@ -70,6 +70,14 @@ Screenshots land in `build/shots/` (gitignored).
   store's shop (`a`: goto / type / login / add) and check it (`c`: url, visible, error, badge, btn); the first failed check
   ends the test, as in Playwright. `parse_book.py` pre-highlights every line (Pygments for JS; locator / action /
   assertion spans for Playwright).
+- `build/playwright.json` — the Playwright practice (`#lokator-l5`, `#playwright-pw3`): locator exercises (`start`
+  state, `target` = the model locator, `why`) and test tasks (`code` = starter, `model`, `hints`, `reqs`: pass / fail
+  (`m` = the matcher it must fail on) / has / no (regex on the code) / state (page, cart)). The reader's code is parsed,
+  never eval'd (`pwLex` / `pwParser` / `pwEval` in `app.js`): page, locators (role + accessible name, text, placeholder,
+  label, test id = `data-test`, CSS, XPath, filter / first / last / nth), actions and web-first assertions with
+  Playwright's strict mode, timeouts and error texts; missing `await` is a lint error. `pwDecorate` gives the shop's DOM
+  saucedemo's data-test ids, so the book's code runs as written. Code and done marks are the `pw` store doc (exported).
+  `t27.js` runs every model answer and the book's own Playwright programs from trace.json.
 - `build/quiz_*.json` — chapter quizzes. `build/diagrams.py` — SVG diagrams registered with `reg(slug, sid, anchor, cap, d)`,
   drawn with `svgkit.py` (text measured with the vendored fonts in `fonts/`, overlap and overflow checks).
 - `build/app.js` — the whole UI in one IIFE, no framework. `PWA = window.QA_PWA` exists only in the offline build:
