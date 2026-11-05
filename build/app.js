@@ -82,6 +82,7 @@ const ICONS = {
   download: '<path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 20h14"/>',
   upload: '<path d="M12 20V9M7 14l5-5 5 5"/><path d="M5 4h14"/>',
   phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M11 18.5h2"/>',
+  monitor: '<rect x="2.5" y="3.5" width="19" height="13" rx="2"/><path d="M8.5 20.5h7M12 16.5v4"/>',
   eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   cart: '<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.6 12.2a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.5L21.5 8H6.2"/>',
   print: '<path d="M7 9V3h10v6"/><path d="M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7z"/>',
@@ -452,9 +453,46 @@ function render(opts) {
   const v = $('#view');
   const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw, git: vGit };
   (views[S.view] || vHome)(v);
+  document.body.dataset.view = S.view; document.body.dataset.tab = S.tab; // PC layouts are keyed by these (app.css)
+  sideRender();
   if (opts.keepScroll) window.scrollTo(0, y);
   else if (!(S.view === 'reader' && S.params.sec)) window.scrollTo(0, 0);
 }
+
+/* ---------- PC: from 1024px the tab bar is a sidebar (app.css); from 1280px it also lists the chapter's sections
+   in the reader or the practice tools in the practice tab. Drawn only at that width, so phones never get the extra buttons ---------- */
+const WIDE = window.matchMedia('(min-width:1280px)');
+const SIDE_PR = [['cards', 'cards', 'Fleş kartlar', 'data-act="cards"'], ['glossary', 'abc', 'Lüğət', 'data-act="glossary"'],
+  ['ctfl', 'layers', 'ISTQB xəritəsi', 'data-act="ctfl-open"'], ['exam', 'clock', 'Sınaq imtahanı', 'data-act="exam-open"'],
+  ['store', 'cart', 'Məşq mağazası', () => `data-act="sm-open" data-sc="${SM.id && SM.ver !== REL_D.ver ? SM.id : 'tc01'}"`],
+  ['release', 'checklist', 'Reliz testi', 'data-act="rel-open"'], ['devtools', 'bug', 'DevTools', 'data-act="dv-open"'],
+  ['sql', 'list', 'SQL', 'data-act="sql-open"'], ['lab', 'send', 'API', 'data-act="lab-open"'],
+  ['pw', 'play', 'Playwright', () => `data-act="pw-open" data-tab="${PW.tab}"`], ['git', 'steps', 'Git', () => `data-act="git-open-task" data-id="${GIT.task}"`],
+  ['summary', 'print', 'Xülasə vərəqləri', 'data-act="sum" data-ch="all"']];
+function sideRender() {
+  const box = document.getElementById('sidectx'); if (!box) return;
+  const c = S.view === 'reader' && chById[S.params.ch];
+  if (!WIDE.matches || !(c || S.tab === 'practice')) { box.innerHTML = ''; return; }
+  if (c) {
+    const L = P().learned, cur = P().last && P().last.ch === c.id ? P().last.sec : null;
+    box.innerHTML = `<div class="side-k">${esc(c.num ? 'Fəsil ' + pad2(c.num) : c.id === 'c0' ? 'Giriş' : 'Əlavə B')} · bölmələr</div><div class="side-list">${c.sections.map(s =>
+      `<button class="side-i${L[s.id] ? ' ok' : ''}" data-act="side-go" data-sec="${s.id}"${s.id === cur ? ' aria-current="true"' : ''}><span class="n">${esc(s.num || '')}</span><span class="t">${esc(s.title)}</span>${icon('check')}</button>`).join('')}</div>`;
+    return;
+  }
+  const on = S.view === 'store' && SM.ver === REL_D.ver ? 'release' : S.view;
+  box.innerHTML = `<div class="side-k">Məşq alətləri</div><div class="side-list">${SIDE_PR.map(([v, ic, label, a]) =>
+    `<button class="side-i tool" ${typeof a === 'function' ? a() : a}${v === on ? ' aria-current="true"' : ''}>${icon(ic)}<span class="t">${label}</span></button>`).join('')}</div>`;
+}
+// the reader's scroll position marks the section in the sidebar and keeps it in sight there
+function sideMark(sid) {
+  const box = document.getElementById('sidectx'); if (!box || !box.firstChild) return;
+  box.querySelectorAll('.side-i[aria-current]').forEach(b => b.removeAttribute('aria-current'));
+  const b = box.querySelector(`.side-i[data-sec="${sid}"]`); if (!b) return;
+  b.setAttribute('aria-current', 'true');
+  const top = b.offsetTop - box.offsetTop;
+  if (top < box.scrollTop + 8 || top + b.offsetHeight > box.scrollTop + box.clientHeight - 8) box.scrollTop = top - box.clientHeight / 3;
+}
+if (WIDE.addEventListener) WIDE.addEventListener('change', sideRender); else WIDE.addListener(sideRender);
 
 /* =========================================================
    6. Views
@@ -527,13 +565,16 @@ function vHome(v) {
   ${parts}`;
 }
 
+// a computer with a mouse (the install texts and icons say so)
+const onPC = () => matchMedia('(min-width:1024px) and (hover:hover) and (pointer:fine)').matches;
 // offline app: one quiet invitation to install it, until dismissed
 function installCard() {
   if (!PWA || PREF().pwaHint) return '';
   const st = PWA.installState();
   if (st !== 'prompt' && st !== 'ios') return '';
-  const body = st === 'prompt' ? 'Ana ekrandan bir toxunuşla aç və internetsiz oxu.' : 'Safari-də Paylaş düyməsinə toxun, sonra “Ana ekrana əlavə et” (Add to Home Screen).';
-  return `<div class="block"><div class="card pwa-inst">${icon('phone')}<div class="t"><b>Tətbiq kimi quraşdır</b><span>${body}</span>${st === 'prompt' ? `<div class="row"><button class="btn sm primary" data-act="pwa-install">Quraşdır</button></div>` : ''}</div><button class="ibtn" data-act="pwa-hint-off" aria-label="Gizlət">${icon('x')}</button></div></div>`;
+  const pc = st === 'prompt' && onPC();
+  const body = pc ? 'Kompüterdə öz pəncərəsində bir kliklə aç və internetsiz oxu.' : st === 'prompt' ? 'Ana ekrandan bir toxunuşla aç və internetsiz oxu.' : 'Safari-də Paylaş düyməsinə toxun, sonra “Ana ekrana əlavə et” (Add to Home Screen).';
+  return `<div class="block"><div class="card pwa-inst">${icon(pc ? 'monitor' : 'phone')}<div class="t"><b>Tətbiq kimi quraşdır</b><span>${body}</span>${st === 'prompt' ? `<div class="row"><button class="btn sm primary" data-act="pwa-install">Quraşdır</button></div>` : ''}</div><button class="ibtn" data-act="pwa-hint-off" aria-label="Gizlət">${icon('x')}</button></div></div>`;
 }
 
 /* ---------- reader ---------- */
@@ -956,7 +997,7 @@ function vReader(v) {
   observer = new IntersectionObserver(entries => {
     entries.forEach(en => {
       if (en.isIntersecting) {
-        const sid = en.target.id; const p = P();
+        const sid = en.target.id; const p = P(); sideMark(sid);
         if (!p.last || p.last.sec !== sid || p.last.ch !== c.id) { p.last = { ch: c.id, sec: sid }; Store.changed('progress', 2500); }
       }
     });
@@ -984,7 +1025,7 @@ function vKonspekt(v) {
   const pit = c.sections.find(s => s.kind === 'pitfalls');
   const terms = GLOSS.filter(g => g.ch.includes(c.num));
   v.innerHTML = `<header class="ch-hero"><div class="kicker"><b>Fəsil ${pad2(c.num)}</b> · konspekt</div><h1 class="h1">${esc(c.title)}</h1>
-      <p class="muted" style="margin:8px 0 0;font-size:14.5px">Hər bölmədən 3 əsas fikir. Bölməyə toxunsan, oxu ekranında açılacaq.</p>
+      <p class="muted" style="margin:8px 0 0;font-size:14.5px">Hər bölmədən 3 əsas fikir. Bölməyə bassan, oxu ekranında açılacaq.</p>
       <div class="row" style="margin-top:12px"><button class="btn sm" data-act="kon-copy">${icon('copy')}Kopyala</button><button class="btn sm" data-act="sum" data-ch="${c.id}">${icon('print')}Xülasə vərəqi</button><button class="btn sm ai-only" data-act="kon-quiz" data-ch="${c.id}">${icon('help')}Konspekt üzrə məni yoxla</button></div></header>
     <div class="kon">${secs.map(s => `<div class="ksec${L[s.id] ? ' ok' : ''}"><button class="ksec-h" data-act="goto-sec" data-sec="${s.id}"><span class="n">${esc(s.num)}</span><b>${esc(s.title)}</b>${L[s.id] ? `<span class="ok">${icon('check')}</span>` : ''}</button>
       <ol>${s.x.keys.map(k => `<li>${k}</li>`).join('')}</ol></div>`).join('')}</div>
@@ -2347,7 +2388,7 @@ function pwLocHTML() {
     <div class="card sm-case"><div class="sm-id">L-${PWD.locators.indexOf(l) + 1} · ${esc(l.title)}</div><p class="sm-p">${esc(l.goal)}</p></div>
     <div class="card pw-q"><label class="br-l" for="pw-q">Lokator</label>
       <div class="pw-qrow"><input id="pw-q" class="field pw-in" value="${esc(PW.q)}" placeholder="page.getByRole('button', { name: 'Login' })" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn primary" data-act="pw-eval">${icon('check')}Yoxla</button></div>
-      <div class="row"><button class="btn sm${PW.pick ? ' primary' : ''}" data-act="pw-pick" aria-pressed="${PW.pick}">${icon('target')}${PW.pick ? 'Mağazada elementə toxun…' : 'Elementi seç'}</button><button class="btn sm ghost" data-act="pw-loc-reset">${icon('refresh')}Səhifəni sıfırla</button></div>
+      <div class="row"><button class="btn sm${PW.pick ? ' primary' : ''}" data-act="pw-pick" aria-pressed="${PW.pick}">${icon('target')}${PW.pick ? 'Mağazada elementə bas…' : 'Elementi seç'}</button><button class="btn sm ghost" data-act="pw-loc-reset">${icon('refresh')}Səhifəni sıfırla</button></div>
       <div id="pw-res" aria-live="polite"></div></div>
     <div class="sm-dev${PW.pick ? ' pw-picking' : ''}" id="pw-dev">${pwDom(PW.st).innerHTML}</div>`;
 }
@@ -2402,7 +2443,7 @@ function pwOutHTML() {
   if (T && !T.skip) {
     const k = PW.step >= 0 && PW.step < T.steps.length ? PW.step : T.steps.reduce((p, s, i) => s.skip ? p : i, 0), s = T.steps[k];
     const view = s && (PW.shot === 'after' && s.after ? 'after' : PW.shot === 'before' && s.before ? 'before' : s.before ? 'before' : 'after'), html = s && (view === 'before' ? s.before : s.after);
-    trace = `${T.err ? pwErrHTML(T.err) : ''}<div class="sm-fb-h">Trace — addıma toxun, o anki ekranı gör</div>
+    trace = `${T.err ? pwErrHTML(T.err) : ''}<div class="sm-fb-h">Trace — addıma bas, o anki ekranı gör</div>
       <ol class="pw-steps">${T.steps.map((x, i) => `<li><button class="${x.skip ? 'skip' : x.ok ? 'ok' : 'bad'}${i === k ? ' cur' : ''}" data-act="pw-step" data-i="${i}"><span class="pw-ln">${x.line}</span><code>${esc(x.src)}</code><span class="pw-ms">${x.skip ? 'skip' : x.ms + ' ms'}</span></button></li>`).join('')}</ol>
       ${s && !s.skip && html ? `<div class="tr-box"><div class="pw-shot-h"><div class="tr-h">Brauzer · addım ${k + 1}</div>${s.before && s.after ? `<div class="seg pw-ba" role="group" aria-label="Ekran">${[['before', 'Əvvəl'], ['after', 'Sonra']].map(([v, l]) => `<button data-act="pw-shot" data-v="${v}" aria-pressed="${view === v}">${l}</button>`).join('')}</div>` : ''}</div>
         <div class="tr-url">${esc(view === 'before' ? s.urlB : s.url)}</div><div class="sm-dev tr-dev pw-shot" inert>${html}</div>
@@ -3549,7 +3590,7 @@ function gitShell(r, a, line, o, e, h) {
   const norm = p => String(p || '').replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/$/, '');
   if (cmd === 'clear' || cmd === 'cls') { GIT.log = []; return; }
   if (cmd === 'pwd') { o(GITD.path); return; }
-  if (cmd === 'help') { o('Terminal: git …, ls, cat <fayl>, code <fayl> (redaktorda aç), New-Item <fayl>, echo "mətn" > <fayl>, rm <fayl>, clear.', 'Faylı açmaq üçün aşağıdakı «Fayllar» siyahısında ona toxunmaq da olar.'); return; }
+  if (cmd === 'help') { o('Terminal: git …, ls, cat <fayl>, code <fayl> (redaktorda aç), New-Item <fayl>, echo "mətn" > <fayl>, rm <fayl>, clear.', 'Faylı açmaq üçün aşağıdakı «Fayllar» siyahısında ona basmaq da olar.'); return; }
   if (cmd === 'ls' || cmd === 'dir' || cmd === 'get-childitem') {
     const all = args.some(x => /^-(a|force)$/i.test(x)), dir = norm(args.find(x => !x.startsWith('-')) || ''), pre = dir ? dir + '/' : '', names = new Set();
     if (!pre && all && r.init) names.add('.git/'); // hidden, as on Windows
@@ -3620,7 +3661,7 @@ function gitFilesHTML() {
     return `<li><button class="git-f ${cls}" data-act="git-open" data-f="${esc(p)}"${r.work[p] === undefined ? ' disabled' : ''}><code>${esc(c)}</code><span>${esc(p)}</span></button></li>`;
   };
   return `<div class="tr-h">Fayllar · <span lang="en">git status -s</span></div><ul class="git-files">${paths.map(row).join('')}</ul>
-    <p class="muted git-legend"><code>??</code> untracked · <code>A&nbsp;</code> staging-də yeni · <code>&nbsp;M</code> dəyişib · <code>M&nbsp;</code> staging-də · <code>UU</code> konflikt · <code>!!</code> .gitignore · faylı açmaq üçün toxun</p>`;
+    <p class="muted git-legend"><code>??</code> untracked · <code>A&nbsp;</code> staging-də yeni · <code>&nbsp;M</code> dəyişib · <code>M&nbsp;</code> staging-də · <code>UU</code> konflikt · <code>!!</code> .gitignore · faylı açmaq üçün ona bas</p>`;
 }
 function gitGraphHTML() {
   const r = GIT.r, vis = gitKnown(r), list = [...vis].map(x => r.commits[x]).sort((a, b) => b.seq - a.seq);
@@ -3938,7 +3979,7 @@ function examResHTML(r) {
       <div class="big">${s.ok}<span class="muted" style="font-size:28px">/${s.n}</span></div>
       <div class="row" style="justify-content:center;margin-top:6px"><span class="chip ${s.pass ? 'pass' : 'fail'}">${s.pass ? 'PASS' : 'FAIL'} · ${pc}%</span><span class="chip">keçid ${Math.ceil(s.n * EXAM_PASS)}/${s.n}</span></div>
       <p class="muted" style="margin:12px 0 0">${s.pass ? (pc >= 80 ? 'Əla nəticə! Real imtahana hazırsan — zəif fəsilləri bir də təkrarla.' : 'Keçdin, amma ehtiyat azdır. Aşağıdakı zəif fəsillərdən başla.') : 'Hələ keçid həddinə çatmır. Zəif fəsillərin testlərini həll et və bir neçə gündən sonra yenidən cəhd et.'}</p></div>
-    <section class="block"><div class="block-h"><h2>Fəsillər üzrə</h2><span class="muted" style="font-size:13px">zəifdən güclüyə · toxun — fəsil testi</span></div><div class="card exam-chs">${rows}</div></section>
+    <section class="block"><div class="block-h"><h2>Fəsillər üzrə</h2><span class="muted" style="font-size:13px">zəifdən güclüyə · bas — fəsil testi</span></div><div class="card exam-chs">${rows}</div></section>
     <section class="block"><div class="block-h"><h2>${only ? 'Səhv cavablar' : 'Bütün suallar'}</h2><button class="btn sm ghost" data-act="exam-all">${only ? 'Hamısını göstər' : 'Yalnız səhvlər'}</button></div>
       ${items || '<div class="empty">Səhv cavab yoxdur!</div>'}</section>
     <div class="qz-act" style="margin-top:18px"><button class="btn primary" data-act="exam-new">${icon('refresh')}Yeni imtahan</button><button class="btn ghost" data-act="tab" data-tab="practice">${icon('target')}Məşqə qayıt</button></div>`;
@@ -4379,7 +4420,7 @@ function pwaAppRow() {
   const instTxt = inst === 'installed' ? 'Tətbiq kimi quraşdırılıb.' : inst === 'ios' ? 'Quraşdırmaq üçün: Safari-də Paylaş düyməsi → “Ana ekrana əlavə et” (Add to Home Screen).' : 'Quraşdırmaq üçün brauzer menyusunda “Tətbiqi quraşdır” (Install app) və ya “Ana ekrana əlavə et” (Add to Home screen) seç.';
   return `<div class="set-row" id="set-app"><div class="lb">Tətbiq</div>
     <div class="ds">${esc(off)}</div>
-    ${!s.supported ? '' : inst === 'prompt' ? `<div class="row"><button class="btn sm primary" data-act="pwa-install">${icon('phone')}Tətbiq kimi quraşdır</button></div>` : `<div class="ds">${esc(instTxt)}</div>`}
+    ${!s.supported ? '' : inst === 'prompt' ? `<div class="row"><button class="btn sm primary" data-act="pwa-install">${icon(onPC() ? 'monitor' : 'phone')}Tətbiq kimi quraşdır</button></div>` : `<div class="ds">${esc(instTxt)}</div>`}
     <div class="ds">Versiya ${esc(PWA.VERSION)}${s.reg ? ` · <button class="linkbtn" data-act="pwa-update">yeniləməni yoxla</button>` : ''}</div></div>`;
 }
 function refreshPwaRow(id) {
@@ -4920,8 +4961,9 @@ document.addEventListener('click', ev => {
     case 'rp-finish': rpCall('finish'); break;
     case 'rp-reset': openConfirm('Yenidən başla', 'Bu ssenari üzrə söhbət və rəy silinəcək.', 'Yenidən başla', () => { const dd = Store.doc('roleplay'); delete dd.s[S.rp]; Store.changed('roleplay'); render({ top: true }); }); break;
     case 'toc': openToc(); break;
-    case 'toc-go': { closeSheet(); const t = document.getElementById(d.sec); if (t) t.scrollIntoView({ block: 'start', behavior: 'smooth' }); break; }
-    case 'search': openSearch(); break;
+    case 'toc-go': case 'side-go': { closeSheet(); const t = document.getElementById(d.sec); if (t) t.scrollIntoView({ block: 'start', behavior: 'smooth' }); break; }
+    case 'search': case 'side-search': openSearch(); break;
+    case 'side-settings': openSettings(); break;
     case 'search-gl': closeSheet(); S.glq = d.q; go('glossary', {}); break;
     case 'settings': openSettings(); break;
     case 'sheet-close': closeSheet(); break;
@@ -4939,6 +4981,7 @@ document.addEventListener('click', ev => {
       Store.changed('progress');
       el.setAttribute('aria-pressed', String(on));
       const sec = document.getElementById(sid); if (sec) sec.classList.toggle('learned', on);
+      const si = document.querySelector(`#sidectx [data-sec="${sid}"]`); if (si) si.classList.toggle('ok', on);
       const c = chById[secCh[sid]]; const st = chStats(c);
       const chip = $('.ch-stats .chip'); if (chip) { chip.className = 'chip' + (st.done === st.total ? ' pass' : ''); chip.innerHTML = icon('check') + st.done + '/' + st.total + ' bölmə'; }
       if (on && st.done === st.total) toast('Fəsil tamamlandı! İndi fəsil testini yoxla.');
@@ -5042,6 +5085,9 @@ document.addEventListener('pointerdown', ev => {
 });
 document.addEventListener('keydown', ev => {
   if (ev.key === 'Escape' && sheetEl) { closeSheet(); return; }
+  // search from the keyboard, as on a PC site: Ctrl+K (⌘K) anywhere, or / when not typing
+  if (!sheetEl && !ev.altKey && ((ev.key === 'k' || ev.key === 'K') && (ev.ctrlKey || ev.metaKey) && !ev.shiftKey
+    || ev.key === '/' && !ev.ctrlKey && !ev.metaKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName) && !ev.target.isContentEditable)) { ev.preventDefault(); openSearch(); return; }
   if (S.view === 'exam' && S.params.go && !sheetEl && !ev.ctrlKey && !ev.metaKey && !ev.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName)) {
     const r = examRun(), k = ev.key.toLowerCase(), j = 'abcd'.indexOf(k) >= 0 ? 'abcd'.indexOf(k) : '1234'.indexOf(k);
     if (r && !r.done) {
@@ -5161,11 +5207,15 @@ window.addEventListener('pagehide', () => Store.flushAll());
 /* =========================================================
    9. Boot
    ========================================================= */
-document.getElementById('tabbar').innerHTML = `<div class="wrap">
+// on a PC (≥1024px) this bar is the left sidebar: the brand, search and settings show there, and from 1280px the sidebar list (sideRender)
+const KEY_K = /Mac|iPhone|iPad/.test(navigator.platform || '') ? '⌘K' : 'Ctrl K';
+document.getElementById('tabbar').innerHTML = `<div class="side-brand"><span class="kicker">QA Kitabı</span><b>Sıfırdan Peşəkar Testerə</b></div><div class="wrap">
   <button class="tab" data-act="tab" data-tab="book">${icon('book')}<span>Kitab</span></button>
   <button class="tab" data-act="tab" data-tab="practice">${icon('target')}<span>Məşq</span></button>
   <button class="tab" data-act="tab" data-tab="tutor">${icon('spark')}<span>Müəllim</span></button>
-  <button class="tab" data-act="tab" data-tab="progress">${icon('chart')}<span>İrəliləyiş</span></button></div>`;
+  <button class="tab" data-act="tab" data-tab="progress">${icon('chart')}<span>İrəliləyiş</span></button></div>
+  <div class="side-ctx" id="sidectx"></div>
+  <div class="side-foot"><button class="side-b" data-act="side-search" title="Axtarış (${KEY_K})">${icon('search')}<span>Axtarış</span><kbd>${KEY_K}</kbd></button><button class="side-b" data-act="side-settings" title="Ayarlar">${icon('sliders')}<span>Ayarlar</span></button></div>`;
 const pill = document.createElement('button');
 pill.id = 'selpill'; pill.className = 'selpill'; pill.hidden = true; pill.innerHTML = icon('spark') + 'Seçiləni izah et';
 document.body.appendChild(pill);
