@@ -2,7 +2,7 @@
   "c8s3": {
     "type": "bva",
     "title": "Sərhəd dəyərləri: yaş 18–60",
-    "hint": "Sürgünü çək və ya dəyərə toxun. Sonra “səhv kod”u yandır: hansı dəyər defekti tapır?",
+    "hint": "Sürgünü çək və ya dəyərə bas. Sonra “səhv kod”u yandır: hansı dəyər defekti tapır?",
     "label": "Yaş",
     "min": 18,
     "max": 60,

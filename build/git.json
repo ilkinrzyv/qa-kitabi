@@ -187,7 +187,7 @@
     {
       "id": "g2", "title": "Yalnız lazım olanı commit et",
       "goal": "tests/login.spec.js-də bloklanmış istifadəçi testini düzəltdin, amma debug üçün console.log sətri də qalıb. Yanında öz qeydlərin üçün notes.txt yaratmısan. Yalnız test düzəlişini commit et (20.2).",
-      "hints": ["git status və git diff ilə nəyin dəyişdiyinə bax.", "Fayla toxun (və ya: code tests/login.spec.js) və console.log sətrini sil.", "git add tests/login.spec.js — nöqtə ilə yox, faylın adı ilə."],
+      "hints": ["git status və git diff ilə nəyin dəyişdiyinə bax.", "Fayla bas (və ya: code tests/login.spec.js) və console.log sətrini sil.", "git add tests/login.spec.js — nöqtə ilə yox, faylın adı ilə."],
       "start": {
         "commits": [
           { "id": "3f2a1b9", "msg": "Initial Playwright tests", "set": { "tests/login.spec.js": "login", "package.json": "pkg", "playwright.config.js": "config", ".gitignore": "ignore" } },

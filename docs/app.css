@@ -1204,6 +1204,154 @@ pre.code .err{color:inherit;background:none}
   .tiles{grid-template-columns:repeat(4,1fr)}
   .sec-h h2{font-size:23px}
 }
+/* ---------- PC: from 1024px the tab bar is a sidebar (an icon rail up to 1279px, then the full sidebar with the chapter's
+   sections or the practice tools), sheets open as dialogs, and a page may widen itself with --content on body[data-view] ---------- */
+.side-brand,.side-ctx,.side-foot{display:none}
+@media screen and (min-width:1024px){
+  :root{--side:88px}
+  body{padding-left:var(--side)}
+  html{scroll-padding-bottom:24px}
+  .wrap{max-width:var(--content,752px)}
+  #view{padding-bottom:64px}
+  .tabbar{top:0;right:auto;width:var(--side);display:flex;flex-direction:column;border-top:0;border-right:1px solid var(--line);background:var(--bg);padding:0}
+  .tabbar .wrap{display:flex;flex-direction:column;gap:4px;height:auto;max-width:none;margin:0;padding:12px 10px}
+  .tab{height:62px;border-radius:12px}
+  .tab:hover{background:var(--bg-2);color:var(--ink)}
+  .tab[aria-current="true"]{background:var(--accent-soft)}
+  .side-foot{display:flex;flex-direction:column;gap:4px;margin-top:auto;padding:10px;border-top:1px solid var(--line)}
+  .side-b{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:54px;border-radius:12px;color:var(--ink-3);font-size:11px;font-weight:500}
+  .side-b:hover{background:var(--bg-2);color:var(--ink)}
+  .side-b kbd{display:none}
+  .toast,.selpill{left:calc(50% + var(--side) / 2);bottom:24px}
+  .composer{bottom:0}
+  .sheet{align-items:center;padding:32px 24px}
+  .sheet-panel{max-width:680px;max-height:min(88vh,900px);border-radius:18px;padding-bottom:0}
+  .sheet.compact .sheet-panel{max-height:min(72vh,640px)}
+  .sheet-grab{display:none}
+  .sheet-head{padding:14px 20px 12px}
+  .sheet-body{padding:16px 20px}
+  .sheet-foot{padding:12px 20px}
+}
+@media screen and (min-width:1280px){
+  :root{--side:256px}
+  .side-brand{display:flex;flex-direction:column;justify-content:center;gap:2px;flex:none;height:55px;padding:0 22px;border-bottom:1px solid var(--line);line-height:1.2}
+  .side-brand .kicker{font-size:11px}
+  .side-brand b{font-size:15px;font-weight:600}
+  .tabbar .wrap{gap:2px;padding:12px}
+  .tab{flex-direction:row;justify-content:flex-start;gap:12px;height:42px;padding:0 12px;font-size:14.5px;letter-spacing:0}
+  .tab svg.i{width:20px;height:20px}
+  .side-ctx{display:block;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 12px 14px;border-top:1px solid var(--line)}
+  .side-ctx:empty{border-top:0}
+  .side-k{position:sticky;top:0;z-index:1;background:var(--bg);padding:14px 8px 8px;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+  .side-list{display:flex;flex-direction:column;gap:1px}
+  .side-i{display:grid;grid-template-columns:40px 1fr 15px;align-items:start;gap:4px;width:100%;padding:7px 8px;border-radius:9px;text-align:left;color:var(--ink-2);font-size:13.5px;line-height:1.35}
+  .side-i:hover{background:var(--bg-2);color:var(--ink)}
+  .side-i .n{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);padding-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .side-i .t{min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .side-i svg.i{width:15px;height:15px;margin-top:2px;color:var(--pass);visibility:hidden}
+  .side-i.ok svg.i{visibility:visible}
+  .side-i[aria-current="true"]{background:var(--accent-soft);color:var(--accent)}
+  .side-i[aria-current="true"] .n{color:var(--accent)}
+  .side-i.tool{grid-template-columns:18px 1fr;align-items:center;gap:12px;padding:8px 12px;font-size:14px}
+  .side-i.tool svg.i{width:18px;height:18px;margin:0;color:inherit;visibility:visible}
+  .side-foot{padding:10px 12px}
+  .side-b{flex-direction:row;justify-content:flex-start;gap:12px;height:40px;padding:0 12px;font-size:14px;color:var(--ink-2)}
+  .side-b kbd{display:inline-block;margin-left:auto;padding:1px 6px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface);font-family:var(--f-mono);font-size:11px;color:var(--ink-3)}
+  .topbar [data-act="toc"]{display:none}
+  body[data-view="home"] .tb-title{visibility:hidden}
+}
+/* PC pages: the practice tools keep the task next to what it acts on. Only CSS grid places the children, so the phone keeps
+   their order; the last explicit row (1fr) takes the slack when the sticky pane is taller than the column beside it */
+@media screen and (min-width:1024px){
+  body:is([data-view="store"],[data-view="devtools"]){--content:1240px}
+  body:is([data-view="store"],[data-view="devtools"]) #view{display:grid;grid-template-columns:minmax(0,1fr) 400px;grid-template-rows:repeat(7,auto) 1fr;column-gap:24px;align-items:start}
+  body:is([data-view="store"],[data-view="devtools"]) #view>*{grid-column:1;min-width:0}
+  body:is([data-view="store"],[data-view="devtools"]) #view>:is(.sm-intro,.rel-bar,.sm-pick){grid-column:1/-1}
+  body:is([data-view="store"],[data-view="devtools"]) #sm-dev{grid-column:2;grid-row:3/-1;position:sticky;top:72px;width:100%;margin:0;max-height:calc(100vh - 88px);overflow:auto}
+
+  body[data-view="store"] .dvt-tg{margin-top:10px}
+  body[data-view="devtools"] #dvt{margin:14px 0 0}
+
+  body[data-view="release"]{--content:1180px}
+  body[data-view="release"] #view{display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-template-rows:repeat(6,auto) 1fr;column-gap:24px;align-items:start}
+  body[data-view="release"] #view>*{grid-column:1;min-width:0}
+  body[data-view="release"] #view>.sm-intro{grid-column:1/-1}
+  body[data-view="release"] .rel-card .srt-k{display:block}
+  body[data-view="release"] .rel-card .srt-k svg.i{vertical-align:-4px;margin-right:6px}
+  body[data-view="release"] #view>.rel-card{grid-column:2;grid-row:2/-1;position:sticky;top:72px;max-height:calc(100vh - 88px);overflow:auto}
+
+  body[data-view="pw"]{--content:1360px}
+  body[data-view="pw"] #view{display:grid;grid-template-columns:minmax(0,1fr) 360px;column-gap:24px;align-items:center}
+  body[data-view="pw"] .pw-tabs{margin:0}
+  body[data-view="pw"] #pw-main{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);grid-template-rows:repeat(4,auto) 1fr;column-gap:24px;align-items:start}
+  body[data-view="pw"] #pw-main:has(#pw-dev){grid-template-columns:minmax(0,1fr) 400px}
+  body[data-view="pw"] #pw-main>*{grid-column:1;min-width:0}
+  body[data-view="pw"] #pw-main>.sm-pick{grid-column:1/-1}
+  body[data-view="pw"] .pw-acts{order:1}
+  body[data-view="pw"] :is(.pw-ed-wrap,.pw-model){order:2}
+  body[data-view="pw"] #pw-main>:is(#pw-out,#pw-dev){grid-column:2;grid-row:2/-1;position:sticky;top:72px;width:100%;margin:0;max-height:calc(100vh - 88px);overflow:auto}
+  body[data-view="pw"] #pw-out>*{flex-shrink:0}
+  body[data-view="pw"] #pw-out:empty{display:grid;place-items:center;min-height:220px;border:1px dashed var(--line-2);border-radius:14px}
+  body[data-view="pw"] #pw-out:empty::before{content:"İşə sal: nəticə, trace və mağazanın ekranı burada görünəcək";padding:16px;text-align:center;font-size:14px;color:var(--ink-3)}
+
+  body[data-view="git"]{--content:1360px}
+  body[data-view="git"] #view{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);grid-template-rows:repeat(5,auto) 1fr;column-gap:20px;align-items:start}
+  body[data-view="git"] #view>*{grid-column:1/-1;min-width:0}
+  body[data-view="git"] #view>:is(.git-term,.git-quick,#git-ed){grid-column:1}
+  body[data-view="git"] #git-panes{grid-column:2;grid-row:4/-1}
+  body[data-view="git"] .git-out{height:min(46vh,440px);max-height:none}
+  body[data-view="git"] #git-case .sm-case{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:24px;align-items:start}
+  body[data-view="git"] #git-case .sm-case>*{grid-column:1;min-width:0}
+  body[data-view="git"] #git-case .sm-case>:is(.git-checks,.sm-good){grid-column:2}
+  body[data-view="git"] #git-case .git-checks{grid-row:1/span 4;margin-top:0}
+}
+@media screen and (min-width:1024px){
+  body[data-view="sql"]{--content:1280px}
+  body[data-view="sql"] #view{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);grid-template-rows:repeat(4,auto) 1fr;column-gap:20px;align-items:start}
+  body[data-view="sql"] #view>*{grid-column:1;min-width:0}
+  body[data-view="sql"] #view>:is(.sm-intro,#sql-task){grid-column:1/-1}
+  body[data-view="sql"] #view>details{grid-column:2;grid-row:3/-1;position:sticky;top:72px;max-height:calc(100vh - 88px);overflow:auto}
+  body[data-view="sql"] #view>details>*{flex-shrink:0}
+
+  body[data-view="lab"]{--content:1360px}
+  body[data-view="lab"] #view{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:20px;align-items:start}
+  body[data-view="lab"] #view>*{grid-column:1/-1;min-width:0}
+  body[data-view="lab"] #view>:is(#lab-req,#lab-env){grid-column:1}
+  body[data-view="lab"] #view>:is(#lab-res,#lab-bugs){grid-column:2}
+  body[data-view="lab"] #view>#lab-env{grid-row:4}
+  body[data-view="lab"] #view>#lab-bugs{grid-row:4}
+  body[data-view="lab"] #view>details{grid-row:5}
+
+  body[data-view="exam"]:has(.exam-nav){--content:1080px}
+  body[data-view="exam"] #view:has(>.exam-nav){display:grid;grid-template-columns:minmax(0,1fr) 300px;grid-template-rows:repeat(5,auto) 1fr;column-gap:32px;align-items:start}
+  body[data-view="exam"] #view:has(>.exam-nav)>*{grid-column:1;min-width:0}
+  body[data-view="exam"] #view>.exam-top{grid-column:2;grid-row:1}
+  body[data-view="exam"] #view>.exam-nav{grid-column:2;grid-row:2/-1;position:sticky;top:72px;grid-template-columns:repeat(6,1fr)}
+  body[data-view="exam"]:has(.exam-rev){--content:1180px}
+  body[data-view="exam"] #view:has(.exam-rev){display:grid;grid-template-columns:380px minmax(0,1fr);grid-template-rows:auto auto 1fr;column-gap:24px;align-items:start}
+  body[data-view="exam"] #view:has(.exam-rev)>*{grid-column:1;min-width:0}
+  body[data-view="exam"] #view:has(.exam-rev)>section:last-of-type{grid-column:2;grid-row:1/-1;margin-top:0}
+
+  body:is([data-view="home"],[data-view="practice"],[data-view="progress"],[data-view="ctfl"]){--content:1160px}
+  body:is([data-view="home"],[data-view="practice"],[data-view="progress"],[data-view="ctfl"]) #view{columns:2;column-gap:24px}
+  body:is([data-view="home"],[data-view="practice"],[data-view="progress"],[data-view="ctfl"]) #view>*{break-inside:avoid}
+  body:is([data-view="home"],[data-view="progress"],[data-view="ctfl"]) #view>:is(.hero,.block:not(section),.tiles,.card:first-child){column-span:all}
+  body[data-view="home"] #view>.part{margin:0 0 22px}
+  body[data-view="home"] #view>.block{margin-bottom:22px}
+  body:is([data-view="practice"],[data-view="progress"],[data-view="ctfl"]) #view>section{margin:0 0 26px}
+  body[data-view="progress"] #view>.tiles{margin:12px 0 26px}
+  body[data-view="ctfl"] #view>.card:first-child{margin-bottom:26px}
+  body[data-view="glossary"]{--content:1160px}
+  body[data-view="glossary"] #gllist{columns:2;column-gap:32px}
+  body[data-view="glossary"] .gl-item{break-inside:avoid;border-top:0;border-bottom:1px solid var(--line)}
+  body[data-view="summary"]{--content:980px}
+}
+@media screen and (min-width:1800px){
+  body[data-view="devtools"]{--content:1600px}
+  body[data-view="devtools"] #view{grid-template-columns:minmax(0,440px) minmax(0,1fr) 400px}
+  body[data-view="devtools"] #dvt{grid-column:2;grid-row:3/-1;position:sticky;top:72px;margin:0;max-height:calc(100vh - 88px);overflow:auto}
+  body[data-view="devtools"] #sm-dev{grid-column:3}
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* ---------- offline app (PWA) ---------- */
@@ -1237,3 +1385,5 @@ a.btn svg.i:last-child:not(:first-child){width:15px;height:15px;opacity:.8}
 .pwa-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:61;display:flex;align-items:center;gap:12px;
   padding:8px 8px 8px 16px;border-radius:12px;background:var(--ink);color:var(--bg);font-size:14px;box-shadow:var(--shadow);width:max-content;max-width:calc(100% - 32px);animation:fade .2s ease}
 .pwa-bar button{flex:none;height:34px;padding:0 14px;border-radius:9px;background:var(--accent);color:var(--accent-ink);font-weight:600}
+/* PC: no bottom tab bar, and the left sidebar shifts the page centre (app.css) */
+@media screen and (min-width:1024px){.pwa-bar{left:calc(50% + var(--side) / 2);bottom:24px}}

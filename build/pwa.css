@@ -30,3 +30,5 @@ a.btn svg.i:last-child:not(:first-child){width:15px;height:15px;opacity:.8}
 .pwa-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:61;display:flex;align-items:center;gap:12px;
   padding:8px 8px 8px 16px;border-radius:12px;background:var(--ink);color:var(--bg);font-size:14px;box-shadow:var(--shadow);width:max-content;max-width:calc(100% - 32px);animation:fade .2s ease}
 .pwa-bar button{flex:none;height:34px;padding:0 14px;border-radius:9px;background:var(--accent);color:var(--accent-ink);font-weight:600}
+/* PC: no bottom tab bar, and the left sidebar shifts the page centre (app.css) */
+@media screen and (min-width:1024px){.pwa-bar{left:calc(50% + var(--side) / 2);bottom:24px}}

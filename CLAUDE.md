@@ -90,6 +90,12 @@ Screenshots land in `build/shots/` (gitignored).
   drawn with `svgkit.py` (text measured with the vendored fonts in `fonts/`, overlap and overflow checks).
 - `build/app.js` — the whole UI in one IIFE, no framework. `PWA = window.QA_PWA` exists only in the offline build:
   guard PWA-only code with `if (PWA)` so the artifact keeps working.
+- PC layout (the "PC" blocks near the end of `app.css`, `sideRender` in `app.js`): from 1024px the tab bar is a left sidebar: an
+  icon rail up to 1279px, from 1280px a full sidebar that also lists the chapter's sections in the reader or the practice tools
+  in the practice tab (drawn only at that width). Sheets open as centred dialogs, Ctrl+K and / open search. `render()` sets
+  `body[data-view]` and `body[data-tab]`; a page widens itself with `--content` and places its existing children with CSS grid
+  or columns in `@media screen and (min-width:…)` rules scoped to its `body[data-view="…"]`, so the phone layout and print stay
+  untouched. A sticky pane is `top:72px` with `max-height:calc(100vh - 88px)`. Keep the phone's DOM order. `t29.js`.
 - Offline app without a key: `claudeGate()` opens the artifact at `#<id>-<action>` (`#c3s4-simple`, `#c3-lesson`,
   `#c3-konspekt`, `#g12-term`); `routeHash()` there starts that action once. Only book ids travel in the link — typed
   text goes to the clipboard. The handoff needs the artifact republished from the same `app.js`.

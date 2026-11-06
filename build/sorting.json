@@ -18,7 +18,7 @@
     {
       "type": "group",
       "title": "Hansı test növüdür?",
-      "hint": "Hər vəziyyəti uyğun qrupa sürüklə (və ya karta, sonra qrupa toxun). Sual ver: obyekt nədir — build, dəyişən sahə, konkret baq, yoxsa başqa yerlər?",
+      "hint": "Hər vəziyyəti uyğun qrupa sürüklə (və ya karta, sonra qrupa bas). Sual ver: obyekt nədir — build, dəyişən sahə, konkret baq, yoxsa başqa yerlər?",
       "groups": ["Smoke", "Sanity", "Retest", "Regression"],
       "items": [
         { "t": "Yeni build test mühitinə gəldi: sayt açılır, giriş olur, kataloq görünür, məhsul səbətə düşür.", "g": "Smoke", "why": "Geniş, amma dayaz yoxlama: build ümumiyyətlə test üçün yararlıdırmı?" },
