@@ -19,7 +19,7 @@ const pdfPages = file => (fs.readFileSync(file, 'latin1').match(/\/Type\s*\/Page
   await page.evaluate(() => { window.print = () => { }; });
   await page.click('#topbar [data-act="sum-print"]'); await page.waitForTimeout(1500);
   out.printBlocked = await page.evaluate(() => { const s = document.querySelector('.sheet'); return s && { title: s.querySelector('h3').textContent, link: (s.querySelector('a[href]') || {}).href || null, paperLeft: document.querySelectorAll('.sum.paper').length }; });
-  await page.click('.sheet [data-act="sheet-close"] >> nth=0');
+  await page.click('.sheet-head [data-act="sheet-close"] >> nth=0');
   // next sheet replaces the current one, Back returns to where the sheet was opened from
   await page.click('.sum-nav .next'); await page.waitForTimeout(300);
   out.next = await page.$eval('.sum-t', el => el.textContent);

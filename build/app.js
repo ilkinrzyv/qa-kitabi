@@ -4028,7 +4028,7 @@ function vCards(v) {
   const backS = az ? `<div class="kicker">İngiliscə</div><div class="term">${esc(g.en)}</div><div class="sub">${esc(g.az)} · Fəsil ${g.ch.join(', ')}</div>` : `<div class="kicker">Azərbaycanca</div><div class="term">${esc(g.az)}</div><div class="def">${esc(g.def)}</div><div class="sub mono" style="font-size:13px">${esc(g.en)} · Fəsil ${g.ch.join(', ')}</div>`;
   v.innerHTML = `<div class="qz-top"><div class="qz-dots">${K.queue.map((x, k) => `<i class="${k === K.i ? 'cur' : k < K.i ? 'ok' : ''}"></i>`).join('')}</div><span class="kicker">${K.i + 1}/${K.queue.length}</span></div>
     <div class="fc-wrap"><div class="fc${K.flip ? ' flip' : ''}" data-act="card-flip" role="button" tabindex="0" aria-label="Kartı çevir">
-      <div class="fc-face fc-front">${front}<div class="hintline">Toxun — cavabı gör</div></div>
+      <div class="fc-face fc-front">${front}<div class="hintline">Bas — cavabı gör</div></div>
       <div class="fc-face fc-back">${backS}</div></div></div>
     <div id="fcbtns">${cardBtns(g)}</div>`;
 }
