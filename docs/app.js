@@ -4633,7 +4633,19 @@ async function rpCall(kind, text) {
 
 /* ---------- interview practice and scripted role plays: everything here works without Claude ---------- */
 const IVD = BOOK.ivsim, RPS = BOOK.rpscript;
-const ivDoc = () => Store.doc('iv');
+const ivObj = o => !!o && typeof o === 'object' && !Array.isArray(o);
+const ivCleanAns = a => { Object.keys(a).forEach(k => { if (!ivObj(a[k])) delete a[k]; else if (a[k].m !== undefined && !Array.isArray(a[k].m)) delete a[k].m; }); };
+function ivDoc() {
+  const D = Store.doc('iv');
+  ['weak', 'seen', 'rp'].forEach(k => { if (!ivObj(D[k])) D[k] = {}; });
+  if (!Array.isArray(D.hist)) D.hist = []; else if (!D.hist.every(ivObj)) D.hist = D.hist.filter(ivObj);
+  const r = D.run; // a run can name questions that no longer exist
+  if (r && !(ivObj(r) && Array.isArray(r.ids) && r.ids.length && r.ids.every(ivQ) && Number.isInteger(r.i) && r.ids[r.i] && ivObj(r.a))) D.run = null;
+  else if (r) ivCleanAns(r.a);
+  if (D.last && !(ivObj(D.last) && Array.isArray(D.last.ids) && ivObj(D.last.a))) D.last = null;
+  else if (D.last) ivCleanAns(D.last.a);
+  return D;
+}
 const ivLinkHTML = s => s.ivl ? `<div class="sm-link"><div class="srt-k">${icon('chat')}Müsahibə məşqi</div><p class="srt-hint">Bu sualları vaxtla, ucadan cavabla, sonra nümunə ilə tutuşdur və meyarlarla özünü yoxla.</p><div class="row"><button class="btn sm primary" data-act="iv-open">${icon('play')}Müsahibəyə başla</button><button class="btn sm" data-act="rs-open">${icon('users')}Rol oyunları</button></div></div>` : '';
 function ivQ(id) {
   const q = IVD.questions.find(x => x.id === id);
@@ -4669,7 +4681,7 @@ function ivShow() {
   const r = ivDoc().run; if (!r) return;
   ivSaveText();
   const id = r.ids[r.i], a = r.a[id] || (r.a[id] = {});
-  a.ms = (a.ms || 0) + (S.ivOn === id && S.ivT0 ? Date.now() - S.ivT0 : 0); a.open = true; a.m = a.m || [];
+  a.ms = (a.ms || 0) + (S.ivOn === id && S.ivT0 ? Math.min(Date.now() - S.ivT0, 2000) : 0); a.open = true; a.m = a.m || [];
   S.ivOn = null; Store.changed('iv'); render({ keepScroll: true });
 }
 function ivTickCrit(el) {
@@ -4697,7 +4709,7 @@ function ivTick() {
   const el = $('#iv-time'), now = Date.now();
   if (!el || document.hidden) { S.ivT0 = now; return; } // away from the question: this time does not count
   const q = ivQ(S.ivOn), a = r.a[S.ivOn] || (r.a[S.ivOn] = {});
-  a.ms = (a.ms || 0) + now - S.ivT0; S.ivT0 = now;
+  a.ms = (a.ms || 0) + Math.min(now - S.ivT0, 2000); S.ivT0 = now;
   el.querySelector('b').textContent = mmss(a.ms);
   el.classList.toggle('warn', a.ms > q.sec * 1000);
   Store.changed('iv', 5000);
@@ -4719,13 +4731,13 @@ function ivStartHTML(D) {
 function ivRunHTML(r) {
   const id = r.ids[r.i], q = ivQ(id), a = r.a[id] || {}, last = r.i === r.ids.length - 1;
   if (!a.open && S.ivOn !== id) { S.ivOn = id; S.ivT0 = Date.now(); }
-  const ms = (a.ms || 0) + (a.open ? 0 : Date.now() - S.ivT0);
+  const ms = (a.ms || 0) + (a.open ? 0 : Math.min(Date.now() - S.ivT0, 2000));
   return `<div class="exam-top"><span class="chip exam-time${ms > q.sec * 1000 ? ' warn' : ''}" id="iv-time">${icon('clock')}<b>${mmss(ms)}</b><span>/ ${mmss(q.sec * 1000)}</span></span><span class="muted">${esc(ivTitle(r.p))} · sual ${r.i + 1}/${r.ids.length}</span></div>
     <div class="meter" style="margin-top:10px"><i style="width:${Math.round(r.i / r.ids.length * 100)}%"></i></div>
     <div class="kicker" style="margin-top:18px">${esc(IVD.cats[q.cat])}</div>
     <h1 class="qz-q" id="iv-q">${esc(q.q)}</h1>
     ${a.open ? '' : '<p class="muted" style="margin:-6px 0 10px;font-size:14px">Əvvəl ucadan cavab ver, sanki qarşında müsahibə aparan var. Qısa qeyd də yaza bilərsən.</p>'}
-    <textarea id="iv-t" class="field" rows="3" placeholder="Cavabın və ya qeydlərin (məcburi deyil)" aria-label="Cavabın">${esc(a.t || '')}</textarea>
+    <textarea id="iv-t" class="field" rows="3" maxlength="4000" placeholder="Cavabın və ya qeydlərin (məcburi deyil)" aria-label="Cavabın">${esc(a.t || '')}</textarea>
     ${a.open ? `<div class="ans"><div class="ans-h">Nümunə cavab</div><div class="prose">${q.a}</div>
       <div class="ans-h">Öz cavabını yoxla</div><ul class="ans-crit">${q.c.map((x, i) => `<li><label><input type="checkbox" data-ivc="${i}"${(a.m || []).includes(i) ? ' checked' : ''}><span>${x}</span></label></li>`).join('')}</ul>
       <div class="ans-n" id="iv-n">${(a.m || []).length}/${q.c.length} meyar ödənilib</div>${ivLinks(q)}</div>` : ''}
@@ -4744,21 +4756,17 @@ function ivResHTML(D) {
 }
 function vInterview(v) {
   const D = ivDoc();
-  // a run from an old version or an imported file can name questions that no longer exist
-  if (D.run && !(Array.isArray(D.run.ids) && D.run.ids.length && D.run.ids.every(ivQ) && D.run.a && D.run.ids[D.run.i])) { D.run = null; Store.changed('iv'); }
-  if (D.last && !(Array.isArray(D.last.ids) && D.last.a)) { D.last = null; Store.changed('iv'); }
-  if (!Array.isArray(D.hist)) D.hist = [];
   const mode = S.params.res && D.last ? 'res' : S.params.go && D.run ? 'run' : 'start';
   setHeader({ back: true, kicker: 'Müsahibə məşqi', name: mode === 'res' ? 'Nəticə' : mode === 'run' ? IVD.cats[ivQ(D.run.ids[D.run.i]).cat] : 'Müsahibə simulyatoru' });
   v.innerHTML = mode === 'res' ? ivResHTML(D) : mode === 'run' ? ivRunHTML(D.run) : ivStartHTML(D);
 }
 // scripted role plays: the same seven situations as the Claude version, as a conversation of choices
-const rsRec = id => { const d = ivDoc(); return d.rp[id] || (d.rp[id] = { path: [] }); };
+const rsRec = id => { const d = ivDoc(); let r = d.rp[id]; if (!ivObj(r) || !Array.isArray(r.path)) r = d.rp[id] = { path: [] }; return r; };
 function rsState(id) {
   const sc = RPS[id], rec = rsRec(id), steps = [], found = new Set();
   let node = sc.start, fail = false;
   rec.path.forEach(i => {
-    const n = sc.nodes[node], o = n && n.opts[i]; if (!o) return;
+    const n = sc.nodes[node], o = n && Number.isInteger(i) && n.opts[i]; if (!o) return;
     steps.push({ n, o });
     [].concat(o.f === undefined ? [] : o.f).forEach(f => found.add(f));
     if (o.fail) fail = true;

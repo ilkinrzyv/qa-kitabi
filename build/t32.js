@@ -203,6 +203,17 @@ const longest = n => { let w = 0; n.opts.forEach((o, i) => { if (o.t.length > n.
   await page.evaluate(() => { const k = 'qa-kitab:v1:iv', d = JSON.parse(localStorage.getItem(k)); d.run = { p: 'junior', ids: ['yoxdur'], i: 0, at: 1, a: {} }; d.last = { p: 'junior', ids: ['yoxdur'], a: {}, at: 1, pct: 0 }; d._ts = Date.now() + 60000; localStorage.setItem(k, JSON.stringify(d)); });
   await page.evaluate(() => { location.hash = '#musahibe'; }); await page.reload(); await page.waitForTimeout(1500);
   want('staleRun', !!(await page.$('[data-act="iv-start"]')) && !(await page.$('[data-act="iv-go"]')), 'start screen');
+  // nor can any other odd shape in the stored doc lock the reader out of these pages
+  await page.evaluate(() => { const k = 'qa-kitab:v1:iv'; localStorage.setItem(k, JSON.stringify({ run: { p: 'junior', ids: ['iv1'], i: 0, at: 1, a: { iv1: 5 } }, last: 7, hist: [null, 3], weak: null, seen: null, rp: { 'dev-works': {}, 'dev-call': { path: ['length', 0] } }, _ts: Date.now() + 120000 })); });
+  await page.reload(); await page.waitForTimeout(1500);
+  want('oddDocStart', !!(await page.$('[data-act="iv-go"]')) && !!(await page.$('[data-act="iv-start"][data-p="hr"]')), 'start screen');
+  await page.click('[data-act="iv-go"]'); await page.waitForTimeout(120);
+  await page.type('#iv-t', 'x'); await page.click('[data-act="iv-show"]'); await page.waitForTimeout(120);
+  want('oddDocRun', !!(await page.$('.ans')), 'answer opens');
+  await go(page, '#ssenari-dev-works');
+  want('oddDocTalk', (await page.$$('[data-act="rs-pick"]')).length >= 2, 'talk opens');
+  await go(page, '#ssenari-dev-call');
+  want('oddDocTalk2', (await page.$$('[data-act="rs-pick"]')).length >= 2, 'talk opens');
   await browser.close();
   // ---- Claude on: the same talk, then the free conversation is one press away
   const on = await setup({ hash: '#ssenari-dev-call', w: 1440, h: 900, wait: 1500 });
