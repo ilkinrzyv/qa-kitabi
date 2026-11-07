@@ -11,7 +11,8 @@ const { setup } = require('./harness');
   await page.waitForTimeout(200);
   await page.screenshot({ path: 'shots/11-quiz-q.png' });
   // answer: first option each time, record
-  for (let i = 0; i < 9; i++) {
+  const qN = await page.evaluate(() => JSON.parse(document.getElementById('book-data').textContent).quizzes['8'].length);
+  for (let i = 0; i < qN; i++) {
     await page.click('.opt >> nth=0');
     await page.waitForTimeout(120);
     if (i === 0) await page.screenshot({ path: 'shots/12-quiz-ex.png' });

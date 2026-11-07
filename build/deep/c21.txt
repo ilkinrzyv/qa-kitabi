@@ -369,3 +369,33 @@ Kitabdan sonra portfolio-nu tamamla və mütəmadi yenilə, bir avtomatlaşdırm
 5. **Həftə 8 — təqdimat:** README-ləri yenilə, LinkedIn-də layihə haqqında qısa yazı paylaş, CV-nin “Layihələr” bölməsini yenilə.
 @növbən
 Özün üçün ixtisaslaşma seç (avtomatlaşdırma, performans, mobil, təhlükəsizlik əsasları və ya oyun testi) və 8 həftəlik plan qur: hər mərhələ üçün öyrənmə mövzusu və portfolio-ya əlavə olunacaq konkret nəticəni yaz.
+
+=== c21x1
+@qısa
+İlk ayda səndən hər şeyi bilmək gözlənilmir: tez öyrənmək, dediyini etmək, aydın danışmaq, qeyd aparmaq gözlənilir. Birinci həftə girişlər və məhsul, sonra test icrası, kiçik story, rəy söhbəti.
+@yadda
+- 15–30 dəqiqə özün çalış, sonra soruş.
+- Sualda: nə etmək istəyirəm, nə sınadım, nə gözləyirəm.
+- Gecikəcəyini vaxtında de.
+@dərin
+### Sınaq müddətində nə qiymətləndirilir
+Baq sayı yox. Report-ların aydınlığı, tapşırığın vaxtında bitməsi və ya vaxtında “bitmir” deyilməsi, eyni səhvin təkrarlanmaması, komandada rahat işləmək. Sual vermək mənfi deyil, eyni sualı üçüncü dəfə vermək mənfidir.
+
+### Qeyd dəftəri
+Hər gün üç sətir: nə öyrəndim, nə başa düşmədim, kimdən soruşacağam. Həftə sonu ən faydalısını wiki-yə köçür. Rəy söhbətində nə etdiyini də buradan görərsən.
+
+### Rəy söhbəti
+Rəhbərdən soruş: “Report-larımda nəyi dəyişim? Nəyi müstəqil etməyimi gözləyirsən? Növbəti ay nəyə fokuslanım?” Bir-iki konkret cavab al və yaz. Ayda bir dəfə qayıt.
+
+### Çətin gün
+Baq buraxacaqsan, hansısa tapşırıq gecikəcək, kimsə report-unu rədd edəcək. Bu, işin bir hissəsidir. Faktı de, nəticə çıxar, növbətisinə keç (12.12).
+@nümunə
+**Tapşırıq.** İkinci həftədir. Sənə “Regression dəstini icra et” deyilib, 40 test case var, 10-u aydın deyil: addımlar köhnə ekranlara aiddir. Nə edirsən?
+@addımlar
+1. **Vaxt qoy:** birinci aydın olmayan test case-də 15–30 dəqiqə özün axtar.
+2. **Faktları topla:** hansı test case-lər, nə dəyişib, ekran şəkli.
+3. **Soruş:** “10 test case köhnə ekrana aiddir (siyahı). Yenisini özüm yazım, yoxsa kim bilir?”
+4. **Düzəlt:** icazə ilə test case-ləri yenilə.
+5. **Bildir:** “Regression 30/40 bitdi, 10 yeniləndi, sabah bitəcək.”
+@növbən
+İlk həftən üçün öz planını yaz: girişlər, öyrənəcəyin 5 şey, kimlə tanış olacaqsan. Sonra rəhbərinə göndərəcəyin bir mesaj yaz: “Bu plan düzgündürmü?”

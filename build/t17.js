@@ -59,7 +59,7 @@ const pdfPages = file => (fs.readFileSync(file, 'latin1').match(/\/Type\s*\/Page
   out.overflow360 = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   ERRORS.push(...errors); await browser.close();
   const bad = [];
-  if (out.c8.ideas !== 5 || out.c8.dg !== 1 || out.c8.self !== 4) bad.push('c8 content');
+  if (out.c8.ideas !== 6 || out.c8.dg !== 1 || out.c8.self !== 4) bad.push('c8 content');
   if (out.printOk.calls.length !== 1 || !out.printOk.calls[0][0] || out.printOk.paperLeft || out.printOk.help) bad.push('print flow');
   if (!out.printBlocked || !/github\.io\/qa-kitabi\/#c8-xulase$/.test(out.printBlocked.link || '') || out.printBlocked.paperLeft) bad.push('blocked print fallback');
   if (out.all !== 21 || out.pdfPages !== 21) bad.push('one page per chapter');

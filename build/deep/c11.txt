@@ -340,3 +340,33 @@ Praktikada üsullar birləşdirilir: əvvəl riskə görə sıralanır, bərabə
 5. Test sırası: ödəniş → promo kod → menyu performansı → “Əlaqə” səhifəsi. Ödəniş üçün həm də API testləri və müstəqil yoxlama.
 @növbən
 Universitetin onlayn imtahan sistemi üçün 2 məhsul riski və 2 layihə riski yaz. Məhsul risklərini ehtimal və təsirlə qiymətləndir və hər biri üçün riskə cavab tədbiri təklif et.
+
+=== c11x3
+@qısa
+Wiki komandanın yaddaşıdır: mühitlər, test hesabları, “necə edilir” səhifələri, bilinən problemlər, qərarlar. Soruşmazdan əvvəl axtar, cavabı alanda yaz, köhnə səhifəni düzəlt.
+@yadda
+- Şifrələr wiki-yə yazılmır.
+- Hər qərarın yanında kim, nə vaxt və tiket linki olsun.
+- Köhnə səhifə olmayan səhifədən pisdir.
+@dərin
+### Yaxşı səhifə necə olur
+Qısa başlıq, tarix, sahib. İlk sətirdə cavab: “Test mühiti: ünvan, deploy kanalı, kimdən soruşmaq”. Ekran şəkli azdır, çünki tez köhnəlir. Addımlar nömrələnib.
+
+### Qərarı niyə yazmaq
+Üç aydan sonra kimsə soruşur: “Niyə promo kod bir dəfə işləyir?” Çat tarixçəsində axtarmaq əvəzinə bir link kifayətdir. Bu, tester-i “mən belə eşitmişdim” vəziyyətindən qoruyur.
+
+### Yeni işçinin üstünlüyü
+Yeni gələn adam nəyin yazılmadığını ən yaxşı görür. Birinci ayda hər çətinliyi səhifəyə çevirmək ən faydalı töhfələrdən biridir.
+
+### Test hesabları və məxfilik
+Test hesabının adı və məqsədi yazılır, şifrəsi isə şirkətin şifrə menecerində saxlanılır. Real müştəri datası, kart nömrəsi, tokenlər heç vaxt wiki-yə düşmür.
+@nümunə
+**Tapşırıq.** QA lead sənə deyir: “Test ödənişi üçün 4242 ilə başlayan test kartını işlət, Stripe (ödəniş xidməti) test rejimindədir, staging-də işləmir.” Bunu wiki-yə necə yazarsan?
+@addımlar
+1. **Başlıq:** “Test ödənişi necə edilir”.
+2. **İlk sətir:** yalnız test mühitində işləyir, staging-də yox.
+3. **Addımlar:** səbətə keç, kart nömrəsi, tarix və CVC, gözlənilən nəticə.
+4. **Sahib və tarix:** kim yazıb, nə vaxt, kimdən öyrənilib.
+5. **Link:** səhifəni “Necə edilir” bölməsinə qoy, çatda bir dəfə paylaş.
+@növbən
+İlk iş günündə üç şeyi soruşdun: test mühitinin ünvanı, kim deploy edir, build nömrəsi harada görünür. Bu cavablardan bir wiki səhifəsi qur: başlıq, sahələr, nümunə dəyərlər. Hansı şeyi bu səhifəyə yazmamalısan?

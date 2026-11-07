@@ -115,9 +115,9 @@
     ]
   },
   "c7q2": {
-    "a": "**Statement coverage:** kod sətirlərinin neçə faizi işə düşüb. **Branch coverage:** qərar qollarının, yəni `if`-in həm doğru, həm yanlış yolunun neçə faizi işə düşüb. Branch daha güclüdür: 100% branch adətən 100% statement verir, tərsi isə yox.",
+    "a": "**Statement coverage:** icra olunan operatorların neçə faizi işə düşüb. **Branch coverage:** qərar qollarının, yəni `if`-in həm doğru, həm yanlış yolunun neçə faizi işə düşüb. Branch daha güclüdür: 100% branch həmişə 100% statement verir, tərsi isə yox.",
     "c": [
-      "Statement icra olunan sətirləri, branch isə qərar qollarını ölçür",
+      "Statement icra olunan operatorları, branch isə qərar qollarını ölçür",
       "Branch coverage-in daha güclü olduğu deyilib"
     ]
   },
@@ -133,6 +133,25 @@
     "c": [
       "Kodun işə düşməsinin nəticəni yoxlamaq demək olmadığı deyilib",
       "Tapa bilmədiyi bir hal göstərilib: unudulmuş tələb və ya sərhəd səhvi"
+    ]
+  },
+  "c7x2m": {
+    "h": "Əvvəl say: neçə operator (`if`, iki mənimsətmə, `return`), neçə budaq. Sonra 150-nin hansılarını işlətdiyinə bax.",
+    "a": "- **Operatorlar:** `if`, `d = 10`, `d = 0`, `return`: cəmi 4.\n- **Budaqlar:** `if`-in doğru və yalan çıxışı: cəmi 2.\n- **`total = 150`:** `if`, `d = 10`, `return` işləyir: 3 / 4 = **75%** statement. Yalnız doğru çıxış: 1 / 2 = **50%** branch.\n- **Əlavə test:** 100-dən böyük olmayan dəyər, məsələn, `total = 50`. İndi hər ikisi 100%-dir.\n\n**`>=` səhvi.** `>` əvəzinə `>=` yazılsa, 150 və 50 yenə eyni nəticəni verir, yəni bu iki test səhvi **tutmur**, baxmayaraq ki, branch coverage 100%-dir. Bunu yalnız `total = 100` tutur: BVA (8.3).",
+    "c": [
+      "Statement 75%, branch 50% hesablanıb",
+      "100-dən böyük olmayan bir test əlavə olunub",
+      "150 və 50-nin `>=` səhvini tutmadığı deyilib",
+      "Bunu 100 dəyərinin, yəni sərhədin tutduğu göstərilib"
+    ]
+  },
+  "c7x3m": {
+    "h": "7.10-dakı siyahını xatırla: az rəyin nəticələri. Təklif konkret olsun: kim, nə vaxt, nəyi görür.",
+    "a": "**Mümkün nəticələr:**\n\n1. **Yenidən iş:** gördüyünü bəyənmir, kod və testlər təkrarlanır.\n2. **Gecikən tarix:** son gündə gələn dəyişiklik relizi sürüşdürür.\n3. **Günahlandırma:** “Mən bunu demədim” söhbətləri başlayır.\n\nBaşqa cavablar: məhsul istənilən kimi çıxmır, dəyərli funksiyalara vaxt qalmır.\n\n**Retrospektiv təklifi:** “Product Owner hər story-ni Ready for QA olanda 10 dəqiqəlik baxışla görsün, Sprint Review-da isə hazır funksiyalara rəy versin. Keçən sprintdə son gün gələn iki dəyişiklik 3 gün apardı.”",
+    "c": [
+      "Üç real nəticə yazılıb",
+      "Təklif konkretdir: kim, nə vaxt",
+      "Mümkünsə, fakt və ya rəqəmlə dəstəklənib"
     ]
   }
 }

@@ -162,5 +162,25 @@
       "DoD-un hazırlıq üçün razılaşdırılmış minimum olduğu deyilib",
       "Testin “hazır” sayılmağın şərti olduğu göstərilib"
     ]
+  },
+  "c3x3m": {
+    "h": "Əvvəl komandanı saxlayan işlər: retest. Sonra riskə görə sıra. Regression-a vaxtın çatmırsa, bunu bu gün de, sabah yox.",
+    "a": "Mümkün cavablardan biridir, risklərə görə sıra dəyişə bilər.\n\n**Sıra:**\n\n1. **İki retest** birinci: tez bitir və komandanı saxlayan baqları bağlaya bilir.\n2. **Ən riskli story**: məsələn, ödənişə toxunan.\n3. **Qalan iki story**: riskə görə.\n4. **Regression**: planlanmış ən vacib hissə, ən azı riskli sahələr.\n\n**Nə deyərsən.** İşin hamısı sığmırsa, bunu stand-up-da və QA lead-ə indi de: “Üç story, iki retest və regression gözləyir. Bu gün retest-ləri və SHOP-214-ü bitirəcəyəm. Hamısı sabaha sığmır: regression-un bir hissəsi və ya bir story qalacaq. Hansını saxlayaq?” Qərarı Product Owner və lead verir.\n\nBunu retrospektiv üçün də qeyd et: story-lər testə neçənci gün gəlib.",
+    "c": [
+      "Retest-lər və ən riskli iş birinci gəlir",
+      "Regression unudulmayıb, onun hansı hissəsinin edilə biləcəyi deyilib",
+      "Sığmayan iş bu gün lead-ə və ya Product Owner-ə deyilir",
+      "Qərarı tək tester-in vermədiyi aydındır"
+    ]
+  },
+  "c3x4m": {
+    "h": "DoD razılaşmadır: pozulursa, kimsə bunu bilərək etməlidir. İki yol: işi keçirmək və ya kiçiltmək.",
+    "a": "**Nə deyərsən:** “Komandanın DoD-una görə tester qəbul meyarlarını yoxlamalıdır, neqativ hallar isə yoxlanmayıb, yəni story bitməyib. Testsiz bağlasaq, səhv kupon məbləği müştəriyə çata bilər.”\n\n**İki yol:**\n\n1. **Növbəti sprintə keçirmək:** story Product Backlog-a qayıdır, Product Owner yenidən sıralayır, Sprint Review-da hazır kimi göstərilmir.\n2. **Bölmək:** qəbul meyarları yoxlanmış hissəni bağlamaq, neqativ yoxlamaları ayrı story ilə davam etdirmək, əgər Product Owner bu hissəni buraxmağa razıdırsa.\n\nKomanda buna baxmayaraq buraxmaq qərarına gəlsə, bu, DoD-dan kənara çıxmaqdır və story Done sayılmır. Qərarı tiketə yaz: nə yoxlanmayıb, nə ola bilər, kim qərar verib.",
+    "c": [
+      "DoD-a istinad edilib, story-nin bitmədiyi deyilib",
+      "Konkret risk deyilib",
+      "İki real yol təklif olunub",
+      "Qərarın kimdə olduğu aydındır"
+    ]
   }
 }

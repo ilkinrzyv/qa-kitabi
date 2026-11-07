@@ -7,7 +7,7 @@
   "Assertion": "Assertion avtomat testdə gözlənilən nəticəni yoxlayan sətirdir, məsələn Playwright-da expect(page).toHaveURL(...). Assertion-suz test sadəcə klikləyir, heç nəyi yoxlamır.",
   "Black box testing": "Qara qutu testində kodu bilmədən yalnız giriş və çıxışa baxıram: tələbə görə hansı dəyər hansı nəticəni verməlidir. EP, BVA və qərar cədvəli qara qutu texnikalarıdır.",
   "Blocker": "Blocker işi və ya testi tamamilə dayandıran defektdir, məsələn heç kim sistemə daxil ola bilmir və heç bir test icra olunmur. Severity-si ən yüksəkdir və adətən dərhal düzəldilir.",
-  "Boundary Value Analysis (BVA)": "BVA sərhədləri və onların qonşularını yoxlayır, çünki səhvlər ən çox sərhəddə olur, məsələn ≥ əvəzinə > yazılanda. 18–60 üçün 17, 18, 60, 61 yoxlayıram; 3 dəyərli variantda 19 və 59 da əlavə olunur.",
+  "Boundary Value Analysis (BVA)": "BVA sərhədləri və onların qonşularını yoxlayır, çünki səhvlər ən çox sərhəddə olur, məsələn ≥ əvəzinə > yazılanda. 18–60 üçün 17, 18, 60, 61 yoxlayıram; 3 dəyərli variantda 16, 19, 59 və 62 də əlavə olunur.",
   "Branch": "Branch Git-də paralel iş xəttidir: hər yeni funksiya və ya düzəliş ayrı budaqda hazırlanır, yoxlanır və pull request ilə main-ə birləşir.",
   "Bug / Defect": "Defekt kodda və ya sənəddə olan qüsurdur. Zəncir belədir: insan səhv edir (error), bu, kodda defekt yaradır, defekt işə düşəndə istifadəçi nasazlıq (failure) görür.",
   "Bug life cycle": "Defektin həyat dövrü onun keçdiyi statuslardır, məsələn New → Assigned → In Progress → Fixed → Ready for Test → Closed. Retest uğursuz olsa, defekt Reopened olur; Rejected və ya Duplicate ilə də bağlana bilər. Tester defekti yalnız retest-dən sonra bağlayır.",
@@ -111,5 +111,16 @@
   "Data-driven test": "Addımlar eyni, dəyərlər fərqli olanda bir test yazıb onu data ilə işlədirəm: hər sətir ayrıca nəticə verir. Dəyərləri EP və BVA ilə seçirəm, testin adına yazıram ki, hesabatda hansı dəyərin düşdüyü görünsün.",
   "Fixture": "Fixture testə hazır vəziyyət verir: Playwright-da page də fixture-dir. Təkrarlanan hazırlığı base.extend ilə fixture-ə çıxarıram; await use(x)-dən əvvəl hazırlıq, sonra təmizlik gedir, test isə yalnız öz işini yazır.",
   "Storage state": "Hər testdə login formasını doldurmamaq üçün bir dəfə daxil olub vəziyyəti fayla yazıram, testlər oradan başlayır. Fayl .gitignore-dadır, login formasının öz testləri isə boş vəziyyətdən başlayır.",
-  "Trace viewer": "Test CI-da düşəndə əvvəl trace-ə baxıram: düşən addım, həmin anın ekranı, şəbəkə sorğuları və konsol. Beləcə problemin testdə, məhsulda, yoxsa mühitdə olduğunu təxminlə yox, sübutla ayırıram."
+  "Trace viewer": "Test CI-da düşəndə əvvəl trace-ə baxıram: düşən addım, həmin anın ekranı, şəbəkə sorğuları və konsol. Beləcə problemin testdə, məhsulda, yoxsa mühitdə olduğunu təxminlə yox, sübutla ayırıram.",
+  "Backlog refinement": "Refinement-də story-ni əvvəlcədən oxuyub suallarımı gətirirəm: qəbul meyarları yoxlanılırmı, neqativ hallar necədir, hansı data lazımdır. Sual burada ən ucuzdur, çünki kod hələ yazılmayıb.",
+  "Branch coverage": "Branch coverage işə düşən budaqların faizidir: hər if-in həm doğru, həm yalan çıxışı. 100% branch həmişə 100% statement verir, tərsi isə doğru deyil.",
+  "Bug triage": "Triage yeni baqlar üzrə qərar görüşüdür. Baqı üç şeylə təqdim edirəm: təsir, tezlik və müvəqqəti həll. Prioritet biznes qərarıdır, mənim işim riski görünən etməkdir.",
+  "Definition of Ready": "Definition of Ready story-nin işə götürülməsi üçün şərtlərdir, məsələn, qəbul meyarlarının yazılması. Definition of Done isə işin bitdiyini göstərir. Birincisi giriş, ikincisi çıxış meyarıdır.",
+  "Each Choice coverage": "Each Choice-da hər parametrin hər sinfi ən azı bir dəfə yoxlanır, kombinasiyalar nəzərə alınmır. Minimum test sayı ən çox sinfi olan parametrin sinif sayıdır.",
+  "Go/No-Go": "Go/No-Go görüşündə faktları deyirəm: nə yoxlanıb, nə yoxlanmayıb, açıq baqlar və qalan risklər. Tövsiyə verirəm, qərarı biznes verir.",
+  "Hotfix": "Hotfix canlıdakı ciddi problemə təcili düzəlişdir. Testi qısadır: retest, təsir analizi, əsas funksiyaların smoke testi və canlıda yoxlama. Nəyin yoxlanmadığını yazıram.",
+  "Rollback": "Rollback yeni versiyanı götürüb əvvəlkini qaytarmaqdır. Qərarı adətən reliz məsulu verir, mən sonra smoke aparıram: köhnə versiya işləyirmi, data pozulmayıb ki.",
+  "Statement coverage": "Statement coverage işə düşən icra olunan operatorların faizidir. 100% olsa da, if-in yalan çıxışı yoxlanmamış qala bilər, ona görə branch coverage daha güclüdür.",
+  "Test basis": "Test əsası testin çıxarıldığı mənbədir: tələblər, user story, dizayn, kod. Test analizində onu oxuyub test şərtlərini çıxarıram, içindəki defektləri də qeyd edirəm.",
+  "Test condition": "Test şərti nəyi yoxlayacağımı deyir: vaxtı keçmiş promo kod rədd olunur. Test case isə necə yoxlayacağımı: data, addımlar, gözlənilən nəticə."
 }

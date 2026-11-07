@@ -175,5 +175,14 @@
       "Dörd hərfin mənası düzgündür",
       "Action-ın əsas olduğu və ya nəticənin rəqəmlə verildiyi deyilib"
     ]
+  },
+  "c21x1m": {
+    "h": "Girişlər, öyrənəcəklər, adamlar. Mesajda planı qısa yaz və konkret sual ver.",
+    "a": "**Plan, 1-ci həftə**\n\n- **Girişlər:** Jira, wiki, çat, test mühiti, staging.\n- **Öyrənəcəyim 5 şey:** məhsulun əsas axını; mühitlər və build nömrəsi; bug report qaydası; lövhənin statusları; regression dəsti harada və necə işlədilir.\n- **Tanışlıq:** QA lead, iki proqramçı, Product Owner, DevOps üzrə adam.\n- **Nəticə:** qeyd dəftəri, mühit cədvəli, “kimdən soruşum” siyahısı.\n\n**Mesaj:**\n\n“Salam! İlk həftə üçün plan hazırladım (əlavədə): girişlər, 5 öyrənmə mövzusu və tanış olacağım adamlar. Sənin baxışından çatışmayan varmı? Həftənin sonunda nəyi müstəqil etməyimi gözləyirsən?”",
+    "c": [
+      "Girişlər, 5 öyrənmə mövzusu və adamlar yazılıb",
+      "Mühit və lövhə kimi işin özünə aid şeylər var",
+      "Mesaj qısadır və konkret sual verir"
+    ]
   }
 }

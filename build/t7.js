@@ -37,7 +37,7 @@ const { setup } = require('./harness');
   await page.waitForTimeout(300);
   await page.evaluate(() => document.querySelector('.ch-end [data-act="quiz"]').scrollIntoView());
   await page.click('.ch-end [data-act="quiz"]'); await page.waitForTimeout(200);
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 40; i++) {
     const n = await page.$$eval('.opt', o => o.length); if (!n) break;
     await page.click('.opt >> nth=0'); await page.waitForTimeout(80);
     await page.click('[data-act="qz-next"]'); await page.waitForTimeout(80);

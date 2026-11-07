@@ -44,11 +44,27 @@ Ona görə hər termin ilk dəfə çıxanda həm ingiliscə adı, həm azərbayc
 
 ## Fəsil 1. QA nədir və tester nə iş görür
 
-QA (Quality Assurance — keyfiyyətin təminatı) məhsulun keyfiyyətli çıxması üçün görülən bütün işlərdir. Test (testing) isə onun bir hissəsidir: proqramı yoxlayıb problemləri tapmaq.
+QA (Quality Assurance — keyfiyyətin təminatı) prosesi elə qurmaqdır ki, məhsul keyfiyyətli çıxsın. Test (testing) isə işi yoxlayıb problemləri tapmaqdır. İkisi eyni şey deyil: fərqi 1.2-də görəcəksən.
 
 ### 1.1. Test nədir
 
 Test — proqramın gözlənildiyi kimi işləyib-işləmədiyini yoxlamaq və problemləri tapmaq prosesidir. Avtomobil zavodunu düşün: hər maşın satışa çıxmazdan əvvəl yoxlanılır — əyləc, işıqlar, mühərrik. Proqram da istifadəçiyə çatmazdan əvvəl yoxlanılır.
+
+Test yalnız proqramı işə salmaq deyil. Planlaşdırma, tələbləri oxumaq, test case yazmaq, sənədləri nəzərdən keçirmək və nəticələri hesabata çevirmək də testin hissəsidir.
+
+**Testin məqsədləri.** ISTQB bunları sadalayır:
+
+- Tələbləri, user story-ləri, dizaynı və kodu qiymətləndirmək.
+- Nasazlıqları üzə çıxarıb defektləri tapmaq.
+- Lazımi əhatəni (coverage) təmin etmək.
+- Keyfiyyətin yetərsiz olması riskini azaltmaq.
+- Tələblərin ödəndiyini yoxlamaq.
+- Müqavilə, qanun və standartlara uyğunluğu yoxlamaq.
+- Maraqlı tərəflərə (stakeholders) qərar üçün məlumat vermək.
+- Məhsulun keyfiyyətinə inam yaratmaq.
+- Məhsulun tam olduğunu və gözlənildiyi kimi işlədiyini təsdiqləmək.
+
+Məqsədlər konteksdən asılıdır: yoxlanan işdən, test səviyyəsindən, risklərdən və SDLC-dən. Məsələn, unit testdə əsas məqsəd defekt tapmaq, qəbul testində isə məhsulun hazır olduğuna inam yaratmaq ola bilər.
 
 Testin iki əsas sualı var:
 
@@ -69,7 +85,9 @@ Bu üç söz tez-tez bir-birinin yerinə işlədilir, amma mənaları fərqlidir
 
 Restoran misalı ilə: **QA** — mətbəxdəki gigiyena qaydaları, resept standartları, aşpazların təlimi. **QC** — yemək zala çıxmazdan əvvəl baş aşpazın onu yoxlaması. **Testing** — baş aşpazın şorbanın dadına baxması, yəni konkret yoxlama hərəkəti.
 
-Testing QC-nin içindədir, QC isə QA-nın içində. Praktikada “QA engineer” deyəndə çox vaxt tester nəzərdə tutulur, amma yaxşı QA mütəxəssisi yalnız baq tapmır — prosesin özünü də yaxşılaşdırır.
+Testing QC-nin əsas formasıdır. QA və QC isə iki ayrı yanaşmadır: QC məhsula baxır və tapılanı düzəltdirir, QA prosesə baxır və səhvin qarşısını almağa çalışır. Test nəticələri ikisinə də lazımdır: QC-də defektləri düzəltmək üçün, QA-da isə inkişaf və test proseslərinin nə qədər yaxşı işlədiyini görmək üçün. QA yalnız tester-in işi deyil: layihədəki hər kəs ona cavabdehdir.
+
+Praktikada “QA engineer” deyəndə çox vaxt tester nəzərdə tutulur, amma yaxşı QA mütəxəssisi yalnız baq tapmır — prosesin özünü də yaxşılaşdırır.
 
 ### 1.3. Səhv, defekt və nasazlıq
 
@@ -88,6 +106,8 @@ Bu üç anlayış bir zəncirin halqalarıdır:
 - **Pul.** Defekt nə qədər gec tapılsa, düzəlişi o qədər baha başa gəlir. Tələbdə bir cümləni düzəltmək bir neçə dəqiqədir. Eyni səhv canlı sistemdə (production) tapılanda — təcili düzəliş, itirilmiş müştərilər, pul itkisi.
 - **Reputasiya.** Ödəniş zamanı çökən tətbiqdən istifadəçi bir daha alış etmir.
 - **Təhlükəsizlik və həyat.** Tibbi avadanlıq, aviasiya, avtomobil proqramlarında defekt insan həyatına təsir edə bilər.
+
+Test layihəyə daha dörd şey verir: defektləri sərfəli yolla üzə çıxarır ki, debugging onları aradan qaldıra bilsin; keyfiyyəti qiymətləndirib reliz kimi qərarlara məlumat verir; layihədə istifadəçinin ehtiyaclarını təmsil edir, çünki real istifadəçiləri hər addıma cəlb etmək baha başa gəlir; müqavilə, qanun və ya standart tələb edəndə bu öhdəliyi yerinə yetirir.
 
 Real misallar:
 
@@ -118,7 +138,9 @@ Tipik bir iş günü belə ola bilər:
 
 **Tester-in düşüncə tərzi.** Proqramçı “bu necə işləyəcək?” sualını verir, tester isə “bu necə sınacağ?” sualını. Lifti düşün: tester soruşur — içəridə heç kim olmasa nə olar? Maksimum çəki aşılsa? İki mərtəbənin düyməsi eyni anda basılsa? Qapı bağlanarkən kimsə əlini qoysa?
 
-Yaxşı tester-in keyfiyyətləri: diqqət, maraq, məntiq, səbr, istifadəçi kimi düşünmək və ünsüiyyət — defekti kimisə incitmədən, faktlarla izah etmək bacarığı.
+Yaxşı tester-in keyfiyyətləri: test, texniki və sahə bilikləri (məsələn, bank və ya e-ticarət), diqqət, maraq, məntiq, tənqidi və yaradıcı düşüncə, səbr, istifadəçi kimi düşünmək, komandada işləmək, dinləmək və ünsiyyət — defekti kimisə incitmədən, faktlarla izah etmək bacarığı.
+
+**Təsdiq meyli (confirmation bias).** İnsan öz işinin düzgün olduğuna inanmağa meyillidir, ona görə pis xəbəri çətin qəbul edir. Proqramçı bug report-u şəxsi tənqid kimi oxuya bilər. Bu, adi insan reaksiyasıdır. Ona görə report faktlarla yazılır və söhbətin məqsədi ortaq olur: daha yaxşı məhsul.
 
 ### 1.6. Test və debugging, kök səbəb, testware {#c1x1}
 
@@ -395,6 +417,21 @@ Kanban-ın əsas qaydası WIP limitidir (work in progress — eyni vaxtda görü
 | Müştəri nəticəni görür | Sonda | Sonda | Hər sprintdən sonra |
 | Uyğundur | Sabit tələblər | Sabit tələblər, ciddi sahələr (tibb, aviasiya) | Tez dəyişən bazar, startaplar, rəqəmsal məhsullar |
 
+**Ardıcıl, iterativ və inkremental.** Ardıcıl (sequential) modeldə mərhələlər bir dəfə, bir-birinin ardınca keçilir. İterativ (iterative) modeldə məhsul təkrarlanan dövrlərlə yaxşılaşdırılır. İnkremental (incremental) modeldə məhsul hissə-hissə böyüyür: hər dövrdə yeni hissə əlavə olunur. Scrum ikisini birləşdirir.
+
+Model testə belə təsir edir:
+
+- **Ardıcıl modeldə** layihənin əvvəlində yalnız statik test mümkündür, çünki kod hələ yoxdur. Dinamik test sonda olur.
+- **İterativ və inkremental modellərdə** hər dövrdə həm statik, həm dinamik test aparılır, regression tez-tez təkrarlanır.
+- **Agile-da** sənədlər yüngül olur, regression çox vaxt avtomatlaşdırılır, təcrübəyə əsaslanan texnikalar geniş işlədilir.
+
+**İstənilən modeldə yaxşı test təcrübəsi (good testing practices):**
+
+- Hər inkişaf fəaliyyətinin uyğun test fəaliyyəti var: tələbin review-u, kodun unit testi.
+- Hər test səviyyəsinin öz məqsədi var, ona görə test həm tam olur, həm də təkrara düşmür.
+- Hər səviyyənin test analizi və dizaynı uyğun inkişaf mərhələsində başlayır (Prinsip 3).
+- Tester sənədlərin review-una qaralama hazır olan kimi qoşulur.
+
 ### 3.9. Test-first yanaşmalar: TDD, ATDD və BDD {#c3x1}
 
 Bu yanaşmalarda test koddan **əvvəl** yazılır və inkişafı istiqamətləndirir: kod testi keçmək üçün yazılır.
@@ -413,7 +450,7 @@ Bu yanaşmalarda test koddan **əvvəl** yazılır və inkişafı istiqamətlən
 
 Misal: əvvəl “`calculateDiscount(100, 10)` 90 qaytarır” testi yazılır, sonra funksiya.
 
-**ATDD.** Sprint planlamasında Product Owner, proqramçı və tester (“üç amigo”) user story-ni birlikdə müzakirə edir və qəbul meyarlarını konkret misallarla yazır. Bu misallar qəbul testlərinə çevrilir: əvvəlcə pozitiv, sonra neqativ və qeyri-funksional hallar. Kod bu testləri keçəndə story hazırdır.
+**ATDD.** Sprint planlamasında Product Owner, proqramçı və tester (“üç amigo”) user story-ni birlikdə müzakirə edir və qəbul meyarlarını konkret misallarla yazır. Bu görüşə spesifikasiya emalatxanası (specification workshop) deyilir. Misallar qəbul testlərinə çevrilir: əvvəlcə pozitiv, sonra neqativ və qeyri-funksional hallar. Testlər maraqlı tərəflərin başa düşdüyü sadə dillə yazılır, story-dən kənara çıxmır, bir-birini təkrarlamır və EP, BVA kimi texnikalarla çıxarıla bilər. Avtomatlaşdırılanda icra olunan tələblərə (executable requirements) çevrilir. Kod bu testləri keçəndə story hazırdır.
 
 **BDD.** Davranış təbii dilə yaxın formada yazılır (Gherkin, 10-cu fəsil):
 
@@ -446,6 +483,70 @@ Tester üçün nəticə: bu yanaşmalarda tester-in ən dəyərli işi koddan ə
 Shift-left əvvəlcə əlavə iş və xərc tələb edir, amma sonradan defektlərin qiymətini azaldır. Bunu komanda və rəhbərlik birlikdə qəbul etməlidir.
 
 **Retrospektivlər və prosesin yaxşılaşdırılması.** Hər sprintin və ya layihənin sonunda komanda üç suala cavab verir: nə yaxşı getdi, nə pis getdi, nəyi necə yaxşılaşdıracağıq? Tester buraya test prosesinə dair faktlar gətirir. Misal: “Bu sprintdə canlıda 3 baq tapıldı, üçü də yeni ödəniş üsulunda idi — növbəti sprintdə onun üçün API testləri yazaq.” Nəticə konkret tədbir olmalıdır və növbəti retrospektivdə yoxlanmalıdır.
+
+### 3.11. Sprint boyu tester: refinement-dən retrospektivə {#c3x3}
+
+3.6-da görüşlərin adını gördük. İndi iki həftəlik bir sprintə tester-in gözü ilə baxaq.
+
+| Vaxt | Tester nə edir |
+| --- | --- |
+| Sprintdən əvvəl | Backlog refinement: story-ləri oxuyur, sual verir |
+| 1-ci gün | Sprint Planning: test işini qiymətləndirir, story-ləri test tapşırıqlarına bölür |
+| 1–3-cü gün | Test ideyaları, checklist, test case və test data hazırlayır |
+| 3–8-ci gün | Hazır story-ləri test edir, baq yazır, düzəlişləri yenidən yoxlayır |
+| 8–9-cu gün | Regression, qalan retest-lər, açıq baqların vəziyyəti |
+| 10-cu gün | Sprint Review və Sprint Retrospective |
+
+Bu, sabit cədvəl deyil: hər komandanın öz ritmi var. Amma məntiq budur: sual əvvəldə, yoxlama ortada, regression sonda.
+
+**Backlog refinement (backlog-un dəqiqləşdirilməsi).** Komanda növbəti sprintlərin story-lərini oxuyur, aydınlaşdırır və qiymətləndirir. Bu, Scrum-un ayrıca rəsmi görüşü deyil, davamlı işdir, amma çox komanda onu görüş kimi keçirir. Tester üçün ən faydalı anlardan biridir: sual burada ən ucuzdur. Story-ni əvvəlcədən oxu və suallarını yaz:
+
+- Qəbul meyarları yoxlanıla bilirmi? “Tez açılmalıdır” necə ölçülür?
+- Neqativ hallarda nə olmalıdır?
+- Test üçün nə lazımdır: data, hesab, xarici xidmət?
+
+**Planlama.** ISTQB tester-in planlamaya töhfəsini iki səviyyədə göstərir. Reliz planlaması bütün iterasiyalara baxır və ayrıca aparılır, Sprint Planning isə iterasiya planlamasıdır:
+
+- **Reliz planlaması (release planning):** yoxlanıla bilən story və qəbul meyarlarının yazılmasında iştirak, layihə və keyfiyyət risklərinin analizi, test işinin qiymətləndirilməsi, test yanaşmasının seçilməsi, relizin testinin planlanması.
+- **İterasiya planlaması (iteration planning):** story-nin ətraflı risk analizi, onun test oluna bilməsinin yoxlanması, story-nin tapşırıqlara, xüsusən test tapşırıqlarına bölünməsi, bu işin qiymətləndirilməsi, funksional və qeyri-funksional tərəflərin dəqiqləşdirilməsi.
+
+Qiymətə yalnız düymə basmağı yox, data hazırlığını, retest-i və regression-u da daxil et (11.9). İş sprintə sığmırsa, bunu planlamada de: son gündə demək gecdir.
+
+**Daily Scrum (stand-up).** Hesabat deyil, komandanın bir-birinə kömək etməsi üçündür. Konkret danış: tiket, vəziyyət, kimdən nə lazımdır.
+
+> Dünən SHOP-210-u bitirdim, iki baq yazdım. Bu gün SHOP-214-ə keçirəm. SHOP-198-in düzəlişi test mühitinə çatmayıb: Elvin, bu gün deploy olacaqmı?
+
+**Sprint Review (demo).** Bir gün əvvəl build-i və test datasını hazırla, göstəriləcək ssenarini bir dəfə keç. Açıq baq varsa, gizlətmə: “Bu hal hələ işləmir, SHOP-230 açıqdır.” Deyilən rəyi itirmə, tiketə çevir.
+
+**Sprint Retrospective.** Faktla gəl (3.10): “Bu sprintdə 6 story-nin 4-ü testə 9-cu gün gəlib, regression-a vaxt qalmayıb.”
+
+**Növbəti işi necə seçmək.** Retest, yeni story və test case eyni anda gözləyəndə bu sıra kömək edir:
+
+1. Komandanı saxlayan bloklayıcı baqlar və kritik retest-lər.
+2. Ən yüksək riskli story.
+3. Qalan story-lər.
+4. Test case və sənədlərin yenilənməsi.
+
+Şübhə varsa, QA lead-dən soruş. “Bunu bu gün çatdıra bilməyəcəyəm” cümləsi vaxtında deyiləndə problem deyil.
+
+### 3.12. Definition of Ready və Definition of Done {#c3x4}
+
+Agile-da giriş və çıxış meyarlarının (4.2) öz adları var.
+
+|  | Definition of Ready (DoR) | Definition of Done (DoD) |
+| --- | --- | --- |
+| Sual | Bu işə başlamaq olarmı? | Bu iş bitibmi? |
+| Meyar növü | Giriş meyarı | Çıxış meyarı |
+| Nə vaxt baxılır | Refinement və planlamada | Story bağlananda |
+| Misal | Qəbul meyarları yazılıb; dizayn hazırdır; asılılıqlar bəllidir; test datası məlumdur; komanda qiymətləndirib | Kod review olunub; unit testlər keçir; tester qəbul meyarlarını yoxlayıb; açıq Critical baq yoxdur; sənəd yenilənib |
+
+DoD Scrum-un rəsmi hissəsidir. DoR isə komandanın öz razılaşmasıdır: Scrum Guide-da yoxdur və bəzi komandalar onu işlətmir. İki siyahını da komanda özü yazır və retrospektivlərdə yeniləyir.
+
+**Hal 1: story qəbul meyarı olmadan gəlir.** Planlamada de: “Bu story-nin qəbul meyarları yoxdur, nəyi yoxlayacağımı bilmirəm. Product Owner ilə indi yazaq, ya da növbəti sprintə qalsın.” Qərarı komanda və Product Owner verir, sən faktı deyirsən.
+
+**Hal 2: son gün “kod hazırdır”, amma test olunmayıb.** Bu story DoD-u ödəmir, yəni bitməyib. Yollar: növbəti sprintə keçirmək və ya story-ni kiçik hissələrə bölüb hazır olanı bağlamaq. “Testsiz bağlayaq” təklifi DoD-dan imtina deməkdir. Belə qərar verilirsə, riski yazılı de: nə yoxlanmayıb, nə ola bilər, kim qərar verib.
+
+Yaxşı DoD ölçülə bilir. “Keyfiyyətlidir” yox, “açıq Critical baq yoxdur”.
 
 ### Diqqət: tez-tez edilən səhvlər
 
@@ -516,6 +617,14 @@ Test icrası üçün çıxış meyarı misalı:
 
 **Diqqət.** “Bütün baqlar düzəldilib” real çıxış meyarı deyil — Prinsip 1 və 2-ni xatırla. Meyarlar ölçülə bilən olmalıdır.
 
+**Tipik giriş meyarları:** resurslar hazırdır (adam, alət, mühit, test data, vaxt); testware hazırdır (test əsası, yoxlanıla bilən tələblər, test case-lər); test olunan məhsulun ilkin keyfiyyəti yetərlidir (məsələn, smoke test keçib).
+
+**Tipik çıxış meyarları:** tamlıq ölçüləri (əhatə səviyyəsi, açıq defektlərin sayı, defekt sıxlığı, düşən test case-lərin sayı) və tamamlanma şərtləri (planlaşdırılmış testlər icra olunub, statik test aparılıb, tapılan defektlər qeydə alınıb, regression testlər avtomatlaşdırılıb).
+
+Vaxtın və ya büdcənin bitməsi də çıxış səbəbi ola bilər, amma yalnız maraqlı tərəflər riski görüb qəbul edəndə.
+
+Agile-da çıxış meyarına çox vaxt **Definition of Done**, story-nin giriş meyarına isə **Definition of Ready** deyilir (3.12).
+
 ### 4.3. Test statusları
 
 | Status | Mənası | Misal |
@@ -535,6 +644,20 @@ Yekun hesabatda ən çox bu sadə metriklər işlənir:
 
 **Misal.** 120 test case planlaşdırılıb, 114-ü icra olunub, 108-i keçib. İcra faizi: 114 / 120 = 95%. Pass rate: 108 / 114 ≈ 94,7%.
 
+ISTQB metrikləri belə qruplaşdırır:
+
+| Qrup | Misal |
+| --- | --- |
+| Layihənin gedişi | Bitmiş tapşırıqlar, sərf olunan iş |
+| Testin gedişi | Hazır test case-lər, icra olunan, keçən və düşən testlər, icra vaxtı |
+| Məhsulun keyfiyyəti | Xidmətin işlək olma faizi (availability), cavab müddəti, nasazlığa qədər orta vaxt (MTTF) |
+| Defektlər | Tapılan və düzəldilən defektlərin sayı və prioriteti, defekt sıxlığı, defekt aşkarlama faizi (DDP) |
+| Risk | Qalan riskin səviyyəsi |
+| Əhatə | Tələb əhatəsi, kod əhatəsi |
+| Xərc | Testin dəyəri, keyfiyyətin təşkilata dəyəri |
+
+**Defekt sıxlığı (defect density)** ölçüyə düşən defektdir: 8 defekt / 4000 sətir kod, yəni hər 1000 sətrə 2 defekt. **Defekt aşkarlama faizi (defect detection percentage, DDP)** testin tapdığının bütün defektlərə nisbətidir: testdə 90, canlıda 10 defekt tapılıbsa, DDP = 90 / 100 = 90%.
+
 ### 4.5. Agile-da STLC
 
 Scrum-da bu 6 mərhələ hər sprintdə kiçik miqyasda təkrarlanır. Sprint planning-də analiz və planlaşdırma, sprint boyu dizayn və icra, retrospektivdə bağlanış və dərslər olur. Mərhələlər qısadır və bir-birinə qarışır, amma məntiq eynidir.
@@ -548,15 +671,136 @@ Scrum-da bu 6 mərhələ hər sprintdə kiçik miqyasda təkrarlanır. Sprint pl
 | Gedişat hesabatı (test progress report) | Müntəzəm: gündəlik, həftəlik, sprint sonu | Gedişat, metriklər, maneələr, risklər, növbəti addımlar |
 | Yekun hesabat (test completion report) | Mərhələnin və ya relizin sonunda | Nə test olundu, nəticələr, açıq defektlər, qalan risklər, çıxış meyarları, dərslər |
 
-Hesabatı oxucuya uyğunlaşdır: komandaya detallar, rəhbərliyə qısa xülasə və risklər lazımdır. Agile komandada status çox vaxt Daily Scrum-da, lövhədə (board) və dashboard-larda (məsələn, burn-down qrafiki) görünür. Yekun hesabatın şablonu Əlavə B.4-dədir.
+Hesabatı oxucuya uyğunlaşdır: komandaya detallar, rəhbərliyə qısa xülasə və risklər lazımdır. Agile komandada status çox vaxt Daily Scrum-da, lövhədə (board) və dashboard-larda (məsələn, burn-down qrafiki) görünür. Başqa yollar: e-poçt və çat, onlayn sənəd, rəsmi hesabat. Seçim komandadan asılıdır: paylanmış komanda və ya rəsmi tələb varsa, yazılı forma seçilir. Yekun hesabatın şablonu Əlavə B.4-dədir.
 
 **Konfiqurasiya idarəetməsi (configuration management)** — testin bütün hissələrini versiyaları ilə izləmək: test olunan build, mühit, test case-lər, avtomatik skriptlər, test data. Məqsəd: hər nəticənin hansı versiyada alındığını bilmək və testi təkrarlaya bilmək.
 
 - Hər bug report-da build nömrəsi və mühit yazılır (12.1).
 - Test case-lər və avtomatik testlər versiya sistemində saxlanılır (Git, 20-ci fəsil).
 - **Baseline** — razılaşdırılmış versiyadır; ondan sonra dəyişikliklər yalnız qaydaya uyğun edilir.
+- **Konfiqurasiya elementi (configuration item)** — izlənən hər şey: test planı, test case, skript, test data, mühitin ayarı. Hər birinin unikal adı və versiyası var, bir-biri ilə əlaqəsi bəllidir, lazım olanda əvvəlki baseline-a qayıtmaq olur. DevOps-da bu iş çox vaxt pipeline-da avtomatik gedir.
 
 “Login testi keçdi” cümləsinin dəyəri yoxdur, əgər hansı build-də və hansı mühitdə keçdiyi bəlli deyilsə.
+
+### 4.7. ISTQB-nin yeddi test fəaliyyəti və iki rol {#c4x2}
+
+4.1-dəki altı mərhələ iş elanlarında və müsahibələrdə çox işlədilir. ISTQB sillabusu isə test prosesini yeddi fəaliyyətlə təsvir edir. Məzmun eynidir, bölgü fərqlidir. Fəaliyyətlər ardıcıl görünsə də, çox vaxt bir-birinə qarışır və təkrarlanır.
+
+| Fəaliyyət | Əsas sual | Nə olur | Nəticə (testware) |
+| --- | --- | --- | --- |
+| Test planlaşdırması | Məqsəd nədir, necə çatacağıq? | Məqsəd və yanaşma seçilir | Test planı, cədvəl, risk reyestri, giriş və çıxış meyarları |
+| Monitorinq və nəzarət | Plana uyğun gedirikmi? | Plan və fakt müqayisə olunur, tədbir görülür | Gedişat hesabatı, qərarlar |
+| Test analizi | Nəyi test edəcəyik? | Test əsası təhlil olunur, test şərtləri çıxarılır və prioritetləşdirilir | Test şərtləri, test əsasındakı defektlərin report-ları |
+| Test dizaynı | Necə test edəcəyik? | Şərtlərdən test case, əhatə elementləri, data və mühit tələbləri çıxarılır | Test case, charter, əhatə elementləri |
+| Test implementasiyası | İcra üçün hər şey hazırdırmı? | Prosedur, dəst, skript, data və mühit hazırlanır, icra cədvəli qurulur | Test prosedurları, test dəstləri, skriptlər, icra cədvəli, stub və driver-lər |
+| Test icrası | Nəticə nədir? | Testlər işlədilir, nəticələr müqayisə olunur, anomaliyalar təhlil olunur | Test jurnalı (test log), bug report-lar |
+| Testin tamamlanması | Nə öyrəndik? | Açıq defektlər üçün dəyişiklik sorğuları, testware-in arxivi, mühitin bağlanması, dərslər | Yekun hesabat, dərslər, dəyişiklik sorğuları |
+
+Dörd terminə diqqət:
+
+- **Test əsası (test basis)** — testin çıxarıldığı mənbə: tələblər, user story, dizayn, kod, risk analizi.
+- **Test şərti (test condition)** — yoxlanılacaq şey: “Vaxtı keçmiş promo kod rədd olunur.” Test şərti “nə”, test case “necə”dir.
+- **Əhatə elementi (coverage item)** — əhatənin sayıldığı vahid: sinif, sərhəd dəyəri, sütun, keçid, operator, budaq.
+- **Test proseduru (test procedure)** — test case-lərin icra ardıcıllığı. Giriş testi səbət testindən əvvəl gəlir.
+
+**Altı mərhələ ilə əlaqə.**
+
+| STLC (4.1) | ISTQB fəaliyyəti |
+| --- | --- |
+| Tələblərin analizi | Test analizi |
+| Test planlaşdırması | Test planlaşdırması |
+| Test dizaynı | Test dizaynı, qismən implementasiya |
+| Test mühitinin hazırlanması | Test implementasiyası |
+| Testin icrası | Test icrası |
+| Testin bağlanması | Testin tamamlanması |
+| Bütün mərhələlər boyu | Monitorinq və nəzarət |
+
+**Proses konteksdən asılıdır.** Hansı texnika, nə qədər sənəd, nə qədər avtomatlaşdırma seçiləcəyini bu amillər həll edir: maraqlı tərəflər, komandanın bacarığı və sayı, biznes sahəsi, texniki amillər, layihə məhdudiyyətləri (scope, vaxt, büdcə, resurs), təşkilat qaydaları, SDLC və alətlər. Startapa yüngül checklist kifayət edə bilər, bank isə izlənə bilən sənədlər tələb edir.
+
+**İki rol.**
+
+| Rol | Nəyə cavabdehdir | Əsas fəaliyyətlər |
+| --- | --- | --- |
+| Test idarəetmə rolu (test management) | Test prosesi, test komandası, rəhbərlik | Planlaşdırma, monitorinq və nəzarət, tamamlanma |
+| Test rolu (testing) | Testin mühəndislik tərəfi | Analiz, dizayn, implementasiya, icra |
+
+Rol vəzifə adı deyil. Test idarəetmə rolunu test meneceri, komanda rəhbəri və ya inkişaf meneceri daşıya bilər; Agile-da bu işlərin bir hissəsini komanda özü görür. Bir adam eyni vaxtda hər iki rolu da daşıya bilər.
+
+### 4.8. Test mühitləri və build {#c4x3}
+
+Eyni proqram bir neçə yerdə işləyir. Hər belə yer mühitdir (environment). Mühitlərin sayı və adı şirkətdən şirkətə dəyişir, tipik mənzərə belədir:
+
+| Mühit | Kim işlədir | Data | Tester nə edir |
+| --- | --- | --- | --- |
+| Development (dev, local) | Proqramçı | Az, saxta | Adətən heç nə; bəzən düzəlişə birlikdə baxır |
+| Test (QA) | Tester | Test datası, silinə bilər | Əsas iş yeri: story testi, retest |
+| Staging (pre-prod) | Tester, Product Owner, bəzən müştəri | Canlıya bənzər, anonimləşdirilmiş | Reliz öncəsi regression, qəbul testi |
+| Production (prod, canlı) | Real istifadəçilər | Real | Yalnız icazə ilə: reliz sonrası smoke, baqı təsdiqləmək |
+
+**Build** — kodun müəyyən versiyasından yığılmış nəticədir. **Deploy** — build-in mühitə qoyulmasıdır. Test nəticəsinin dəyəri build-lə bağlıdır (4.6).
+
+Build nömrəsini harada axtarmaq: səhifənin aşağısı və ya “Haqqında” bölməsi, API-nin versiya cavabı, mobil tətbiqin ayarları, CI hesabatı (Fəsil 20), komandanın deploy kanalı. Tapa bilmirsənsə, soruş və cavabı wiki-yə yaz (11.11).
+
+**Retest-dən əvvəl üç sual.**
+
+1. Düzəliş hansı build-dədir? Tiketdəki Fix Version-a və ya proqramçının qeydinə bax.
+2. Bu build mənim mühitimdədirmi? Deploy bitibmi?
+3. Brauzer köhnə faylları göstərmir ki? Keşi təmizlə və ya gizli pəncərədə aç (13.8).
+
+Düzəliş mühitindəki build-dədirsə, deploy bitibsə, keş də təmizdirsə və baq yenə qalırsa, tiketi Reopened et.
+
+**Bir mühitdə var, digərində yox.** Build-i, ayarları, datanı və xarici xidmətləri müqayisə et. Tiketə hər iki mühitin nəticəsini yaz: bu fərq proqramçı üçün ən yaxşı ipucudur.
+
+**Canlı mühit qaydaları.**
+
+- Yalnız icazə ilə və şirkətin test hesabı ilə işlə.
+- Real sifariş, real ödəniş, real məktub yaratma.
+- Müştəri datasına baxma, onu ekran şəklinə salma, heç yerə köçürmə.
+- Şübhə varsa, əvvəl soruş.
+
+### 4.9. Test edə bilmirsənsə: bloklanma {#c4x4}
+
+Mühit düşüb, build gəlməyib, data yoxdur, suala cavab gəlmir. Junior-un əsas səhvi sakitcə gözləməkdir. Beş addım:
+
+1. **Problemin səndə olmadığını yoxla.** Başqa brauzer, gizli pəncərə, başqa hesab. Test mühiti şirkət şəbəkəsindən açılırsa, VPN (şirkət şəbəkəsinə təhlükəsiz qoşulma) qoşuludurmu? Həmkarda işləyirmi?
+2. **Sahibinə faktlarla yaz.** Mühit — DevOps və ya komandanın kanalı. Build — proqramçı. Tələb — Product Owner.
+3. **Görünən et.** Tiketə qeyd yaz, testləri səbəbi ilə Blocked et (4.3), stand-up-da de.
+4. **Mümkün olan işə keç.** Test dizaynı, başqa story-nin retest-i, başqa sahənin exploratory testi, test case-lərin yenilənməsi.
+5. **Vaxt qoy və yüksəlt.** “Günortaya qədər cavab olmasa, QA lead-ə deyəcəyəm.” Sprintə təsirini de: “SHOP-220 bu sprintə çatmaya bilər.”
+
+Yaxşı mesaj nümunəsi:
+
+```text
+Salam! Test mühiti bu gün 10:20-dən 502 qaytarır.
+Chrome və Firefox-da, iki hesabla yoxladım, Anar-da da eynidir.
+SHOP-214 və SHOP-220-nin testi dayanıb.
+Kim baxa bilər? Ekran şəkli əlavədədir.
+```
+
+Pis mesaj: “Mühit işləmir.” Oxuyan nə baş verdiyini, nə vaxtdan olduğunu və nəyin dayandığını bilmir.
+
+**Blocked və Failed fərqi.** Failed: test işlədi, nəticə gözləniləndən fərqlidir. Blocked: test işləyə bilmədi. Blocked testi Failed yazma, yoxsa hesabatda məhsul olduğundan pis görünür.
+
+### 4.10. Reliz günü: go/no-go, hotfix, rollback {#c4x5}
+
+Reliz (release) yeni versiyanın istifadəçilərə çatmasıdır. Tipik yol:
+
+| Addım | Nə olur | Tester nə edir |
+| --- | --- | --- |
+| 1. Reliz namizədi (release candidate) | Relizə düşəcək versiya seçilir, staging-ə qoyulur (ayrıca staging yoxdursa, test mühitinə) | Smoke, retest, regression |
+| 2. Go/No-Go görüşü | Buraxaq, ya yox? | Faktları deyir: nə yoxlanıb, açıq baqlar, qalan risklər |
+| 3. Deploy | Versiya canlıya çıxır | Hazır gözləyir |
+| 4. Reliz sonrası smoke | Canlıda əsas funksiyalar yoxlanır | Test hesabı ilə qısa yoxlama (4.8) |
+| 5. Monitorinq | Xətalar, loglar, dəstək müraciətləri izlənir | Müraciətləri təkrarlamağa kömək edir |
+| 6. Reliz qeydləri | Nə dəyişib, bilinən problemlər (known issues) | Açıq baqların siyahısına kömək edir |
+
+**Qərarı kim verir?** Tester tövsiyə edir, biznes qərar verir (4.2). Go/No-Go görüşündə belə danış:
+
+> Regression bitib: 120 testdən 116-sı keçib, 4-ü düşüb, hamısı SHOP-311-ə görədir. SHOP-311 Major-dur, müvəqqəti həlli var. Android 10 yoxlanmayıb, cihaz yox idi. Tövsiyəm: buraxmaq və SHOP-311-i bilinən problemlərə yazmaq.
+
+**Hotfix (təcili düzəliş)** canlıdakı ciddi problem üçün tez buraxılan kiçik dəyişiklikdir. Test də qısa olur: düzəlişin retest-i, təsir analizi (5.6), ən vacib funksiyaların smoke testi, deploy-dan sonra canlıda yoxlama. Tam regression çox vaxt növbəti relizə qalır, ona görə nəyin yoxlanmadığını yaz. Bir sual da ver: düzəliş əsas koda da düşürmü? Yoxsa növbəti relizdə baq geri qayıdır.
+
+**Rollback (geri qaytarma)** yeni versiyanı götürüb əvvəlkini qaytarmaqdır. Qərarı adətən reliz məsulu və ya texniki lider verir. Sonra tester smoke aparır: köhnə versiya işləyirmi, bu arada yaranan data pozulmayıb ki?
 
 ### Diqqət: tez-tez edilən səhvlər
 
@@ -595,7 +839,7 @@ Hesabatı oxucuya uyğunlaşdır: komandaya detallar, rəhbərliyə qısa xülas
 
 ## Fəsil 5. Test səviyyələri
 
-Test səviyyələri sistemin hansı miqyasda yoxlandığını göstərir: ən kiçik kod parçasından tutmuş bütöv məhsulun müştəri tərəfindən qəbuluna qədər. Dörd səviyyə var: unit, inteqrasiya, sistem və qəbul testi.
+Test səviyyələri sistemin hansı miqyasda yoxlandığını göstərir: ən kiçik kod parçasından tutmuş bütöv məhsulun müştəri tərəfindən qəbuluna qədər. Bu kitabda dörd səviyyədən danışırıq: unit, inteqrasiya, sistem və qəbul testi. ISTQB inteqrasiyanı ikiyə bölür, ona görə orada beş səviyyə var: komponent (unit), komponent inteqrasiyası, sistem, sistem inteqrasiyası və qəbul.
 
 Avtomobil zavodunu yenə xatırla. Əvvəlcə hər detal ayrıca yoxlanılır (təkər, mühərrik) — bu, unit testdir. Sonra detalların birləşməsi (mühərrik və sürət qutusu) — inteqrasiya. Sonra bütün maşın yolda — sistem. Nəhayət müştərinin sınaq sürüşü — qəbul.
 
@@ -651,6 +895,18 @@ Qəbul testi bu suala cavab verir: məhsul biznes ehtiyaclarına və istifadəç
 | İnteqrasiya | Modullar arası əlaqə | Proqramçı, tester | Səbət modulu ödəniş servisinə düzgün məbləğ ötürür |
 | Sistem | Bütöv sistem | Tester | Qeydiyyatdan ödənişə qədər tam alış ssenarisi |
 | Qəbul | Biznes ehtiyacına uyğunluq | Müştəri, istifadəçilər | Mağaza sahibi real sifarişlərlə sistemi qəbul edir |
+
+ISTQB səviyyələri bu xüsusiyyətlərlə fərqləndirir: test obyekti (nə yoxlanılır), məqsəd, test əsası (test nəyə əsasən yazılır), tipik defektlər və cavabdehlik.
+
+| Səviyyə (ISTQB) | Test əsası | Tipik defektlər | Kim edir |
+| --- | --- | --- | --- |
+| Komponent (unit) | Komponentin dizaynı, kod | Səhv məntiq, səhv hesablama | Proqramçı |
+| Komponent inteqrasiyası | Dizayn, modullar arası interfeyslər | Səhv data formatı, səhv çağırış ardıcıllığı | Adətən proqramçı |
+| Sistem | Tələblər, user story, use case | Səhv biznes qaydası, uçdan-uca ssenarinin pozulması, qeyri-funksional problemlər | Tester |
+| Sistem inteqrasiyası | Xarici sistemlərin interfeysləri, API sənədi | Xarici xidmətin cavabının səhv emalı | Adətən tester |
+| Qəbul | Biznes tələbləri, qəbul meyarları, müqavilə | Məhsul biznes ehtiyacını ödəmir | Müştəri, istifadəçilər |
+
+Unit testlər çox vaxt xüsusi dəstək tələb edir: unit test framework-ü və ya test harness (testi işlədən köməkçi kod). Sistem inteqrasiyası üçün isə canlıya mümkün qədər yaxın mühit lazımdır.
 
 ### 5.6. Baxım testi (maintenance testing) {#c5x1}
 
@@ -710,6 +966,8 @@ Təsir analizi çətinləşir, əgər tələblər və testlər köhnəlibsə, iz
 
 Test növü “nəyi yoxlayırıq?” sualına cavab verir. Ən böyük bölgü funksional və qeyri-funksional testdir. Bundan başqa, dəyişikliklərlə bağlı dörd növ var: smoke, sanity, retest və regression.
 
+ISTQB dörd test növü sayır: funksional, qeyri-funksional, black-box və white-box (son ikisi Fəsil 7-də). Dördü də bütün səviyyələrdə işlədilə bilər, sadəcə fokus dəyişir: unit səviyyəsində də performans ölçmək olar, qəbul testində də funksiyanı yoxlamaq.
+
 Mobil telefonu düşün. Zəng edə bilirmi, mesaj göndərə bilirmi — bunlar funksionaldır. Batareya nə qədər davam edir, nə qədər tez açılır, düşəndə sınırmı — bunlar qeyri-funksionaldır.
 
 ### 6.1. Funksional test (functional testing)
@@ -729,6 +987,10 @@ Qeyri-funksional test sistemin NECƏ işlədiyini yoxlayır: nə qədər sürət
 | Accessibility (əlçatanlıq) | Məhdudiyyətli insanların istifadə imkanı | Saytı yalnız klaviatura ilə idarə etmək olurmu? |
 | Reliability (etibarlılıq) | Uzun müddət nasazlıqsız işləmə | Sistem bir həftə fasiləsiz işləyəndə yavaşlayırmı? |
 | Localization (lokalizasiya) | Dil, tarix və valyuta formatları | Azərbaycan dilində mətnlər düymələrə sığırmı? |
+| Maintainability (baxım rahatlığı) | Kodu dəyişmək və düzəltmək nə qədər asandır | Yeni ödəniş üsulu əlavə etmək neçə modula toxunur? |
+| Portability (daşınma rahatlığı) | Başqa mühitə keçirmək və quraşdırmaq | Tətbiq yeni serverə problemsiz keçirmi? |
+
+Bu xüsusiyyətlərin çoxu ISO/IEC 25010 keyfiyyət modelindən gəlir: performans, uyğunluq, istifadə rahatlığı, etibarlılıq, təhlükəsizlik, baxım rahatlığı, daşınma rahatlığı.
 
 **Performans testinin alt növləri:**
 
@@ -830,11 +1092,11 @@ Black box texnikaları: ekvivalent siniflər, sərhəd dəyərləri, qərar cəd
 
 ### 7.2. White box (ağ qutu)
 
-White box — kodu bilərək, kodun daxili yollarını yoxlayaraq test etməkdir. Adətən proqramçılar edir (unit testlər).
+White box — test case-ləri proqramın daxili quruluşuna görə seçməkdir: kod, arxitektura, iş axınları, data axınları. Kod səviyyəsində adətən proqramçılar edir (unit testlər), amma bütün test səviyyələrində işlədilə bilər.
 
 Burada əsas anlayış **coverage (əhatə)** — testlərin kodun nə qədərini işə salmasıdır:
 
-- **Statement coverage (operator əhatəsi)** — kodun hər sətri ən azı bir dəfə işə düşübmü?
+- **Statement coverage (operator əhatəsi)** — hər icra olunan operator ən azı bir dəfə işə düşübmü?
 - **Branch coverage (budaq əhatəsi)** — hər `if`-in həm “doğru”, həm “yalan” yolu işə düşübmü?
 
 ```javascript
@@ -846,7 +1108,7 @@ function getShippingCost(total) {
 }
 ```
 
-Yalnız `getShippingCost(80)` testi olsa, `return 3` sətri heç vaxt işə düşmür. Bu halda branch coverage 50%-dir. `getShippingCost(20)` testini də əlavə edəndə hər iki yol işləyir: statement və branch coverage 100% olur.
+Yalnız `getShippingCost(80)` testi olsa, `return 3` sətri heç vaxt işə düşmür. Bu halda 3 operatordan 2-si işləyir (statement coverage təxminən 67%), budaqların isə yarısı (branch coverage 50%). `getShippingCost(20)` testini də əlavə edəndə hər iki yol işləyir: statement və branch coverage 100% olur. Faizin necə hesablandığı və əhatənin həddi 7.9-dadır.
 
 ### 7.3. Grey box (boz qutu)
 
@@ -863,14 +1125,14 @@ Müasir manual tester-lərin çoxu əslində grey box işləyir.
 
 Statik testin əsas forması review-dur (nəzərdən keçirmə):
 
-| Növ | Necədir | Misal |
-| --- | --- | --- |
-| Informal review | Planlaşdırılmamış, sadə | Həmkara “bu test case-ə bir bax” demək |
-| Walkthrough | Müəllif sənədi komandaya izah edir | Analitik tələbləri komandaya oxuyur, suallar verilir |
-| Technical review | Mütəxəssislər texniki həlli qiymətləndirir | Arxitekturanın müzakirəsi |
-| Inspection | Ən formal növ: rollar, qaydalar, qeydlər, metriklər | Tibbi proqramın tələb sənədinin rəsmi yoxlanması |
+| Növ | Əsas məqsəd | Necə aparılır | Misal |
+| --- | --- | --- | --- |
+| Informal review | Anomaliyaları tapmaq | Müəyyən proses və yazılı nəticə tələb olunmur | Həmkara “bu test case-ə bir bax” demək |
+| Walkthrough | Keyfiyyəti qiymətləndirmək, öyrətmək, razılığa gəlmək, ideya yaratmaq, müəllifi yaxşılaşdırmağa həvəsləndirmək, anomaliya tapmaq | Müəllif aparır; əvvəlcədən fərdi oxumaq məcburi deyil | Analitik tələbləri komandaya oxuyur, suallar verilir |
+| Technical review | Texniki məsələdə razılığa gəlmək və qərar vermək, anomaliya tapmaq | Moderator aparır; iştirakçılar texniki mütəxəssislərdir | Arxitekturanın müzakirəsi |
+| Inspection | Mümkün qədər çox anomaliya tapmaq; metrik toplayıb prosesi yaxşılaşdırmaq | Ən formal növ, tam proses; müəllif review lideri və ya qeydiyyatçı ola bilməz | Tibbi proqramın tələb sənədinin rəsmi yoxlanması |
 
-Statik analiz alətləri kodu avtomatik yoxlayır: məsələn, ESLint JavaScript kodunda şübhəli yerləri göstərir. Statik testin əsas üstünlüyü defekti kod yazılmazdan əvvəl tapmasıdır (Prinsip 3).
+Statik analiz alətləri kodu avtomatik yoxlayır: məsələn, ESLint JavaScript kodunda şübhəli yerləri göstərir. Statik testin əsas üstünlüyü defekti kod yazılmazdan əvvəl tapmasıdır (Prinsip 3). Ətraflı müqayisə 7.10-dadır.
 
 ### 7.5. Pozitiv və neqativ test
 
@@ -892,7 +1154,9 @@ Ad hoc testdən fərqi var. Ad hoc tam plansız və sənədsizdir. Exploratory i
 - **Charter (missiya):** “Səbəti kəşf et, məhsul sayının dəyişdirilməsinə fokuslan, məqsəd — hesablama xətaları.”
 - **Timebox:** 60–90 dəqiqə.
 - **Qeydlər:** nəyi yoxladım, nə tapdım, hansı suallar yarandı.
-- **Sonda:** tapılan baqlar, risklər, növbəti sessiya üçün ideyalar.
+- **Sonda:** tapılan baqlar, risklər, növbəti sessiya üçün ideyalar. Sessiya maraqlı tərəflərlə qısa müzakirə (debrief) ilə bitir, qeydlər test sessiyası vərəqinə (test session sheet) yazılır.
+
+Exploratory xüsusən tələblər zəif olanda, vaxt az olanda və digər texnikaları tamamlamaq lazım olanda faydalıdır. İçində BVA kimi texnikalar da işlədilə bilər. Nəticəsi isə tester-in bilik və təcrübəsindən çox asılıdır.
 
 **Faydalı fikirlər (heuristics):**
 
@@ -936,6 +1200,77 @@ Avtomatlaşdırma manual testi əvəz etmir: onu yalnız insanın görə biləc�
 **Uğur amilləri:** aydın məqsəd və ölçülə bilən çıxış meyarları; sənədi kiçik hissələrlə nəzərdən keçirmək; hazırlıq üçün vaxt; checklist; rəhbərliyin dəstəyi. Ən vacibi — **insanı yox, sənədi tənqid etmək**. Review-da tapılan defekt müəllifin “günahı” deyil, komandanın qazancıdır.
 
 Tester üçün: tələblərin review-u defekt tapmağın ən ucuz yoludur (Prinsip 3). 10-cu fəsildəki “tələbə sual vermək” vərdişi məhz fərdi review-dur.
+
+### 7.9. Statement və branch coverage-i hesablamaq {#c7x2}
+
+Sillabus white box-dan hesablamadan çox izah tələb edir: əhatənin nə olduğunu və nəyə zəmanət verdiyini bilməlisən. Hesablamaq bunu başa düşməyin ən yaxşı yoludur. Bu kodla öyrənək:
+
+```javascript
+function price(total, vip) {
+  let discount = 0;
+  if (total >= 100) {
+    discount = 10;
+  }
+  if (vip) {
+    discount = discount + 5;
+  }
+  return total - discount;
+}
+```
+
+**Statement coverage** = işə düşən icra olunan operatorlar / bütün icra olunan operatorlar × 100. Operator (statement) sətirlə eyni deyil: `}` sətri icra olunmur. Bu funksiyada 6 operator var: `let`, iki `if`, iki mənimsətmə və `return`.
+
+**Branch coverage** = işə düşən budaqlar / bütün budaqlar × 100. Budaq (branch) idarənin bir yerdən digərinə keçməsidir. Şərtli budaqlar `if`-in doğru və yalan çıxışları, `switch`-in halları, dövrdən çıxmaq və ya davam etməkdir. Şərtsiz budaqlar düz xətt üzrə keçiddir. Bu kitabın misallarında yalnız şərtli budaqları sayırıq: burada 2 `if`, yəni 4 budaq var.
+
+| Test | Operatorlar | Statement | Budaqlar | Branch |
+| --- | --- | --- | --- | --- |
+| `price(150, true)` | 6 / 6 | 100% | 2 / 4 | 50% |
+| `price(50, false)` | 4 / 6 | ≈ 67% | 2 / 4 | 50% |
+| Hər ikisi | 6 / 6 | 100% | 4 / 4 | 100% |
+
+Birinci sətirdən əsas qayda çıxır: **100% branch coverage həmişə 100% statement coverage verir, tərsi isə doğru deyil.** Hər budaq işə düşübsə, hər operator da işə düşüb. Amma bütün operatorlar işə düşsə də, `if`-in yalan çıxışı yoxlanmamış qala bilər.
+
+**White box-un dəyəri.**
+
+- Kodun hamısı nəzərə alınır, ona görə tələblər zəif, köhnə və ya natamam olanda da defekt tapıla bilər.
+- Əhatənin obyektiv ölçüsünü verir. Yalnız black box test kod əhatəsini ölçmür.
+- Statik testdə də işlədilir: kodu işə salmadan, addım-addım “quru qaçış” (dry run) ilə.
+
+**Həddi.**
+
+- Koda yazılmamış tələbi tapmır: bu, yoxluq defektidir (omission).
+- 100% statement datadan asılı defekti buraxa bilər: `a / b` sətri işləyib, amma `b = 0` yoxlanmayıb.
+- `total >= 100` əvəzinə `total > 100` yazılsa, yuxarıdakı iki test yenə 100% verir, çünki 100 dəyəri yoxlanmır. Bunu BVA tutar (8.3).
+
+### 7.10. Statik testin dəyəri və erkən rəy {#c7x3}
+
+**Nəyə baxmaq olar?** Oxunub başa düşülən demək olar hər şeyə: tələblər, backlog elementləri, kod, test planı, test case, charter, layihə sənədi, müqavilə, model. Statik analiz alətinə isə quruluş lazımdır: kod, model və ya formal sintaksisli mətn. Yararsız olanlar: insanın çətin başa düşdüyü və alətlə analizinə icazə olmayan şeylər, məsələn, hüquqi səbəbə görə üçüncü tərəfin icra olunan kodu.
+
+|  | Statik test | Dinamik test |
+| --- | --- | --- |
+| Proqram işə düşürmü? | Xeyr | Bəli |
+| Nə tapır | Defekti birbaşa | Nasazlığı; defekt sonra analizlə tapılır |
+| Harada işlədilir | İcra olunmayan sənədlərdə də | Yalnız icra olunan məhsulda |
+| Nəyi ölçür | İcradan asılı olmayan keyfiyyəti (baxım rahatlığı) | İcradan asılı keyfiyyəti (performans) |
+| Güclü tərəfi | Nadir işləyən kod yollarındakı defektlər | Real işləmə davranışı |
+
+İkisi bir-birini tamamlayır: bəzi defektləri yalnız biri tapa bilər.
+
+**Statik testin asan tapdığı defektlər:**
+
+- Tələblərdə: ziddiyyət, qeyri-müəyyənlik, unudulmuş hal, təkrar.
+- Dizaynda: səmərəsiz baza quruluşu, modullara zəif bölünmə.
+- Kodda: təyin olunmamış dəyişən, çatılmayan və ya təkrarlanan kod, həddən artıq mürəkkəblik.
+- Standartdan kənarlaşma: adlandırma qaydasının pozulması.
+- İnterfeys təsvirində: parametrlərin sayı, tipi və ya sırası uyğun deyil.
+- Bəzi təhlükəsizlik zəiflikləri, məsələn, buffer overflow.
+- Test əsasının əhatəsində boşluq: qəbul meyarına test yoxdur.
+
+**Dəyəri.** Statik test erkən başlayır (Prinsip 3), dinamik testin tapa bilmədiyini tapır, maraqlı tərəflərin eyni şeyi eyni cür başa düşməsinə kömək edir. Review bahalı görünsə də, layihənin ümumi xərci adətən azalır, çünki sonradan düzəliş daha bahadır.
+
+**Erkən və tez-tez rəy (early and frequent stakeholder feedback).** Maraqlı tərəflər yalnız sonda qoşulanda məhsul onların istədiyi kimi çıxmaya bilər. Nəticə: bahalı yenidən iş, gecikən tarix, bir-birini günahlandırma, ağır halda layihənin uğursuzluğu. Tez-tez rəy tələbin səhv başa düşülməsinin qarşısını alır, dəyişikliklər tez anlaşılır, komanda nə qurduğunu daha yaxşı bilir, ən dəyərli funksiyalara və risklərə fokuslanır.
+
+**Misal.** Sprint Review-da Product Owner yeni filtri görür: “Kateqoriya üzrə də süzmək lazım idi.” Düzəliş iki gün çəkir. Eyni fikir relizdən sonra gəlsəydi, plan, test və reliz yenidən başlayardı.
 
 ### Diqqət: tez-tez edilən səhvlər
 
@@ -1052,15 +1387,21 @@ Bu kodda 35, 50, 60 — hamısı düzgün işləyir. Yalnız 18 yaşlı rədd ed
 
 BVA-nın iki variantı var:
 
-- **2 dəyərli BVA** — hər sərhəd üçün sərhədin özü və ondan kənardakı qonşu.
-- **3 dəyərli BVA** — sərhədin özü və hər iki qonşusu.
+- **2 dəyərli BVA** — hər sərhəd dəyəri və onun qonşu sinifdəki ən yaxın qonşusu.
+- **3 dəyərli BVA** — hər sərhəd dəyəri və onun hər iki qonşusu, hansı sinifdə olmasından asılı olmayaraq.
 
-| Sərhəd | 2 dəyərli BVA | 3 dəyərli BVA |
+Sərhəd dəyəri sinfin ən kiçik və ən böyük dəyəridir. “18–60” tələbində siniflər bir-birinə toxunan iki yerdə sərhəd dəyərləri belədir: 17 (kiçik sinfin sonu) və 18 (valid sinfin əvvəli), 60 (valid sinfin sonu) və 61 (böyük sinfin əvvəli).
+
+| Siniflərin toxunduğu yer | 2 dəyərli BVA | 3 dəyərli BVA |
 | --- | --- | --- |
-| Aşağı sərhəd (18) | 17, 18 | 17, 18, 19 |
-| Yuxarı sərhəd (60) | 60, 61 | 59, 60, 61 |
+| 17 və 18 | 17, 18 | 16, 17, 18, 19 |
+| 60 və 61 | 60, 61 | 59, 60, 61, 62 |
 
-Gözlənilən nəticə: 17 → xəta, 18 → qəbul, 19 → qəbul, 59 → qəbul, 60 → qəbul, 61 → xəta.
+3 dəyərli BVA-da 17-nin qonşuları 16 və 18, 18-in qonşuları 17 və 19-dur. Üst-üstə düşənlər bir dəfə sayılır, ona görə hər yerdə 4 dəyər qalır. “3 dəyərli, yəni üç qat çox” fikri yanlışdır.
+
+Gözlənilən nəticə: 16 və 17 → xəta, 18 və 19 → qəbul, 59 və 60 → qəbul, 61 və 62 → xəta.
+
+**Qeyd.** Bəzi dərsliklər və komandalar sadələşdirilmiş 17, 18, 19 və 59, 60, 61 dəstini işlədir. İşdə bu da faydalıdır, amma ISTQB-nin qaydası yuxarıdakıdır.
 
 **Addım-addım:**
 
@@ -1070,9 +1411,9 @@ Gözlənilən nəticə: 17 → xəta, 18 → qəbul, 19 → qəbul, 59 → qəbu
 4. Hər sərhəd üçün sərhədi və qonşu(lar)ı seç.
 5. Gözlənilən nəticəni yaz.
 
-**Misal 2 — şifrə uzunluğu.** Tələb: “Şifrə 8–20 simvol olmalıdır.” Addım 1 simvoldur. 2 dəyərli BVA: 7 (xəta), 8 (qəbul), 20 (qəbul), 21 (xəta). 3 dəyərli BVA-da 9 və 19 da əlavə olunur. Uzun mətnləri əllə saymamaq üçün onlayn simvol sayğacından istifadə et.
+**Misal 2 — şifrə uzunluğu.** Tələb: “Şifrə 8–20 simvol olmalıdır.” Addım 1 simvoldur. 2 dəyərli BVA: 7 (xəta), 8 (qəbul), 20 (qəbul), 21 (xəta). 3 dəyərli BVA-da 6, 9, 19 və 22 də əlavə olunur. Uzun mətnləri əllə saymamaq üçün onlayn simvol sayğacından istifadə et.
 
-**Misal 3 — kəsr ədədlər.** Tələb: “50 AZN və yuxarı sifarişdə çatdırılma pulsuzdur.” Burada addım 1 qəpikdir (0,01). Sərhəd dəyərləri: 49,99 → çatdırılma ödənişli; 50,00 → pulsuz. 3 dəyərli BVA üçün 50,01 də əlavə olunur.
+**Misal 3 — kəsr ədədlər.** Tələb: “50 AZN və yuxarı sifarişdə çatdırılma pulsuzdur.” Burada addım 1 qəpikdir (0,01). Sərhəd dəyərləri: 49,99 → çatdırılma ödənişli; 50,00 → pulsuz. 3 dəyərli BVA üçün 49,98 və 50,01 də əlavə olunur.
 
 Yalnız 49 və 50-ni yoxlasan, 49,50 kimi dəyərləri buraxırsan. Kəsr ədədlərdə addımı düzgün seçmək vacibdir.
 
@@ -1096,6 +1437,43 @@ BVA dəyərləri (17, 61) invalid sinifləri də təmsil edir, ona görə 10 və
 ### 8.5. Tələbdəki qeyri-müəyyənliyə diqqət
 
 “18 yaşdan yuxarı” ifadəsində 18 daxildirmi? “60-a qədər” — 60 daxildirmi? Gündəlik dildə bu ifadələr fərqli başa düşülür. Tester təxmin etmir, soruşur: “18 yaşlı istifadəçi qeydiyyatdan keçə bilərmi?”
+
+### 8.6. Əhatəni hesablamaq: EP, Each Choice və BVA {#c8x1}
+
+Texnikanın əhatəsi faizlə ölçülür. Əhatə elementi (coverage item) texnikadan asılıdır.
+
+**EP əhatəsi** = işə düşən siniflər / bütün siniflər × 100. Invalid siniflər də sayılır. Siniflər boş olmur və üst-üstə düşmür: hər dəyər tam bir sinfə aiddir. (8.2-də “mənfi ədəd” sətri praktik əlavədir: ciddi bölgüdə o, “18-dən kiçik” sinfinin içindədir.)
+
+**Each Choice coverage.** Bir neçə parametr olanda hər parametrin hər sinfi ən azı bir dəfə işə düşməlidir. Kombinasiyalar nəzərə alınmır. Minimum test sayı ən çox sinfi olan parametrin sinif sayına bərabərdir.
+
+**Misal.** Çatdırılma: kuryer, poçt, özü götürür. Ödəniş: kart, nağd. Each Choice üçün 3 test kifayətdir:
+
+| Test | Çatdırılma | Ödəniş |
+| --- | --- | --- |
+| 1 | Kuryer | Kart |
+| 2 | Poçt | Nağd |
+| 3 | Özü götürür | Kart |
+
+Bütün kombinasiyalar 3 × 2 = 6 olardı.
+
+**BVA yalnız sıralı siniflər üçündür.** Sərhəd yalnız dəyərlər sıralana bilirsə olur: yaş, qiymət, uzunluq, tarix. “Rəng” və ya “şəhər” sinifləri sıralanmır, onlarda BVA işlədilmir.
+
+**BVA-da elementləri necə saymaq.** Tələb: “Şifrə 8–12 simvol olmalıdır.” Uzunluq 0-dan kiçik ola bilməz, ona görə siniflər belədir:
+
+| Sinif | Dəyərlər | Sərhəd dəyərləri |
+| --- | --- | --- |
+| Qısa | 0–7 | 0, 7 |
+| Düzgün | 8–12 | 8, 12 |
+| Uzun | 13 və yuxarı | 13 (yuxarı həddi yoxdur) |
+
+- **2 dəyərli BVA:** elementlər sərhəd dəyərlərinin özüdür: 0, 7, 8, 12, 13 — **5 element**.
+- **3 dəyərli BVA:** hər sərhəd dəyəri və iki qonşusu: 0 üçün 0, 1 (−1 mümkün deyil); 7 üçün 6, 7, 8; 8 üçün 7, 8, 9; 12 üçün 11, 12, 13; 13 üçün 12, 13, 14. Üst-üstə düşənlər bir dəfə sayılır: 0, 1, 6, 7, 8, 9, 11, 12, 13, 14 — **10 element**.
+
+**BVA əhatəsi** = yoxlanan elementlər / bütün elementlər × 100. Testlər 8, 12 və 13 uzunluqlarını yoxlayırsa, 2 dəyərli əhatə 3 / 5 = 60%, 3 dəyərli əhatə 3 / 10 = 30%-dir.
+
+8.3-də yalnız valid sinfin kənarlarına baxdıq, çünki defektlər ən çox orada olur. İmtahanda isə sualın verdiyi siniflərin hamısını say.
+
+**3 dəyərli BVA nəyi əlavə tutur?** Tələb: `x ≤ 10`. Proqramçı səhvən `x == 10` yazıb. 2 dəyərli dəyərlər (10, 11) bu səhvi görmür: 10 qəbul, 11 rədd, hər ikisi düzgün görünür. 3 dəyərlidəki 9 isə rədd olunur və defekti üzə çıxarır.
 
 ### Diqqət: tez-tez edilən səhvlər
 
@@ -1280,6 +1658,50 @@ Use case istifadəçinin sistemlə qarşılıqlı əlaqəsini addım-addım təs
 | İstifadəçinin addım-addım prosesi | Use case |
 | Hər yerdə, əlavə olaraq | Error guessing |
 
+Texnikalar üç ailəyə bölünür:
+
+| Ailə | Testlər nəyə əsaslanır | Əhatə nəyə görə ölçülür | Zəif tərəfi |
+| --- | --- | --- | --- |
+| Black box | Tələb olunan davranışa. Kod dəyişsə də, davranış eynidirsə, testlər qalır | Siniflər, sərhədlər, sütunlar, keçidlər | Kodun içindəki yolları ölçmür |
+| White box | Proqramın daxili quruluşuna. Ona görə dizayn və ya kod hazır olmadan yazıla bilməz | Operatorlar, budaqlar | Yazılmamış tələbi tapmır |
+| Təcrübəyə əsaslanan | Tester-in bilik və təcrübəsinə: error guessing, exploratory, checklist | Adətən ölçülmür | Nəticə tester-dən asılıdır |
+
+Üçüncü ailə ilk ikisinin buraxdığını tapa bilər, ona görə onları əvəz etmir, tamamlayır. Pairwise və use case CTFL v4.0 sillabusunda yoxdur, amma işdə faydalıdır.
+
+### 9.7. Əhatəni hesablamaq: qərar cədvəli və vəziyyət keçidləri {#c9x1}
+
+**Qərar cədvəlində** əhatə elementi mümkün kombinasiyası olan sütundur.
+
+Əhatə = yoxlanan sütunlar / bütün mümkün sütunlar × 100.
+
+Mümkün olmayan sütunlar sayılmır: yaş eyni anda həm 18-dən kiçik, həm 65-dən böyük ola bilməz. 100% üçün hər sütuna ən azı bir test lazımdır. Yazılış: şərtlərdə T və F (Bəli və Xeyr), “—” fərqi yoxdur, N/A mümkün deyil; nəticələrdə X olur və ya boş qalır. **Misal.** 9.1-dəki sadələşdirilmiş cədvəldə 4 sütun var. Testlər yalnız Qayda 1 və Qayda 3-ü yoxlayırsa, əhatə 2 / 4 = 50%-dir.
+
+**Vəziyyət keçidlərində** üç əhatə səviyyəsi var:
+
+| Əhatə | Element | Hesablama | Zəmanəti |
+| --- | --- | --- | --- |
+| Bütün vəziyyətlər (all states) | Vəziyyətlər | Keçilən vəziyyətlər / bütün vəziyyətlər | Ən zəifidir |
+| Etibarlı keçidlər (valid transitions, 0-switch) | Etibarlı keçidlər | İşlədilən / bütün etibarlı keçidlər | Bütün vəziyyətləri də əhatə edir; ən çox işlədilən budur |
+| Bütün keçidlər (all transitions) | Etibarlı və etibarsız keçidlər | İşlədilən və cəhd edilən / hamısı | İlk ikisini də əhatə edir; kritik sistemlər üçün minimum budur |
+
+**Test case keçiddən fərqlidir.** Bir test case bir neçə keçidi ardıcıl keçə bilər, ona görə test case-lərin sayı keçidlərin sayından az olur. Etibarsız keçid isə test case-i bitirir: hər test case-də yalnız bir etibarsız keçid yoxlanılır, yoxsa biri digərini gizlədə bilər (defect masking).
+
+**Misal.** 9.2-dəki bank girişi. 5 vəziyyət: 0, 1 və 2 səhv cəhd, Daxil olub, Bloklanıb. 6 etibarlı keçid bu test case-lərlə əhatə olunur:
+
+| Test case | Keçidlər |
+| --- | --- |
+| TC1 | 0 səhv → Daxil olub |
+| TC2 | 0 səhv → 1 səhv → Daxil olub |
+| TC3 | 0 səhv → 1 səhv → 2 səhv → Daxil olub |
+| TC4 | 0 səhv → 1 səhv → 2 səhv → Bloklanıb |
+
+- **Bütün vəziyyətlər** üçün 2 test case kifayətdir: TC4 və TC1.
+- **Etibarlı keçidlər** üçün 4 test case lazımdır, çünki “Daxil olub” və “Bloklanıb” yolun sonudur: 4 keçid bura gətirir və hər test case onlardan yalnız birini işlədə bilər.
+- TC1 və TC2 birlikdə 6 keçiddən 3-nü işlədir: etibarlı keçid əhatəsi 50%-dir.
+- **Bütün keçidlər** üçün 9.2-dəki cədvəlin 8 xanası da işlədilməlidir: 6 etibarlı keçid və “Bloklanıb” sətrindəki 2 etibarsız cəhd (düzgün şifrə, səhv şifrə). Biri TC4-ün sonuna yazıla bilər, digəri üçün yeni test case lazımdır: cəmi 5. “Daxil olub” cədvəldə yoxdur: bu misalda o, yolun sonudur.
+
+**Mühafizə şərti (guard condition)** keçidin yalnız şərt doğru olanda baş verməsidir. Yazılış: `hadisə [şərt] / nəticə`, məsələn, `Səhv şifrə [cəhd = 3] / Hesabı blokla`.
+
 ### Diqqət: tez-tez edilən səhvlər
 
 - **Qərar cədvəlində kombinasiyanı unutmaq.** Sayı 2ⁿ düsturu ilə yoxla.
@@ -1327,7 +1749,7 @@ Qərar cədvəlini qur və sadələşdir.
 **Həll.**
 
 1. Vəziyyətlər: Yaradılıb, Ödənilib, Göndərilib, Çatdırılıb, Ləğv edilib.
-2. Etibarlı keçidlər — hər biri bir test:
+2. Etibarlı keçidlər. Sadəlik üçün hər birini ayrıca yazırıq; bir test case bir neçəsini ardıcıl keçə bilər (9.7):
 
 | # | Başlanğıc | Hadisə | Son vəziyyət |
 | --- | --- | --- | --- |
@@ -1404,16 +1826,16 @@ Yaxşı user story-nin meyarları INVEST adlanır: Independent (müstəqil), Neg
 
 ### 10.4. Acceptance criteria (qəbul meyarları)
 
-Acceptance criteria — user story-nin “hazır” sayılması üçün ödənməli olan konkret şərtlərdir. Tester test case-ləri məhz bunlardan çıxarır. İki yazılış forması var.
+Acceptance criteria — user story-nin “hazır” sayılması üçün ödənməli olan konkret şərtlərdir. Tester test case-ləri məhz bunlardan çıxarır. Onlar story-nin həddini müəyyən edir, maraqlı tərəfləri razılaşdırır, həm pozitiv, həm neqativ halları təsvir edir, qəbul testinin əsası olur və qiymətləndirməni dəqiqləşdirir. İki yazılış forması var.
 
-**Siyahı forması:**
+**Qaydaya əsaslanan forma (rule-oriented) — siyahı və ya giriş-çıxış cədvəli:**
 
 - Sıralama seçimləri: “Ucuzdan bahaya”, “Bahadan ucuza”.
 - Default sıralama: “Populyarlığa görə”.
 - Sıralama seçilmiş filtrləri sıfırlamır.
 - Seçilmiş sıralama səhifə yenilənəndə qalır.
 
-**Gherkin forması (Given–When–Then):**
+**Ssenariyə əsaslanan forma (scenario-oriented) — Gherkin, Given–When–Then:**
 
 ```gherkin
 Scenario: Məhsulları ucuzdan bahaya sıralamaq
@@ -1463,6 +1885,20 @@ RTM (Requirements Traceability Matrix) hər tələbin hansı test case-lərlə y
 | REQ-03 | 5 səhv cəhddən sonra blok | — | Test case yoxdur |
 
 RTM dərhal göstərir ki, REQ-03 üçün test yazılmayıb.
+
+### 10.8. Sprint ortasında tələb dəyişəndə {#c10x1}
+
+Proqramçı deyir: “Product Owner dəyişdi, promo kod indi yalnız bir dəfə işləyir.” Və ya sprintin 8-ci günü Product Owner çatda yeni qayda yazır. Agile dəyişikliyə açıqdır, amma dəyişiklik görünən olmalıdır. Beş addım:
+
+1. **Mənbədən təsdiqlə.** Eşitdiyinə görə testi dəyişmə. Product Owner-dən soruş: “Promo kod yalnız bir dəfə işləyir: düzgün başa düşmüşəm?”
+2. **Tiketi yenilət.** Qəbul meyarları tiketdə dəyişsin. Çatdakı razılığı tiketə bağla.
+3. **Təsiri tap.** RTM və tiket linkləri ilə bax (10.7): hansı test case-lər köhnəlib, hansı “Passed” nəticə artıq keçərli deyil, hansı açıq baq köhnə qaydaya görə yazılıb?
+4. **Yenidən qiymətləndir.** Əlavə iş neçə saatdır? Sprintə sığırmı?
+5. **Komandaya de, qərarı Product Owner-ə burax.** “Bu dəyişiklik 4 saat əlavə edir, SHOP-220-yə vaxt qalmır. Hansını saxlayaq?” Qərar Product Owner-indir.
+
+**Köhnə nəticələr.** Dünən keçmiş test yeni qaydaya görə yenidən işlədilir. Köhnə qaydaya görə yazılmış baq yenilənir və ya bağlanır, səbəbi qeyd olunur.
+
+**Etmə:** susub köhnə tələblə testi bitirmək; tiket dəyişmədən, yalnız çat mesajına görə test case-i dəyişmək; “bu sprintdə dəyişmək olmaz” deyib müzakirəni bağlamaq. Sənin işin dəyişikliyi dayandırmaq yox, onun qiymətini görünən etməkdir.
 
 ### Diqqət: tez-tez edilən səhvlər
 
@@ -1528,16 +1964,20 @@ Test sənədləri yoxlamanı təkrarlana bilən edir: başqa tester də eyni tes
 
 Test planı “nəyi, necə, kim, nə vaxt və nə ilə test edəcəyik?” suallarına cavab verən sənəddir. Adətən QA lead yazır, junior isə oxuyub ona uyğun işləyir.
 
+Plan məqsədə necə və nə vaxt çatacağımızı qeyd edir, komanda və maraqlı tərəflər üçün ünsiyyət vasitəsi olur, testin şirkətin test siyasətinə və strategiyasına uyğun olduğunu göstərir. Planı yazmağın özü də faydalıdır: risklər, cədvəl, adamlar, alətlər və xərc barədə əvvəlcədən düşünməyə məcbur edir.
+
 | Bölmə | Nə yazılır | Misal |
 | --- | --- | --- |
 | Məqsəd | Planın nə üçün olduğu | Mobil bankın 3.2 relizinin testi |
 | Scope (əhatə) | Nə test olunur və nə olunmur | Daxil: köçürmələr, kommunal ödənişlər. Xaric: kredit modulu |
-| Yanaşma | Səviyyələr, növlər, texnikalar | Sistem testi, regression, API testi; EP, BVA |
+| Kontekst və fərziyyələr | Test əsası, məhdudiyyətlər, nəyə güvənirik | Tələb sənədi 3-cü versiya; mühit 1 mayda hazır olacaq |
+| Yanaşma | Səviyyələr, növlər, texnikalar, test data, müstəqillik, toplanacaq metriklər | Sistem testi, regression, API testi; EP, BVA; icra faizi, açıq defektlər |
 | Mühit | Server, cihazlar, brauzerlər | Test serveri; Android və iOS-un son iki versiyası |
-| Rollar | Kim nəyə cavabdehdir | QA lead — plan, 2 tester — icra |
-| Cədvəl | Mərhələlər və müddətlər | Test dizaynı — 2 gün, icra — 5 gün |
+| Rollar | Kim nəyə cavabdehdir, kimə təlim lazımdır | QA lead — plan, 2 tester — icra |
+| Ünsiyyət | Kim, nə vaxt, necə məlumat alır | Hər gün stand-up, həftəlik hesabat |
+| Cədvəl və büdcə | Mərhələlər, müddətlər, xərc | Test dizaynı — 2 gün, icra — 5 gün; 15 adam-gün |
 | Giriş və çıxış meyarları | Nə vaxt başlayır və bitir | Fəsil 4-ə bax |
-| Risklər | Nə pis gedə bilər və ehtiyat planı | Test mühiti gec hazır olarsa, icra 2 gün sürüşür |
+| Risklər (risk reyestri) | Nə pis gedə bilər və ehtiyat planı | Test mühiti gec hazır olarsa, icra 2 gün sürüşür |
 | Nəticələr (deliverables) | Hansı sənədlər hazırlanacaq | Test case-lər, bug report-lar, yekun hesabat |
 
 ### 11.3. Checklist
@@ -1559,6 +1999,10 @@ Checklist — nəyi yoxlamaq lazım olduğunun qısa siyahısıdır. Ətraflı a
 - “Şifrəni unutdum” linki düzgün səhifəni açır
 - Bir neçə səhv cəhddən sonra blok və ya captcha
 - Logout-dan sonra “Geri” düyməsi şəxsi səhifəni açmır
+
+**Checklist test texnikası kimi (checklist-based testing).** Bəndlər təcrübədən, istifadəçi üçün nəyin vacib olduğundan və proqramın niyə sındığını bilməkdən gəlir. Hər bənd ayrıca və birbaşa yoxlanıla bilməlidir, çox vaxt sual kimi yazılır. Bəndlərə bunlar yazılmır: avtomatik yoxlanan şeylər, giriş və ya çıxış meyarı olan şeylər, çox ümumi cümlələr.
+
+Checklist vaxtla gücünü itirir, çünki proqramçılar eyni səhvləri etməməyi öyrənir. Ona görə defekt analizinə əsasən yenilənir, amma şişirdilmir. Ətraflı test case olmayanda istiqamət və müəyyən ardıcıllıq verir. İki tester onu fərqli icra edə bilər: bu, əhatəni artıra, təkrarlanmanı isə azalda bilər.
 
 ### 11.4. Test case nədir
 
@@ -1616,6 +2060,21 @@ Test case — konkret bir yoxlamanın ətraflı təsviridir: ilkin şərtlər, a
 
 Başlanğıc üçün Google Sheets və ya Excel kifayətdir. Şirkətlərdə test idarəetmə alətləri işlədilir: TestRail, Qase, Zephyr və Xray (Jira əlavələri). Hamısının məntiqi eynidir: test case-lər, dəstlər, icra nəticələri və hesabatlar.
 
+Testə kömək edən alətlər məqsədə görə qruplaşdırılır:
+
+| Qrup | Nə üçün | Misal |
+| --- | --- | --- |
+| İdarəetmə | Tələb, test, defekt və konfiqurasiyanı izləmək | Jira, TestRail, Qase |
+| Statik test | Review və statik analiz | ESLint, SonarQube |
+| Test dizaynı və implementasiyası | Test case, test data və prosedur yaratmaq | Faker, Playwright codegen |
+| İcra və əhatə | Testi avtomatik icra etmək, əhatəni ölçmək | Playwright, Cypress, Istanbul |
+| Qeyri-funksional | Əllə çətin və ya mümkün olmayan yoxlamalar | k6, JMeter, Lighthouse |
+| DevOps | Pipeline, avtomatik build, CI/CD | GitHub Actions, Jenkins |
+| Əməkdaşlıq | Ünsiyyəti asanlaşdırmaq | Slack, Microsoft Teams, Confluence |
+| Miqyas və yerləşdirmə | Eyni mühiti tez qurmaq | Docker, virtual maşınlar |
+
+Testə kömək edən hər şey alətdir, hətta cədvəl proqramı da.
+
 ### 11.9. Test qiymətləndirməsi (estimation) {#c11x1}
 
 “Bu funksiyanın testi nə qədər vaxt aparacaq?” — planlamada ən çox verilən sualdır. Dörd əsas üsul var:
@@ -1637,8 +2096,8 @@ Qiymətə təsir edən amillər: məhsulun mürəkkəbliyi və riski, tələblə
 
 **Risk** gələcəkdə baş verə biləcək və mənfi nəticəsi olan hadisədir. Onun iki atributu var: **ehtimal (likelihood)** və **təsir (impact)**. **Risk səviyyəsi = ehtimal × təsir.**
 
-- **Məhsul riskləri (product risks)** məhsulun keyfiyyəti ilə bağlıdır: funksiya düzgün işləmir, ödəniş iki dəfə çıxılır, səhifə yavaş açılır, data sızır. Bunları test azaldır.
-- **Layihə riskləri (project risks)** layihənin idarəsi ilə bağlıdır: mühit gec hazır olur, tester xəstələnir, tələblər tez-tez dəyişir, büdcə azalır. Bunlar test planının “Risklər” bölməsinə yazılır (11.2).
+- **Məhsul riskləri (product risks)** məhsulun keyfiyyəti ilə bağlıdır: funksiya düzgün işləmir, ödəniş iki dəfə çıxılır, səhifə yavaş açılır, data sızır. Nəticəsi: narazı istifadəçilər, pul və reputasiya itkisi, baxım xərci, cərimələr, ağır hallarda insan sağlamlığına zərər. Bunları test azaldır.
+- **Layihə riskləri (project risks)** layihənin idarəsi ilə bağlıdır və cədvələ, büdcəyə, scope-a təsir edir. Dörd qrupa bölünür: təşkilati (iş gec çatır, qiymət səhvdir, xərc azaldılır), insan (bacarıq və ya adam çatmır, ünsiyyət problemi), texniki (scope böyüyür, alət zəifdir) və təchizatçı (xarici şirkət işi vaxtında vermir, bağlanır). Bunlar test planının “Risklər” bölməsinə yazılır (11.2).
 
 **Məhsul risk analizi** iki addımdır: əvvəl riskləri **müəyyənləşdirmək** (beyin fırtınası, keçmiş defektlər, tələblərin review-u, istifadəçi şikayətləri), sonra hər birini **qiymətləndirmək** — ehtimal və təsiri, məsələn, 1–3 şkalası ilə.
 
@@ -1649,15 +2108,48 @@ Qiymətə təsir edən amillər: məhsulun mürəkkəbliyi və riski, tələblə
 | “Haqqımızda” səhifəsində orfoqrafik səhv | 3 | 1 | 3 — orta |
 | Profil şəkli yüklənmir | 2 | 1 | 2 — aşağı |
 
-**Riskə cavab (risk control):** testlə azaltmaq (daha çox və daha dərin test, erkən test, daha müstəqil tester), qəbul etmək, başqasına ötürmək (məsələn, xarici xidmətə və ya sığortaya) və ehtiyat plan hazırlamaq. Risklər layihə boyu izlənir: yeniləri yaranır, köhnələri azalır.
+Rəqəm əvəzinə matris də işlədilir: ehtimal və təsir “aşağı, orta, yüksək” kimi qiymətləndirilir, kəsişdiyi xana səviyyəni verir.
+
+| Ehtimal \ Təsir | Aşağı | Orta | Yüksək |
+| --- | --- | --- | --- |
+| Yüksək | Orta | Yüksək | Yüksək |
+| Orta | Aşağı | Orta | Yüksək |
+| Aşağı | Aşağı | Aşağı | Orta |
+
+**Risk analizinin nəticəsi** bunları müəyyən edir: testin həddi (scope); test səviyyələri və növləri; texnikalar və əhatə səviyyəsi; hər tapşırığın qiyməti; icra sırası; testdən başqa tədbir lazım olub-olmadığı.
+
+**Məhsul riskinə nəzarət (product risk control)** iki hissədir. **Riskin azaldılması (risk mitigation)** — planlaşdırılmış tədbirləri görmək. **Riskin izlənməsi (risk monitoring)** — tədbirlərin işlədiyini yoxlamaq, qiymətləndirməni yaxşılaşdırmaq və yeni riskləri görmək.
+
+**Riskə cavab variantları:** testlə azaltmaq (mitigation by testing), qəbul etmək (risk acceptance), başqasına ötürmək (risk transfer, məsələn, xarici xidmətə və ya sığortaya) və ehtiyat plan (contingency plan).
+
+**Testlə azaltmaq** belə olur: riskə uyğun təcrübəli tester seçmək; lazımi müstəqillik; review və statik analiz; uyğun texnika və əhatə səviyyəsi; riskli keyfiyyət xüsusiyyətinə uyğun test növü; dinamik test, o cümlədən regression.
 
 **Test case-lərin prioritetləşdirilməsi:**
 
 - **Riskə görə** — ən yüksək riskli sahələrin testləri birinci;
-- **Əhatəyə görə (coverage)** — ən çox əhatə verən testlər birinci, məsələn, ən çox tələbi yoxlayan;
-- **Tələblərə görə** — biznes üçün ən vacib tələblərin testləri birinci.
+- **Əhatəyə görə (coverage)** — ən çox əhatə verən testlər birinci. Variantı, əlavə əhatə (additional coverage): birinci ən çox əhatə verən, sonra ən çox yeni əhatə gətirən test;
+- **Tələblərə görə** — biznes üçün ən vacib tələblərin testləri birinci. Tələblərin prioritetini maraqlı tərəflər verir.
 
-Asılılıqlar da nəzərə alınır: login testi ödəniş testindən əvvəl icra olunmalıdır. Vaxt çatmayanda (21.6) risk əsaslı seçim tester-in ən güclü arqumentidir.
+Asılılıqlar sıranı dəyişir: yüksək prioritetli test aşağı prioritetli testdən asılıdırsa, əvvəl aşağı prioritetli icra olunur, məsələn, login testi ödəniş testindən əvvəl. Resurslar da nəzərə alınır: alət, mühit və ya adam yalnız müəyyən vaxtda əlçatan ola bilər. Vaxt çatmayanda (21.6) risk əsaslı seçim tester-in ən güclü arqumentidir.
+
+### 11.11. Komandanın yaddaşı: wiki {#c11x3}
+
+Komandanın bildikləri çatda itir. Ona görə çox şirkətdə wiki olur: Confluence, Notion, GitHub Wiki və s. Məntiq eynidir.
+
+| Səhifə | İçində nə olur |
+| --- | --- |
+| Mühitlər | Ünvanlar, kim deploy edir, build nömrəsi harada görünür (4.8) |
+| Test hesabları və data | Hansı hesab nə üçündür. Şifrələrin özü wiki-yə yazılmır: onlar şifrə menecerində saxlanılır |
+| Necə edilir | Mühiti qurmaq, test ödənişi etmək, loglara baxmaq |
+| Bilinən problemlər (known issues) | Hələ açıq olan və ya baq sayılmayan hallar |
+| Qərarlar | “Promo kod yalnız bir dəfə işləyir. Product Owner, 12 mart”, tiket linki |
+| Şablonlar | Bug report, test case, yekun hesabat |
+
+Üç vərdiş:
+
+1. **Soruşmazdan əvvəl axtar.** Tapmadınsa, “wiki-də baxdım, tapmadım” de.
+2. **Cavabı alanda yaz.** Bir dəfə soruşulan sual növbəti yeni işçi üçün artıq səhifədir.
+3. **Köhnə səhifəni düzəlt.** Düzəldə bilmirsənsə, sahibinə de. Köhnə səhifə olmayan səhifədən pisdir: insanı yanlış yola aparır.
 
 ### Diqqət: tez-tez edilən səhvlər
 
@@ -1734,6 +2226,10 @@ Bug report tester-in əsas məhsuludur: yaxşı yazılmış hesabat defektin tez
 
 Brauzerin dəqiq versiyasını Chrome-da `chrome://version`, Firefox-da `about:support` səhifəsində görə bilərsən.
 
+**Bug report-un üç məqsədi** var: defekti həll edənlərə kifayət qədər məlumat vermək; məhsulun keyfiyyətini izləmək; inkişaf və test prosesini yaxşılaşdırmaq üçün ideya vermək.
+
+ISTQB daha bu sahələri də sayır: tarix, müəllif və onun rolu, status, test obyekti, kontekst (hansı test case, hansı test fəaliyyəti, SDLC mərhələsi, texnika, data) və istinadlar (məsələn, test case-ə link). Jira ID-ni, tarixi, müəllifi və ilkin statusu özü doldurur, qalanını sən yazırsan.
+
 ### 12.2. Yaxşı başlığın formulu
 
 Formul: **\[harada\] + \[nə baş verir\] + \[hansı şərtdə\]**.
@@ -1795,6 +2291,8 @@ Hər defekt müəyyən statuslardan keçir. Statuslar şirkətdən şirkətə bi
 | Deferred | Sonrakı relizə saxlanılıb | PO |
 | Cannot Reproduce | Proqramçı defekti təkrarlaya bilmədi | Proqramçı |
 
+Statuslar arxasında ümumi proses var: qeydə almaq, analiz edib təsnif etmək, cavab qərarı vermək (düzəltmək və ya olduğu kimi saxlamaq), bağlamaq. Analizdən sonra məlum ola bilər ki, qeydə alınan anomaliya real defekt deyil: yalançı həyəcan (false positive) və ya dəyişiklik sorğusu (change request) imiş.
+
 ### 12.7. Tester-in davranış qaydaları
 
 - **Yazmazdan əvvəl axtar:** bu defekt artıq yazılıbmı? Dublikat hamının vaxtını alır.
@@ -1834,6 +2332,68 @@ Bu sorğu SHOP layihəsindəki açıq baqları prioritetə görə sıralayır. D
 - `issuetype = Bug AND priority = Highest AND status != Closed` — bağlanmamış ən yüksək prioritetli baqlar.
 
 Praktika üçün Jira-nın pulsuz planı ilə öz sınaq layihəni aç və bu fəslin tapşırıqlarını orada yaz. Alternativlər: Azure DevOps, YouTrack, Linear, GitHub Issues — məntiq eynidir.
+
+### 12.10. Story-nin yolu: Ready for QA-dan Done-a {#c12x1}
+
+12.6 defektin yoludur. Story-nin də yolu var. Tipik lövhə: To Do → In Progress → Code Review → Ready for QA → In QA → Done. Sütun adları komandadan asılıdır.
+
+**1. Götürməzdən əvvəl yoxla.** Build mənim mühitimdədirmi? Qəbul meyarları varmı? Proqramçının qeydi varmı: nə dəyişib, nəyə diqqət etmək lazımdır, hansı data lazımdır? Asılı tapşırıqlar bitibmi? Bir şey çatmırsa, proqramçıya yaz, story-ni In QA-ya keçirmə.
+
+**2. Test et.** Story-ni In QA-ya keçir ki, görünsün. Qəbul meyarlarını və öz test ideyalarını (neqativ, sərhəd) yoxla.
+
+**3. Baq tapdın: nə etmək?**
+
+| Hal | Nə edirsən |
+| --- | --- |
+| Qəbul meyarı pozulub, story bu halda buraxıla bilməz | Bug yaz, story-yə bağla (“is blocked by”), story-ni proqramçıya qaytar |
+| Kiçik problem, qəbul meyarına toxunmur | Ayrı Bug yaz, story-yə bağla (“relates to”). Story davam edə bilər, prioriteti Product Owner seçir |
+| Tapıntı yeni tələbə bənzəyir | Baq olmaya bilər: Product Owner-dən soruş, lazım olsa yeni story açılır |
+
+Komandaların qaydası fərqlidir: bəziləri story-ni geri keçirir, bəziləri In QA-da saxlayıb baqı gözləyir. İlk həftə soruş. Geri qaytaranda səbəbi yaz: hansı meyar, hansı build, hansı baq.
+
+**4. Bitirəndə şərh yaz.** “Test edildi” heç nə demir.
+
+```text
+Test edildi: build 3.2.1, test mühiti, Chrome 141 və Android 14.
+Data: standard_user, TEST10 promo kodu.
+Yoxlanıb: qəbul meyarları 1–4, boş və yanlış kod, ikinci dəfə tətbiq.
+Yoxlanmayıb: Safari (cihaz yoxdur).
+Baqlar: SHOP-240 (Minor, açıq; relizə mane olmur, Product Owner razıdır).
+Nəticə: Done-a keçirirəm.
+```
+
+Bu şərh sənin sığortandır: iki həftə sonra soruşulanda nəyi yoxladığını dəqiq göstərir.
+
+### 12.11. Bug triage: baqlar kimin qərarı ilə düzəlir {#c12x2}
+
+**Triage** yeni baqlara baxıb qərar verməkdir: bu baqdırmı, nə qədər ciddidir, kim və nə vaxt düzəldəcək? Görüş şəklində olur (Product Owner, texniki lider, QA lead, bəzən tester) və ya QA lead hər gün özü baxır. Severity-ni adətən tester təyin edir (triage-da dəyişə bilər), priority-ni isə adətən Product Owner və ya menecer qoyur (12.3–12.5).
+
+| Baq | Qərar | Niyə |
+| --- | --- | --- |
+| Ödəniş iki dəfə çıxılır (canlıda) | İndi düzəlsin, hotfix | Pul itkisi |
+| Promo kod məbləği yeniləmir | Bu sprintdə | Kampaniyaya mane olur, canlıda hələ yoxdur |
+| Profil şəkli 2 piksel sürüşüb | Deferred | Təsiri çox azdır |
+| Dəstəklənməyən köhnə brauzerdə düymə görünmür | Rejected | Tələbdən kənardır |
+| Login-də 500 xətası | Duplicate | SHOP-180 artıq açıqdır |
+
+**Baqı necə təqdim etmək.** Üç şey de: təsir, tezlik, müvəqqəti həll.
+
+> SHOP-318: promo kod tətbiq olunanda məbləğ yenilənmir. Hər dəfə təkrarlanır, kod işlədən bütün müştərilərə təsir edir. Müvəqqəti həll yoxdur. Tövsiyəm: relizdən əvvəl düzəltmək.
+
+**Qərar sənin istədiyin kimi olmayanda.** Fakt əlavə etmək istəyirsənsə, bir dəfə de. Sonra qərarı tiketdə qeyd et və davam et. Prioritet biznes qərarıdır. Sənin işin riskin görünməsidir, mübahisəni udmaq yox.
+
+### 12.12. Canlıda baq çıxanda {#c12x3}
+
+Dəstək yazır: “Müştərilər ödəyə bilmir.” Canlıda xidmətin pozulmasına **incident** deyilir. Addımlar:
+
+1. **Ciddiliyini anla.** Neçə müştəri, hansı funksiya, pul və ya data itkisi varmı? Kritikdirsə, dərhal QA lead-ə və komanda kanalına yaz. Tək başına həll etməyə çalışma.
+2. **Təkrarla.** Əvvəl test mühitində və staging-də. Canlıda yalnız icazə ilə və test hesabı ilə (4.8). Müştərinin hesabına girmə, real əməliyyat etmə.
+3. **Bug report yaz.** Müraciətin linki, müraciət sayı, təsir, vaxt, build, müvəqqəti həll.
+4. **Düzəlişi yoxla.** Hotfix addımları (4.10), deploy-dan sonra canlıda smoke.
+5. **Testi əlavə et.** Bu baq üçün test case və ya avtomatik test yaz, regression dəstinə sal.
+6. **Nəticə çıxar.** Niyə tapılmadı? Tələbdə yox idi, test mühitinin datası fərqli idi, risk aşağı qiymətləndirilmişdi? Bu təhlilə postmortem deyilir və günahkar axtarmaq üçün deyil, prosesi yaxşılaşdırmaq üçündür (blameless).
+
+**Baq sənin yoxladığın yerdədirsə.** Bəhanə gətirmə, özünü də günahlandırma. Belə de: “Bu halı yoxlamamışam. Test case-ə əlavə etdim, oxşar sahələri bu gün yoxlayıram.” Test defektin yoxluğunu sübut etmir (Prinsip 1), amma nəticə çıxarmaq sənin işindir.
 
 ### Diqqət: tez-tez edilən səhvlər
 
@@ -3375,6 +3935,26 @@ Avtomatlaşdırma təkrarlanan yoxlamaları koda tapşırmaqdır: regression tes
 
 Kobud qayda: test dəfələrlə təkrarlanacaqsa və funksiya sabitdirsə, avtomatlaşdırmağa namizəddir.
 
+**Alətin və avtomatlaşdırmanın faydaları:**
+
+- Təkrarlanan işdə vaxt qənaəti: regression, eyni datanın yazılması, nəticələrin müqayisəsi.
+- Sadə insan səhvlərinin azalması: hər dəfə eyni addımlar, eyni sıra.
+- Obyektiv ölçülər (məsələn, əhatə) və insanın çətin hesablayacağı rəqəmlər.
+- Test statistikasına asan giriş: gedişat, defekt sayı, icra vaxtı.
+- Qısa icra, tez rəy, tez reliz.
+- Tester-in yeni və daha dərin testlər üçün vaxtının qalması.
+
+**Riskləri:**
+
+- Alətdən real olmayan gözlənti.
+- Alətin tətbiqi, skriptlərin baxımı və prosesin dəyişməsi üçün vaxtın və xərcin az hesablanması.
+- Manual testin daha uyğun olduğu yerdə alət işlətmək.
+- Alətə həddən artıq güvənmək, insanın tənqidi düşüncəsini unutmaq.
+- Satıcıdan asılılıq: şirkət bağlana, aləti dayandıra, başqasına sata və ya zəif dəstək verə bilər.
+- Açıq mənbəli alətin tərk edilməsi və ya komponentlərinin tez-tez yenilənmə tələb etməsi.
+- Alətin inkişaf platforması ilə uyğun gəlməməsi.
+- Qanuni tələblərə və ya təhlükəsizlik standartlarına uyğun olmayan alət seçmək.
+
 ### 19.2. Test piramidası
 
 &#91;embedded content: test piramidası · 3 səviyyə\]
@@ -3678,7 +4258,7 @@ test('məhsul səbətə əlavə olunur', async ({ inventoryPage }) => {
 
 ### 19.13. Data-driven testlər {#c19x3}
 
-Testin addımları eyni, yalnız dəyərlər fərqlidirsə, onu dəfələrlə köçürmə. **Data-driven test** eyni addımları bir data siyahısı ilə işlədir. EP və BVA ilə seçdiyin dəyərlər (Fəsil 5) burada birbaşa cədvələ çevrilir.
+Testin addımları eyni, yalnız dəyərlər fərqlidirsə, onu dəfələrlə köçürmə. **Data-driven test** eyni addımları bir data siyahısı ilə işlədir. EP və BVA ilə seçdiyin dəyərlər (Fəsil 8) burada birbaşa cədvələ çevrilir.
 
 ```javascript
 import { test, expect } from '@playwright/test';
@@ -4551,6 +5131,47 @@ ISTQB Certified Tester Foundation Level (CTFL) tester-lər üçün ən tanınan 
 - İxtisaslaşma seç: performans testi (k6, JMeter), mobil avtomatlaşdırma (Appium), təhlükəsizlik əsasları, oyun testi.
 - İngilis dilini inkişaf etdir: sənədlər və icma əsasən ingiliscədir.
 
+### 21.11. İşdə ilk 30 gün {#c21x1}
+
+Təklifi qəbul etdin, işə başladın. Sınaq müddətində səndən hər şeyi bilmək gözlənilmir. Gözlənilən: tez öyrənmək, dediyini etmək, aydın danışmaq, qeyd aparmaq.
+
+| Vaxt | Nə et | Nəticə |
+| --- | --- | --- |
+| 1-ci həftə | Girişlər: Jira, wiki, mühitlər, çat. Məhsulu istifadəçi kimi işlət. Açıq və köhnə baqları oxu. Həmkarın işinə bax | Qeyd dəftərin, mühit cədvəlin (4.8), “kimdən soruşum” siyahın |
+| 2-ci həftə | Mövcud test case-ləri icra et, ilk bug report-larını QA lead-ə göstər, stand-up-da qısa danış | İlk baqlar, köhnəlmiş test case-lərin düzəlişi |
+| 3-cü həftə | Kiçik bir story götür: suallardan Done şərhinə qədər (12.10) | İlk tam story |
+| 4-cü həftə | Daha böyük story və ya bir sahəyə cavabdehlik. Rəhbərlə rəy söhbəti: nə yaxşıdır, nəyi dəyişim? | Növbəti ay üçün plan |
+
+**Kömək istəmək.** Qayda: bir mövzuda 15–30 dəqiqə özün çalış, sonra soruş. Bloklanmısansa, gözləmə (4.9). Sualda üç şey yaz: nə etmək istəyirəm, nə sınadım, nə gözləyirəm.
+
+```text
+Salam! SHOP-214-ü test edirəm. Promo kod səhifəsi test mühitində menyuda görünmür.
+Wiki-yə baxdım, standard_user və admin ilə yoxladım.
+Bu funksiya üçün xüsusi hesab lazımdır?
+```
+
+**Gecikəcəyini vaxtında de.**
+
+```text
+Salam! SHOP-220-ni bu gün bitirəcəyimi demişdim, amma bitməyəcək: mühit 3 saat işləmədi.
+Sabah saat 12:00-a qədər bitirəcəyəm. Relizə təsir edirsə, birlikdə baxaq.
+```
+
+**İşinə baxış istə.**
+
+```text
+Salam! Promo kod üçün 8 test case yazdım (link).
+15 dəqiqə vaxtın olanda baxa bilərsən? Xüsusən neqativ hallardan əmin deyiləm.
+```
+
+**İlk ayda etmə:**
+
+- Soruşmaqdan qorxub susma: səhv yolda bir gün itirmək bir sualdan bahadır.
+- Eyni sualı iki dəfə vermə: cavabı wiki-yə və ya qeydlərinə yaz (11.11).
+- Canlı mühitdə sınama (4.8).
+- “Bizdə əvvəlki yerdə belə idi” deyib prosesi dərhal dəyişmək istəmə: əvvəl niyə belə olduğunu öyrən.
+- Özünü başqaları ilə müqayisə edib ruhdan düşmə: bir ayda hər şeyi bilən yoxdur.
+
 ### Diqqət: tez-tez edilən səhvlər
 
 - **Portfolio-suz müraciət etmək.** “Öyrənmişəm” sözünün sübutu olmalıdır.
@@ -4602,14 +5223,17 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | API | Proqram interfeysi | Proqramların bir-biri ilə danışma qaydası | 15 |
 | Assertion | Yoxlama ifadəsi | Kodda gözlənilən nəticəni yoxlayan sətir (expect) | 15, 19 |
 | ATDD | Qəbul testi ilə idarə olunan inkişaf | Qəbul meyarlarından koddan əvvəl testlər yazmaq | 3 |
+| Backlog refinement | Backlog-un dəqiqləşdirilməsi | Story-lərin sprintdən əvvəl oxunması, aydınlaşdırılması və qiymətləndirilməsi | 3 |
 | BDD | Davranışla idarə olunan inkişaf | Davranışı Given–When–Then ilə təsvir edib avtomatlaşdırmaq | 3, 10 |
 | Black box testing | Qara qutu testi | Kodu bilmədən, giriş və çıxışa görə test | 7 |
 | Blocker | Bloklayıcı defekt | İşi və testi tamamilə dayandıran defekt | 12 |
 | Boundary Value Analysis (BVA) | Sərhəd dəyərlərinin analizi | Sərhədləri və qonşu dəyərləri yoxlamaq | 8 |
 | Branch | Budaq | Git-də paralel iş xətti | 20 |
+| Branch coverage | Budaq əhatəsi | İşə düşən budaqların bütün budaqlara faizi | 7 |
 | Bug / Defect | Baq / defekt | Kodda və ya sənəddə qüsur | 1 |
 | Bug life cycle | Defektin həyat dövrü | Defektin keçdiyi statuslar | 12 |
 | Bug report | Defekt hesabatı | Defekt haqqında sənəd | 12 |
+| Bug triage | Baqların triajı | Yeni baqlara baxıb qərar vermək: nə qədər ciddidir, kim, nə vaxt düzəldəcək | 12 |
 | Build | Yığım | Proqramın test üçün hazırlanmış versiyası | 6 |
 | Checklist | Yoxlama siyahısı | Yoxlanacaq bəndlərin qısa siyahısı | 11 |
 | CI/CD | Davamlı inteqrasiya və çatdırılma | Hər dəyişiklikdən sonra avtomatik build, test və yerləşdirmə | 20 |
@@ -4624,10 +5248,12 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | Decision table | Qərar cədvəli | Şərt kombinasiyalarını və nəticələri göstərən cədvəl | 9 |
 | Defect clustering | Defektlərin qruplaşması | Defektlərin az sayıda modulda toplanması | 2 |
 | Definition of Done (DoD) | “Hazır” anlayışı | Tapşırığın bitmiş sayılması şərtləri | 3 |
+| Definition of Ready | “Başlamağa hazır” anlayışı | Story-nin işə götürülməsi üçün ödənməli şərtlər; Agile-da giriş meyarı | 3 |
 | Deployment | Yerləşdirmə | Məhsulun serverə və istifadəçilərə çatdırılması | 3 |
 | DevOps | DevOps | İnkişaf və istismar komandalarının birgə, avtomatik işləməsi | 3, 20 |
 | DevTools | Tərtibatçı alətləri | Brauzerin daxili analiz alətləri (F12) | 13 |
 | Duplicate | Dublikat | Artıq yazılmış defektin təkrarı | 12 |
+| Each Choice coverage | Hər seçim əhatəsi | Hər parametrin hər sinfinin ən azı bir dəfə işə düşməsi; kombinasiyalar sayılmır | 8 |
 | End-to-end (E2E) testing | Uçdan-uca test | Real istifadəçi ssenarisinin tam yoxlanması | 6 |
 | Endpoint | Endpoint | API-də resursun ünvanı | 15 |
 | Entry / Exit criteria | Giriş / çıxış meyarları | Mərhələnin başlama və bitmə şərtləri | 4 |
@@ -4642,7 +5268,9 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | Flaky test | Qeyri-sabit test | Kod dəyişmədən bəzən keçən, bəzən düşən test | 19 |
 | Functional testing | Funksional test | Sistemin nə etdiyinin yoxlanması | 6 |
 | Gherkin | Gherkin | Given–When–Then formatlı ssenari dili | 10 |
+| Go/No-Go | Buraxılış qərarı | Relizin buraxılıb-buraxılmamasına dair görüş və qərar | 4 |
 | Grey box testing | Boz qutu testi | Qismən daxili biliklə test | 7 |
+| Hotfix | Təcili düzəliş | Canlıdakı ciddi problem üçün tez buraxılan kiçik dəyişiklik | 4 |
 | HTTP status code | Status kodu | Sorğunun nəticəsini bildirən 3 rəqəmli kod | 13 |
 | Impact analysis | Təsir analizi | Dəyişikliyin sistemin hansı hissələrinə toxunduğunu müəyyən etmək | 5 |
 | Independence of testing | Testin müstəqilliyi | Testi müəllifdən başqasının aparması | 1 |
@@ -4672,6 +5300,7 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | Retrospective | Retrospektiv | Komandanın prosesi yaxşılaşdırmaq üçün sprintin sonunda geriyə baxışı | 3 |
 | Review | Nəzərdən keçirmə (review) | İş məhsulunu işə salmadan oxuyub defekt axtarmaq | 7 |
 | Risk level | Risk səviyyəsi | Riskin ehtimalı ilə təsirinin hasili | 11 |
+| Rollback | Geri qaytarma | Yeni versiyanı götürüb əvvəlki versiyanı qaytarmaq | 4 |
 | Root cause | Kök səbəb | Səhvin baş verməsinin əsas səbəbi | 1 |
 | RTM | Tələblərin izlənmə matrisi | Tələblər ilə test case-lərin əlaqə cədvəli | 10 |
 | Sanity testing | Sanity test | Konkret dəyişikliyin dar və dərin yoxlanması | 6 |
@@ -4684,14 +5313,17 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | SQL | SQL | Verilənlər bazası ilə işləmək dili | 16 |
 | Staging | Staging | İstehsala ən yaxın test mühiti | 20 |
 | State transition testing | Vəziyyət keçidləri testi | Vəziyyətlərin və onlar arası keçidlərin yoxlanması | 9 |
+| Statement coverage | Operator əhatəsi | İşə düşən icra olunan operatorların bütün operatorlara faizi | 7 |
 | Static testing | Statik test | Proqramı işə salmadan yoxlama (review) | 7 |
 | STLC | Testin həyat dövrü | Test işinin mərhələləri | 4 |
 | Storage state | Giriş vəziyyəti | Fayla yazılan cookie və localStorage: testlər daxil olmuş halda başlayır | 19 |
 | Stress testing | Stress testi | Limitdən yuxarı yükdə davranışın yoxlanması | 6 |
 | System testing | Sistem testi | Bütöv sistemin yoxlanması | 5 |
 | TDD | Testlə idarə olunan inkişaf | Əvvəl unit test, sonra onu keçirən kod: qırmızı → yaşıl → refaktor | 3 |
+| Test basis | Test əsası | Testin çıxarıldığı mənbə: tələblər, user story, dizayn, kod | 4 |
 | Test case | Test case (test keysi) | Konkret yoxlamanın addımları və gözlənilən nəticəsi | 11 |
 | Test completion report | Yekun test hesabatı | Mərhələnin və ya relizin sonunda nəticələr, qalan risklər və dərslər | 4 |
+| Test condition | Test şərti | Test olunacaq şey; “nə yoxlanılır” sualının cavabı | 4 |
 | Test data | Test məlumatları | Testlərdə işlədilən məlumatlar | 11 |
 | Test plan | Test planı | Nəyin, necə və kim tərəfindən test olunacağı | 11 |
 | Test scenario | Test ssenarisi | Nəyin test olunacağının yüksək səviyyəli təsviri | 11 |

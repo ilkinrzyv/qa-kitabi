@@ -73,7 +73,7 @@
   },
   "c1t2": {
     "h": "Üç sual ver: səhvin qarşısını alan qayda nədir, hazır işi kim yoxlayır, yoxlayanda konkret hansı hərəkəti edir?",
-    "a": "Mümkün cavablardan biridir, sənin analogiyan fərqli ola bilər. Kitab nəşri üzərindən:\n\n- **QA (proses, qarşısını almaq):** nəşriyyat qayda qoyur: hər kitab iki redaktordan keçir, orfoqrafiya lüğəti və üslub bələdçisi var, müəlliflərə əvvəlcədən təlimat verilir. Məqsəd səhvin ümumiyyətlə yaranmamasıdır.\n- **QC (məhsul, aşkar etmək):** çapdan əvvəl korrektor hazır kitabı yoxlayır, hazır nüsxədə səhifələrin sırasına baxılır.\n- **Testing (QC-nin konkret hərəkəti):** korrektor səhifəni oxuyur, sözləri lüğətlə tutuşdurur, tapdığı səhvi qeyd edir.\n\nƏlaqə: testing QC-nin içindədir, QC isə QA-nın qurduğu sistemin bir hissəsidir. Eyni səhv tez-tez çıxırsa, QA qaydanı dəyişir.",
+    "a": "Mümkün cavablardan biridir, sənin analogiyan fərqli ola bilər. Kitab nəşri üzərindən:\n\n- **QA (proses, qarşısını almaq):** nəşriyyat qayda qoyur: hər kitab iki redaktordan keçir, orfoqrafiya lüğəti və üslub bələdçisi var, müəlliflərə əvvəlcədən təlimat verilir. Məqsəd səhvin ümumiyyətlə yaranmamasıdır.\n- **QC (məhsul, aşkar etmək):** çapdan əvvəl korrektor hazır kitabı yoxlayır, hazır nüsxədə səhifələrin sırasına baxılır.\n- **Testing (QC-nin konkret hərəkəti):** korrektor səhifəni oxuyur, sözləri lüğətlə tutuşdurur, tapdığı səhvi qeyd edir.\n\nƏlaqə: testing QC-nin əsas formasıdır. QA və QC ayrı yanaşmalardır, amma bir-birindən istifadə edir: eyni səhv tez-tez çıxırsa, QA qaydanı dəyişir.",
     "c": [
       "QA qarşısını alan qayda və ya prosesdir, hazır işin yoxlanması deyil",
       "QC hazır məhsulu yoxlayır, testing onun konkret hərəkətidir",
@@ -99,7 +99,7 @@
     ]
   },
   "c1q1": {
-    "a": "İç-içədirlər. **Testing** QC-nin konkret hərəkətidir: yoxla, müqayisə et, qeyd et. **QC** hazır məhsulda defektləri aşkar edir. **QA** isə bütün prosesi qurur ki, səhv ümumiyyətlə az yaransın. Yəni QA prosesə, QC məhsula baxır, testing isə QC-nin alətidir.",
+    "a": "**Testing** QC-nin əsas formasıdır: yoxla, müqayisə et, qeyd et. **QC** hazır məhsulda defektləri aşkar edir və düzəltdirir. **QA** isə prosesi elə qurur ki, səhv az yaransın. QA və QC iki ayrı yanaşmadır: QA prosesə, QC məhsula baxır. Test nəticələri ikisinə də lazımdır.",
     "c": [
       "QA proses və qarşısını almaqdır",
       "QC məhsul və aşkar etməkdir",

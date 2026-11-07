@@ -234,3 +234,33 @@ Jira + Xray/Zephyr və ya TestRail-də test case-i story-yə “link” edəndə
 5. **Nəticə:** RTM həm testsiz tələbi (REQ-3), həm də natamam əhatəni (REQ-2) göstərdi.
 @növbən
 Login funksiyası üçün 4 tələb və 6 test case uydur, RTM qur. Bir tələbi qəsdən testsiz, birini natamam əhatəli burax və RTM-də bunların necə göründüyünü izah et.
+
+=== c10x1
+@qısa
+Tələb sprint ortasında dəyişəndə: mənbədən təsdiqlə, tiketi yenilət, təsiri tap, yenidən qiymətləndir, komandaya de. Dəyişikliyi dayandırmaq sənin işin deyil, onun qiymətini görünən etmək sənin işindir.
+@yadda
+- Çat mesajı tələb deyil: razılıq tiketə bağlanır.
+- Dünənki “Passed” yeni qaydaya görə köhnəlmiş ola bilər.
+- Nəyin sığmadığını de, qərar Product Owner-indir.
+@dərin
+### “Proqramçı dedi” niyə kifayət deyil
+Proqramçı düzgün eşitmiş ola bilər, amma qayda Product Owner-ə aiddir. Şifahi dəyişiklik itir: iki həftə sonra heç kim niyə belə olduğunu xatırlamır. Bir cümləlik təsdiq sonrakı mübahisəni aradan qaldırır.
+
+### Təsiri necə tapmaq
+RTM varsa, tələbin sətrinə bax (10.7). Yoxdursa, tiketə bağlı test case-lərə və baqlara bax, ardınca funksiyaya toxunan digər yerlərə: promo kod dəyişirsə, səbət, sifariş, e-poçt, hesabat.
+
+### Sprint məqsədi təhlükədədirsə
+Scrum-da sprint məqsədini təhlükəyə salan dəyişiklik edilmir, scope isə Product Owner və komanda arasında yenidən danışıla bilər. Tester bu söhbət üçün rəqəm gətirir: neçə saat, nə sığmır.
+
+### Bu, dəyişiklikdir, yoxsa baq?
+Proqramçı kodu fərqli yazıb və “tələb belədir” deyirsə, əvvəl yazılı tələbə bax. Yazılı tələb fərqlidirsə, ya baqdır, ya dəyişiklik: Product Owner-dən soruşmadan heç biri deyil.
+@nümunə
+**Tapşırıq.** Sprintin 8-ci günü. Proqramçı: “PO dedi, endirim artıq 20% yox, 15%-dir.” Sənin 6 test case-in var, 4-ü dünən keçib, bir açıq baq “20%-dən az hesablayır” deyir. Nə edirsən?
+@addımlar
+1. **Təsdiqlə:** Product Owner-ə yaz: “Endirim 15%-dir, düzgün başa düşmüşəm?”
+2. **Tiketi yenilət:** qəbul meyarı 15% olsun.
+3. **Təsir:** 6 test case-in hamısında gözlənilən nəticəyə bax; dünən keçmiş 4 test yenidən işlədilməlidir.
+4. **Baq:** “20%-dən az” artıq keçərli deyil: yenilə və ya səbəblə bağla.
+5. **Qiymət və xəbər:** “Retest 2 saat aparacaq, bu sprintə sığır.”
+@növbən
+Sprintin 9-cu günü Product Owner çatda yazır: “Sifarişə 3 yeni ödəniş üsulu da əlavə edək.” Sən bu story-ni bu gün bitirməli idin. Nə cavab yazarsan? Addımlarını və mesajının mətnini yaz.

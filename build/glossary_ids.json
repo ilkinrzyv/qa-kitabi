@@ -111,5 +111,16 @@
 "Data-driven test": "g110",
 "Fixture": "g111",
 "Storage state": "g112",
-"Trace viewer": "g113"
+"Trace viewer": "g113",
+"Backlog refinement": "g114",
+"Branch coverage": "g115",
+"Bug triage": "g116",
+"Definition of Ready": "g117",
+"Each Choice coverage": "g118",
+"Go/No-Go": "g119",
+"Hotfix": "g120",
+"Rollback": "g121",
+"Statement coverage": "g122",
+"Test basis": "g123",
+"Test condition": "g124"
 }

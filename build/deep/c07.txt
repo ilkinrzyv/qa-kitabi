@@ -34,7 +34,7 @@ Yaş kalkulyatoru: istifadəçi doğum tarixini daxil edir, sistem yaşı hesabl
 
 === c7s2
 @qısa
-White box testdə kodun içinə baxırıq: testlər kodun yollarını işə salmaq üçün seçilir. Əsas ölçü coverage-dir: statement coverage hər sətrin, branch coverage hər budağın ən azı bir dəfə işə düşdüyünü göstərir.
+White box testdə kodun içinə baxırıq: testlər kodun yollarını işə salmaq üçün seçilir. Əsas ölçü coverage-dir: statement coverage hər icra olunan operatorun, branch coverage hər budağın ən azı bir dəfə işə düşdüyünü göstərir.
 @yadda
 - White box — kodu bilərək, daxili yollara görə test.
 - Branch coverage statement coverage-dən güclüdür.
@@ -50,7 +50,7 @@ function bonus(total) {
   return b;
 }
 ```
-Yalnız `bonus(150)` testi bütün sətirləri işə salır — **statement coverage 100%**. Amma `if`-in “yalan” yolu (100 və ya az) heç vaxt yoxlanmayıb — **branch coverage 50%**. `bonus(50)` əlavə edəndə branch coverage da 100% olur. Buna görə branch coverage statement coverage-i özündə saxlayır, əksi isə doğru deyil.
+Yalnız `bonus(150)` testi bütün operatorları işə salır — **statement coverage 100%**. Amma `if`-in “yalan” yolu (100 və ya az) heç vaxt yoxlanmayıb — **branch coverage 50%**. `bonus(50)` əlavə edəndə branch coverage da 100% olur. Buna görə branch coverage statement coverage-i özündə saxlayır, əksi isə doğru deyil.
 
 ### Coverage-in limiti
 Coverage “kodun yazılmış hissəsi işə düşdümü?” sualına cavab verir. Kodda olmayan, amma olmalı olan davranışı (məsələn, unudulmuş sərhəd qaydası) coverage göstərmir. Bu, “yoxluğun” defektidir — onu black box tutur.
@@ -63,8 +63,8 @@ Kod oxumaq bacarığı tələb olunmur, amma coverage hesabatına baxmaq və pro
 @nümunə
 **Tapşırıq.** Kod: `if (age < 18) { return 'uşaq'; } else if (age < 65) { return 'böyük'; } return 'təqaüdçü';` 100% branch coverage verən minimum test dəstini tap və sərhədlərlə gücləndir.
 @addımlar
-1. **Yolları say:** üç nəticə var — `uşaq`, `böyük`, `təqaüdçü`; hər biri ayrıca budaqdır.
-2. **Minimum dəst:** 10 → uşaq, 30 → böyük, 70 → təqaüdçü — 3 test 100% branch coverage verir.
+1. **Budaqları say:** 2 qərar var (`age < 18` və `age < 65`), hər birinin doğru və yalan çıxışı: cəmi 4 budaq. Kodun üç nəticəsi var: `uşaq`, `böyük`, `təqaüdçü`.
+2. **Minimum dəst:** 10 → uşaq, 30 → böyük, 70 → təqaüdçü. Bu 3 test 4 budağın hamısını işə salır: 100% branch coverage.
 3. **Sərhədlərlə gücləndir:** 17 → uşaq, 18 → böyük, 64 → böyük, 65 → təqaüdçü.
 4. **Nəticə:** coverage yolları əhatə edir, sərhədlər isə `<` ilə `<=` qarışıqlığını tutur — ikisi birlikdə güclüdür.
 @növbən
@@ -281,3 +281,63 @@ Sənəd çox böyükdür, iştirakçılar hazırlaşmayıb, görüş müəllifin
 5. Tapıntılar qeyd olunur, müəllif düzəldir, moderator yenilənmiş sənədə baxıb qəbul edir.
 @növbən
 “Səbətə əlavə et” funksiyasının tələbi yazılıb: “İstifadəçi məhsulu səbətə əlavə edə bilər. Səbət düzgün işləməlidir.” Fərdi review et: ən azı 4 tapıntı və hər biri üçün müəllifə sual yaz.
+
+=== c7x2
+@qısa
+Statement coverage işə düşən operatorların, branch coverage işə düşən budaqların faizidir. 100% branch həmişə 100% statement verir, tərsi yox. White box kod əhatəsini ölçür, amma yazılmamış tələbi tapmır.
+@yadda
+- Faiz = işə düşən / bütün × 100; operator sətirlə eyni deyil.
+- 100% branch → 100% statement; 100% statement → branch yox.
+- Yoxluq defektini (omission) coverage görmür.
+@dərin
+### Minimum test sayını necə tapmaq
+Hər `if`-in iki çıxışı var. Bir test hər `if`-dən bir çıxışla keçir. Ardıcıl iki müstəqil `if` üçün 2 test kifayətdir: biri hər ikisinin doğru, digəri hər ikisinin yalan çıxışı ilə. İç-içə `if` və ya `return` varsa, yolları çəkib say: `if (a) return 1; if (b) return 2; return 3;` üçün 3 test lazımdır.
+
+### Dövrlərdə budaq
+`while`-ın iki çıxışı var: davam etmək və dövrdən çıxmaq. Dövrə bir dəfə girib çıxan bir test ikisini də işlədir, yəni branch coverage üçün kifayətdir. Dövrə heç girməyən hal coverage üçün yox, defekt tapmaq üçün ayrıca yoxlanır.
+
+### Proqramçının coverage hesabatı
+Alətlər (Istanbul, JaCoCo) faizi özü hesablayır, qırmızı sətirləri göstərir. Tester “bu şərtin yalan yolu yoxlanıbmı?” soruşa bilər. Amma faiz məqsəd deyil: 100% olan kodda da defekt ola bilər, çünki kod işə düşüb, nəticə yoxlanmaya bilər.
+
+### Şərtsiz budaqlar haqqında
+Sillabus düz xətt üzrə keçidləri də budaq sayır. Kitabda misalları sadə saxlamaq üçün yalnız şərtli budaqları sayırıq. 100% üçün fərq yoxdur, amma aralıq faizlər fərqlənə bilər, ona görə imtahan sualında budaqların necə verildiyinə bax.
+@nümunə
+**Tapşırıq.** Kod: `let f = 0; if (age < 7) { f = 1; } if (age > 65) { f = 2; } return f;` Yalnız `age = 30` testi varsa, statement və branch coverage neçədir? 100% branch üçün minimum neçə test lazımdır?
+@addımlar
+1. **Operatorlar:** `let`, 1-ci `if`, `f = 1`, 2-ci `if`, `f = 2`, `return`: cəmi 6.
+2. **Budaqlar:** 2 `if`, hərəsinin 2 çıxışı: cəmi 4.
+3. **age = 30:** `let`, iki `if`, `return` işləyir: 4 / 6 ≈ 67%. Hər iki `if`-in yalan çıxışı: 2 / 4 = 50%.
+4. **Hər testin çıxışları:** `age = 5` birinci `if`-in doğru, ikincinin yalan çıxışını işlədir. `age = 70` birincinin yalan, ikincinin doğru çıxışını işlədir.
+5. **Minimum:** bu iki test birlikdə 4 budağın hamısını işə salır: 100% branch üçün 2 test kifayətdir, `age = 30` artıq lazım deyil.
+@növbən
+Kod: `if (total > 100) { d = 10; } else { d = 0; } return total - d;` Yalnız `total = 150` testi varsa, statement və branch coverage neçədir? 100% branch üçün hansı test əlavə olunmalıdır? Sonra `>` əvəzinə `>=` yazılsa, bu iki test onu tutarmı?
+
+=== c7x3
+@qısa
+Statik test oxunan hər şeyə tətbiq olunur və defekti birbaşa tapır, dinamik test isə işləyən məhsulda nasazlığı göstərir. İkisi bir-birini tamamlayır. Maraqlı tərəflərin erkən və tez-tez rəyi yenidən işin və yanlış anlamanın qarşısını alır.
+@yadda
+- Statik defekti birbaşa, dinamik nasazlıq vasitəsilə tapır.
+- Statik baxım rahatlığını, dinamik performansı ölçür.
+- Az rəy: yenidən iş, gecikmə, günahlandırma.
+@dərin
+### Hansı defekti hansı test tapır
+Çatılmayan kodu dinamik test görmür, çünki o heç işə düşmür. Sənəddəki ziddiyyətin də işə düşəsi kodu yoxdur. Əksinə, yaddaş sızması və ya yavaş sorğu kod oxumaqla çətin görünür, işləyəndə isə üzə çıxır.
+
+### Review niyə baha görünür
+Görüş saatları dərhal hiss olunur, qənaət isə sonra və görünməz gəlir: yazılmamış kod, işlədilməmiş test, olmayan hotfix. Ona görə kiçik başla: bir tələbin 30 dəqiqəlik review-u, tapılanları say.
+
+### Rəyi necə tez-tez almaq
+Sprint Review, prototip, erkən demo, Product Owner ilə qısa baxış. Bir şərt var: rəy verən adam real qərar verə bilməlidir. Rəy gəlmirsə, retrospektivdə de.
+
+### Tester review-da nə gətirir
+“Bunu necə yoxlayacağam?” sualı. Yoxlanıla bilməyən cümlə (“rahat olmalıdır”) tez üzə çıxır. Bu vərdiş 10.2-də var.
+@nümunə
+**Tapşırıq.** Hər defektin statik, yoxsa dinamik testlə daha asan tapılacağını yaz: (a) tələbdə “limit 100” və “limit 200” ziddiyyəti; (b) səhifə 1000 istifadəçidə 8 saniyəyə açılır; (c) heç vaxt çağırılmayan funksiya; (d) ödəniş xidməti cavabı gec gələndə ekran donur.
+@addımlar
+1. **(a) Statik:** sənəddə işə düşəcək heç nə yoxdur, oxumaqla tapılır.
+2. **(b) Dinamik:** performans yalnız işləyəndə ölçülür.
+3. **(c) Statik:** kod işə düşmür, ona görə dinamik test onu görmür.
+4. **(d) Dinamik:** real iş vaxtı davranışıdır.
+5. **Nəticə:** biri digərini əvəz etmir.
+@növbən
+Komandada Product Owner hazır funksiyanı yalnız relizdən bir gün əvvəl görür. Bunun üç mümkün nəticəsini yaz və retrospektivdə deyəcəyin bir konkret təklif ver.

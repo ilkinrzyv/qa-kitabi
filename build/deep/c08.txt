@@ -67,11 +67,11 @@ Tələb: “Kinoteatrda bir sifarişdə 1–8 bilet almaq olar; oturacaq növü:
 
 === c8s3
 @qısa
-BVA siniflərin sərhədlərini və qonşu dəyərlərini yoxlayır, çünki proqramçılar `<` ilə `<=`-ni tez-tez qarışdırır. 2 dəyərli BVA sərhədi və kənar qonşunu, 3 dəyərli BVA sərhədi və hər iki qonşunu götürür.
+BVA siniflərin sərhədlərini və qonşu dəyərlərini yoxlayır, çünki proqramçılar `<` ilə `<=`-ni tez-tez qarışdırır. 2 dəyərli BVA sərhəd dəyərini və qonşu sinifdəki qonşusunu, 3 dəyərli BVA sərhəd dəyərini və hər iki qonşusunu götürür.
 @yadda
 - Defektlər sərhəddə yığılır: `>` ilə `>=` qarışıqlığı.
 - Addımı düzgün seç: tam ədəd — 1, pul — 0,01, mətn — 1 simvol.
-- 2 dəyərli: sərhəd + kənar qonşu; 3 dəyərli: hər iki qonşu da.
+- Siniflərin toxunduğu yerdə 2 dəyərli BVA 2, 3 dəyərli BVA 4 dəyər verir: 17, 18 və 16, 17, 18, 19.
 @dərin
 ### 3 dəyərli BVA nə vaxt lazımdır?
 2 dəyərli BVA `>` / `>=` səhvini tutur. Amma proqramçı sərhədi tamamilə səhv yazıbsa (məsələn, `age >= 18` əvəzinə `age == 18`), 19 dəyəri bunu üzə çıxarır. Riskli sahələrdə (pul, təhlükəsizlik) 3 dəyərli BVA daha etibarlıdır.
@@ -94,11 +94,11 @@ Tələbdə yazılmayan, amma sistemdə olan sərhədlər:
 @addımlar
 1. **Sərhədlər:** 8 (minimum), 16 (maksimum), addım — 1 simvol.
 2. **2 dəyərli BVA:** 7, 8, 16, 17.
-3. **3 dəyərli BVA:** 7, 8, 9, 15, 16, 17.
-4. **Kodla müqayisə:** səhv kodda 8 və 16 rədd olunur — gözlənilən isə qəbuldur. Deməli, **8 və 16 testləri düşür** və defekti tutur; 9 və 15 keçir.
+3. **3 dəyərli BVA:** 6, 7, 8, 9, 15, 16, 17, 18.
+4. **Kodla müqayisə:** səhv kodda 8 və 16 rədd olunur — gözlənilən isə qəbuldur. Deməli, **8 və 16 testləri düşür** və defekti tutur; qalanları keçir.
 5. **Nəticə:** sərhədin özünü yoxlamamış dəst (məsələn, yalnız 10 və 20) bu defekti heç vaxt tapmazdı.
 @növbən
-Tələb: “Kredit məbləği 500,00–20 000,00 AZN.” Addımı müəyyən et, 3 dəyərli BVA dəyərlərini yaz və proqramçı `amount > 500` yazıbsa, hansı testin düşəcəyini göstər.
+Tələb: “Kredit məbləği 500,00–20 000,00 AZN.” Addımı müəyyən et, 3 dəyərli BVA dəyərlərini yaz və proqramçı aşağı şərti `amount > 500` yazıbsa (yuxarı şərt düzgündür), hansı testin düşəcəyini göstər.
 
 === c8s4
 @qısa
@@ -171,3 +171,33 @@ Formul: harada + nə aydın deyil + konkret nümunə + təklif. Məsələn: “U
 5. **BVA (cavabdan sonra):** 22:59:59, 23:00:00, 05:59:59, 06:00:00 — gözlənilən nəticələr cavaba görə yazılır.
 @növbən
 Tələb: “Həftə sonları çatdırılma pulsuzdur.” Ən azı 3 qeyri-müəyyən yeri tap, hər biri üçün nümunəli sual yaz və cavabdan asılı test dəyərlərini göstər.
+
+=== c8x1
+@qısa
+EP əhatəsi siniflərlə, BVA əhatəsi elementlərlə hesablanır. Each Choice hər parametrin hər sinfini ən azı bir dəfə tələb edir, kombinasiyaları yox. BVA yalnız sıralı siniflərdə işlədilir, üst-üstə düşən dəyərlər bir dəfə sayılır.
+@yadda
+- Each Choice-da minimum test sayı ən böyük sinif sayına bərabərdir.
+- 2 dəyərli BVA-da elementlər sərhəd dəyərlərinin özüdür.
+- 3 dəyərli BVA-da hər sərhəd dəyəri və iki qonşusu, təkrarlar çıxılır.
+@dərin
+### Valid və invalid siniflərin birləşməsi
+Bir testdə bir neçə valid sinif birləşə bilər: valid ad, valid email. Invalid siniflər isə ayrı-ayrı yoxlanır, yoxsa biri digərini gizlədir (8.2). Ona görə minimum test sayı invalid sinif çox olanda artır.
+
+### Each Choice-dan güclü nə var
+Each Choice kombinasiyaları yoxlamır. İki sinfin yalnız birlikdə səhv işlədiyi hal buraxıla bilər. Daha güclü üsullar: qərar cədvəli (9.1) və pairwise (9.3).
+
+### “Üç dəyərli, deməli, üç qat”
+Bu, tez-tez edilən səhvdir. Siniflərin toxunduğu yerdə 2 dəyərli BVA 2, 3 dəyərli BVA 4 dəyər verir. Xarici kənarda (uzunluq 0 kimi) 1 və 2 dəyər olur. Bir elementli sinifdə dəyərlər daha çox üst-üstə düşür.
+
+### Nə vaxt 3 dəyərli
+2 dəyərli BVA daha ucuzdur, operator səhvlərinin çoxunu tutur. Pul, təhlükəsizlik kimi riskli yerlərdə 3 dəyərli BVA əlavə elementləri ilə özünü doğruldur.
+@nümunə
+**Tapşırıq.** Tələb: “Bilet sayı 1–6.” Say 0-dan kiçik ola bilməz. Sinifləri, 2 və 3 dəyərli BVA elementlərini tap. Testlər 1 və 6-nı yoxlayırsa, əhatə neçədir?
+@addımlar
+1. **Siniflər:** 0 (tək dəyər), 1–6, 7 və yuxarı.
+2. **Sərhəd dəyərləri:** 0, 1, 6, 7.
+3. **2 dəyərli BVA:** 0, 1, 6, 7: 4 element.
+4. **3 dəyərli BVA:** 0 üçün 0, 1; 1 üçün 0, 1, 2; 6 üçün 5, 6, 7; 7 üçün 6, 7, 8. Təkrarsız: 0, 1, 2, 5, 6, 7, 8: 7 element.
+5. **Əhatə:** 2 dəyərli 2 / 4 = 50%, 3 dəyərli 2 / 7 ≈ 29%.
+@növbən
+Forma: ölkə (Azərbaycan, Türkiyə, Gürcüstan, digər), hesab növü (fərdi, biznes), dil (az, en, ru). Each Choice üçün minimum neçə test lazımdır? Testləri yaz. Bütün kombinasiyalar neçə olardı?

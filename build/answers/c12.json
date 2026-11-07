@@ -109,7 +109,7 @@
   },
   "c12t4": {
     "h": "Əsas yolu çək: New → ... → Closed. Sonra yan statusları əlavə et: Rejected, Duplicate, Deferred, Cannot Reproduce, Reopened.",
-    "a": "Komandaya görə adlar fərqli ola bilər. Kitabdakı axın belədir:\n\n```text\nNew → Assigned/Open → In Progress → Fixed → Ready for Test → In Test\n                                                                 |\n                                              keçdi → Verified → Closed\n                                              düşdü → Reopened → (yenidən In Progress)\n\nNew/Open-dan yan statuslar:\n  Rejected (defekt deyil)\n  Duplicate (artıq var)\n  Deferred (sonrakı relizə)\n  Cannot Reproduce (təkrarlanmır → tester əlavə məlumat verir, yenidən Open)\n```\n\n**Vacib nöqtələr:**\n- Verified və Closed-u yalnız retest-dən sonra tester edir.\n- Reopened: düzəliş işləmədi və ya baq qayıtdı.\n- Rejected və Cannot Reproduce müzakirə üçün siqnaldır, son deyil.\n- Closed olmuş baq sonra yenə çıxırsa, adətən Reopened və ya yeni baq olur.",
+    "a": "Komandaya görə adlar fərqli ola bilər. 12.6-dakı axın belədir:\n\n```text\nNew → Assigned → Open / In Progress → Fixed → Ready for Test (retest)\n                                                                 |\n                                              keçdi → Verified → Closed\n                                              düşdü → Reopened → (yenidən In Progress)\n\nNew/Open-dan yan statuslar:\n  Rejected (defekt deyil)\n  Duplicate (artıq var)\n  Deferred (sonrakı relizə)\n  Cannot Reproduce (təkrarlanmır → tester əlavə məlumat verir, yenidən Open)\n```\n\n**Vacib nöqtələr:**\n- Verified və Closed-u yalnız retest-dən sonra tester edir.\n- Reopened: düzəliş işləmədi və ya baq qayıtdı.\n- Rejected və Cannot Reproduce müzakirə üçün siqnaldır, son deyil.\n- Closed olmuş baq sonra yenə çıxırsa, adətən Reopened və ya yeni baq olur.",
     "c": [
       "Əsas yol New-dan Closed-a qədər ardıcıl çəkilib",
       "Rejected, Duplicate, Deferred, Cannot Reproduce statusları var",
@@ -151,6 +151,36 @@
     "c": [
       "Duplicate artıq açılmış eyni report kimi izah olunub",
       "Cannot Reproduce təkrarlana bilməyən kimi izah olunub, tester-in əlavə məlumat verdiyi deyilib"
+    ]
+  },
+  "c12x1m": {
+    "h": "Hər tapıntı üçün sual: qəbul meyarı pozulurmu? Story bununla buraxıla bilərmi? “Done” şərhi nəyi və nəyin yoxlanmadığını desin.",
+    "a": "Rəng də, uzun kod da qəbul meyarını pozmur, ona görə story-ni geri qaytarmağa ehtiyac yoxdur. Hər biri üçün ayrı **Bug** yazılır və story-yə bağlanır (“relates to”):\n\n- **SHOP-261, Trivial:** “Səbət: “Tətbiq et” düyməsinin rəngi dizayndan fərqlidir.”\n- **SHOP-262, Minor və ya Major:** “Səbət: 30 simvolluq promo kod sahəyə sığmır, son simvollar görünmür.” Təsiri kod uzunluğundan asılıdır.\n\nProduct Owner-dən soruş: “Bu ikisi ilə Done edim?” Razıdırsa, Done.\n\n**Şərh:**\n\n```text\nTest edildi: build 3.2.1, test mühiti, Chrome 141.\nYoxlanıb: qəbul meyarları 1–3, neqativ hallar.\nYoxlanmayıb: Safari.\nBaqlar: SHOP-261 (Trivial), SHOP-262 (Minor), hər ikisi açıq; relizə mane olmur, Product Owner razıdır.\nNəticə: Done-a keçirirəm.\n```\n\nBuild, brauzer və baq nömrələri nümunədir.",
+    "c": [
+      "İki tapıntı ayrı baq kimi yazılır, bir report-a yığılmır",
+      "Qəbul meyarı pozulmadığı üçün story-nin Done ola biləcəyi əsaslandırılıb",
+      "Product Owner-in razılığı və ya prioriteti nəzərə alınıb",
+      "Şərhdə build, mühit, yoxlanan, yoxlanmayan və baqlar var"
+    ]
+  },
+  "c12x2m": {
+    "h": "Hər baq üçün üç sual: neçə adama təsir edir, nə vaxta qədər vacibdir, tələbin içindədirmi?",
+    "a": "Təklifdir, qərarı Product Owner verir.\n\n- **(a) Sonrakı sprint və ya Deferred.** İşləyir, sadəcə gec gəlir. Vaxt limiti tələbdə varsa, prioriteti artır.\n- **(b) İndi düzəlsin.** Texniki olaraq kiçikdir (severity Minor), amma kampaniya sabah başlayır və şirkətin adı səhvdir: prioritet yüksəkdir. Bu, severity və priority fərqinin klassik misalıdır.\n- **(c) Rejected.** Köhnə brauzer dəstəklənmir, tələbdən kənardır. Dəstəklənən brauzerlərin siyahısına bax, siyahıda varsa, qərar dəyişir.",
+    "c": [
+      "Hər baq üçün qərar və səbəb var",
+      "(b) kiçik severity-yə baxmayaraq yüksək prioritet alır",
+      "(c) dəstəklənməyən brauzer kimi rədd olunur",
+      "Qərarın Product Owner-də olduğu nəzərə alınıb"
+    ]
+  },
+  "c12x3m": {
+    "h": "Üç cümlə: nə olub, sənin payın, indi nə edirsən. Bəhanə və özünü günahlandırma yox. Addımlar konkret olsun.",
+    "a": "**Cavab:**\n\n“Baq köhnə promo kodla sifariş verəndə çıxır. Mən bu funksiyanı test etmişəm, amma vaxtı keçmiş kodla bu halı yoxlamamışam. Hazırda düzəlişi yoxlayıram və oxşar sahələrə baxıram.”\n\n**İki addım:**\n\n1. Bu ssenari üçün test case yazıram və regression dəstinə salıram, bu gün.\n2. Promo kodla bağlı checklist-i (vaxtı keçmiş, istifadə olunmuş, bir neçə kod) yeniləyirəm və növbəti relizdə işlədirəm.\n\nSsenari nümunədir.",
+    "c": [
+      "Faktı deyir, bəhanə gətirmir",
+      "Özünü günahlandırmır",
+      "İki konkret addım var, “daha diqqətli olacağam” deyil",
+      "Addımlardan biri bu baq üçün testin əlavə olunmasıdır"
     ]
   }
 }

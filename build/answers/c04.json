@@ -116,5 +116,44 @@
       "Hər story-nin öz mini-STLC-si olduğu deyilib",
       "Planın yüngülləşdiyi və ya regression-un avtomatlaşdırılması qeyd olunub"
     ]
+  },
+  "c4x2m": {
+    "h": "Hər şeyin hansı suala cavab verdiyini düşün: planlama, “nə?”, “necə?”, “hazırdırmı?”, “nəticə nədir?”, “nə öyrəndik?”",
+    "a": "- **Risk reyestri** — test planlaşdırması (çox vaxt test planının hissəsidir).\n- **Test şərti** — test analizi.\n- **İcra cədvəli** — test implementasiyası.\n- **Test jurnalı** — test icrası.\n- **Dəyişiklik sorğusu** — testin tamamlanması: açıq qalan defektlər üçün, məsələn, backlog elementi kimi.\n\n**Rol.** Agile komandada test idarəetmə işlərinin bir hissəsini komandanın özü görür. Bunları komanda rəhbəri, tester və ya inkişaf meneceri də daşıya bilər; bir neçə komandaya aid işləri isə komandadan kənar test meneceri görə bilər.",
+    "c": [
+      "Beş nəticənin hamısı düzgün fəaliyyətə aid edilib",
+      "Test şərti analizə, test case dizayna aid olaraq qarışdırılmayıb",
+      "Rolun vəzifə adı olmadığı və ya komandanın özünün bu işi görə bildiyi deyilib"
+    ]
+  },
+  "c4x3m": {
+    "h": "Üç sual ver: real pul və ya məktub yaranırmı, müştəri datasına toxunurmu, icazə varmı?",
+    "a": "- **(a) Edərəm**, əgər icazə varsa. Şirkətin test hesabı və oxuma əməliyyatıdır.\n- **(b) Etmərəm.** Real ödəniş, real sifariş və əlavə iş yaradır. Ödəniş yoxlanmalıdırsa, komanda ilə razılaşdırılmış üsulla.\n- **(c) Etmərəm.** Müştərinin hesabına girmək və şifrə istəmək olmaz. Məlumat lazımdırsa, dəstək və ya icazəli şəxs anonimləşdirilmiş şəkildə verir.\n- **(d) Edərəm.** Heç nəyi dəyişmir, reliz sonrası smoke-un ilk addımıdır.",
+    "c": [
+      "(a) və (d) edilir, çünki oxuma yoxlamasıdır",
+      "(b) rədd olunur: real ödəniş və sifariş",
+      "(c) rədd olunur: müştəri datası və şifrə",
+      "Hər seçim üçün səbəb yazılıb"
+    ]
+  },
+  "c4x4m": {
+    "h": "Sıra: özün yoxla, soruş, görünən et, başqa işə keç, vaxt qoy. Mesajda kimə və nə lazım olduğu aydın olsun.",
+    "a": "**Bu gün:**\n\n1. Tiketə və wiki-yə bax: cavab orada ola bilər.\n2. Product Owner-ə birbaşa, konkret yaz: “SHOP-220-də vaxtı keçmiş kod nə etməlidir: xəta, yoxsa səssiz rədd? İki gündür gözləyirəm, cavab bu gün lazımdır, yoxsa story bu sprintə çatmaya bilər. 5 dəqiqə danışa bilərik?”\n3. Stand-up-da de: “SHOP-220 sualına cavab gözləyirəm, sprintə təsir edə bilər.” Tiketə də qeyd yaz.\n4. Bu arada başqa işə keç: story-nin aydın hissələrini test et, test ideyalarını hazırla, başqa story-nin retest-ini et.\n5. **Vaxt:** sabah günortaya qədər cavab yoxdursa, QA lead-ə və ya Scrum Master-ə yüksəlt.\n\nCavab gəlmədən öz fikrinlə test edirsənsə, bunu fərziyyə kimi yaz.",
+    "c": [
+      "Konkret sual və nə vaxta lazım olduğu yazılıb",
+      "Stand-up və ya tiket ilə görünən edilib",
+      "Gözləyərkən görüləcək iş var",
+      "Yüksəltmənin vaxtı və kimə olduğu deyilib"
+    ]
+  },
+  "c4x5m": {
+    "h": "Sıra: nə yoxlanıb, nə yoxlanmayıb, açıq baqlar və təsirləri, sonra tövsiyə. Açıq Critical ən vacib məlumatdır.",
+    "a": "Mümkün cavablardan biridir:\n\n“Regression tam bitməyib: 200 testdən 190-ı keçib, 4-ü düşüb, 6-sı Blocked-dir: ödəniş xidməti test mühitində işləmir, ona görə ödəniş sonu yoxlanmayıb. 4 baq açıqdır: 2 Minor, 1 Major müvəqqəti həll ilə, 1 Critical (SHOP-320), müvəqqəti həlli yoxdur. Ödəniş yoxlanmayıb və Critical baq açıqdır, ona görə tövsiyəm indi buraxmamaqdır: əvvəl SHOP-320-ni düzəltmək və 6 testi işlətmək. Biznes indi buraxmaq istəsə, bu iki risk qeyd olunmalıdır. Qərar sizindir.”\n\nBaqın nömrəsi nümunədir. Tövsiyəyə əks yanaşmaq olar, əsas odur ki, risklər açıq deyilsin.",
+    "c": [
+      "Rəqəmlər düzgün deyilib: 190, 6 Blocked, 4 baq",
+      "Nəyin yoxlanmadığı ayrıca deyilib",
+      "Açıq Critical və ödəniş riski vurğulanıb",
+      "Aydın tövsiyə var və qərarın biznesdə olduğu deyilib"
+    ]
   }
 }
