@@ -1,0 +1,127 @@
+{
+  "c8s1m": {
+    "h": "Bu, uzunluq şərtidir. Əvvəl valid və invalid sinifləri, sonra sərhədləri tap. Təsadüfi dəstin hansı sinif və sərhədləri əhatə etdiyini say.",
+    "a": "**Təsadüfi dəst** (məsələn): 7, 8, 9, 10 simvol. Hamısı eyni valid sinifdəndir; invalid siniflər və sərhədlər heç yoxlanmır.\n\n**Texnika ilə:**\n\n- EP: valid 6–12 → 9 simvol; invalid: 6 simvoldan qısa, 12 simvoldan uzun, boş.\n- BVA (2 dəyərli, addım 1 simvol): 5, 6, 12, 13 simvol.\n- Yekun dəst: 5 → xəta; 6 → qəbul; 9 → qəbul; 12 → qəbul; 13 → xəta; boş → xəta. 5 və 13 qısa və uzun sinifləri də təmsil edir.\n\n**Üstünlüyü:** Texnika hər sinfin və hər sərhədin ən azı bir dəfə yoxlanmasını təmin edir, təsadüfi seçim isə bunu şansa buraxır. Üstəlik əhatəni ölçmək olur: 4 sinifdən 4-ü, 4 sərhəd dəyərindən 4-ü.",
+    "c": [
+      "Texnika dəstində `5`, `6`, `12`, `13` simvol sərhəd dəyərləri var",
+      "Valid sinifdən orta dəyər (məsələn, 9 simvol) və boş dəyər də dəstdədir",
+      "Təsadüfi dəstin hansı sinif və sərhədləri buraxdığı göstərilib",
+      "Üstünlük 2 cümlə ilə izah olunub: hər sinif və sərhəd əhatə olunur, əhatəni ölçmək olur"
+    ]
+  },
+  "c8s2m": {
+    "h": "İki şərt var, hər birini ayrıca təhlil et. Siyahıdakı hər element ayrıca sinifdir. Invalid testdə digər sahəni valid saxla.",
+    "a": "**Bilet sayı.** Valid: 1–8 (nümayəndə 4). Invalid: 1-dən kiçik (-2), 8-dən böyük (12), kəsr (2,5), hərf (`iki`), boş.\n\n**Oturacaq növü.** Valid: `adi`, `VIP`; hər biri ayrıca sinifdir, çünki sistem onları fərqli emal edə bilər. Invalid: siyahıda olmayan (`balkon`), seçilməmiş.\n\n| # | Bilet | Oturacaq | Gözlənilən |\n|---|---|---|---|\n| 1 | 4 | adi | Qəbul |\n| 2 | 4 | VIP | Qəbul |\n| 3 | -2 | adi | Xəta |\n| 4 | 12 | adi | Xəta |\n| 5 | 2,5 | adi | Xəta |\n| 6 | iki | adi | Xəta |\n| 7 | (boş) | adi | Xəta |\n| 8 | 4 | balkon | Xəta |\n| 9 | 4 | (seçilməyib) | Xəta |\n\n3–9-cu testlərdə yalnız bir sahə səhvdir, o biri valid qalır; belə olmasa, xətanın səbəbini bilməzsən. 0 və 9 sərhəd dəyərləridir, onları BVA yoxlayır.",
+    "c": [
+      "Bilet sayı üçün valid 1–8 və kiçik, böyük, kəsr, hərf, boş invalid sinifləri var",
+      "`adi` və `VIP` ayrı valid siniflərdir, siyahıda olmayan növ invalid sinifdir",
+      "Hər invalid testdə yalnız bir səhv dəyər var, digər sahə valid qalıb",
+      "Valid nümayəndə sinfin ortasındandır (məsələn, 4), 1 və ya 8 deyil"
+    ]
+  },
+  "c8s3m": {
+    "h": "Məbləğin yazılışına bax: vergüldən sonra neçə rəqəm var? Sonra hər BVA dəyərini koddakı şərtə qoy və nəticəni gözlənilənlə müqayisə et.",
+    "a": "**Addım:** 0,01 AZN (1 qəpik), çünki məbləğ vergüldən sonra iki rəqəmlə yazılıb və bu, pul sahəsidir.\n\n**3 dəyərli BVA:**\n\n| Dəyər | Yer | Gözlənilən |\n|---|---|---|\n| 499,99 | Aşağı sərhəddən kənar | Xəta |\n| 500,00 | Aşağı sərhəd | Qəbul |\n| 500,01 | İçəridəki qonşu | Qəbul |\n| 19 999,99 | İçəridəki qonşu | Qəbul |\n| 20 000,00 | Yuxarı sərhəd | Qəbul |\n| 20 000,01 | Yuxarı sərhəddən kənar | Xəta |\n\n**`amount > 500` kodu ilə:** 500,00 testi düşür. `500 > 500` şərti doğru deyil, ona görə məbləğ rədd olunur, gözlənilən isə qəbuldur. 499,99 rədd olunur, 500,01 qəbul olunur, yəni bu iki test keçir; defekti yalnız sərhədin özü tutur. Düzgün kod `amount >= 500` olardı.",
+    "c": [
+      "Addım 0,01 AZN (1 qəpik) kimi göstərilib, 1 AZN kimi yox",
+      "Altı dəyər yazılıb: 499,99; 500,00; 500,01; 19 999,99; 20 000,00; 20 000,01",
+      "Gözlənilən nəticə yalnız 499,99 və 20 000,01 üçün xətadır",
+      "500,00 testi düşür, çünki `500 > 500` doğru deyil və məbləğ rədd olunur"
+    ]
+  },
+  "c8s4m": {
+    "h": "Əvvəl sinifləri yaz, sonra sərhədləri seç. Hansı sinfi BVA dəyəri artıq təmsil edir? Yalnız qalan siniflərə EP nümayəndəsi əlavə et.",
+    "a": "**EP:** valid 16–70; invalid: 16-dan kiçik, 70-dən böyük, kəsr, hərf, boş.\n\n**BVA (2 dəyərli, addım 1 il):** 15, 16, 70, 71.\n\n| Dəyər | Mənbə | Gözlənilən |\n|---|---|---|\n| 40 | EP: valid sinif | Qəbul |\n| 15 | BVA: aşağı sərhəddən kənar | Xəta |\n| 16 | BVA: aşağı sərhəd | Qəbul |\n| 70 | BVA: yuxarı sərhəd | Qəbul |\n| 71 | BVA: yuxarı sərhəddən kənar | Xəta |\n| 25,5 | EP: kəsr | Xəta |\n| abc | EP: hərflər | Xəta |\n| (boş) | EP: boş sahə | Xəta |\n\n15 və 71 “16-dan kiçik” və “70-dən böyük” siniflərini də təmsil edir, ona görə 10 və 80-i ayrıca yazmağa ehtiyac yoxdur. Tələbdə “tam ədəd” yazılmayıb: 25,5 üçün xəta fərziyyədir, onu tələbin sahibindən soruş.",
+    "c": [
+      "BVA dəyərləri `15`, `16`, `70`, `71` cədvəldədir",
+      "Valid sinifdən orta dəyər (məsələn, 40) EP mənbəli sətir kimi var",
+      "Kəsr, hərf və boş sahə üçün ayrıca EP sətirləri var",
+      "Hər sətirdə dəyər, mənbə (EP və ya BVA) və gözlənilən nəticə göstərilib",
+      "10 və ya 80 kimi artıq dəyərlər yoxdur, çünki 15 və 71 o sinifləri əhatə edir"
+    ]
+  },
+  "c8s5m": {
+    "h": "“Həftə sonu” və “çatdırılma” sözlərini ayrıca götür: sistem bunları necə hesablayır? Hər mümkün cavabda nəticəsi dəyişən dəyəri tap.",
+    "a": "1. **Hansı günlər?** “Həftə sonu yalnız şənbə və bazardır? Çərşənbə gününə düşən bayramda da çatdırılma pulsuzdur?” Dəyərlər: cümə 23:59:59, şənbə 00:00:00, bazar 23:59:59, bazar ertəsi 00:00:00, həftə içinə düşən bayram.\n2. **Hansı an ölçülür?** “Şənbə verilib bazar ertəsi çatdırılan sifariş pulsuzdur? Bəs cümə verilib şənbə çatdırılan?” Dəyərlər: bu iki sifariş.\n3. **Hansı vaxt zonası?** “Bakı vaxtı ilə şənbə 00:30-da verilən sifariş serverdə hələ cümə ola bilər. Hansı saat əsasdır?” Dəyərlər: Bakı vaxtı ilə şənbə 00:30 və bazar ertəsi 00:30.\n\nGözlənilən nəticəni təxmin etmə, tələbin sahibindən cavab aldıqdan sonra yaz. Məsələn, cavab “şənbə və bazar, sifariş anı, Bakı vaxtı” olsa: cümə 23:59:59 → ödənişli; şənbə 00:00:00 → pulsuz; bazar 23:59:59 → pulsuz; bazar ertəsi 00:00:00 → ödənişli.",
+    "c": [
+      "Ən azı 3 ayrı qeyri-müəyyənlik var: məsələn, hansı günlər, hansı an, hansı vaxt zonası",
+      "Hər sualda konkret nümunə var (məsələn, şənbə verilib bazar ertəsi çatdırılan sifariş)",
+      "Hər sual üçün test dəyərləri var (məsələn, cümə 23:59:59 və şənbə 00:00:00)",
+      "Gözlənilən nəticə tələbin sahibinin cavabına bağlanıb, təxmin edilməyib"
+    ]
+  },
+  "c8t1": {
+    "h": "İki ayrı şərt var: uzunluq və simvol növü. Sərhəd hansında var? BVA dəyərlərini elə seç ki, testdə yalnız bir səhv olsun.",
+    "a": "İki şərt var: uzunluq və simvol növü. Hər biri ayrıca təhlil olunur.\n\n**EP sinifləri**\n\n| Sinif | Növ | Nümayəndə | Gözlənilən |\n|---|---|---|---|\n| 3–15 simvol, hərf və rəqəm | Valid | `anar2025` | Qəbul |\n| Yalnız hərf | Valid | `anarbaku` | Qəbul |\n| 3 simvoldan qısa | Invalid | `a` | Xəta |\n| 15 simvoldan uzun | Invalid | `abcdefghijklmnopqrstuvwxy` (25 hərf) | Xəta |\n| Boş | Invalid | (boş) | Xəta |\n| Kiril hərfi | Invalid | `анар2025` | Xəta |\n| Xüsusi simvol | Invalid | `anar_25` | Xəta |\n| Boşluq | Invalid | `anar 25` | Xəta |\n\n**2 dəyərli BVA** (uzunluq, addım 1 simvol)\n\n| Uzunluq | Dəyər | Gözlənilən |\n|---|---|---|\n| 2 | `ab` | Xəta |\n| 3 | `abc` | Qəbul |\n| 15 | `abcdefghij12345` | Qəbul |\n| 16 | `abcdefghij123456` | Xəta |\n\nBVA dəyərlərində yalnız icazəli simvollar olmalıdır: `a!` yazsan, testdə iki invalid dəyər olar və xətanın səbəbi bilinməz. Sərhəd yalnız uzunluqdadır.\n\n**Soruşmaq lazımdır:** `ə`, `ş`, `ç` kimi hərflər də latın əlifbasındadır, `əli2025` qəbul olunurmu? Yalnız rəqəmdən ibarət `20252026` adı olarmı? Bu iki testin gözlənilən nəticəsini cavabdan sonra yaz.",
+    "c": [
+      "Uzunluq sinifləri var: valid 3–15, invalid 3-dən qısa, 15-dən uzun, boş",
+      "Simvol sinifləri var: valid hərf və rəqəm, invalid kiril, xüsusi simvol, boşluq",
+      "2 dəyərli BVA dəyərləri 2, 3, 15, 16 simvoldur; 2 və 16 xəta, 3 və 15 qəbul",
+      "BVA üçün yazılan adlarda yalnız icazəli simvollar var, hər testdə bir invalid dəyər",
+      "`ə`, `ş` kimi hərflərin qəbul olunub-olunmadığı sual kimi qeyd olunub"
+    ]
+  },
+  "c8t2": {
+    "h": "Bu, pul sahəsidir: iki məbləğ arasındakı ən kiçik fərq nədir? Hər sərhəd üçün özünü və iki qonşusunu yaz.",
+    "a": "**Addım:** 0,01 AZN (1 qəpik), çünki bu, pul sahəsidir.\n\n| Dəyər | Yer | Gözlənilən |\n|---|---|---|\n| 0,99 | Minimumdan kənar | Xəta |\n| 1,00 | Minimum | Qəbul |\n| 1,01 | İçəridəki qonşu | Qəbul |\n| 4999,99 | İçəridəki qonşu | Qəbul |\n| 5000,00 | Maksimum | Qəbul |\n| 5000,01 | Maksimumdan kənar | Xəta |\n\n**Niyə addım 1 AZN deyil?** 0, 1, 2, 4999, 5000, 5001 dəyərlərini seçsən, `amount > 0` kimi səhv kod bütün testlərdən keçir, amma 0,50 AZN köçürməyə icazə verir. Bu defekti yalnız 0,99 tutur. Yuxarıda da eynidir: `amount < 5001` kodu 5000,50 AZN-ə icazə verir, bunu isə 5000,01 tutur.\n\nTələbdə qəpikli məbləğin qəbul olunub-olunmadığı yazılmayıb, ona görə addımı analitikdən soruşub dəqiqləşdir. Kəsr ayırıcısını da yoxla: 1,00 və 1.00.",
+    "c": [
+      "Addım 0,01 AZN (1 qəpik) kimi müəyyən olunub, 1 AZN kimi yox",
+      "Aşağı sərhəd üçün 0,99; 1,00; 1,01 yazılıb",
+      "Yuxarı sərhəd üçün 4999,99; 5000,00; 5000,01 yazılıb",
+      "Gözlənilən nəticə yalnız 0,99 və 5000,01 üçün xətadır"
+    ]
+  },
+  "c8t3": {
+    "h": "Yan-yana qruplara bax: eyni çəki iki qrupa düşürmü? Çəkinin dəqiqliyini də soruş. Fərziyyəni əvvəlcə açıq yaz, testləri ona görə seç.",
+    "a": "**Qeyri-müəyyənliklər və suallar**\n\n1. Düz 1 kq iki qrupa düşür: “1,00 kq-lıq bağlama 2 AZN-dir, yoxsa 5 AZN? Təklif: tələbdə hər qrupun yuxarı sərhədinin daxil olduğunu yazaq.”\n2. Düz 5 kq da iki qrupa düşür: “5,00 kq-lıq bağlama 5 AZN-dir, yoxsa 10 AZN?”\n3. Aşağı sərhəd aydın deyil: “Çəkisi 0 kq olan bağlama qəbul olunurmu? Ən kiçik çəki nədir?”\n4. Addım yazılmayıb: “Çəki hansı dəqiqliklə daxil edilir: 0,1 kq, yoxsa 0,01 kq? 1,004 kq necə yuvarlaqlaşdırılır?”\n\nProqramçı da tələbi təxmin etmiş ola bilər, ona görə cavabı PO və ya analitiklə dəqiqləşdir.\n\n**Fərziyyə:** hər qrupun yuxarı sərhədi ona daxildir (1 kq → 2 AZN, 5 kq → 5 AZN, 20 kq → 10 AZN), 0 kq rədd olunur, addım 0,01 kq.\n\n**EP**\n\n| Sinif | Növ | Dəyər | Gözlənilən |\n|---|---|---|---|\n| 0-dan çox, 1-ə qədər | Valid | 0,5 | 2 AZN |\n| 1-dən çox, 5-ə qədər | Valid | 3 | 5 AZN |\n| 5-dən çox, 20-yə qədər | Valid | 12 | 10 AZN |\n| 20-dən ağır | Invalid | 30 | Xəta |\n| Mənfi | Invalid | -2 | Xəta |\n| Hərflər | Invalid | abc | Xəta |\n| Boş | Invalid | (boş) | Xəta |\n\n**BVA (2 dəyərli)**\n\n| Dəyər | Sərhəd | Gözlənilən |\n|---|---|---|\n| 0,00 | Minimumdan kənar | Xəta |\n| 0,01 | Minimum | 2 AZN |\n| 1,00 | 1-ci qrupun sonu | 2 AZN |\n| 1,01 | 2-ci qrupun əvvəli | 5 AZN |\n| 5,00 | 2-ci qrupun sonu | 5 AZN |\n| 5,01 | 3-cü qrupun əvvəli | 10 AZN |\n| 20,00 | Maksimum | 10 AZN |\n| 20,01 | Maksimumdan kənar | Xəta |\n\nBurada kəsr invalid sinif deyil, çünki çəki kəsrlə yazılır. Cavab başqa gəlsə (məsələn, 1 kq → 5 AZN), gözlənilən nəticə və sərhəd cütü dəyişir: 0,99 və 1,00. Ona görə fərziyyə testlərdən əvvəl yazılır.",
+    "c": [
+      "Düz 1 kq və düz 5 kq-ın iki qrupa düşdüyü qeyri-müəyyənlik kimi göstərilib",
+      "Çəkinin addımı və 0 kq haqqında ayrıca sual var",
+      "Fərziyyə testlərdən əvvəl açıq yazılıb (məsələn, 1 kq → 2 AZN, addım 0,01 kq)",
+      "Üç valid qiymət sinfinin, 20 kq-dan ağır, hərf və boş sinfinin hər birində test var",
+      "BVA dəyərləri fərziyyəyə uyğundur: məsələn, 1,00 və 1,01; 5,00 və 5,01; 20,00 və 20,01"
+    ]
+  },
+  "c8t4": {
+    "h": "Tələbi formanın yazısından və xəta mesajlarından götür. Gözlənilən nəticəni icradan əvvəl yaz, digər sahələri valid saxla.",
+    "a": "Bu, mümkün cavablardan biridir: saytın, tələbin və nəticələrin fərqli olacaq. Aşağıdakı forma yalnız yazılış nümunəsidir, real sayta aid deyil.\n\n**Sahə:** şifrə. **Tələb** (formadakı yazı): “Şifrə 8–20 simvol olmalıdır”. Belə yazı yoxdursa, qaydanı xəta mesajlarından çıxar və fərziyyə kimi qeyd et.\n\n**Hazırlıq:** ad və email hər testdə valid qalır, ona görə xətanın səbəbi yalnız şifrə ola bilər. Öz real şifrəni işlətmə, simvolları onlayn sayğacla say. Gözlənilən sütununu icradan əvvəl, faktiki sütununu icradan sonra doldur.\n\n| # | Şifrə | Mənbə | Gözlənilən | Faktiki | Status |\n|---|---|---|---|---|---|\n| 1 | `Test12345678` (12 simvol) | EP: valid | Qəbul | Qəbul | Keçdi |\n| 2 | `Test123` (7 simvol) | BVA: sərhəddən kənar | Xəta | “Ən azı 8 simvol daxil edin” | Keçdi |\n| 3 | `Test1234` (8 simvol) | BVA: aşağı sərhəd | Qəbul | Qəbul | Keçdi |\n| 4 | `Test1234567890123456` (20 simvol) | BVA: yuxarı sərhəd | Qəbul | Qəbul | Keçdi |\n| 5 | `Test12345678901234567` (21 simvol) | BVA: sərhəddən kənar | Xəta | Qəbul olundu, xəta çıxmadı | Düşdü |\n| 6 | (boş) | EP: boş sahə | Xəta | “Şifrə daxil edin” | Keçdi |\n\n**Nəticə:** 6 testdən 5-i keçdi, 1-i düşdü. Defekt: 21 simvolluq şifrə xətasız qəbul olunur, tələb isə maksimum 20 simvoldur. Hesab yaranan testlərdə hər dəfə yeni test emaili lazım ola bilər.",
+    "c": [
+      "Sayt, seçilmiş sahə və tələbin mənbəyi (forma yazısı və ya fərziyyə) yazılıb",
+      "Dəstdə hər sərhəd üçün sərhəd və qonşusu, valid nümayəndə və boş dəyər var",
+      "Hər sətirdə dəyər, mənbə (EP/BVA), gözlənilən nəticə, faktiki nəticə və status var",
+      "Faktiki nəticə ekranda görünən kimi yazılıb, gözlənilən nəticə icradan əvvəl müəyyən olunub",
+      "Hər testdə yalnız yoxlanan sahə səhvdir, digər sahələr valid saxlanılıb"
+    ]
+  },
+  "c8q1": {
+    "a": "Giriş dəyərləri siniflərə bölünür və bir sinfin içindəki bütün dəyərlər sistem tərəfindən eyni cür emal olunur. Ona görə bir nümayəndə bütün sinfi təmsil edir: kassir 25 yaşlıya da, 40 yaşlıya da eyni bileti satır. Beləcə az testlə hər sinif əhatə olunur. Sinfin sərhədlərini isə EP yox, BVA yoxlayır.",
+    "c": [
+      "Giriş dəyərlərinin siniflərə bölündüyü deyilib",
+      "Səbəb kimi bir sinifdəki dəyərlərin eyni cür emal olunması göstərilib",
+      "Bir nümayəndənin bütün sinfi təmsil etdiyi deyilib"
+    ]
+  },
+  "c8q2": {
+    "a": "Çünki proqramçılar `<` ilə `<=`-ni, `>` ilə `>=`-ni tez-tez qarışdırır. `age >= 18` əvəzinə `age > 18` yazılsa, 35, 50, 60 düzgün işləyir, yalnız 18 yaşlı rədd edilir. Belə səhv yalnız sərhəddə göründüyü üçün sinfin ortasından seçilən dəyər onu tapmır.",
+    "c": [
+      "Səbəb kimi `<` ilə `<=`-nin və ya `>` ilə `>=`-nin qarışdırılması göstərilib",
+      "Belə səhvin yalnız sərhəd dəyərində göründüyü deyilib (məsələn, 18 rədd edilir, 35 işləyir)"
+    ]
+  },
+  "c8q3": {
+    "a": "2 dəyərli BVA hər sərhəd üçün sərhədin özünü və ondan kənardakı qonşunu götürür: sərhəd 18 üçün 17, 18. 3 dəyərli BVA sərhədin özünü və hər iki qonşusunu götürür: 17, 18, 19. 3 dəyərli daha çox test deməkdir, amma `age == 18` kimi kobud səhvi də üzə çıxarır, ona görə pul və təhlükəsizlik kimi riskli sahələrdə daha etibarlıdır.",
+    "c": [
+      "2 dəyərli: sərhəd və kənardakı qonşu; 3 dəyərli: sərhəd və hər iki qonşu",
+      "Nümunədə sərhəd 18 üçün `17, 18` və `17, 18, 19` kimi dəyərlər var",
+      "3 dəyərlinin riskli sahələrdə daha etibarlı olduğu deyilib"
+    ]
+  },
+  "c8q4": {
+    "a": "Testdə iki invalid dəyər olsa və xəta çıxsa, səbəbin hansı dəyər olduğunu bilməzsən. Üstəlik sistem çox vaxt yalnız birinci xətanı göstərir: ikinci sahənin yoxlaması ümumiyyətlə işləmirsə, bunu görməzsən. Buna defect masking deyilir. Ona görə hər testdə bir invalid dəyər olur, digər sahələr valid saxlanılır.",
+    "c": [
+      "Xətanın səbəbinin bilinməyəcəyi deyilib",
+      "Bir xətanın digərini gizlətməsi və bunun adı (defect masking) göstərilib",
+      "Digər sahələrin valid saxlanması qeyd olunub"
+    ]
+  }
+}

@@ -663,6 +663,35 @@ for cc in ctfl:
 print('ctfl topics', sum(len(c['topics']) for c in ctfl), 'sections', len({x for c in ctfl for t in c['topics'] for x in t['s']}))
 # ---------- 6i. SQL practice (sql.json): the practice database is 16.3's code block; every SQL block of chapter 16 and
 # every task's solution must run on it (Python's sqlite3, the same SQLite the page runs through sql.js) ----------
+# ---------- answer key: a model answer and self-check criteria for every exercise (build/answers/cNN.json) ----------
+ans_raw = {}
+for f in sorted(glob.glob(os.path.join(BASE, 'answers', 'c*.json'))):
+    ans_raw.update(json.load(open(f, encoding='utf-8')))
+ans_used, ans_missing = set(), []
+def attach_ans(eid, holder, need_hint):
+    global errors
+    r = ans_raw.get(eid)
+    if not r:
+        ans_missing.append(eid); return
+    ans_used.add(eid)
+    if not r.get('a') or not (2 <= len(r.get('c', [])) <= 5) or (need_hint and not r.get('h')):
+        print('ERR answer fields', eid, file=sys.stderr); errors += 1; return
+    holder['ans'] = {'a': str(render(r['a'])), 'c': [md.renderInline(x) for x in r['c']]}
+    if r.get('h'):
+        holder['ans']['h'] = md.renderInline(r['h'])
+for ch in chapters:
+    for s in ch['sections']:
+        for t in s.get('tasks', []):
+            attach_ans(t['id'], t, True)
+        if s['kind'] == 'selfcheck':
+            for q in s['items']:
+                attach_ans(q['id'], q, False)
+        if s.get('x') and s['x'].get('ex'):
+            attach_ans(s['x']['ex']['id'], s['x']['ex'], True)
+for k in sorted(set(ans_raw) - ans_used):
+    print('ERR answer for unknown exercise', k, file=sys.stderr); errors += 1
+print('answers', len(ans_used), 'missing', len(ans_missing))
+
 import sqlite3
 sqlcfg = json.load(open(os.path.join(BASE, 'sql.json'), encoding='utf-8'))
 m = re.search(r'### 16\.3\.[\s\S]*?```sql\n([\s\S]*?)```', md_text)
