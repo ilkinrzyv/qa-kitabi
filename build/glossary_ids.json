@@ -122,5 +122,6 @@
 "Rollback": "g121",
 "Statement coverage": "g122",
 "Test basis": "g123",
-"Test condition": "g124"
+"Test condition": "g124",
+"TypeScript": "g125"
 }

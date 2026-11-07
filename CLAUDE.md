@@ -10,7 +10,7 @@ Interactive Azerbaijani textbook on software QA for a beginner (no programming b
 
 ```bash
 pip install -r requirements.txt
-python3 build/parse_book.py   # → build/book.json (gitignored); expect "deep layers 202 missing 0", "answers 404 missing 0" and "errors 0"
+python3 build/parse_book.py   # → build/book.json (gitignored); expect "deep layers 204 missing 0", "answers 406 missing 0" and "errors 0"
 python3 build/build_pwa.py    # → docs/ and dist/qa-kitabi-offline.zip; prints the new version
 python3 build/build_page.py   # → dist/qa-kitab.html and build/test.html (page used by the t*.js checks)
 python3 build/diagrams.py     # diagram self-check; must report 0 issues

@@ -122,5 +122,6 @@
   "Rollback": "Rollback yeni versiyanı götürüb əvvəlkini qaytarmaqdır. Qərarı adətən reliz məsulu verir, mən sonra smoke aparıram: köhnə versiya işləyirmi, data pozulmayıb ki.",
   "Statement coverage": "Statement coverage işə düşən icra olunan operatorların faizidir. 100% olsa da, if-in yalan çıxışı yoxlanmamış qala bilər, ona görə branch coverage daha güclüdür.",
   "Test basis": "Test əsası testin çıxarıldığı mənbədir: tələblər, user story, dizayn, kod. Test analizində onu oxuyub test şərtlərini çıxarıram, içindəki defektləri də qeyd edirəm.",
-  "Test condition": "Test şərti nəyi yoxlayacağımı deyir: vaxtı keçmiş promo kod rədd olunur. Test case isə necə yoxlayacağımı: data, addımlar, gözlənilən nəticə."
+  "Test condition": "Test şərti nəyi yoxlayacağımı deyir: vaxtı keçmiş promo kod rədd olunur. Test case isə necə yoxlayacağımı: data, addımlar, gözlənilən nəticə.",
+  "TypeScript": "TypeScript JavaScript-ə tiplər əlavə edir və bir çox səhvi test işə düşmədən tapır: səhv sahə adı, səhv arqument. Playwright tipləri yoxlamır, ona görə CI-da tsc --noEmit də işlədirəm. Tiplər işləmə vaxtında olmur, API cavabını yenə assertion ilə yoxlayıram."
 }

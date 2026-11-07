@@ -3849,6 +3849,49 @@ test(`giriş xətası: ${user}`, async ({ page }) => {
 
 Yad sətir görəndə onu parçala: əvvəl hansı funksiya çağırılır, ona nə verilir, nəticə hara yazılır. Bir sətri başa düşməyənə qədər növbətisinə keçmə: framework kodu təzə söz yox, bu yazılışların birləşməsidir.
 
+### 18.14. TypeScript: JavaScript-ə tiplər {#c18x4}
+
+TypeScript JavaScript-in üzərinə tiplər əlavə edir: hər dəyişənin, parametrin və obyektin nə növ dəyər daşıdığını yazırsan, kompilyator (`tsc`) isə kodu işə salmadan uyğunsuzluğu tapır. Playwright layihəsini `npm init playwright@latest` ilə yaradanda “TypeScript, yoxsa JavaScript?” soruşulur və standart seçim TypeScript-dir, ona görə çox komandada testlər `.ts` fayllarındadır.
+
+**Əsas yazılış.** Tip iki nöqtədən sonra gəlir:
+
+```typescript
+let username: string = 'standard_user';
+const price: number = 29.99;
+const products: string[] = ['Backpack', 'Bike Light'];
+
+function addTax(amount: number, rate: number): number {
+  return amount + amount * rate;
+}
+```
+
+Hər yerə tip yazmaq lazım deyil: `let total = 0;` yazanda TypeScript `total`-un `number` olduğunu özü başa düşür (type inference). Tipi parametrlərə və obyektlərin quruluşuna yaz.
+
+**Obyektin quruluşu.** `type` (və ya `interface`) obyektin hansı sahələri olduğunu deyir. `?` sahənin məcburi olmadığını bildirir. `|` isə “bu dəyərlərdən biri” deməkdir:
+
+```typescript
+type Product = {
+  name: string;
+  price: number;
+  discount?: number;
+};
+
+type UserName = 'standard_user' | 'locked_out_user' | 'problem_user';
+```
+
+**Kompilyator nə tapır.** `npx tsc --noEmit` kodu yoxlayır, fayl yaratmır. Real xəta mesajları belədir:
+
+```text
+error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+error TS2322: Type 'string' is not assignable to type 'number'.
+error TS2741: Property 'price' is missing in type '{ name: string; }' but required in type 'Product'.
+error TS2820: Type '"standart_user"' is not assignable to type 'UserName'. Did you mean '"standard_user"'?
+```
+
+Sonuncu tester üçün xüsusilə faydalıdır: istifadəçi adındakı hərf səhvini test işə düşmədən tutur.
+
+**Tiplər işləmə vaxtında yoxdur.** Kompilyasiyadan sonra tiplər silinir və kod adi JavaScript kimi işləyir. API-dən gələn cavab sənin yazdığın tipə uyğun gəlməsə də, TypeScript bunu görmür. Ona görə cavabın sahələrini testdə yenə də yoxlayırsan (15.6, 19.14): tip kodu yazanı qoruyur, yoxlama isə məhsulu.
+
 ### Diqqət: tez-tez edilən səhvlər
 
 - **`==` yazmaq.** Həmişə `===`.
@@ -4759,6 +4802,105 @@ Baq düzələnə qədər bəzi komandalar testi `test.fixme()` ilə keçir və y
 
 Ən təhlükəli “düzəliş” yoxlamanı silmək və ya gözləntini ekrana uyğunlaşdırmaqdır: test yaşıl olur, baq isə müştəriyə gedir.
 
+### 19.21. Playwright TypeScript ilə {#c19x11}
+
+Playwright TypeScript-i əlavə ayar olmadan işə salır: fayl `login.spec.ts` olur, idxal isə eynidir. Tiplər `@playwright/test`-dən gəlir: `Page`, `Locator` və başqaları.
+
+**Page Object TypeScript-də.** 19.7-dəki sinif burada tiplərlə yazılır. Redaktor (VS Code) indi `loginPage.` yazanda metodları özü təklif edir, səhv tipli arqument isə dərhal qırmızı xəttlə görünür:
+
+```typescript
+import { type Page, type Locator } from '@playwright/test';
+
+export class LoginPage {
+  readonly page: Page;
+  readonly username: Locator;
+  readonly password: Locator;
+  readonly loginButton: Locator;
+  readonly error: Locator;
+
+  constructor(page: Page) {
+    this.page = page;
+    this.username = page.getByPlaceholder('Username');
+    this.password = page.getByPlaceholder('Password');
+    this.loginButton = page.getByRole('button', { name: 'Login' });
+    this.error = page.getByTestId('error');
+  }
+
+  async goto() {
+    await this.page.goto('https://www.saucedemo.com/');
+  }
+
+  async login(user: string, password: string) {
+    await this.username.fill(user);
+    await this.password.fill(password);
+    await this.loginButton.click();
+  }
+}
+```
+
+`readonly` sahənin sonradan dəyişdirilməyəcəyini deyir.
+
+**Fixture-in tipi.** 19.12-dəki fixture-ə `base.extend<…>` ilə tip verilir, sonra testdə `loginPage`-in nə olduğunu redaktor bilir:
+
+```typescript
+import { test as base } from '@playwright/test';
+import { LoginPage } from './pages/LoginPage';
+
+type Fixtures = {
+  loginPage: LoginPage;
+};
+
+export const test = base.extend<Fixtures>({
+  loginPage: async ({ page }, use) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await use(loginPage);
+  },
+});
+
+export { expect } from '@playwright/test';
+```
+
+**Data-driven test tipli data ilə.** 19.13-dəki cədvələ tip verəndə sahə adının səhvi və ya unudulmuş sahə dərhal görünür:
+
+```typescript
+import { test, expect } from './fixtures';
+
+type User = {
+  name: string;
+  canLogin: boolean;
+  error?: string;
+};
+
+const users: User[] = [
+  { name: 'standard_user', canLogin: true },
+  { name: 'locked_out_user', canLogin: false, error: 'Sorry, this user has been locked out.' },
+];
+
+for (const user of users) {
+  test(`giriş: ${user.name}`, async ({ loginPage, page }) => {
+    await loginPage.login(user.name, process.env.SAUCE_PASSWORD ?? '');
+    if (user.canLogin) {
+      await expect(page).toHaveURL(/inventory/);
+    } else {
+      await expect(loginPage.error).toContainText(user.error ?? '');
+    }
+  });
+}
+```
+
+`??` sol tərəf boş (`undefined` və ya `null`) olanda sağ tərəfi götürür: şifrə mühitdə yoxdursa, boş mətn.
+
+**Playwright tipləri yoxlamır.** `npx playwright test` `.ts` faylını işə salır, amma tip xətasına görə dayanmır. Tipləri ayrıca yoxla və bunu CI-a da əlavə et (20.10):
+
+```bash
+npx tsc --noEmit
+```
+
+Bunun üçün layihədə `tsconfig.json` olmalıdır. `process.env` üçün isə Node.js tipləri (`@types/node`) lazımdır: yoxdursa, `tsc` “Cannot find name 'process'” yazır. `npm init playwright` onu özü qurur, sonradan əlavə edəndə: `npm install -D @types/node`.
+
+Kitabın Playwright məşqi JavaScript-dədir. TypeScript kodunu öz layihəndə işə sal: məntiq eynidir, yalnız tiplər əlavə olunur.
+
 ### Diqqət: tez-tez edilən səhvlər
 
 - **`await`-i unutmaq.** Test gözləmədən irəli qaçır.
@@ -5504,6 +5646,7 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | Testware | Test materialları | Testin bütün iş məhsulları: plan, case, data, skript, hesabat | 1 |
 | Three-point estimation | Üç nöqtəli qiymətləndirmə | Optimist, ən ehtimallı və pessimist qiymətdən: E = (a + 4m + b) / 6 | 11 |
 | Trace viewer | Trace baxıcısı | Düşən testin hər addımını, ekranını və sorğularını göstərən alət | 19 |
+| TypeScript | TypeScript | Tipləri olan JavaScript; kod işə düşmədən tsc ilə yoxlanır | 18 |
 | UAT | İstifadəçi qəbul testi | Real istifadəçilərin apardığı qəbul testi | 5 |
 | Unit testing | Unit (modul) testi | Ən kiçik kod hissəsinin yoxlanması | 5 |
 | Usability testing | İstifadə rahatlığı testi | Məhsulun nə qədər asan işlədildiyinin yoxlanması | 6 |

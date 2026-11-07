@@ -628,3 +628,33 @@ test(`səbət: ${retries} təkrar`, async ({ request }) => {
   expect(first).toHaveProperty('price');
 });
 ```
+
+=== c18x4
+@qısa
+TypeScript JavaScript-ə tiplər əlavə edir: `let name: string`, `type Product = { … }`, `'a' | 'b'`. `tsc --noEmit` kodu işə salmadan uyğunsuzluğu tapır. Tiplər işləmə vaxtında silinir, ona görə API cavabını testdə yenə yoxlayırsan.
+@yadda
+- Tip iki nöqtədən sonra gəlir: `user: string`.
+- `?` məcburi olmayan sahə, `|` bir neçə dəyərdən biri.
+- Tip məhsulu yoxlamır: cavabı assertion yoxlayır.
+@dərin
+### type, yoxsa interface?
+İkisi də obyektin quruluşunu təsvir edir. `interface ApiUser { id: number; email: string; }` və `type ApiUser = { id: number; email: string; }` test kodunda demək olar eyni işləyir. `|` ilə birləşmə yalnız `type`-la yazılır. Komandanın seçdiyinə uy.
+
+### any niyə təhlükəlidir
+`any` “istənilən tip” deməkdir və yoxlamanı söndürür: `const user: any = …` yazandan sonra kompilyator sahə adının səhvini görmür. Tipi bilmirsənsə, `unknown` yaz və işlətməzdən əvvəl yoxla, ya da sahələri təsvir et.
+
+### Xəta mesajını necə oxumaq
+`err.ts(7,40)` fayl, sətir və sütundur. `TS2322` xətanın nömrəsidir: onu axtarışa yazanda izah tapılır. Mətn həmişə eyni qəlibdədir: “Type X is not assignable to type Y” — X verdiyin, Y gözlənilən tipdir.
+
+### Tester üçün faydası
+Test kodu böyüdükcə səhvlərin çoxu sadədir: səhv sahə adı, unudulmuş parametr, dəyişmiş metod adı. TypeScript bunları test işə düşməzdən əvvəl göstərir, CI-da vaxt itmir.
+@nümunə
+**Tapşırıq.** `tsc` belə yazır: `error TS2741: Property 'price' is missing in type '{ name: string; }' but required in type 'Product'.` Kod: `const q: Product = { name: 'Bike Light' };`. Nə deyir və necə düzəlir?
+@addımlar
+1. **Tip:** `Product`-da `name` və `price` məcburidir.
+2. **Verilən:** obyektdə yalnız `name` var.
+3. **Mesaj:** “price is missing … but required”: price unudulub.
+4. **Düzəliş:** `{ name: 'Bike Light', price: 9.99 }`, ya da sahə doğrudan da məcburi deyilsə, tipdə `price?: number`.
+5. **Hansını seçmək:** tələbə bax: qiymətsiz məhsul ola bilərmi? Tipi tələbə uyğun yaz, xətanı susdurmaq üçün yox.
+@növbən
+Bu iki xətanı izah et və düzəlt: (a) `login('standard_user', 123);` üçün `TS2345: Argument of type 'number' is not assignable to parameter of type 'string'`; (b) `const u: UserName = 'standart_user';` üçün `TS2820 … Did you mean '"standard_user"'?`.

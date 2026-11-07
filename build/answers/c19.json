@@ -347,5 +347,14 @@
       "Bug report və ya baq nömrəsi qeyd olunub",
       "Yoxlamanın silinməməli və ya dəyişdirilməməli olduğu deyilib"
     ]
+  },
+  "c19x11m": {
+    "h": "Playwright .ts faylını işə salır, amma tipləri yoxlamır. Redaktordakı qırmızı xətt tsc-nin dediyidir.",
+    "a": "Mümkün cavablardan biridir:\n\n“Playwright TypeScript testlərini işə salır, amma tip xətalarına görə dayanmır, ona görə testlər yaşıl görünür. Redaktordakı xətalar tsc-nin tapdığı real səhvlərdir: sonra testi səhv yerdə sındıra bilərlər. Pipeline-da testlərdən əvvəl `npx tsc --noEmit` addımı əlavə edək, xəta olanda dayansın.”",
+    "c": [
+      "Playwright-ın tipləri yoxlamadığı deyilib",
+      "Redaktordakı xəttin tip xətası olduğu deyilib",
+      "CI-a tsc --noEmit addımı təklif olunub"
+    ]
   }
 }

@@ -45,7 +45,7 @@ function coverageData(c) {
     if (s) want(`section ${sid} steps`, s.x.ex.steps.length >= 3 && s.x.ex.steps.length <= 6, s.x.ex.steps.length);
   }
   out.glossary = book.glossary.length;
-  want('glossary size', book.glossary.length === 124, book.glossary.length);
+  want('glossary size', book.glossary.length === 125, book.glossary.length);
   const ids = book.glossary.map(g => g.id);
   want('glossary ids unique', new Set(ids).size === ids.length, ids.length);
   for (const en of ['Definition of Ready', 'Bug triage', 'Each Choice coverage', 'Hotfix', 'Test basis']) want(`term ${en}`, book.glossary.some(g => g.en === en && g.say), en);
