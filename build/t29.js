@@ -5,7 +5,7 @@ const { setup } = require('./harness');
 const go = (page, h) => page.evaluate(h => { location.hash = h; }, h).then(() => page.waitForTimeout(450));
 const box = (page, sel) => page.$eval(sel, e => { const r = e.getBoundingClientRect(); return { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }; });
 const shown = (page, sel) => page.$eval(sel, e => !!(e.offsetWidth || e.offsetHeight)).catch(() => false);
-const VIEWS = ['#', '#c3s4', '#c8s3', '#mesq', '#magaza-tc04', '#reliz', '#reliz-tc06', '#devtools-dv3', '#playwright-pw3', '#lokator-l5', '#git-g5',
+const VIEWS = ['#', '#c3s4', '#c8s3', '#mesq', '#musahibe', '#ssenari-dev-works', '#magaza-tc04', '#reliz', '#reliz-tc06', '#devtools-dv3', '#playwright-pw3', '#lokator-l5', '#git-g5',
   '#sql', '#api', '#imtahan', '#istqb', '#muellim', '#rol', '#progress', '#luget', '#c3-xulase', '#gb'];
 (async () => {
   const out = {}; const ERRORS = []; const bad = [];
@@ -49,7 +49,7 @@ const VIEWS = ['#', '#c3s4', '#c8s3', '#mesq', '#magaza-tc04', '#reliz', '#reliz
   out.toGit = await page.evaluate(() => ({ view: document.body.dataset.view, cur: (document.querySelector('#sidectx [aria-current="true"]') || {}).textContent }));
   await page.click('#sidectx .side-i.tool[data-act="rel-open"]'); await page.waitForTimeout(400);
   out.toRel = await page.evaluate(() => document.body.dataset.view);
-  if (out.tools.length !== 12 || out.toGit.view !== 'git' || (out.toGit.cur || '').trim() !== 'Git' || out.toRel !== 'release') bad.push('practice sidebar');
+  if (out.tools.length !== 14 || out.toGit.view !== 'git' || (out.toGit.cur || '').trim() !== 'Git' || out.toRel !== 'release') bad.push('practice sidebar');
   // tutor and progress: no list
   await page.click('[data-act="tab"][data-tab="progress"]'); await page.waitForTimeout(300);
   out.progressSide = await page.$eval('#sidectx', e => e.childElementCount);

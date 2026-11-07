@@ -4161,7 +4161,7 @@ Qaçın: uzun ümumi sözlər (“məsuliyyətli, çalışqan”) və bacarmadı
 | Sual | Nümunə cavab |
 | --- | --- |
 | QA, QC və testing fərqi nədir? | QA prosesi yaxşılaşdırıb problemin qarşısını alır, QC hazır məhsulu yoxlayır, testing isə konkret yoxlama hərəkətləridir. |
-| Severity və priority fərqi? | Severity — defektin texniki təsiri, priority — düzəlişin təcilliyi. Misal: şirkət adının səhv yazılması — aşağı severity, yüksək priority. |
+| Severity və priority fərqi? | Severity — defektin texniki təsiri, priority — düzəlişin təcililiyi. Misal: şirkət adının səhv yazılması — aşağı severity, yüksək priority. |
 | Retest və regression fərqi? | Retest düzəldilmiş konkret defekti yoxlayır, regression isə dəyişikliyin başqa funksiyaları sındırmadığını. |
 | Smoke və sanity fərqi? | Smoke — yeni build-in geniş və dayaz yoxlanılması; sanity — konkret dəyişikliyin dar və dərin yoxlanılması. |
 | Bug life cycle-ı izah et. | New → Assigned → Open → Fixed → Ready for Test → Verified → Closed; retest uğursuzdursa Reopened; həmçinin Rejected, Duplicate, Deferred. |
