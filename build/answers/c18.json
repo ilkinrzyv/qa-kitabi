@@ -247,5 +247,15 @@
       ".env .gitignore-dadır",
       "Kompüter və CI-da dəyərin haradan gəldiyi deyilib"
     ]
+  },
+  "c18x4m": {
+    "h": "Mesajın qəlibi: “X is not assignable to Y”. X verdiyin, Y gözlənilən tipdir. TS2820 düzgün variantı özü təklif edir.",
+    "a": "**(a)** `login` funksiyasının ikinci parametri `string`-dir, `123` isə `number`. Düzəliş: `login('standard_user', 'secret_sauce');`. Rəqəm doğrudan da lazımdırsa, `String(123)` ilə mətnə çevrilir, amma şifrə üçün bu, adətən səhvdir.\n\n**(b)** `UserName` yalnız sadalanan adları qəbul edir. `'standart_user'` hərf səhvidir və kompilyator özü təklif edir: `'standard_user'`. Düzəliş: `const u: UserName = 'standard_user';`.\n\nHər iki səhv test işə düşmədən, `tsc --noEmit` və ya redaktorda görünür.",
+    "c": [
+      "(a)-da number və string uyğunsuzluğu izah olunub",
+      "(a)-da ikinci arqument mətnlə əvəz olunub",
+      "(b)-də hərf səhvi tapılıb və standard_user yazılıb",
+      "Səhvin test işə düşmədən tapıldığı deyilib"
+    ]
   }
 }

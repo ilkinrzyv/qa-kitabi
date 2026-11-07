@@ -76,7 +76,7 @@ def seg_lines(idx):
 # ---------- 3. html post-processing ----------
 FORMATTER = HtmlFormatter(nowrap=True)
 LANG_ALIAS = {'javascript': 'javascript', 'js': 'javascript', 'sql': 'sql', 'bash': 'bash', 'json': 'json',
-              'http': 'http', 'gherkin': 'gherkin', 'yaml': 'yaml', 'markdown': 'text', 'text': 'text'}
+              'http': 'http', 'gherkin': 'gherkin', 'typescript': 'typescript', 'ts': 'typescript', 'yaml': 'yaml', 'markdown': 'text', 'text': 'text'}
 svgs = {}
 for key, slug, k in DIAGRAMS:
     p = os.path.join(BASE, 'widgets', f'w{k}.svg')
@@ -927,6 +927,7 @@ _al('g121', 'rollback')
 _al('g122', 'statement coverage', 'operator əhatəsi')
 _al('g123', 'test basis', 'test əsası~')
 _al('g124', 'test condition~', 'test şərti', 'test şərtləri~')
+_al('g125', 'TypeScript', cs=True)
 GL_TAIL = '[a-zəğıöüşçA-ZƏĞIİÖÜŞÇ]*'
 def _gl_regex(chnum):
     alts, idx = [], {}

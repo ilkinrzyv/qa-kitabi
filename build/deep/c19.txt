@@ -817,3 +817,33 @@ Fərq adətən mühitdədir: başqa brauzer versiyası, ekran ölçüsü, daha y
 5. **Yoxla:** testi `--repeat-each=5` ilə işə sal, sonra komandaya təklif et: vacib elementlərə `data-test` qoyulsun.
 @növbən
 Test `problem_user` ilə Bolt T-Shirt-i səbətə əlavə edir və nişanda “1” gözləyir. Xəta: `Expected: "1"`, `Error: element(s) not found`. Trace-də düyməyə basılıb, amma düymə “Add to cart” olaraq qalıb, nişan yoxdur. Bu, nədir və nə edərsən? Testdə nəyi dəyişməməlisən?
+
+=== c19x11
+@qısa
+Playwright `.ts` fayllarını özü işə salır, tiplər isə `@playwright/test`-dən gəlir: `Page`, `Locator`. Page Object, fixture və test datası tiplərlə yazılanda redaktor xətanı dərhal göstərir. Playwright tipləri yoxlamır: `npx tsc --noEmit` ayrıca və CI-da işlədilir.
+@yadda
+- `readonly page: Page; readonly loginButton: Locator;`
+- Fixture: `base.extend<{ loginPage: LoginPage }>(…)`.
+- Test yaşıl ola bilər, tip xətası qala bilər: `tsc --noEmit`.
+@dərin
+### Redaktor nə qazandırır
+`loginPage.` yazanda VS Code metodların siyahısını göstərir, `login()`-ə bir arqument versən, dərhal qırmızı xəttlə deyir. Böyük framework-də başqasının yazdığı Page Object-i oxumaq da asanlaşır: tiplər sənəd rolunu oynayır.
+
+### JavaScript layihəsini TypeScript-ə keçirmək
+Birdən hamısını çevirmək lazım deyil: TypeScript `.js` faylları ilə yanaşı işləyir. Adətən Page Object-lərdən başlayırlar, çünki onları ən çox fayl işlədir. Faylın uzantısını `.ts` et, `tsc` nə deyirsə, düzəlt.
+
+### CI-da sıra
+Əvvəl `npx tsc --noEmit`, sonra `npx playwright test`. Tip xətası varsa, testlərə vaxt sərf etmədən pipeline dayanır. 20.10-dakı workflow-a bir addım əlavə olunur.
+
+### Tipik yanlış anlama
+“TypeScript-də yazdım, deməli, API cavabı düzgündür.” Tip yalnız sənin kodunu yoxlayır. Server `price` əvəzinə `cost` qaytarsa, tip bunu görmür: `expect(body).toHaveProperty('price')` görür.
+@nümunə
+**Tapşırıq.** 19.13-dəki JavaScript data cədvəlini TypeScript-ə keçir və tipin hansı səhvi tutduğunu göstər.
+@addımlar
+1. **Tip yaz:** `type User = { name: string; canLogin: boolean; error?: string };`
+2. **Massivə tip ver:** `const users: User[] = [ … ];`
+3. **Səhv yarat:** bir sətirdə `canLogin` əvəzinə `canlogin` yaz.
+4. **tsc:** `TS2561: Object literal may only specify known properties, but 'canlogin' does not exist in type 'User'. Did you mean to write 'canLogin'?` Hərf səhvi test işə düşmədən görünür.
+5. **Düzəlt və işə sal:** `npx tsc --noEmit`, sonra `npx playwright test`.
+@növbən
+Komandanın CI-ında yalnız `npx playwright test` var, testlər yaşıldır, amma redaktorda iki faylda qırmızı xətt görürsən. Nə baş verir və pipeline-a nəyi əlavə etməyi təklif edərsən? İki-üç cümlə yaz.
