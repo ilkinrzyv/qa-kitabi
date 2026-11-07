@@ -473,7 +473,7 @@ function render(opts) {
   if (observer) { observer.disconnect(); observer = null; }
   hideSelPill();
   const v = $('#view');
-  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw, git: vGit, iv: vInterview, rs: vScript, en: vEnglish };
+  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw, git: vGit, iv: vInterview, rs: vScript, en: vEnglish, skills: vSkills };
   document.body.removeAttribute('data-part'); // the reader sets it: the chapter's part colour for section numbers and the read bar
   (views[S.view] || vHome)(v);
   document.body.dataset.view = S.view; document.body.dataset.tab = S.tab; // PC layouts are keyed by these (app.css)
@@ -488,7 +488,7 @@ const WIDE = window.matchMedia('(min-width:1280px)');
 const SIDE_PR = [['cards', 'cards', 'Fleş kartlar', 'data-act="cards"'], ['glossary', 'abc', 'Lüğət', 'data-act="glossary"'],
   ['ctfl', 'layers', 'ISTQB xəritəsi', 'data-act="ctfl-open"'], ['exam', 'clock', 'Sınaq imtahanı', 'data-act="exam-open"'],
   ['iv', 'chat', 'Müsahibə məşqi', 'data-act="iv-open"'], ['rs', 'users', 'Rol oyunları', 'data-act="rs-open"'],
-  ['en', 'pencil', 'İş üçün ingiliscə', 'data-act="en-open"'],
+  ['en', 'pencil', 'İş üçün ingiliscə', 'data-act="en-open"'], ['skills', 'steps', 'Bacarıq xəritəsi', 'data-act="skills-open"'],
   ['store', 'cart', 'Məşq mağazası', () => `data-act="sm-open" data-sc="${SM.id && SM.ver !== REL_D.ver ? SM.id : 'tc01'}"`],
   ['release', 'checklist', 'Reliz testi', 'data-act="rel-open"'], ['devtools', 'bug', 'DevTools', 'data-act="dv-open"'],
   ['sql', 'list', 'SQL', 'data-act="sql-open"'], ['lab', 'send', 'API', 'data-act="lab-open"'],
@@ -585,7 +585,8 @@ function vHome(v) {
       <span class="chip ${o.due ? 'acc' : ''}">${o.due ? o.due + ' kart təkrar' : o.newCards + ' yeni termin'}</span>
     </div>
   </div>
-  <div class="block">${cont}</div>${installCard()}
+  <div class="block">${cont}</div>
+  <div class="block"><button class="quizcta alt" data-act="skills-open">${icon('steps')}<div style="flex:1;min-width:0;text-align:left"><b>Bacarıq xəritəsi</b><span>21 fəsil bir yolda: nə bitib, növbəti addım nədir, hansı praktika hara aiddir</span></div>${icon('arrow')}</button></div>${installCard()}
   <section class="part" data-part="p0"><div class="part-h"><span class="pn">0</span><h2>Giriş</h2></div><div class="chlist"><button class="chrow" data-act="open-ch" data-ch="c0"><span class="id">00</span><span class="tt"><b>Bu kitabı necə oxumalı</b><span class="muted" style="font-size:13px">Quruluş, terminlər, oxu sırası</span></span><span class="side">${icon('arrow')}</span></button></div></section>
   ${parts}`;
 }
@@ -5114,6 +5115,56 @@ function vInterview(v) {
   setHeader({ back: true, kicker: 'Müsahibə məşqi', name: mode === 'res' ? 'Nəticə' : mode === 'run' ? IVD.cats[ivQ(D.run.ids[D.run.i]).cat] : 'Müsahibə simulyatoru' });
   v.innerHTML = mode === 'res' ? ivResHTML(D) : mode === 'run' ? ivRunHTML(D.run) : ivStartHTML(D);
 }
+/* ---------- skill map (#bacariq): the 21 chapters as a winding path in their part colours; a node fills with the sections
+   learned, a finished chapter is solid, the next one pulses; the practice tools sit beside the chapter they practise. t37 ---------- */
+const SK_SHORT = { c1: 'QA nədir', c2: 'Testin 7 prinsipi', c3: 'SDLC və Agile', c4: 'STLC və reliz', c5: 'Test səviyyələri', c6: 'Test növləri', c7: 'Test yanaşmaları',
+  c8: 'EP və BVA', c9: 'Qərar cədvəli, vəziyyətlər', c10: 'Tələblər', c11: 'Test case və plan', c12: 'Bug report, triage', c13: 'Veb, HTTP, loglar', c14: 'Veb testi',
+  c15: 'API və Postman', c16: 'SQL', c17: 'Mobil və oyun', c18: 'JavaScript, TypeScript', c19: 'Playwright', c20: 'Git, CI, Docker', c21: 'Karyera, ingiliscə' };
+const SK_TOOLS = { c4: ['release'], c12: ['store', 'exam'], c13: ['devtools'], c15: ['lab'], c16: ['sql'], c19: ['pw'], c20: ['git'], c21: ['iv', 'en'] };
+const SK_X = [24, 50, 76, 50]; // the path winds left, middle, right, middle
+function skCount(id) {
+  if (id === 'exam') { const e = P().exams || []; return e.length ? `${Math.max(...e.map(x => x.ok))}/${EXAM_N}` : ''; }
+  if (id === 'iv') { const h = ivDoc().hist.length; return h ? `${h} cəhd` : ''; }
+  const [d, t] = { store: [Object.keys(SM.passed).length, STORE.scenarios.length], release: [relDone().filter(Boolean).length, 4], devtools: [Object.keys(DVS.done).length, DVD.tasks.length],
+    sql: [SQLC.tasks.filter(x => SQX.done[x.id]).length, SQLC.tasks.length], lab: [API.tasks.filter(x => LAB.done[x.id]).length, API.tasks.length],
+    pw: [PWD.tasks.filter(x => pwDoc().done[x.id]).length, PWD.tasks.length], git: [GITD.tasks.filter(x => gitDone()[x.id]).length, GITD.tasks.length],
+    en: [Object.keys(engDoc().done).filter(k => engById[k]).length, ENG.drills.length] }[id];
+  return `${d}/${t}`;
+}
+function skToolHTML(id) {
+  const e = SIDE_PR.find(x => x[0] === id); if (!e) return '';
+  const act = typeof e[3] === 'function' ? e[3]() : e[3], n = skCount(id);
+  return `<button class="chip sk-tool" ${act}>${icon(e[1])}${esc(e[2])}${n ? ` <span class="sk-n">${n}</span>` : ''}</button>`;
+}
+function skNext() { return MAIN.find(c => { const st = chStats(c); return st.done < st.total; }); }
+function vSkills(v) {
+  setHeader({ back: true, kicker: 'İrəliləyiş', name: 'Bacarıq xəritəsi' });
+  const o = overall(), next = skNext(), chDone = MAIN.filter(c => { const st = chStats(c); return st.done === st.total; }).length, per = pct(o.done, o.total);
+  let y = 0, k = 0;
+  const bands = [], heads = [], nodes = [], labs = [], pts = [];
+  BOOK.parts.forEach(p => {
+    const chs = p.chapters.map(id => chById[id]).filter(c => c.kind === 'chapter'); if (!chs.length) return;
+    const top = y, pl = partLabel(p); y += 48;
+    chs.forEach(c => {
+      y += 52;
+      const x = SK_X[k++ % 4], st = chStats(c), pc = pct(st.done, st.total), fin = st.done === st.total, nx = next === c, qok = st.q && st.q.best / st.q.n >= 0.7;
+      pts.push({ x, y, fin, part: p.id });
+      nodes.push(`<button class="sk-node${fin ? ' done' : ''}${nx ? ' next' : ''}" data-act="open-ch" data-ch="${c.id}" data-part="${p.id}" style="left:${x}%;top:${y}px;--p:${pc}" aria-label="Fəsil ${c.num}: ${esc(c.title)}. ${st.done}/${st.total} bölmə${nx ? '. Növbəti addım' : ''}"><span class="sk-num">${fin ? icon('check') : pad2(c.num)}</span></button>`);
+      const pos = x <= 50 ? `left:calc(${x}% + 46px);max-width:calc(${100 - x}% - 56px)` : `right:calc(${100 - x}% + 46px);max-width:calc(${x}% - 56px)`;
+      labs.push(`<div class="sk-lab${x > 50 ? ' l' : ''}" data-part="${p.id}" style="${pos};top:${y}px"><b>${esc(SK_SHORT[c.id] || c.title)}</b><span class="sk-sub">${st.done}/${st.total} bölmə${qok ? ' · test ✓' : ''}</span>${(SK_TOOLS[c.id] || []).map(skToolHTML).join('')}</div>`);
+      y += 52;
+    });
+    bands.push(`<div class="sk-band" data-part="${p.id}" style="top:${top}px;height:${y - top + 6}px"></div>`);
+    heads.push(`<span class="sk-band-h" data-part="${p.id}" style="top:${top + 13}px">${esc(pl.pn)} · ${esc(pl.name)}</span>`); // above the path
+    y += 20;
+  });
+  const segs = pts.slice(1).map((b, i) => { const a = pts[i], m = (a.y + b.y) / 2; return `<path class="sk-seg${a.fin ? ' on' : ''}" data-part="${a.part}" d="M${a.x} ${a.y}C${a.x} ${m} ${b.x} ${m} ${b.x} ${b.y}"/>`; }).join('');
+  v.innerHTML = `<div class="card sk-top"><div class="sk-ring" style="--p:${per}"><span>${per}%</span></div><div class="sk-sum"><b>${chDone}/${MAIN.length} fəsil bitib</b><span>${o.done}/${o.total} bölmə · ${o.quizDone}/${MAIN.length} test</span></div></div>
+    ${next ? `<div class="block"><button class="cont" data-act="open-ch" data-ch="${next.id}"><div class="t"><div class="k">Növbəti addım</div><div class="n">Fəsil ${pad2(next.num)} · ${esc(SK_SHORT[next.id] || next.title)}</div><div class="s">${chStats(next).done}/${chStats(next).total} bölmə öyrənilib</div></div>${icon('arrow')}</button></div>`
+      : `<div class="block empty">Bütün fəsillər bitib. Yanındakı düymələrlə praktika alətlərinə keç.</div>`}
+    <p class="muted sk-legend">Dolu düyün: fəsil bitib. Yarım halqa: neçə bölmə öyrənilib. Yanındakı düymələr həmin fəslin praktika alətləridir.</p>
+    <div class="sk-map" style="height:${y}px">${bands.join('')}<svg class="sk-svg" viewBox="0 0 100 ${y}" preserveAspectRatio="none" aria-hidden="true">${segs}</svg>${heads.join('')}${labs.join('')}${nodes.join('')}</div>`;
+}
 /* ---------- work English (#ingilisce): drills (pick, build, write), a phrase book and offline mistake rules; no Claude needed.
    The rules are a hint for typical mistakes of Azerbaijani speakers, not a grammar checker, and the page says so. t35.js ---------- */
 const ENG = BOOK.english, engById = Object.fromEntries(ENG.drills.map(d => [d.id, d]));
@@ -5308,6 +5359,7 @@ function vProgress(v) {
   <div class="card"><div class="lb muted" style="font-size:13px">Öyrənilən bölmələr</div>
     <div class="herofig"><span class="v">${per}%</span><span class="u">${o.done} / ${o.total} bölmə</span></div>
     <div class="meter${per === 100 ? ' pass' : ''}" style="margin-top:12px;height:8px"><i style="width:${per}%"></i></div></div>
+  <div class="block" style="margin-top:12px"><button class="quizcta" data-act="skills-open">${icon('steps')}<div style="flex:1;min-width:0;text-align:left"><b>Bacarıq xəritəsi</b><span>21 fəsil bir yolda, hissə rəngləri ilə: nə bitib, növbəti addım nədir</span></div>${icon('arrow')}</button></div>
   <div class="tiles block" style="margin-top:12px">
     <div class="tile"><div class="lb">Fəsil testləri</div><div class="vl">${o.quizDone}<small> / 21</small></div><div class="muted" style="font-size:12.5px;margin-top:2px">orta nəticə ${o.avg}%</div></div>
     <div class="tile"><div class="lb">Tapşırıqlar</div><div class="vl">${o.answered}<small> / ${o.tasks}</small></div><div class="meter"><i style="width:${pct(o.answered, o.tasks)}%"></i></div><div class="muted" style="font-size:12px;margin-top:6px">${ALL_TASKS.length} fəsil tapşırığı + ${ALL_MINI.length} mini-nümunə</div></div>
@@ -5873,6 +5925,7 @@ document.addEventListener('click', ev => {
     case 'ctfl-open': closeSheet(); go('ctfl', {}, { push: S.view !== 'ctfl' }); break;
     case 'exam-open': closeSheet(); go('exam', {}, { push: S.view !== 'exam' }); break;
     case 'iv-open': closeSheet(); go('iv', {}, { push: S.view !== 'iv' }); break;
+    case 'skills-open': closeSheet(); go('skills', {}, { push: S.view !== 'skills', tab: 'progress' }); break;
     case 'en-open': closeSheet(); S.tab = 'practice'; go('en', {}, { push: S.view !== 'en' }); break;
     case 'en-tab': case 'en-set': case 'en-sets': case 'en-move': case 'en-pick': case 'en-word': case 'en-clear': case 'en-check': case 'en-show': case 'en-write': case 'en-own': case 'en-reveal': case 'en-say': engAction(act, d); break;
     case 'iv-start': if (ivDoc().run) openConfirm('Yeni müsahibə?', 'Yarımçıq müsahibənin cavabları silinəcək.', 'Yenisini başla', () => ivStart(d.p)); else ivStart(d.p); break;
@@ -6239,7 +6292,7 @@ AI.setState('pending');
 // #magaza opens the practice store, #magaza-tc04 with that test case; #reliz the release test, #reliz-tc06 that test case
 // on build 1.1; #devtools the DevTools practice, #devtools-dv3 that task; #playwright-pw3 a Playwright task, #lokator-l5
 // a locator; #git the Git practice, #git-g5 that task; #musahibe the interview practice; #ssenari the scripted role plays,
-// #ssenari-dev-works that one; #ingilisce the work English practice.
+// #ssenari-dev-works that one; #ingilisce the work English practice; #bacariq the skill map.
 let AUTO = null;
 const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 function routeHash() {
@@ -6273,6 +6326,7 @@ function routeHash() {
   else if (h === 'istqb') { S.tab = 'practice'; S.view = 'ctfl'; S.params = {}; }
   else if (h === 'imtahan') { S.tab = 'practice'; S.view = 'exam'; S.params = {}; }
   else if (h === 'musahibe') { S.tab = 'practice'; S.view = 'iv'; S.params = {}; }
+  else if (h === 'bacariq') { S.tab = 'progress'; S.view = 'skills'; S.params = {}; }
   else if (h === 'ingilisce') { S.tab = 'practice'; S.view = 'en'; S.params = {}; }
   else if (t === 'ssenari') { const id = h.slice(8); S.tab = 'practice'; S.view = 'rs'; S.params = { rp: own(RPS, id) ? id : null }; }
   else if (h === 'sql') { S.tab = 'practice'; S.view = 'sql'; S.params = {}; }

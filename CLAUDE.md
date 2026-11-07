@@ -113,6 +113,13 @@ Screenshots land in `build/shots/` (gitignored).
   drawn with `svgkit.py` (text measured with the vendored fonts in `fonts/`, overlap and overflow checks).
 - `build/app.js` — the whole UI in one IIFE, no framework. `PWA = window.QA_PWA` exists only in the offline build:
   guard PWA-only code with `if (PWA)` so the artifact keeps working.
+- Part colours (end of `app.css`): `--p0` … `--p8` per part, light and dark, each at least 4.5:1 as text; `[data-part]` sets `--pc`,
+  `--pc-soft`, `--pc-line`. They colour decoration and small labels only (home part list, the chapter banner `chBanner`, section numbers
+  and the read bar through `body[data-part]`), never buttons or links, which keep `--accent`. `t36.js`.
+- Skill map (`#bacariq`, `vSkills`, prefix `sk`): the chapters as a winding path in part bands; a node fills with learned sections
+  (`chStats`), the next step is the first unfinished chapter, practice tools sit beside their chapter (`SK_TOOLS`, actions taken from
+  `SIDE_PR`). Nodes and labels are HTML over an SVG path, so text never scales. In-app navigation keeps the old hash: a test that
+  returns to `#bacariq` must leave it first. `t37.js`.
 - PC layout (the "PC" blocks near the end of `app.css`, `sideRender` in `app.js`): from 1024px the tab bar is a left sidebar: an
   icon rail up to 1279px, from 1280px a full sidebar that also lists the chapter's sections in the reader or the practice tools
   in the practice tab (drawn only at that width). Sheets open as centred dialogs, Ctrl+K and / open search. `render()` sets
