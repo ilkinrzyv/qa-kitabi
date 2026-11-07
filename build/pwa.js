@@ -183,13 +183,28 @@ async function checkCache() {
   emit('sw');
   if (!sw.ready && ++swTries < 40) setTimeout(checkCache, 1500);
 }
-function showUpdateBar() {
-  if (document.getElementById('pwa-bar')) return;
-  const bar = document.createElement('div');
-  bar.id = 'pwa-bar'; bar.className = 'pwa-bar'; bar.setAttribute('role', 'status');
-  bar.innerHTML = '<span>Kitabın yeni versiyası yükləndi.</span><button type="button">Yenilə</button>';
-  bar.querySelector('button').addEventListener('click', () => location.reload());
-  document.body.appendChild(bar);
+function setBar(text, reload) {
+  let bar = document.getElementById('pwa-bar');
+  if (!bar) { bar = document.createElement('div'); bar.id = 'pwa-bar'; bar.className = 'pwa-bar'; bar.setAttribute('role', 'status'); document.body.appendChild(bar); }
+  bar.innerHTML = `<span>${text}</span>${reload ? '<button type="button">Yenilə</button>' : ''}`;
+  if (reload) bar.querySelector('button').addEventListener('click', () => location.reload());
+}
+function showUpdateBar() { setBar('Kitabın yeni versiyası yükləndi.', true); }
+// a new version downloads for minutes on a slow connection: say so, and if the install is cut off try again (it continues where it stopped)
+let swRetries = 0;
+function swGiveUp() {
+  setBar('Yeniləmə bu dəfə bitmədi: növbəti açılışda davam edəcək.');
+  setTimeout(() => { const bar = document.getElementById('pwa-bar'); if (bar && !sw.updated) bar.remove(); }, 8000);
+}
+function watchInstall(reg) {
+  const w = reg.installing;
+  if (!w || !navigator.serviceWorker.controller) return;
+  setBar('Kitabın yeni versiyası yüklənir…');
+  w.addEventListener('statechange', () => {
+    if (w.state !== 'redundant' || sw.updated) return;
+    if (++swRetries > 3) { swGiveUp(); return; }
+    setTimeout(() => reg.update().catch(swGiveUp), 5000);
+  });
 }
 if (sw.supported) {
   const hadController = !!navigator.serviceWorker.controller;
@@ -197,11 +212,19 @@ if (sw.supported) {
   window.addEventListener('load', async () => {
     try {
       sw.reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+      sw.reg.addEventListener('updatefound', () => watchInstall(sw.reg));
+      watchInstall(sw.reg);
       await navigator.serviceWorker.ready;
       checkCache();
     } catch (e) { sw.error = String(e && e.message || e); emit('sw'); }
   });
 }
+// a PC tab stays open for days: look for a new version when the reader comes back to it, at most once an hour
+let swChecked = Date.now();
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible' || !sw.reg || Date.now() - swChecked < 3600000) return;
+  swChecked = Date.now(); sw.reg.update().catch(() => { });
+});
 async function checkUpdate() {
   if (!sw.reg) return 'none';
   try { await sw.reg.update(); } catch (e) { return online() ? 'error' : 'offline'; }
