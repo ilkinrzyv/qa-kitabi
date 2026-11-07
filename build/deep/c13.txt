@@ -345,3 +345,33 @@ Bu cədvəl istiqamət verir, son hökm proqramçınındır. Report-da “backen
 5. **Hər report-da:** təxmin yox, müşahidə — metod, URL, status, cavab, Console.
 @növbən
 Bu müşahidələr üçün problemin ehtimal olunan yerini və report-a əlavə edəcəyin sübutları yaz: (a) şəkil yükləmə sorğusu 413 qaytarır; (b) cavabda tarix “2026-10-24”, ekranda “10/24/2026”; (c) axtarış sorğusu 30 saniyə sonra 504 qaytarır; (d) düymə basılanda iki eyni POST sorğusu gedir.
+
+=== c13x1
+@qısa
+Server logları serverin içində nə baş verdiyini vaxt, səviyyə, sorğu ID-si və mesajla yazır. Tester xətanın anını UTC-yə çevirib və ya sorğu ID-si ilə lazımi sətri tapır, report-a yalnız lazım olan sətirləri, şəxsi məlumatsız əlavə edir.
+@yadda
+- `Z` UTC-dir: Bakı vaxtı 4 saat irəlidir.
+- Sorğu ID-si eyni sorğunun bütün sətirlərini birləşdirir.
+- Logda şifrə və ya token görünürsə, bu, baqdır.
+@dərin
+### Stack trace necə oxunur
+Birinci sətir xətanın növü və mesajıdır: `TypeError: Cannot read properties of undefined (reading 'discount')`. Sonrakı `at` sətirləri çağırış zənciridir: yuxarıdakı xətanın baş verdiyi yerdir. Kitabxana fayllarını keç, layihənin öz faylını tap: `promo.js:57`. Bu, proqramçı üçün ən dəyərli ipucudur.
+
+### Frontend xətası, yoxsa backend?
+Brauzer konsolunda xəta var, serverdə yoxdursa, problem çox vaxt frontenddədir. Serverdə ERROR və 500 varsa, backenddədir (13.10). Logda sorğu ümumiyyətlə yoxdursa, sorğu servərə çatmayıb: şəbəkə, URL və ya başqa mühit.
+
+### Strukturlu loglar
+Çox sistem logu JSON kimi yazır: `{"time":"…","level":"error","requestId":"req-c0d1","msg":"promo apply failed"}`. Axtarış alətində sahəyə görə filtr olur: səviyyə error, sorğu ID-si req-c0d1. Mətn axtarışından dəqiqdir.
+
+### Loga giriş yoxdursa
+Junior-un canlı loglara girişi olmaya bilər. Bu halda vaxtı, URL-i, istifadəçini və sorğu ID-sini report-a yaz və proqramçıdan xahiş et: “Bu vaxt üçün loga baxa bilərsən?”
+@nümunə
+**Tapşırıq.** Promo kodu tətbiq edəndə 500 alırsan, Bakı vaxtı ilə 13:14-də. Network-də cavabın `X-Request-Id: req-c0d1` başlığı var. Logda nəyi necə tapırsan və report-a nə yazırsan?
+@addımlar
+1. **Vaxt:** 13:14 Bakı = 09:14 UTC: logda bu dəqiqəyə bax.
+2. **ID:** `req-c0d1` ilə axtar: ERROR sətri və stack trace çıxır.
+3. **Oxu:** `TypeError … reading 'discount'`, `promo.js:57`: promo obyektində `discount` yoxdur.
+4. **Report:** addımlar, sorğu ID-si, ERROR sətri və stack trace-in ilk iki sətri.
+5. **Yoxla:** sətirlərdə şəxsi məlumat yoxdur.
+@növbən
+Bu sətri oxu və üç sualı cavabla: `2026-11-08T18:02:10.511Z WARN [req-5b10] POST /api/login user=aysel@example.com password=Test1234! status=401`. (a) Bakı vaxtı ilə nə vaxtdır? (b) Nə baş verib? (c) Bu sətirdə hansı baq var?

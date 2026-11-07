@@ -168,5 +168,14 @@
       "Sorğu yoxdursa frontend, 5xx və ya səhv cavab backend sayılıb",
       "Cavab düzgün, ekran səhv halı frontend sayılıb"
     ]
+  },
+  "c13x1m": {
+    "h": "Z UTC-dir. WARN və 401 nə deyir? Sətirdə olmamalı olan nəyi görürsən?",
+    "a": "**(a)** `18:02:10Z` UTC-dir, Bakı vaxtı 4 saat irəlidir: **22:02**.\n\n**(b)** `aysel@example.com` girişə cəhd edib, server **401** qaytarıb: email və ya şifrə yanlışdır. Səviyyə WARN-dur: xəta yox, şübhəli hal.\n\n**(c)** Logda **şifrə açıq yazılıb** (`password=Test1234!`). Bu, təhlükəsizlik baqıdır: logu oxuyan hər kəs şifrəni görür. Email də şəxsi məlumatdır, çox komanda onu da maskalayır. Report-a bu sətri köçürəndə şifrəni özün də gizlət.",
+    "c": [
+      "Bakı vaxtı 22:02 hesablanıb",
+      "401-in uğursuz giriş olduğu deyilib",
+      "Logda şifrənin görünməsi baq kimi göstərilib"
+    ]
   }
 }

@@ -2603,6 +2603,35 @@ Network panelində faydalı funksiyalar:
 
 Bu cədvəl bug report-u dəqiqləşdirir və proqramçının vaxtına qənaət edir.
 
+### 13.11. Server logları: problemi serverin gözü ilə görmək {#c13x1}
+
+DevTools brauzerdə nə baş verdiyini göstərir (13.9). Serverin içində nə baş verdiyini isə loglar göstərir: server hər sorğunu, xəbərdarlığı və xətanı vaxtla birlikdə sətir-sətir yazır. 500 cavabının səbəbi çox vaxt orada görünür.
+
+```text
+2026-11-08T09:14:02.381Z INFO  [req-7f3a] POST /api/orders user=42 status=201 duration=184ms
+2026-11-08T09:14:05.912Z WARN  [req-91c2] GET /api/products slow query duration=2840ms
+2026-11-08T09:14:07.044Z ERROR [req-c0d1] POST /api/promo/apply status=500
+TypeError: Cannot read properties of undefined (reading 'discount')
+    at applyPromo (/app/src/promo.js:57:23)
+    at /app/src/routes/cart.js:112:18
+```
+
+| Hissə | Misal | Nə deyir |
+| --- | --- | --- |
+| Vaxt | `2026-11-08T09:14:07.044Z` | `Z` UTC deməkdir. Bakı vaxtı 4 saat irəlidir: 13:14 |
+| Səviyyə | `ERROR`, `WARN`, `INFO`, `DEBUG` | Ciddilik: ERROR xəta, WARN şübhəli hal, INFO adi hadisə, DEBUG proqramçı üçün ətraflı məlumat |
+| Sorğunun ID-si | `[req-c0d1]` | Eyni sorğunun bütün sətirlərini birləşdirir |
+| Mesaj | `POST /api/promo/apply status=500` | Nə baş verdi |
+| Stack trace | `at applyPromo (/app/src/promo.js:57:23)` | Xətanın kodda harada baş verdiyi: fayl, sətir, sütun |
+
+**Tester logdan necə istifadə edir.**
+
+1. **Anı tap.** Xətanın vaxtını yaz və UTC-yə çevir. Komanda cavaba sorğu ID-si qoyursa (məsələn, `X-Request-Id` başlığı), onu DevTools-da Network → Headers-dən götür: axtarış bir sətirə enir.
+2. **Axtar.** Şirkətlərdə loglar bir yerə yığılır və axtarış aləti ilə oxunur: Kibana, Grafana, CloudWatch və s. Lokal mühitdə: `docker compose logs api` (20.12) və ya terminalda `grep` (20.11).
+3. **Report-a əlavə et.** Bütün log faylını yox, lazım olan sətirləri: sorğu ID-si, xəta sətri və stack trace-in ilk 2–3 sətri. Email, şifrə, token kimi şəxsi məlumatı çıxar.
+
+**Log özü də yoxlanılır.** Logda şifrə və ya tam kart nömrəsi görünürsə, bu, təhlükəsizlik baqıdır. Adi hadisələrin ERROR kimi yazılması, xətanın isə heç yazılmaması da defektdir: komanda canlıdakı problemi görməyəcək.
+
 ### Diqqət: tez-tez edilən səhvlər
 
 - **Keşi unutmaq.** “Düzəlməyib” deməzdən əvvəl sərt yeniləmə et.
@@ -3286,6 +3315,90 @@ DELETE FROM orders WHERE id = 103;
 1. Əvvəl eyni WHERE ilə SELECT işə sal və hansı sətirlərin dəyişəcəyini gör.
 2. Canlı (production) bazada heç vaxt test etmə — yalnız test bazasında.
 3. Şübhə varsa, soruş.
+
+### 16.11. Alt sorğular (subquery) {#c16x1}
+
+Alt sorğu başqa sorğunun içində yazılan sorğudur: əvvəl içəridəki işləyir, nəticəsini çöldəkinə verir. Tester üçün ən faydalı yeri data yoxlamalarıdır.
+
+**IN: siyahıya görə filtr.** Ödənilmiş sifarişi olan müştərilər:
+
+```sql
+SELECT name
+FROM customers
+WHERE id IN (SELECT customer_id FROM orders WHERE status = 'paid');
+```
+
+Nəticə: Aysel Məmmədova və Leyla Hüseynova.
+
+**Tək dəyər: ortadan böyük.** İçəridəki sorğu bir rəqəm qaytarır (orta məbləğ təxminən 77,21):
+
+```sql
+SELECT id, total
+FROM orders
+WHERE total > (SELECT AVG(total) FROM orders);
+```
+
+Nəticə: 102, 104, 106.
+
+**NOT EXISTS: qarşılığı olmayanlar.** Heç bir sifarişi olmayan müştəri:
+
+```sql
+SELECT name
+FROM customers c
+WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);
+```
+
+Nəticə: Nigar Kərimova. Eyni üsulla 16.9-dakı yetim sifarişi də tapmaq olur:
+
+```sql
+SELECT id, customer_id
+FROM orders
+WHERE customer_id NOT IN (SELECT id FROM customers);
+```
+
+Nəticə: 107 nömrəli sifariş, müştərisi 9.
+
+**NOT IN və NULL tələsi.** İçəridəki sorğu bir dəfə də olsa NULL qaytarsa, `NOT IN` heç bir sətir qaytarmır, çünki “NULL deyil” sualının cavabı bilinmir. Sütunda NULL ola bilərsə, `NOT EXISTS` yaz.
+
+**FROM-da alt sorğu.** Əvvəl qrupla, sonra nəticəni filtrlə:
+
+```sql
+SELECT city, cnt
+FROM (SELECT city, COUNT(*) AS cnt FROM customers GROUP BY city) AS t
+WHERE cnt > 1;
+```
+
+Nəticə: Bakı, 2. Bunu `GROUP BY … HAVING COUNT(*) > 1` ilə də yazmaq olar (16.7). Alt sorğu daha mürəkkəb hesablamalarda lazım olur.
+
+### 16.12. Tranzaksiyalar və indekslər {#c16x2}
+
+**Tranzaksiya (transaction)** bir neçə dəyişikliyi bir bütöv kimi icra edir: ya hamısı baş verir, ya heç biri. Ödəniş zamanı həm sifariş yaranmalı, həm pul çıxılmalıdır: biri alınıb digəri alınmasa, data pozulur.
+
+```sql
+BEGIN;
+UPDATE orders SET status = 'cancelled' WHERE id = 105;
+SELECT id, status FROM orders WHERE id = 105;
+ROLLBACK;
+```
+
+`ROLLBACK`-dən sonra 105-in statusu yenə `new`-dur. `COMMIT` dəyişikliyi saxlayardı. Tester üçün iki istifadəsi var: test datasını dəyişib geri qaytarmaq və “ödəniş yarıda kəsiləndə nə qalır?” sualını test etmək. Paylaşılan test bazasında dəyişikliyi başqalarına xəbər vermədən etmə, canlı bazada isə heç vaxt.
+
+**İndeks (index)** axtarışı sürətləndirir, kitabın sonundakı göstərici kimi. İndeksi olmayan sütunda baza bütün cədvəli oxuyur:
+
+```sql
+CREATE INDEX idx_orders_customer ON orders(customer_id);
+EXPLAIN QUERY PLAN SELECT * FROM orders WHERE customer_id = 3;
+```
+
+SQLite indeksdən əvvəl `SCAN orders`, sonra `SEARCH orders USING INDEX idx_orders_customer (customer_id=?)` yazır: bütün cədvəl yox, yalnız lazımi sətirlər oxunur. Böyük cədvəldə yavaş səhifənin səbəbi tez-tez çatışmayan indeksdir.
+
+**Unikal indeks** təkrarı qadağan edir:
+
+```sql
+CREATE UNIQUE INDEX idx_customers_email ON customers(email);
+```
+
+Bundan sonra eyni emaillə ikinci müştəri əlavə etmək xəta verir: `UNIQUE constraint failed: customers.email`. Bu, qeydiyyat testinin ideyasıdır: eyni email iki dəfə, böyük və kiçik hərflə, əvvəlində boşluqla.
 
 ### Diqqət: tez-tez edilən səhvlər
 
@@ -5194,6 +5307,69 @@ jobs:
 **PR-ı qoruyan qayda.** Pipeline-ın nəticəsi məcburi olmayanda proqramçılar gözləmir. GitHub-da: Settings → Branches → main üçün qayda → “Require status checks to pass”. İndi `smoke` qırmızıdırsa, PR birləşmir. Bu qaydanın düzgün işləməsi üçün flaky testlər tez düzəldilməlidir, yoxsa komanda onu söndürməyi istəyəcək.
 
 **Portfolio üçün.** README-yə workflow-un nişanını (badge) və son hesabatın linkini əlavə et: işəgötürən testlərin həqiqətən işlədiyini bir baxışda görür.
+
+### 20.11. Tester üçün terminal {#c20x2}
+
+Terminal əmrlərlə işləmək üçündür: logu axtarmaq, testi işə salmaq, API-yə sorğu göndərmək. Windows-da PowerShell, Linux və Mac-da Bash işlənir, Git Bash isə Windows-da Bash verir.
+
+| İş | Bash | PowerShell |
+| --- | --- | --- |
+| Haradayam | `pwd` | `pwd` |
+| Qovluğa keç | `cd tests` | `cd tests` |
+| Qovluqdakılar | `ls -la` | `ls` |
+| Faylı oxu | `cat app.log` | `Get-Content app.log` |
+| Son 50 sətir | `tail -n 50 app.log` | `Get-Content app.log -Tail 50` |
+| Canlı izlə | `tail -f app.log` | `Get-Content app.log -Wait -Tail 20` |
+| Sözü axtar | `grep "ERROR" app.log` | `Select-String "ERROR" app.log` |
+| Neçə dəfə | `grep -c "ERROR" app.log` | `(Select-String "ERROR" app.log).Count` |
+| HTTP sorğu | `curl -i https://…` | `curl.exe -i https://…` |
+
+Windows PowerShell-də `curl` başqa əmrin qısa adıdır, ona görə `curl.exe` yaz.
+
+**Əmrləri birləşdirmək.** `|` bir əmrin çıxışını o birinə verir, `>` isə fayla yazır:
+
+```bash
+grep "req-c0d1" app.log | grep "ERROR"
+grep "ERROR" app.log > errors.txt
+curl -i https://jsonplaceholder.typicode.com/posts/1
+```
+
+Sonuncu status sətrini, başlıqları və gövdəni göstərir: Postman-sız tez yoxlama (Fəsil 15).
+
+**Vərdişlər.** `↑` əvvəlki əmri qaytarır, `Tab` adı tamamlayır, `Ctrl+C` işləyən əmri dayandırır. Başa düşmədiyin əmri, xüsusən internetdən köçürülmüş silmə əmrlərini (`rm -rf`, `Remove-Item -Recurse`) işə salma. Serverdə isə yalnız icazə ilə işlə.
+
+### 20.12. Docker: eyni mühiti bir əmrlə qaldırmaq {#c20x3}
+
+“Mənim kompüterimdə işləyir” problemi çox vaxt mühit fərqindən gəlir: başqa versiya, başqa ayar, boş baza. Docker proqramı lazım olan hər şeylə birlikdə paketləyir və hər kəsdə eyni cür işə salır.
+
+| Anlayış | Nədir |
+| --- | --- |
+| Image | Şablon: proqram və ona lazım olan hər şey |
+| Container | Image-dən işə salınmış nüsxə |
+| Dockerfile | Image-in necə qurulduğunu yazan fayl |
+| docker compose | Bir neçə servisi (API, baza, sayt) birlikdə qaldırır, `compose.yaml` faylı ilə |
+
+Tester ən çox bu əmrləri işlədir:
+
+```bash
+docker compose up -d
+docker compose ps
+docker compose logs -f api
+docker compose restart api
+docker compose down
+```
+
+`up -d` servisləri arxa planda qaldırır, `ps` hansının işlədiyini göstərir, `logs -f api` API-nin logunu canlı göstərir (13.11). `down` hamısını dayandırır. `docker compose down -v` isə məlumatları (volume) da silir: test bazası sıfırdan başlayır, amma əvvəlki test datası da gedir.
+
+**Port.** `8080:80` yazılışı “kompüterin 8080 portu konteynerin 80 portuna” deməkdir: sayt brauzerdə `http://localhost:8080`-da açılır.
+
+**Playwright Docker-də.** Playwright-ın rəsmi image-ində brauzerlər hazırdır. Versiya `package.json`-dakı Playwright versiyası ilə eyni olmalıdır:
+
+```text
+mcr.microsoft.com/playwright:v1.63.0-noble
+```
+
+CI testləri bu image-də işə salanda brauzer quraşdırması hər dəfə təkrarlanmır və hamıda eyni brauzer olur.
 
 ### Diqqət: tez-tez edilən səhvlər
 

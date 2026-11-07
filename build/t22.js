@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { setup } = require('./harness');
 const SQLJ = JSON.parse(fs.readFileSync(path.join(__dirname, 'sql.json'), 'utf8'));
+const SQLN = SQLJ.tasks.length;
 const go = (page, h) => page.evaluate(h => { location.hash = h; }, h).then(() => page.waitForTimeout(400));
 const settle = page => page.waitForFunction(() => !document.querySelector('#view .thinking'), null, { timeout: 15000 }).then(() => page.waitForTimeout(80));
 async function runPre(page, sid, n) {
@@ -66,7 +67,7 @@ async function check(page, i, q) {
   for (const [i, q] of Object.entries(wrong)) { const v = await check(page, +i, q); out.wrong[SQLJ.tasks[i].id] = (v.ok ? 'PASSED?! ' : '') + v.msg.slice(0, 200); if (v.ok) bad.push('wrong answer passed ' + SQLJ.tasks[i].id); }
   if (!out.wrong.q3.includes('sıra fərqlidir') || !out.wrong.q9.includes('WHERE çox geniş') || !out.wrong.q6.includes('IS NULL')) bad.push('wrong-answer messages');
   out.done = await page.$eval('#sql-task .block-h .chip', el => el.textContent);
-  if (out.done !== '10/10 həll') bad.push('done ' + out.done);
+  if (out.done !== `${SQLN}/${SQLN} həll`) bad.push('done ' + out.done);
   await page.screenshot({ path: 'shots/sql-console-1024.png', fullPage: true });
   // entry points: a section lists its tasks and opens the console on that task; the practice tab has a card
   await go(page, '#c16s7');
@@ -75,7 +76,7 @@ async function check(page, i, q) {
   out.opened = await page.$eval('#sql-task h2', el => el.textContent);
   await go(page, '#mesq');
   out.practice = await page.$$eval('#view [data-act="sql-open"]', x => x.length);
-  if (out.links.length !== 3 || out.opened !== 'Tapşırıq 8/10' || out.practice !== 1) bad.push('entry points');
+  if (out.links.length !== 3 || out.opened !== `Tapşırıq 8/${SQLN}` || out.practice !== 1) bad.push('entry points');
   ERRORS.push(...errors); await browser.close();
   // phone, dark: Ctrl+Enter runs; nothing overflows
   ({ browser, page, errors } = await setup({ hash: '#sql', w: 360, h: 760, mobile: true, dark: true, wait: 1500 }));

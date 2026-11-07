@@ -413,3 +413,63 @@ Shard-lar ayrı hesabat verir. Config-də CI üçün `reporter: 'blob'` yazılı
 6. **Yoxla:** qəsdən sınmış PR birləşmir; gecə icrası səhər hesabatla görünür.
 @növbən
 Bazar ertəsindən cümə gününə hər səhər 07:00-da (Bakı vaxtı) tam dəsti 4 shard-da işlədən workflow hissəsini yaz. Secret kimi `API_TOKEN` ver. Hesabatlar hər shard üçün ayrıca adla saxlansın. Cron dəyərini necə hesabladığını izah et. Pipeline-ı məcburi etmək üçün GitHub-da nə edərsən və bunun riski nədir?
+
+=== c20x2
+@qısa
+Terminal logu axtarmaq, testi işə salmaq və API-yə sorğu göndərmək üçündür. Əsas əmrlər: `cd`, `ls`, `cat`/`Get-Content`, `tail`, `grep`/`Select-String`, `curl`. `|` əmrləri birləşdirir, `>` fayla yazır.
+@yadda
+- PowerShell-də `curl.exe` yaz, `curl` yox.
+- `tail -f` və `Get-Content -Wait` logu canlı göstərir.
+- Başa düşmədiyin silmə əmrini işə salma.
+@dərin
+### Yol və qovluq
+`cd ..` bir qovluq yuxarı çıxır. Boşluqlu adı dırnağa al: `cd "My Tests"`. Nisbi yol hazırkı qovluqdan, tam yol isə diskin əvvəlindən başlayır. Əmr faylı tapmırsa, əvvəl `pwd` ilə harada olduğuna bax.
+
+### grep-in faydalı açarları
+`grep -i` böyük-kiçik hərfə baxmır, `grep -n` sətir nömrəsini göstərir, `grep -A 3` tapılandan sonra 3 sətir də göstərir: stack trace üçün əlverişlidir. PowerShell-də: `Select-String "ERROR" app.log -Context 0,3`.
+
+### curl ilə API
+`curl -i` status və başlıqları göstərir. POST üçün: `curl -X POST -H "Content-Type: application/json" -d '{"title":"x"}' https://jsonplaceholder.typicode.com/posts`. Postman-dan tez, CI skriptində işlədilə bilir.
+
+### Mühit dəyişəni
+Şifrəni əmrə birbaşa yazma: tarixçədə qalır. 18.13-dəki kimi mühit dəyişəni işlət.
+@nümunə
+**Tapşırıq.** `app.log` faylında `req-c0d1` sorğusunun ERROR sətrini və ondan sonrakı 3 sətri Bash-da tap.
+@addımlar
+1. **Qovluğa keç:** `cd logs`, `ls` ilə faylın orada olduğunu yoxla.
+2. **Axtar:** `grep "req-c0d1" app.log` sorğunun bütün sətirlərini göstərir.
+3. **Daralt:** `grep "req-c0d1" app.log | grep "ERROR"`.
+4. **Konteksti göstər:** `grep -A 3 "ERROR \[req-c0d1\]" app.log`: stack trace də görünür.
+5. **Saxla:** `… > bug-412.txt` və report-a əlavə et.
+@növbən
+Eyni işi PowerShell-də necə edərsən? İki əmr yaz: biri sorğunun bütün sətirləri üçün, biri ERROR sətri və ondan sonrakı 3 sətir üçün.
+
+=== c20x3
+@qısa
+Docker proqramı lazım olan hər şeylə birlikdə paketləyir: image şablondur, container onun işləyən nüsxəsidir. `docker compose up -d`, `ps`, `logs -f`, `down` tester-in əsas əmrləridir. Playwright-ın rəsmi image-inin versiyası paketin versiyası ilə eyni olmalıdır.
+@yadda
+- Image şablon, container işləyən nüsxədir.
+- `down -v` test datasını da silir.
+- `8080:80`: kompüterin portu solda, konteynerinki sağda.
+@dərin
+### Test bazasını təmiz başlatmaq
+Testlər bir-birinin datasından asılı olanda flaky olur (19.9). `docker compose down -v` və `up -d` bazanı ilkin vəziyyətə qaytarır. Bəzi komandalar ilkin datanı da compose ilə yükləyir: hər test qaçışı eyni datadan başlayır.
+
+### Konteyner işə düşmürsə
+`docker compose ps` statusu göstərir: `Exited` görürsənsə, `docker compose logs api` səbəbini deyir: port məşğuldur, mühit dəyişəni yoxdur, baza hələ hazır deyil. Bu xətaları bilmək tester-i bir saatlıq gözləmədən xilas edir.
+
+### Versiya uyğunluğu
+Playwright image-i ilə layihədəki Playwright versiyası fərqli olanda brauzer tapılmır və testlər işə düşmür. `package.json`-da `1.63.0`-dırsa, image `v1.63.0-noble` olmalıdır.
+
+### Docker və təhlükəsizlik
+Image-ə şifrə və tokenləri yazma: image paylaşılır. Onları mühit dəyişəni kimi ötür.
+@nümunə
+**Tapşırıq.** Layihədə `compose.yaml` var: `web`, `api`, `db`. Sayt açılmır. Nə edirsən?
+@addımlar
+1. **Status:** `docker compose ps`: `api` Exited-dir.
+2. **Səbəb:** `docker compose logs api`: “connection refused db:5432”: baza hazır olmayıb.
+3. **Yenidən:** `docker compose restart api`.
+4. **Yoxla:** `docker compose ps`: hamısı işləyir, sayt açılır.
+5. **Bildir:** təkrarlanırsa, komandaya de: API bazanı gözləməlidir. Bu, mühit problemidir, məhsul baqı yox.
+@növbən
+Test datası testlər arasında qarışır və testlər bəzən düşür. Docker ilə bunu necə həll edərsən? İki əmr və bir cümlə izah yaz. Hansı riski unutmamalısan?
