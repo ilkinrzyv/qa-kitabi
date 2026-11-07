@@ -364,6 +364,20 @@ details.cmp-why[open]>summary{border-bottom:0;border-radius:0}
 .fb{margin-top:12px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);padding:12px 14px}
 .fb-h{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;color:var(--ink-3);font-family:var(--f-mono);letter-spacing:.04em}
 .fb .prose{font-size:calc(var(--fs) - 1.5px)}
+/* answer key: hint, attempt reminder, model answer and the criteria the reader ticks */
+.ans-note{display:flex;gap:8px;margin-top:10px;padding:9px 12px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);font-size:14px;line-height:1.45;color:var(--ink-2)}
+.ans-note svg.i{width:17px;height:17px;margin-top:1px;color:var(--accent)}
+.ans-note code{font-family:var(--f-mono);font-size:.88em;background:var(--code-bg);padding:.05em .35em;border-radius:5px}
+.ans{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--pass-soft);border:1px solid var(--pass-line)}
+.ans-h{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--pass);font-weight:600;margin:12px 0 6px}
+.ans-h:first-child{margin-top:0}
+.ans .prose{font-size:calc(var(--fs) - 1.5px)}
+.ans .tbl,.ans pre.code{background:var(--surface)}
+.ans-crit{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.ans-crit label{display:flex;gap:10px;align-items:flex-start;padding:6px 2px;cursor:pointer;font-size:14.5px;line-height:1.4}
+.ans-crit input{width:18px;height:18px;margin:1px 0 0;accent-color:var(--pass);flex:none}
+.ans-crit code{font-family:var(--f-mono);font-size:.88em;background:var(--surface);padding:.05em .35em;border-radius:5px}
+.ans-n{margin-top:6px;font-family:var(--f-mono);font-size:12px;color:var(--ink-2)}
 /* screen-words hint under result-writing answers */
 .swc{margin-top:8px;border-radius:12px;border:1px solid var(--warn-line);background:var(--warn-soft);padding:10px 12px;font-size:13.5px;line-height:1.45}
 .swc-h{display:flex;align-items:center;gap:7px;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--warn);font-weight:600}

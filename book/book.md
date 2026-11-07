@@ -15,10 +15,10 @@ Kitab kursunu əvəz etmir, onu tamamlayır. Kursda bir mövzunu keçəndə həm
 | İzah | Mövzu sadə dillə, gündəlik həyatdan misallarla | Anlayışı başa düşmək |
 | Diqqət | Yeni başlayanların tez-tez etdiyi səhvlər | Səhvi əvvəlcədən tanımaq |
 | Həll olunmuş nümunə | Bir tapşırığın addım-addım həlli | Necə düşünməli olduğunu görmək |
-| Sənin növbən | Oxşar tapşırıqlar, cavabsız | Öyrəndiyini özün tətbiq etmək |
+| Sənin növbən | Oxşar tapşırıqlar; nümunə cavab əvvəlcə bağlıdır | Öyrəndiyini özün tətbiq etmək |
 | Özünü yoxla | Fəsil üzrə qısa suallar | Boşluqları tapmaq |
 
-“Sənin növbən” tapşırıqlarının cavabları kitabda yoxdur, bu bilərəkdən belədir. Həll edəndən sonra cavabını mənə göndər — yoxlayıb rəy verəcəyəm.
+Bütün tapşırıqların nümunə cavabı kitabdadır, amma əvvəlcə bağlıdır, çünki öyrənmək özün yazanda baş verir. Cavabını tapşırığın altındakı sahəyə yaz, sonra “Cavabı göstər” düyməsi ilə nümunəni aç və özünü meyarlarla yoxla. İlişib qalsan, “İpucu” həlli açmadan istiqamət göstərəcək. Claude qoşulubsa, “Yoxla” düyməsi cavabına ayrıca rəy də verir.
 
 ### Terminlər haqqında
 
@@ -3750,7 +3750,7 @@ Bu cavab göstərir ki, təxminlə yox, sistemlə düşünürsən: tələb → f
 1. CV-nin “Bacarıqlar” və “Layihələr” bölmələrini yaz.
 2. “Kofe aparatını test et” sualına bu fəsildəki strukturla cavab yaz.
 3. GitHub portfolio-n üçün README planı hazırla: bölmələr və hər bölmədə nə olacaq.
-4. Cədvəldəki 12 sualdan 5-nə öz sözlərinlə cavab yaz və mənə göndər — yoxlayıb rəy verərəm.
+4. Cədvəldəki 12 sualdan 5-nə öz sözlərinlə cavab yaz, sonra cədvəldəki nümunə ilə tutuşdur.
 5. STAR metodu ilə öz həyatından bir hekayə yaz: çətin vəziyyəti necə həll etdin?
 
 ### Özünü yoxla

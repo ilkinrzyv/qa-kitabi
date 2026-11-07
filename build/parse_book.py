@@ -25,12 +25,9 @@ FIXES = [
     ('dəmək olar ki', 'demək olar ki'),
     ('inciyəmə', 'incimə'),
     ('“bəli” demsən', '“bəli” desən'),
-    ('Həll edəndən sonra cavabını mənə göndər — yoxlayıb rəy verəcəyəm.',
-     'Həll edəndən sonra cavabını tapşırığın altındakı sahəyə yaz və “Yoxla” düyməsini bas — Claude cavabını yoxlayıb rəy verəcək. İlişib qalsan, “İpucu” düyməsi həlli açmadan istiqamət göstərəcək.'),
     ('Çətin gələn yeri sənəddə seçib şərh (comment) yaz və ya çatda soruş. Həmin hissəni daha geniş, əlavə misallarla izah edəcəyəm.',
      'Çətin gələn bölmədə “Sadə izah et” və ya “Başqa misal” düyməsini bas, ya da mətndən bir hissəni seçib “Seçiləni izah et” de. İstənilən sualını “Müəllim” bölməsində yaz.'),
     ('linkini mənə göndər.', 'linkini cavab sahəsinə yaz.'),
-    ('cavab yaz və mənə göndər — yoxlayıb rəy verərəm.', 'cavab yaz və “Yoxla” düyməsini bas — Claude rəy verəcək.'),
     ('Bu kitabın I–IV hissələri onun əsas mövzularını əhatə edir.',
      'Bu kitabın I–IV hissələri onun əsas mövzularını əhatə edir. Sillabusun hər mövzusunun kitabda harada olduğunu [ISTQB xəritəsi](#istqb) göstərir.'),
 ]
@@ -690,6 +687,8 @@ for ch in chapters:
             attach_ans(s['x']['ex']['id'], s['x']['ex'], True)
 for k in sorted(set(ans_raw) - ans_used):
     print('ERR answer for unknown exercise', k, file=sys.stderr); errors += 1
+for k in ans_missing:
+    print('ERR answer missing', k, file=sys.stderr); errors += 1
 print('answers', len(ans_used), 'missing', len(ans_missing))
 
 import sqlite3
