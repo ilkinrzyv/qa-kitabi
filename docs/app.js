@@ -2821,11 +2821,39 @@ function pwRead(env, loc, m, a, line) {
 }
 const pwVal = (env, e0, el = pwField(e0)) => el.dataset.smF ? env.st.f[el.dataset.smF] : el.dataset.wF ? env.st.w[el.dataset.wF] : el.dataset.wS ? env.st.w[el.dataset.wS] : el.tagName === 'SELECT' ? env.st.sort : el.getAttribute('value') || '';
 const pwQ = v => v instanceof RegExp ? String(v) : JSON.stringify(v);
+// an element as Playwright's call log shows it: own tag and attributes, the text of a leaf, "…" for children
+function pwPreview(el) {
+  const c = el.cloneNode(false), tag = el.tagName.toLowerCase();
+  c.classList.remove(...[...c.classList].filter(k => /^(pw|sm|w)-/.test(k))); if (!c.getAttribute('class')) c.removeAttribute('class');
+  [...c.attributes].forEach(a => { if (/^data-(?!test$)|^(autocomplete|autocapitalize|spellcheck|style|tabindex)$/.test(a.name)) c.removeAttribute(a.name); });
+  const open = c.outerHTML.replace(new RegExp(`</${tag}>$`), '');
+  if (/^(input|img|br|hr)$/.test(tag)) return open.replace(/>$/, '/>');
+  return `${open}${el.children.length ? '…' : el.textContent.trim()}</${tag}>`;
+}
+// an expect failure in Playwright 1.63's words, checked against real runs: plain Expected/Received align every label,
+// "Expected pattern" or "Expected substring" align only that pair; a missing element says so after the timeout
+function pwExpectFail(o) {
+  const rows = [], nf = !!o.nf;
+  if (o.loc) rows.push(['Locator', o.loc]);
+  rows.push(o.exp);
+  if (o.rec && !nf) rows.push(o.rec);
+  rows.push(['Timeout', '5000ms']);
+  const plain = o.exp[0] === 'Expected' && (!o.rec || o.rec[0] === 'Received');
+  const W = Math.max(o.exp[0].length, o.rec ? o.rec[0].length : 0) + 2;
+  const fmt = r => nf ? `${r[0]}: ${r[1]}` : plain ? `${(r[0] + ':').padEnd(10)}${r[1]}` : r === o.exp || r === o.rec ? `${(r[0] + ':').padEnd(W)}${r[1]}` : `${r[0]}: ${r[1]}`;
+  const log = [`  - Expect "${o.mm.replace('not.', 'not ')}"${o.loc ? ' ' + o.loc : ''} with timeout 5000ms`];
+  if (o.loc) log.push(`  - waiting for ${o.loc}`);
+  if (o.resolved && !nf) log.push(`    14 × locator resolved to ${o.resolved}`, `       - unexpected value "${o.unexpected}"`);
+  return [`expect(${o.subject}).${o.mm}(${o.args}) failed`, `${rows.map(fmt).join('\n')}${nf ? '\nError: element(s) not found' : ''}\n\nCall log:\n${log.join('\n')}`];
+}
+const pwLabel = s => { const i = s.indexOf(': '); return [s.slice(0, i), s.slice(i + 2)]; };
 // web-first assertions: on the page, on a locator (strict for one element), plain value checks
 function pwAssert(x, m, a, line, env) {
   const t = x.v, neg = x.not, mm = (neg ? 'not.' : '') + m, exp = a[0];
   const full = (v, s) => v instanceof RegExp ? v.test(s) : pwNorm(s) === pwNorm(v);
   const fail = (head, body, hint) => { throw Object.assign(PwErr(`Error: ${head}\n\n${body}`, hint, line), { ms: 5000, matcher: m }); };
+  const failX = (o, hint) => { const [h, b] = pwExpectFail(o); fail(h, b, hint); };
+  const ARGLESS = ['toBeVisible', 'toBeHidden', 'toBeEnabled', 'toBeDisabled', 'toBeEmpty', 'toBeChecked'];
   if (m === 'toBeOK') {
     if (!t || !t.$res) throw PwErr('Error: expect(value).toBeOK — bu yoxlama API cavabı üçündür', 'Yaz: await expect(response).toBeOK();', line);
     if ((t.st >= 200 && t.st < 300) === neg) throw Object.assign(PwErr(`Error: expect(response).${mm}()\n\nExpected: ${neg ? 'not ' : ''}OK (200–299)\nReceived: ${t.st}\nResponse: ${JSON.stringify(t.body)}`, 'Cavabın gövdəsi səbəbi deyir: token, data və ya URL səhvdir.', line), { matcher: m });
@@ -2837,21 +2865,21 @@ function pwAssert(x, m, a, line, env) {
     const got = m === 'toHaveURL' ? (t.$popup ? t.url : pwUrl(env)) : env.st ? 'Mini Store' : '';
     env.snap = t.$popup ? pwDom(t.st).innerHTML : env.st ? pwDom(env.st).innerHTML : null;
     if ((exp instanceof RegExp ? exp.test(got) : got === exp) === neg)
-      fail(`Timed out 5000ms waiting for expect(page).${mm}(expected)`, `Expected ${exp instanceof RegExp ? 'pattern' : 'string'}: ${pwQ(exp)}\nReceived string: "${got}"`,
+      failX({ subject: 'page', mm, args: 'expected', exp: [exp instanceof RegExp ? 'Expected pattern' : 'Expected', `${neg ? 'not ' : ''}${pwQ(exp)}`], rec: [exp instanceof RegExp ? 'Received string' : 'Received', JSON.stringify(got)], resolved: '<html>…</html>', unexpected: got },
         m === 'toHaveTitle' && exp === 'Swag Labs' ? 'Bu modelin səhifə başlığı «Mini Store»-dur (real saytda «Swag Labs»).' : m === 'toHaveURL' ? 'URL gözləniləndən fərqlidir: səhifə dəyişməyib və ya başqa səhifə açılıb. Trace-də addımın ekranına bax.' : '');
     return undefined;
   }
   if (t && t.$loc) {
     if (t.$frame) throw PwErr(`Error: ${m} can be only used with Locator object, was called with FrameLocator`, "frameLocator iframe-in özü deyil, onun içinə yoldur: içindəki elementi yoxla, məsələn expect(pay.getByTestId('pay-status')).", line);
     if (!PW_MATCH_L.includes(m)) throw PwErr(`Error: expect(locator).${m} — lokator üçün bu yoxlama yoxdur`, `Lokator üçün: ${PW_MATCH_L.join(', ')}.`, line);
-    if (!env.st) fail(`Timed out 5000ms waiting for expect(locator).${mm}()`, `Locator: ${t.desc}\nExpected: ${m}\nReceived: <element(s) not found>`, 'Səhifə hələ açılmayıb: əvvəlcə await page.goto(…) yaz.');
+    if (!env.st) failX({ subject: 'locator', mm, args: ARGLESS.includes(m) ? '' : 'expected', loc: t.desc, exp: ['Expected', ARGLESS.includes(m) ? m.replace(/^toBe/, '').toLowerCase() : pwQ(exp)], nf: 1 }, 'Səhifə hələ açılmayıb: əvvəlcə await page.goto(…) yaz.');
     const root = pwRootOf(env, t), els = pwResolve(t, root);
     els.forEach(el => el.classList.add('pw-hl')); env.snap = root.innerHTML;
     if (m !== 'toHaveCount' && !(m === 'toHaveText' && Array.isArray(exp)) && els.length > 1) throw Object.assign(pwStrict(`expect.${mm}`, t, els, root, line), { ms: 5000 });
     const el = els[0], text = el ? pwNorm(pwTextOf(el)) : null, nf = '<element(s) not found>';
     const val = el ? pwVal(env, el) : null;
     // not.* on an element that does not exist fails too, so a mistyped locator is not green. Only not.toBeVisible and a count hold
-    if (!el && neg && m !== 'toBeVisible' && m !== 'toHaveCount' && !(m === 'toHaveText' && Array.isArray(exp))) fail(`Timed out 5000ms waiting for expect(locator).${mm}(${['toBeHidden', 'toBeEnabled', 'toBeDisabled', 'toBeEmpty', 'toBeChecked'].includes(m) ? '' : 'expected'})`, `Locator: ${t.desc}\nReceived: ${nf}`, 'Element tapılmadı: not ilə yoxlama da elementin olmasını tələb edir. Lokatoru yoxla. Element olmamalıdırsa, not.toBeVisible() yaz.');
+    if (!el && neg && m !== 'toBeVisible' && m !== 'toHaveCount' && !(m === 'toHaveText' && Array.isArray(exp))) failX({ subject: 'locator', mm, args: ARGLESS.includes(m) ? '' : 'expected', loc: t.desc, exp: ['Expected', `not ${ARGLESS.includes(m) ? m.replace(/^toBe/, '').toLowerCase() : pwQ(exp)}`], nf: 1 }, 'Element tapılmadı: not ilə yoxlama da elementin olmasını tələb edir. Lokatoru yoxla. Element olmamalıdırsa, not.toBeVisible() yaz.');
     let pass, e1, r1, hint = '';
     switch (m) {
       case 'toBeVisible': pass = !!el; e1 = `Expected: ${neg ? 'not visible' : 'visible'}`; r1 = `Received: ${el ? 'visible' : nf}`; hint = el ? 'Element ekranda görünür.' : 'Element ekranda yoxdur: lokatoru və səhifəni yoxla (trace addımın anındakı ekranı göstərir).'; break;
@@ -2859,11 +2887,11 @@ function pwAssert(x, m, a, line, env) {
       case 'toHaveText': case 'toContainText':
         if (Array.isArray(exp)) { const got = els.map(e => pwNorm(pwTextOf(e))); pass = got.length === exp.length && exp.every((v, i) => full(v, got[i])); e1 = `Expected: ${JSON.stringify(exp)}`; r1 = `Received: ${JSON.stringify(got)}`; break; }
         pass = !!el && (m === 'toHaveText' ? full(exp, text) : exp instanceof RegExp ? exp.test(text) : text.includes(pwNorm(exp)));
-        e1 = `Expected ${exp instanceof RegExp ? 'pattern' : m === 'toHaveText' ? 'string' : 'substring'}: ${pwQ(exp)}`; r1 = el ? `Received string: "${text}"` : `Received: ${nf}`;
+        e1 = `Expected${exp instanceof RegExp ? ' pattern' : m === 'toHaveText' ? '' : ' substring'}: ${pwQ(exp)}`; r1 = `Received${exp instanceof RegExp || m === 'toContainText' ? ' string' : ''}: "${text}"`;
         hint = !el ? 'Element tapılmadı: ya lokator səhvdir, ya da element bu səhifədə yoxdur (bəlkə bug?).' : m === 'toHaveText' ? 'toHaveText bütün mətni tutuşdurur, böyük-kiçik hərf də fərqlidir. Hissə üçün toContainText işlət, mətni ekrandan olduğu kimi köçür.' : 'Gözlənilən hissə mətndə yoxdur (böyük-kiçik hərf fərqlidir).';
         break;
       case 'toHaveCount': pass = els.length === exp; e1 = `Expected: ${exp}`; r1 = `Received: ${els.length}`; hint = 'Elementlərin sayı fərqlidir.'; break;
-      case 'toHaveValue': pass = !!el && full(exp, val); e1 = `Expected ${exp instanceof RegExp ? 'pattern' : 'string'}: ${pwQ(exp)}`; r1 = el ? `Received string: "${val}"` : `Received: ${nf}`; hint = 'Sahənin dəyəri fərqlidir.'; break;
+      case 'toHaveValue': pass = !!el && full(exp, val); e1 = `Expected${exp instanceof RegExp ? ' pattern' : ''}: ${pwQ(exp)}`; r1 = `Received${exp instanceof RegExp ? ' string' : ''}: "${val}"`; hint = 'Sahənin dəyəri fərqlidir.'; break;
       case 'toBeEnabled': case 'toBeDisabled': pass = !!el && (m === 'toBeEnabled') === !el.disabled; e1 = `Expected: ${m === 'toBeEnabled' ? 'enabled' : 'disabled'}`; r1 = `Received: ${el ? (el.disabled ? 'disabled' : 'enabled') : nf}`; break;
       case 'toHaveAttribute': pass = !!el && el.hasAttribute(exp) && (a[1] === undefined || full(a[1], el.getAttribute(exp))); e1 = `Expected: ${exp}${a[1] === undefined ? '' : '=' + pwQ(a[1])}`; r1 = `Received: ${el ? (el.hasAttribute(exp) ? pwQ(el.getAttribute(exp)) : 'no attribute') : nf}`; break;
       case 'toBeEmpty': { const inp = el && (pwField(el).dataset.smF || pwField(el).dataset.wF); pass = !!el && (inp ? !val : !text); e1 = 'Expected: empty'; r1 = `Received: ${el ? pwQ(inp ? val : text) : nf}`; break; }
@@ -2874,7 +2902,8 @@ function pwAssert(x, m, a, line, env) {
         pass = !!box && box.checked === want; e1 = `Expected: ${neg ? 'not ' : ''}${want ? 'checked' : 'unchecked'}`; r1 = `Received: ${box ? (box.checked ? 'checked' : 'unchecked') : nf}`; hint = 'Qutunun vəziyyəti fərqlidir: check() və uncheck() lazımi vəziyyəti özü qurur.'; break;
       }
     }
-    if (pass === neg) fail(`Timed out 5000ms waiting for expect(locator).${mm}(${['toBeVisible', 'toBeHidden', 'toBeEnabled', 'toBeDisabled', 'toBeEmpty', 'toBeChecked'].includes(m) ? '' : 'expected'})`, `Locator: ${t.desc}\n${e1}\n${r1}`, neg ? 'not ilə yoxlama tərsinə işləyir: şərt doğru olmamalı idi.' : hint);
+    if (pass === neg) failX({ subject: 'locator', mm, args: ARGLESS.includes(m) ? '' : 'expected', loc: t.desc, exp: pwLabel(e1), rec: pwLabel(r1), nf: !el && !neg && m !== 'toHaveCount' && !(m === 'toHaveText' && Array.isArray(exp)) && m !== 'toBeHidden',
+      resolved: m === 'toHaveCount' || Array.isArray(exp) ? `${els.length} element${els.length === 1 ? '' : 's'}` : el ? pwPreview(el) : '', unexpected: pwLabel(r1)[1].replace(/^"|"$/g, '') }, neg ? 'not ilə yoxlama tərsinə işləyir: şərt doğru olmamalı idi.' : hint);
     return undefined;
   }
   if (!PW_MATCH_V.includes(m)) throw PwErr(`Error: expect(value).${m} — bu yoxlama dəyər üçün deyil`, PW_MATCH_L.includes(m) ? `${m} lokator üçündür: expect(page.getBy…(…)).${m}(…) yaz.` : '', line);
