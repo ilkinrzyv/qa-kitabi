@@ -21,11 +21,11 @@
   },
   "c8s3m": {
     "h": "Məbləğin yazılışına bax: vergüldən sonra neçə rəqəm var? Sonra hər BVA dəyərini koddakı şərtə qoy və nəticəni gözlənilənlə müqayisə et.",
-    "a": "**Addım:** 0,01 AZN (1 qəpik), çünki məbləğ vergüldən sonra iki rəqəmlə yazılıb və bu, pul sahəsidir.\n\n**3 dəyərli BVA:**\n\n| Dəyər | Yer | Gözlənilən |\n|---|---|---|\n| 499,99 | Aşağı sərhəddən kənar | Xəta |\n| 500,00 | Aşağı sərhəd | Qəbul |\n| 500,01 | İçəridəki qonşu | Qəbul |\n| 19 999,99 | İçəridəki qonşu | Qəbul |\n| 20 000,00 | Yuxarı sərhəd | Qəbul |\n| 20 000,01 | Yuxarı sərhəddən kənar | Xəta |\n\n**`amount > 500` kodu ilə:** 500,00 testi düşür. `500 > 500` şərti doğru deyil, ona görə məbləğ rədd olunur, gözlənilən isə qəbuldur. 499,99 rədd olunur, 500,01 qəbul olunur, yəni bu iki test keçir; defekti yalnız sərhədin özü tutur. Düzgün kod `amount >= 500` olardı.",
+    "a": "**Addım:** 0,01 AZN (1 qəpik), çünki məbləğ vergüldən sonra iki rəqəmlə yazılıb və bu, pul sahəsidir.\n\n**3 dəyərli BVA:**\n\n| Dəyər | Yer | Gözlənilən |\n|---|---|---|\n| 499,98 | 499,99-un qonşusu | Xəta |\n| 499,99 | Kiçik sinfin sərhəd dəyəri | Xəta |\n| 500,00 | Valid sinfin sərhəd dəyəri | Qəbul |\n| 500,01 | İçəridəki qonşu | Qəbul |\n| 19 999,99 | İçəridəki qonşu | Qəbul |\n| 20 000,00 | Valid sinfin sərhəd dəyəri | Qəbul |\n| 20 000,01 | Böyük sinfin sərhəd dəyəri | Xəta |\n| 20 000,02 | 20 000,01-in qonşusu | Xəta |\n\n**Aşağı şərt `amount > 500` olanda (yuxarı şərt düzgündür):** 500,00 testi düşür. `500 > 500` şərti doğru deyil, ona görə məbləğ rədd olunur, gözlənilən isə qəbuldur. 499,99 rədd olunur, 500,01 qəbul olunur, yəni bu iki test keçir; defekti yalnız sərhədin özü tutur. Düzgün kod `amount >= 500` olardı.",
     "c": [
       "Addım 0,01 AZN (1 qəpik) kimi göstərilib, 1 AZN kimi yox",
-      "Altı dəyər yazılıb: 499,99; 500,00; 500,01; 19 999,99; 20 000,00; 20 000,01",
-      "Gözlənilən nəticə yalnız 499,99 və 20 000,01 üçün xətadır",
+      "Səkkiz dəyər yazılıb: 499,98; 499,99; 500,00; 500,01; 19 999,99; 20 000,00; 20 000,01; 20 000,02",
+      "Gözlənilən nəticə 499,98; 499,99; 20 000,01 və 20 000,02 üçün xətadır",
       "500,00 testi düşür, çünki `500 > 500` doğru deyil və məbləğ rədd olunur"
     ]
   },
@@ -62,13 +62,13 @@
     ]
   },
   "c8t2": {
-    "h": "Bu, pul sahəsidir: iki məbləğ arasındakı ən kiçik fərq nədir? Hər sərhəd üçün özünü və iki qonşusunu yaz.",
-    "a": "**Addım:** 0,01 AZN (1 qəpik), çünki bu, pul sahəsidir.\n\n| Dəyər | Yer | Gözlənilən |\n|---|---|---|\n| 0,99 | Minimumdan kənar | Xəta |\n| 1,00 | Minimum | Qəbul |\n| 1,01 | İçəridəki qonşu | Qəbul |\n| 4999,99 | İçəridəki qonşu | Qəbul |\n| 5000,00 | Maksimum | Qəbul |\n| 5000,01 | Maksimumdan kənar | Xəta |\n\n**Niyə addım 1 AZN deyil?** 0, 1, 2, 4999, 5000, 5001 dəyərlərini seçsən, `amount > 0` kimi səhv kod bütün testlərdən keçir, amma 0,50 AZN köçürməyə icazə verir. Bu defekti yalnız 0,99 tutur. Yuxarıda da eynidir: `amount < 5001` kodu 5000,50 AZN-ə icazə verir, bunu isə 5000,01 tutur.\n\nTələbdə qəpikli məbləğin qəbul olunub-olunmadığı yazılmayıb, ona görə addımı analitikdən soruşub dəqiqləşdir. Kəsr ayırıcısını da yoxla: 1,00 və 1.00.",
+    "h": "Bu, pul sahəsidir: iki məbləğ arasındakı ən kiçik fərq nədir? Sərhəd dəyərləri 0,99; 1,00; 5000,00 və 5000,01-dir. Hər birinin özünü və iki qonşusunu yaz, təkrarları bir dəfə say.",
+    "a": "**Addım:** 0,01 AZN (1 qəpik), çünki bu, pul sahəsidir.\n\n| Dəyər | Yer | Gözlənilən |\n|---|---|---|\n| 0,98 | 0,99-un qonşusu | Xəta |\n| 0,99 | Kiçik sinfin sərhəd dəyəri | Xəta |\n| 1,00 | Minimum | Qəbul |\n| 1,01 | İçəridəki qonşu | Qəbul |\n| 4999,99 | İçəridəki qonşu | Qəbul |\n| 5000,00 | Maksimum | Qəbul |\n| 5000,01 | Böyük sinfin sərhəd dəyəri | Xəta |\n| 5000,02 | 5000,01-in qonşusu | Xəta |\n\n**Niyə addım 1 AZN deyil?** 0, 1, 2, 4999, 5000, 5001 dəyərlərini seçsən, aşağı şərt `amount > 0` kimi səhv yazılsa, bütün testlər keçir, amma 0,50 AZN köçürməyə icazə verilir. Bu defekti 0,99 (və 0,98) tutur. Yuxarıda da eynidir: yuxarı şərt `amount < 5001` kimi yazılsa, 5000,50 AZN-ə icazə verilir, bunu 5000,01 (və 5000,02) tutur.\n\nTələbdə qəpikli məbləğin qəbul olunub-olunmadığı yazılmayıb, ona görə addımı analitikdən soruşub dəqiqləşdir. Kəsr ayırıcısını da yoxla: 1,00 və 1.00.",
     "c": [
       "Addım 0,01 AZN (1 qəpik) kimi müəyyən olunub, 1 AZN kimi yox",
-      "Aşağı sərhəd üçün 0,99; 1,00; 1,01 yazılıb",
-      "Yuxarı sərhəd üçün 4999,99; 5000,00; 5000,01 yazılıb",
-      "Gözlənilən nəticə yalnız 0,99 və 5000,01 üçün xətadır"
+      "Aşağıda 0,98; 0,99; 1,00; 1,01 yazılıb",
+      "Yuxarıda 4999,99; 5000,00; 5000,01; 5000,02 yazılıb",
+      "Gözlənilən nəticə 0,98; 0,99; 5000,01 və 5000,02 üçün xətadır"
     ]
   },
   "c8t3": {
@@ -109,10 +109,10 @@
     ]
   },
   "c8q3": {
-    "a": "2 dəyərli BVA hər sərhəd üçün sərhədin özünü və ondan kənardakı qonşunu götürür: sərhəd 18 üçün 17, 18. 3 dəyərli BVA sərhədin özünü və hər iki qonşusunu götürür: 17, 18, 19. 3 dəyərli daha çox test deməkdir, amma `age == 18` kimi kobud səhvi də üzə çıxarır, ona görə pul və təhlükəsizlik kimi riskli sahələrdə daha etibarlıdır.",
+    "a": "2 dəyərli BVA hər sərhəd dəyərini və onun qonşu sinifdəki qonşusunu götürür: siniflərin 17 və 18-də toxunduğu yerdə 17, 18. 3 dəyərli BVA hər sərhəd dəyərini və onun hər iki qonşusunu götürür: 16, 17, 18, 19. 3 dəyərli daha çox test deməkdir, amma `age == 18` kimi kobud səhvi də üzə çıxarır, ona görə pul və təhlükəsizlik kimi riskli sahələrdə daha etibarlıdır.",
     "c": [
-      "2 dəyərli: sərhəd və kənardakı qonşu; 3 dəyərli: sərhəd və hər iki qonşu",
-      "Nümunədə sərhəd 18 üçün `17, 18` və `17, 18, 19` kimi dəyərlər var",
+      "2 dəyərli: sərhəd dəyəri və qonşu sinifdəki qonşusu; 3 dəyərli: sərhəd dəyəri və hər iki qonşusu",
+      "Nümunədə 17 və 18 üçün `17, 18` və `16, 17, 18, 19` kimi dəyərlər var",
       "3 dəyərlinin riskli sahələrdə daha etibarlı olduğu deyilib"
     ]
   },
@@ -122,6 +122,15 @@
       "Xətanın səbəbinin bilinməyəcəyi deyilib",
       "Bir xətanın digərini gizlətməsi və bunun adı (defect masking) göstərilib",
       "Digər sahələrin valid saxlanması qeyd olunub"
+    ]
+  },
+  "c8x1m": {
+    "h": "Each Choice-da kombinasiyalar lazım deyil: hər sinif ən azı bir dəfə görünsün. Ən çox sinfi olan parametr test sayını həll edir.",
+    "a": "**Minimum 4 test**, çünki ən çox sinfi olan parametr ölkədir (4 sinif).\n\n| Test | Ölkə | Hesab növü | Dil |\n|---|---|---|---|\n| 1 | Azərbaycan | Fərdi | az |\n| 2 | Türkiyə | Biznes | en |\n| 3 | Gürcüstan | Fərdi | ru |\n| 4 | Digər | Biznes | az |\n\nHər parametrin hər sinfi ən azı bir dəfə var. Son test-də “Digər” lazımdır; qalan sahələr istənilən ola bilər.\n\n**Bütün kombinasiyalar:** 4 × 2 × 3 = 24.",
+    "c": [
+      "Minimum test sayı 4-dür",
+      "Ölkə, hesab növü və dilin hər sinfi testlərdə var",
+      "Bütün kombinasiyalar 24 kimi hesablanıb"
     ]
   }
 }

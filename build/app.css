@@ -329,6 +329,17 @@ details.cmp-why[open]>summary{border-bottom:0;border-radius:0}
 .bva-cur{fill:var(--ink)}
 .bva-chips{margin-top:6px;gap:6px}
 .bva-chips .chip{height:30px;padding:0 11px;cursor:pointer}
+.cov-code{margin:10px 0 0;padding:10px 0;border-radius:10px;background:var(--code-bg);color:var(--code-ink);font-family:var(--f-mono);font-size:13px;line-height:1.55;overflow-x:auto}
+.cov-code code{display:block;min-width:max-content;font:inherit;background:none;padding:0}
+.cov-l{display:block;min-height:1.55em;padding:0 12px 0 4px;white-space:pre}
+.cov-m{display:inline-block;width:1.5em;text-align:center}
+.cov-l.hit{background:var(--pass-soft)}
+.cov-l.hit .cov-m{color:var(--pass)}
+.cov-l.miss{background:var(--fail-soft)}
+.cov-br{list-style:none;margin:4px 0;padding:0;display:flex;flex-direction:column;gap:2px;font-size:13.5px}
+.cov-br .hit{color:var(--pass)}
+.cov-br .miss{color:var(--ink-2)}
+.cov-note{font-size:13.5px;color:var(--ink-2)}
 .st-node rect{fill:var(--surface-2);stroke:var(--line-2);stroke-width:1.2}
 .st-node text{fill:var(--ink-2);font-size:11px;font-weight:600}
 .st-node.on rect{fill:var(--accent);stroke:var(--accent)}

@@ -74,5 +74,8 @@
       "good": "Üç ayrı bug report, məsələn: 1) problem_user: bütün məhsullarda eyni şəkil görünür. 2) problem_user: “Name (Z to A)” seçiləndə siyahının sırası dəyişmir. 3) problem_user: Last Name sahəsinə yazılan mətn First Name sahəsində görünür.",
       "why": "Hər defekt ayrıca düzəlir, ayrıca yoxlanır (retest) və ayrıca bağlanır. Bir hesabatda üç defekt olanda biri düzələndə hesabatı bağlamaq olmur."
     }
-  ]
+  ],
+  "c3x3": [{"tag": "Stand-up", "bad": "Dünən login-i test etdim, bu gün də test edirəm, problem yoxdur.", "good": "SHOP-301 bitdi, SHOP-305 Major baqını yazdım. Bu gün SHOP-302. Onun üçün test hesabı yoxdur: Elvin, bu gün aça bilərsən?", "why": "Pis variantda heç kim nəyin bitdiyini və kimə nə lazım olduğunu bilmir. Yaxşı variantda tiket, vəziyyət və konkret xahiş var, 15 saniyəyə sığır."}],
+  "c4x4": [{"tag": "Bloklanma mesajı", "bad": "Mühit işləmir, test edə bilmirəm.", "good": "Test mühiti bu gün 10:20-dən 502 qaytarır. Chrome və Firefox-da, iki hesabla yoxladım. SHOP-214 və SHOP-220-nin testi dayanıb. Kim baxa bilər?", "why": "Oxuyan nə baş verdiyini, nə vaxtdan olduğunu, nəyin sınandığını və nəyin dayandığını dərhal görür. Yoxlama addımlarını təkrarlamağa ehtiyac qalmır."}],
+  "c12x1": [{"tag": "Done şərhi", "bad": "Test edildi, hər şey OK.", "good": "Build 3.2.1, test mühiti, Chrome 141. Yoxlanıb: qəbul meyarları 1–4, boş və yanlış kod. Yoxlanmayıb: Safari. Baqlar: SHOP-240 (Minor, açıq). Done-a keçirirəm.", "why": "“OK” nəyin yoxlandığını demir. İki həftə sonra baq çıxanda yaxşı şərh hansı build-də nəyin yoxlandığını göstərir və yoxlanmayan riski açıq saxlayır."}]
 }

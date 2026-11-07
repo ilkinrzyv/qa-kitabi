@@ -125,5 +125,14 @@
       "Defektlərin çoxunun 1–2 parametrdən yarandığı deyilib",
       "Hər cütün ən azı bir dəfə yoxlandığı izah olunub"
     ]
+  },
+  "c9x1m": {
+    "h": "Məxrəc bütün sütunlar deyil, mümkün sütunlardır: 8 − 2.",
+    "a": "- **Mümkün sütunlar:** 8 − 2 = 6.\n- **Əhatə:** 3 / 6 = **50%**.\n- **100% üçün:** hər sütuna ən azı bir test, yəni daha **3 test**.\n\n**Niyə daxil edilmir?** Mümkün olmayan sütun üçün heç bir test yazmaq olmur. Onu məxrəcə qatsaq, 100% əhatə mümkünsüz olardı. Amma sütunu “mümkün deyil” saymazdan əvvəl əmin ol: bəzən sistem formadan buraxmır, API-dən isə buraxır.",
+    "c": [
+      "Əhatə 50% hesablanıb",
+      "3 test əlavə olunmalıdır",
+      "Mümkün olmayan sütunun testi yazıla bilmədiyi deyilib"
+    ]
   }
 }

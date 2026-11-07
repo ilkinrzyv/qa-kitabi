@@ -13,26 +13,28 @@ def reg(slug, sid, anchor, cap, d, target='html'):
     ALL.append(dict(slug=slug, sid=sid, anchor=anchor, cap=cap, d=d, target=target))
 
 
-# 1. QA ⊃ QC ⊃ Testing ----------------------------------------------------------
+# 1. QA and QC are separate approaches, testing is the main form of QC --------------
 def qaqc():
-    d = D('qaqc', W, 286, 'Testing QC-nin, QC isə QA-nın içindədir')
-    d.title('Testing QC-nin, QC isə QA-nın içindədir')
+    d = D('qaqc', W, 320, 'QA və QC ayrı yanaşmalardır, testing QC-nin əsas formasıdır')
+    d.title('QA və QC ayrıdır, testing QC-nin formasıdır')
     y0 = 42
-    d.rect(10, y0, 320, 234, fill=A, fo=0.06, stroke=A, rx=12)
+    d.rect(10, y0, 320, 78, fill=A, fo=0.06, stroke=A, rx=12)
     d.text(24, y0 + 24, 'QA · proses', w=600)
     d.text(24, y0 + 42, 'Problemin qarşısını almaq', size=12, fill=S)
     d.text(24, y0 + 59, 'Misal: gigiyena qaydaları, təlim', size=12, fill=S)
-    d.rect(26, y0 + 74, 288, 144, fill=A, fo=0.1, stroke=A, rx=10)
-    d.text(40, y0 + 98, 'QC · məhsul', w=600)
-    d.text(40, y0 + 116, 'Problemi aşkar etmək', size=12, fill=S)
-    d.text(40, y0 + 133, 'Misal: baş aşpaz yeməyi yoxlayır', size=12, fill=S)
-    d.rect(42, y0 + 148, 256, 56, fill=A, fo=0.2, stroke=A, rx=8)
-    d.text(56, y0 + 172, 'Testing · hərəkət', w=600)
-    d.text(56, y0 + 190, 'Misal: şorbanın dadına baxmaq', size=12, fill=S)
+    d.line(40, y0 + 112, 40, y0 + 80, end=True)
+    d.text(50, y0 + 100, 'Test nəticələri prosesə rəy verir', size=12, fill=S)
+    d.rect(10, y0 + 112, 320, 154, fill=A, fo=0.1, stroke=A, rx=12)
+    d.text(24, y0 + 136, 'QC · məhsul', w=600)
+    d.text(24, y0 + 154, 'Problemi aşkar edib düzəltdirmək', size=12, fill=S)
+    d.text(24, y0 + 171, 'Misal: baş aşpaz yeməyi yoxlayır', size=12, fill=S)
+    d.rect(26, y0 + 186, 288, 66, fill=A, fo=0.2, stroke=A, rx=8)
+    d.text(40, y0 + 210, 'Testing · QC-nin əsas forması', w=600)
+    d.text(40, y0 + 230, 'Misal: şorbanın dadına baxmaq', size=12, fill=S)
     return d
 
 
-reg('qaqc', 'c1s2', 'Testing QC-nin içindədir', 'QA, QC, testing · restoran misalı', qaqc())
+reg('qaqc', 'c1s2', 'Testing QC-nin əsas formasıdır', 'QA, QC, testing · restoran misalı', qaqc())
 
 
 # 2. Error -> defect -> failure ----------------------------------------------------
@@ -336,7 +338,7 @@ def branch():
     return d
 
 
-reg('branch', 'c7s2', 'branch coverage 50%-dir', 'branch coverage · getShippingCost', branch())
+reg('branch', 'c7s2', 'branch coverage 50%', 'branch coverage · getShippingCost', branch())
 
 
 # 10. EP + BVA on a number line ------------------------------------------------------------------

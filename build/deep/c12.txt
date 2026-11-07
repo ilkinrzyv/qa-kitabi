@@ -314,3 +314,93 @@ Sorğunu “Save as” ilə saxla, sonra dashboard-a vidjet kimi əlavə et: “
 5. **Sıralama:** `ORDER BY created DESC` — yekun sorğu: `project = SHOP AND issuetype = Bug AND created >= -14d AND status != Closed AND priority IN (High, Highest) ORDER BY created DESC`
 @növbən
 JQL yaz: APP layihəsində, sənin yazdığın (reporter), statusu “Ready for Test” olan və ya son 3 gündə yenilənmiş bütün baqlar, prioritetə görə azalan sırada. Mötərizələrdən düzgün istifadə et.
+
+=== c12x1
+@qısa
+Story Ready for QA-ya gələndə əvvəl build-i, qəbul meyarlarını və proqramçının qeydini yoxla. Test et, baqı story-yə bağla, lazım olsa geri qaytar. Bitirəndə nəyin yoxlandığını və nəyin yoxlanmadığını şərhdə yaz.
+@yadda
+- Götürməzdən əvvəl: build, qəbul meyarları, qeyd, asılılıqlar.
+- Geri qaytaranda səbəb yaz: hansı meyar, hansı build, hansı baq.
+- Yaxşı şərh: build, mühit, data, yoxlanan, yoxlanmayan, baqlar, nəticə.
+@dərin
+### Geri qaytarmaq, yoxsa ayrı baq?
+Sual budur: story bu baqla buraxıla bilərmi? Yox: geri qaytar. Bəli: ayrı baq, prioriteti Product Owner seçir. Şübhədə soruş, özün bağlama da, özün də açıq saxlama.
+
+### “Yoxlanmayıb” sətri niyə vacibdir
+Bu sətir səni qoruyur və komandaya riski göstərir. Safari yoxlanmayıbsa və müştərilərin 30%-i Safari işlədirsə, kimsə cihaz tapmağa kömək edəcək. Yazılmayan isə yoxlanmış kimi qəbul olunur.
+
+### Proqramçı ilə qısa söhbət
+Tiket yazmazdan əvvəl 2 dəqiqəlik söhbət tez-tez vaxtı qaytarır: “Buna bax, məndə belədir.” Amma nəticə tiketdə qalmalıdır: şifahi razılıq sonra itir.
+
+### Tapıntı yeni tələbə bənzəyəndə
+“Bu da olmalı idi” tapıntısı tələbdə yoxdursa və ümumi gözləntini (xəta, data itkisi, istifadə mümkünlüyü) pozmursa, təklif ola bilər. Özün həll etmə: Product Owner-dən soruş. Tələbdəki boşluğun özü də defekt ola bilər.
+@nümunə
+**Tapşırıq.** Story SHOP-250: “Səbətdə promo kod.” Qəbul meyarları 3-dür. Test mühiti build 3.2.1. Meyar 1 və 2 keçir. Meyar 3 (“vaxtı keçmiş kod rədd olunur”) düşür: kod qəbul olunur. Safari yoxlanmayıb. Nə edirsən?
+@addımlar
+1. **Baq yaz:** SHOP-251, addımlarla, build ilə, story-yə bağla (“is blocked by”).
+2. **Qərar:** qəbul meyarı pozulub, story buraxıla bilməz: proqramçıya qaytar.
+3. **Şərh yaz:** “Build 3.2.1, test mühiti, Chrome. Meyar 1–2 keçdi, 3 düşdü: SHOP-251. Safari yoxlanmayıb. Geri qaytarıram.”
+4. **Düzəlişdən sonra:** meyar 3-ü, ardınca 1 və 2-ni qısa yoxla.
+5. **Done:** son şərhi yaz, story-ni bağla.
+@növbən
+Story testdədir. Bütün qəbul meyarları keçir. Əlavə olaraq düymənin rəngi dizayndan bir az fərqlidir və uzun promo kod sahəyə sığmır. Hansını necə yazarsan, story-ni Done edərsənmi? Şərhinin mətnini yaz.
+
+=== c12x2
+@qısa
+Triage yeni baqlara baxıb qərar verməkdir: baqdırmı, nə qədər ciddidir, kim və nə vaxt düzəldəcək. Tester baqı üç şeylə təqdim edir: təsir, tezlik, müvəqqəti həll. Prioritet biznes qərarıdır.
+@yadda
+- Qərarlar: indi, bu sprint, Deferred, Rejected, Duplicate.
+- De: təsir, tezlik, müvəqqəti həll.
+- Razı deyilsənsə, fakt əlavə et, qərarı qeyd et, davam et.
+@dərin
+### Severity və priority triage-da
+Eyni baq fərqli qərar ala bilər: Critical baq nadir kənar halda ola bilər, Minor baq isə baş səhifədə reklam kampaniyasını korlaya bilər (12.5). Ona görə triage-da yalnız etiket yox, kontekst danışılır.
+
+### Görüşə necə hazırlaşmaq
+Hər baq üçün: təkrarlanırmı, neçə istifadəçi, hansı versiyada, müvəqqəti həll varmı, sübut hazırdırmı. “Bilmirəm, baxmalıyam” cavabı görüşü ləngidir.
+
+### Deferred baq nə olur
+Yox olmur: növbəti reliz siyahısına düşür. Vaxtaşırı yenidən baxılır. Çox yığılırsa, regression və dəstək yükünü artırır: bunu da faktla de.
+
+### Junior burada nə edir
+Çox vaxt görüşdə olmur: QA lead onun baqlarını təqdim edir. Ona görə report-un özü oxunaqlı olmalıdır: başlıq, təsir, addımlar. Görüşə çağırılsan, bir-iki cümlə kifayətdir.
+@nümunə
+**Tapşırıq.** Baq: “Səbətdə məhsulun sayını 0 etmək olur, sifariş 0 AZN-lə yaradılır.” Faktlar: hər dəfə təkrarlanır, canlıda hələ yoxdur, reliz 2 gün sonradır, müvəqqəti həll yoxdur. Triage-da bunu necə təqdim edirsən?
+@addımlar
+1. **Nə:** “Səbətdə say 0 edilir, sifariş 0 AZN-lə yaradılır.”
+2. **Təsir:** “Pulsuz sifariş yaratmaq olur, anbar və hesabatlar pozulur.”
+3. **Tezlik:** “Hər dəfə, istənilən istifadəçi ilə.”
+4. **Müvəqqəti həll:** “Yoxdur.”
+5. **Tövsiyə:** “Relizdən əvvəl düzəltmək. Qərar Product Owner-indir.”
+@növbən
+Üç baq üçün qərar təklif et və birər cümlə ilə əsaslandır: (a) şifrəni unutdum məktubu 10 dəqiqə gec gəlir; (b) kampaniya başlığında şirkətin adı səhv yazılıb, kampaniya sabah başlayır; (c) çox köhnə, dəstəklənməyən brauzerdə çap düyməsi görünmür.
+
+=== c12x3
+@qısa
+Canlıda baq çıxanda ciddiliyini anla, kritikdirsə dərhal de, test mühitində təkrarla, müştəri datasına toxunma, report yaz, düzəlişi yoxla, test əlavə et və günah axtarmadan nəticə çıxar.
+@yadda
+- Canlıda yalnız icazə ilə və test hesabı ilə.
+- Düzəlişdən sonra bu baq üçün test regression dəstinə düşür.
+- Postmortem günahkar yox, səbəb axtarır.
+@dərin
+### Dəstəkdən gələn mesajı necə oxumaq
+Müştəri “işləmir” yazır. Soruş: nə edirdi, nə gördü, nə vaxt, hansı cihaz, neçə müştəri? Müraciətlərin sayı və vaxtı reliz vaxtı ilə üst-üstə düşürsə, bu güclü ipucudur.
+
+### Müştəri datası
+Müştərinin hesabına girmək, onun adından əməliyyat etmək, datanı çata köçürmək olmaz. Lazım olan məlumatı dəstək və ya icazəli şəxs verir, anonimləşdirilmiş şəkildə.
+
+### Yaxşı postmortem sualları
+Nə baş verdi, nə vaxt, necə xəbər tutduq, təsir nə oldu, nə kömək etdi, nə mane oldu? Hansı konkret addımı edirik, kim, nə vaxt? “Daha diqqətli olaq” addım deyil. “Bu ssenari regression-a əlavə olunur” addımdır.
+
+### Müsahibədə
+“Yoxladığın funksiyada canlıda baq çıxdı” sualı tez-tez verilir. Cavab bu bölmənin strukturudur: nə etdim, nə dəyişdim. Müsahibə məşqində də var.
+@nümunə
+**Tapşırıq.** Dəstək yazır: “Bu gün 12 müştəri promo kod işlətməkdən şikayət edir.” Reliz dünən axşam çıxıb. İlk 30 dəqiqədə nə edirsən?
+@addımlar
+1. **Məlumat al:** hansı kod, hansı xəta, hansı cihaz, müraciətlərin vaxtı.
+2. **De:** QA lead-ə və komanda kanalına: “12 müraciət, dünənki relizdən sonra, baxıram.”
+3. **Təkrarla:** staging-də eyni build-də; lazım olsa, canlıda test hesabı ilə, icazə ilə.
+4. **Report:** addımlar, təsir, build, müraciətlərin linki, müvəqqəti həll.
+5. **Qərara kömək et:** hotfix, rollback, yoxsa növbəti reliz: faktları ver, qərarı reliz məsulu, texniki lider və ya Product Owner verir (4.10).
+@növbən
+Relizdən sonra bir baq müştəriyə çatıb. Sən o funksiyanı test etmisən, amma bu halı yoxlamamısan. QA lead soruşur: “Necə oldu?” Üç cümləlik cavab yaz, sonra iki konkret addım əlavə et.

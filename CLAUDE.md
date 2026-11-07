@@ -10,7 +10,7 @@ Interactive Azerbaijani textbook on software QA for a beginner (no programming b
 
 ```bash
 pip install -r requirements.txt
-python3 build/parse_book.py   # → build/book.json (gitignored); expect "deep layers 183 missing 0", "answers 385 missing 0" and "errors 0"
+python3 build/parse_book.py   # → build/book.json (gitignored); expect "deep layers 199 missing 0", "answers 401 missing 0" and "errors 0"
 python3 build/build_pwa.py    # → docs/ and dist/qa-kitabi-offline.zip; prints the new version
 python3 build/build_page.py   # → dist/qa-kitab.html and build/test.html (page used by the t*.js checks)
 python3 build/diagrams.py     # diagram self-check; must report 0 issues
@@ -40,9 +40,11 @@ Screenshots land in `build/shots/` (gitignored).
 - `build/sorting.json` — drag-and-drop exercises keyed by section id: `order` (items in the right order) or `group`
   (`groups` + items with `g`); every item has a `why`. Pointer events with touch-action:none on the handles, tap-to-place
   and ▲▼ as fallbacks, edge auto-scroll while dragging. State lives in memory only.
-- `build/interactive.json` — one interactive diagram per section id: `bva` (number line + slider + buggy-code switch),
-  `state` (states with x/y, events, `moves` = from → event → [to, note, "warn"?]) or `dtable` (conditions + rules with
-  `null` for "—"). Rendered by `ixHTML()` as theme-token SVG/HTML; the BVA slider only redraws `.bva-out`.
+- `build/interactive.json` — one interactive diagram per section id: `bva` (number line + slider + buggy-code switch; 3-value
+  items follow the ISTQB count: 16, 17, 18, 19 where the classes meet at 17 and 18), `state` (states with x/y, events, `moves` =
+  from → event → [to, note, "warn"?]), `dtable` (conditions + rules with `null` for "—") or `cover` (code, `stmts`, `branches`,
+  `tests` with `lines`, `br`, `ret`; `t34.js` runs the code instrumented and compares). Rendered by `ixHTML()` as theme-token
+  SVG/HTML; the BVA slider only redraws `.bva-out`.
 - Summary sheets (`vSummary()` in `app.js`; `#c3-xulase`, `#xulase` for all chapters): one printed A4 page per chapter,
   built from data the book already has (each section's `@qısa`, the chapter's first diagram, pitfalls, self-check,
   glossary terms). On `beforeprint` the sheets get `.paper` (the A4 layout) and `fitSheet()` lowers `--k` until each fits

@@ -795,7 +795,26 @@ function ixRedraw(sid) { const el = document.querySelector(`[data-ix="${sid}"]`)
 function ixInner(sid) {
   const c = secById[sid].ix;
   return `<div class="ix-k">${icon('play')}İnteraktiv · ${esc(c.title)}</div><p class="ix-hint">${esc(c.hint || '')}</p>`
-    + (c.type === 'bva' ? bvaHTML(sid, c) : c.type === 'state' ? stHTML(sid, c) : dtHTML(sid, c));
+    + (c.type === 'bva' ? bvaHTML(sid, c) : c.type === 'state' ? stHTML(sid, c) : c.type === 'cover' ? covHTML(sid, c) : dtHTML(sid, c));
+}
+// coverage: the chosen tests' lines and branches give both percentages; t34.js checks the data against the code really run
+function covHTML(sid, c) {
+  const st = IX[sid] || (IX[sid] = { on: { [c.tests[0].id]: true } });
+  const on = c.tests.filter(t => st.on[t.id]);
+  const lines = new Set(on.flatMap(t => t.lines)), brs = new Set(on.flatMap(t => t.br));
+  const sN = c.stmts.filter(n => lines.has(n)).length, bN = c.branches.filter(b => brs.has(b.id)).length;
+  const nums = (a, b) => `${a} / ${b} = ${Math.round(a / b * 100)}%`;
+  const code = c.code.map((l, i) => {
+    const n = i + 1, isS = c.stmts.includes(n), hit = isS && lines.has(n);
+    return `<span class="cov-l${isS ? (hit ? ' hit' : ' miss') : ''}"><span class="cov-m" aria-hidden="true">${isS ? (hit ? '✓' : '·') : ''}</span>${esc(l)}</span>`;
+  }).join('');
+  const chips = c.tests.map(t => `<button class="chip${st.on[t.id] ? ' acc' : ''}" data-act="ix-cov" data-sid="${sid}" data-t="${t.id}" aria-pressed="${!!st.on[t.id]}">${esc(t.label)}</button>`).join('');
+  const brList = c.branches.map(b => `<li class="${brs.has(b.id) ? 'hit' : 'miss'}"><span aria-hidden="true">${brs.has(b.id) ? '✓' : '·'}</span> ${esc(b.l)}${brs.has(b.id) ? '' : ' — yoxlanmayıb'}</li>`).join('');
+  const note = !on.length ? c.none : bN === c.branches.length ? c.full : sN === c.stmts.length ? c.gap : c.part;
+  return `<div class="row bva-chips" role="group" aria-label="${esc(c.label)}">${chips}</div>
+    <pre class="cov-code"><code>${code}</code></pre>
+    <div class="ix-info"><div><b>Statement coverage:</b> ${nums(sN, c.stmts.length)}</div><div><b>Branch coverage:</b> ${nums(bN, c.branches.length)}</div>
+      <ul class="cov-br">${brList}</ul><div class="cov-note">${esc(note)}</div></div>`;
 }
 // BVA: the slider re-renders only the picture and the verdict, so dragging it is never interrupted
 function bvaHTML(sid, c) {
@@ -807,12 +826,13 @@ function bvaHTML(sid, c) {
 }
 function bvaOut(sid, c) {
   const st = IX[sid], v = st.v, W = 340, P = 16, X = n => P + (n - c.from) * (W - 2 * P) / (c.to - c.from);
-  const pts = st.three ? [c.min - 1, c.min, c.min + 1, c.max - 1, c.max, c.max + 1] : [c.min - 1, c.min, c.max, c.max + 1];
+  const pts = st.three ? [c.min - 2, c.min - 1, c.min, c.min + 1, c.max - 1, c.max, c.max + 1, c.max + 2] : [c.min - 1, c.min, c.max, c.max + 1];
   const ticks = []; for (let n = Math.ceil(c.from / 10) * 10; n <= c.to; n += 10) ticks.push(n);
   const valid = v >= c.min && v <= c.max;
   const cls = v < c.min ? `invalid sinif (${c.min}-dən kiçik)` : v > c.max ? `invalid sinif (${c.max}-dən böyük)` : `valid sinif (${c.min}–${c.max})`;
-  const role = v === c.min - 1 || v === c.max + 1 ? 'sərhəddən kənar qonşu' : v === c.min || v === c.max ? 'sərhədin özü'
-    : v === c.min + 1 || v === c.max - 1 ? 'sərhədin içəridəki qonşusu (3 dəyərli BVA)' : v === c.ep ? 'EP: valid sinifdən bir dəyər' : '';
+  const role = v === c.min - 1 || v === c.max + 1 ? 'qonşu sinfin sərhəd dəyəri' : v === c.min || v === c.max ? 'valid sinfin sərhəd dəyəri'
+    : v === c.min + 1 || v === c.max - 1 ? 'sərhəd dəyərinin içəridəki qonşusu (3 dəyərli BVA)'
+    : v === c.min - 2 || v === c.max + 2 ? 'qonşu sinfin sərhəd dəyərinin qonşusu (3 dəyərli BVA)' : v === c.ep ? 'EP: valid sinifdən bir dəyər' : '';
   const actual = c.bug && st.bug ? v >= c.bug.lo && v <= c.bug.hi : valid;
   const yn = ok => `<b class="${ok ? 'ix-ok' : 'ix-bad'}">${ok ? 'Qəbul' : 'Xəta'}</b>`;
   const svg = `<svg class="ix-svg" viewBox="0 0 ${W} 76" role="img" aria-label="${esc(c.label)} ${v}: ${esc(cls)}">
@@ -5584,6 +5604,7 @@ document.addEventListener('click', ev => {
     }
     case 'ix-reset': delete IX[d.sid]; ixRedraw(d.sid); break;
     case 'ix-dt': IX[d.sid].v[d.c] = d.v === '1'; ixRedraw(d.sid); break;
+    case 'ix-cov': IX[d.sid].on[d.t] = !IX[d.sid].on[d.t]; ixRedraw(d.sid); break;
     case 'back': back(); break;
     case 'open-ch': closeSheet(); go('reader', { ch: d.ch }, { tab: d.ch === 'gb' && S.tab === 'practice' ? 'practice' : (S.tab === 'practice' || S.tab === 'progress' ? S.tab : 'book') }); break;
     case 'continue': { const l = P().last; if (l) go('reader', { ch: l.ch, sec: l.sec }, { tab: 'book' }); break; }

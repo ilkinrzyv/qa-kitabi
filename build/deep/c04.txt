@@ -115,7 +115,7 @@ Metriklər keyfiyyəti rəqəmlərlə göstərir: icra faizi (icra olunan / plan
 - Bir rəqəm yox, rəqəmlər + izah qərar üçün əsasdır.
 @dərin
 ### Daha bir neçə faydalı metrik
-- **Defect density** — defektlərin modulun ölçüsünə nisbəti (məsələn, hər 10 test case-ə düşən defekt). Hansı modulun riskli olduğunu göstərir.
+- **Defect density** — defektlərin modulun ölçüsünə nisbəti (məsələn, hər 1000 sətir koda düşən defekt). Hansı modulun riskli olduğunu göstərir.
 - **Defect leakage** — testdən “qaçıb” canlıda tapılan defektlərin payı. Məsələn, testdə 45, canlıda 5 defekt tapılıbsa, leakage = 5 / (45 + 5) = 10%. Test prosesinin effektivliyini ölçür.
 - **Reopen rate** — yenidən açılan defektlərin payı; düzəlişlərin keyfiyyətini göstərir.
 - **Açıq defektlərin yaşı** — neçə gündür düzəlmir.
@@ -201,3 +201,129 @@ Lövhə (To Do → In Progress → Testing → Done), burn-down qrafiki və Dail
 4. **Təklif:** səbət düzəlişlərindən sonra qalan 6 testi və səbət regression-unu icra edib relizə qərar vermək.
 @növbən
 Komanda “testlər keçdi” deyir, amma canlıda baq tapılanda heç kəs hansı build-in test olunduğunu bilmir. Konfiqurasiya idarəetməsi baxımından 3 qayda təklif et.
+
+=== c4x2
+@qısa
+ISTQB test prosesini yeddi fəaliyyətlə təsvir edir: planlaşdırma, monitorinq və nəzarət, analiz, dizayn, implementasiya, icra, tamamlanma. Analiz “nəyi?”, dizayn “necə?” sualına cavab verir. İki rol var: test idarəetmə rolu və test rolu.
+@yadda
+- Test şərti “nə”, test case “necə”dir.
+- Implementasiya: prosedur, dəst, data, mühit, icra cədvəli.
+- İdarəetmə rolu plan və nəzarət, test rolu analiz, dizayn, implementasiya və icra üzrədir.
+@dərin
+### Bir story dörd fəaliyyətdə
+Story: “Promo kod 10% endirim verir, vaxtı keçmiş kod işləmir.”
+
+- **Analiz:** test şərtləri: aktiv kod məbləği azaldır; vaxtı keçmiş kod rədd olunur.
+- **Dizayn:** test case: 100 AZN-lik səbət, `TEST10` kodu, gözlənilən 90 AZN.
+- **Implementasiya:** kodları test bazasına yaz, test case-ləri “Promo” dəstinə sal, sıranı qur: əvvəl giriş, sonra səbət.
+- **İcra:** build 3.2.1-də işlət, nəticəni jurnala yaz, düşən test üçün baq yaz.
+
+### Tamamlanma niyə unudulur
+Reliz çıxanda hamı növbəti işə qaçır. Amma açıq baqların taleyi, testware-in saxlanması və dərslər məhz bu vaxt həll olunur. Yazılmamış dərs növbəti relizdə təkrarlanır.
+
+### Test case və test proseduru
+Test case bir yoxlamadır: ilkin şərt, data, addımlar, gözlənilən nəticə. Prosedur test case-lərin sırasıdır. Bir testin çıxışı növbətinin girişi ola bilər: yaradılan sifariş sonra ləğv edilir.
+
+### Junior hansı roldadır
+Junior adətən test rolundadır: analiz, dizayn, icra. Amma öz işinin gedişini bildirmək və riski demək onu idarəetmə işinə də qoşur. Kiçik komandada isə bir tester hər iki rolu daşıya bilər.
+@nümunə
+**Tapşırıq.** Hər işin hansı fəaliyyətə aid olduğunu tap: (a) tələbdən “kilidli hesab daxil ola bilməz” şərtini çıxarmaq; (b) həmin şərt üçün data və gözlənilən nəticə ilə test case yazmaq; (c) testlərin sırasını və mühiti hazırlamaq; (d) testləri işlədib nəticəni qeyd etmək; (e) sprint sonu testware-i saxlayıb dərsləri yazmaq.
+@addımlar
+1. **(a)** “Nəyi yoxlayacağıq?” sualıdır: **test analizi**.
+2. **(b)** “Necə yoxlayacağıq?” sualıdır: **test dizaynı**.
+3. **(c)** icraya hazırlıqdır: **test implementasiyası**.
+4. **(d)** **test icrası**, nəticəsi test jurnalıdır.
+5. **(e)** **testin tamamlanması**.
+@növbən
+Bu beş şeyin hansı fəaliyyətdə yarandığını yaz: risk reyestri, test şərti, icra cədvəli, test jurnalı, dəyişiklik sorğusu. Sonra bir cümlə: Agile komandada test idarəetmə rolunun işlərini kim görə bilər?
+
+=== c4x3
+@qısa
+Mühit proqramın işlədiyi yerdir: dev, test, staging, production. Build kodun yığılmış versiyasıdır. Hər nəticə build və mühitlə birlikdə yazılır, canlı mühitdə isə yalnız icazə ilə və test hesabı ilə işlənir.
+@yadda
+- Tester-in əsas yeri test mühitidir, staging canlıya ən yaxın olanıdır.
+- Retest-dən əvvəl: düzəliş hansı build-dədir, o build mühitdədirmi, keş köhnə deyilmi?
+- Canlıda real sifariş və ödəniş etmə, müştəri datasına toxunma.
+@dərin
+### Mühitlər niyə fərqli nəticə verir
+Eyni kod fərqli davrana bilər: fərqli data (canlıda milyon sifariş, testdə yüz), fərqli ayarlar, fərqli xarici xidmət (testdə saxta ödəniş, canlıda real), fərqli yük. Ona görə staging canlıya mümkün qədər yaxın saxlanılır.
+
+### Deploy zamanı nə olur
+Yeni build qoyulanda mühit bir neçə dəqiqə işləməyə bilər, açıq sessiyalar bağlana bilər. Bunu baq kimi yazmazdan əvvəl deploy kanalına bax. Yarımçıq deploy-da aparılan test etibarlı deyil.
+
+### Test datası və real data
+Staging-də data canlıdan kopyalanırsa, şəxsi məlumatlar anonimləşdirilməlidir. Ekran şəklində real ad, kart və ya telefon görürsənsə, bu özü risk siqnalıdır: QA lead-ə de.
+
+### Feature flag
+Bəzi funksiyalar kodda var, amma ayarla söndürülüb. Baq “yoxa çıxıbsa” və ya funksiya görünmürsə, flag-in vəziyyətini soruş.
+@nümunə
+**Tapşırıq.** Proqramçı yazır: “SHOP-198 düzəldi.” Test mühitində yoxlayırsan, baq hələ var. Reopened etməzdən əvvəl nəyi yoxlayırsan?
+@addımlar
+1. **Düzəlişin build-i:** tiketdə Fix Version 3.2.2 yazılıb.
+2. **Mühitin build-i:** səhifənin aşağısında 3.2.1 görünür. Deməli, düzəliş hələ çatmayıb. Reopened etmə, proqramçıya yaz.
+3. **Build 3.2.2-dirsə:** keşi təmizlə və ya gizli pəncərədə aç.
+4. **Eyni data ilə təkrarla:** tiketdəki addımlarla.
+5. **Baq qalırsa:** Reopened et, build-i, mühiti və sübutu yaz.
+@növbən
+Reliz sonrası canlı mühitdə yoxlama tapşırılıb. Bunlardan hansını edərsən, hansını yox və niyə: (a) şirkətin test hesabı ilə girib məhsul axtarmaq; (b) real kartla sifariş vermək; (c) müştərinin hesabına baxmaq üçün dəstəkdən şifrə istəmək; (d) əsas səhifənin açıldığını yoxlamaq.
+
+=== c4x4
+@qısa
+Bloklandınsa gözləmə: problemin səndə olmadığını yoxla, sahibinə faktlarla yaz, tiketdə və stand-up-da de, testləri Blocked et, başqa işə keç, vaxt qoyub QA lead-ə yüksəlt.
+@yadda
+- Mesajda: nə, nə vaxtdan, nəyi sınadın, nə dayanıb.
+- Blocked test işləmədi, Failed test işlədi və düşdü.
+- Yüksəltmək şikayət deyil, riski vaxtında görünən etməkdir.
+@dərin
+### Kimə yazmaq
+İlk həftədən siyahı tut: mühit kimindir, build-i kim qoyur, test hesabını kim açır, tələb sualını kim cavablayır. Bilmirsənsə, komanda kanalına yaz: susmaqdan yaxşıdır.
+
+### Yüksəltmə (escalation)
+“Cavab vermirlər” şikayəti yox, fakt: “SHOP-220 üçün dünəndən cavab gözləyirəm, sabah testə başlamasam, sprintə çatmayacaq.” Lead buna görə var: maneəni qaldırmaq onun işidir.
+
+### Gözləyərkən nə etmək
+Plan hazır saxla: gələcək story-nin test ideyaları, köhnə test case-lərin yenilənməsi, başqa sahənin exploratory sessiyası, açıq baqların təkrarlanmasının yoxlanması. Boş gözləmək komandaya görünmür, amma sprintə təsir edir.
+
+### Bu, baqdırmı?
+Mühitin düşməsi məhsul defekti olmaya bilər, amma qeydə almaq lazımdır: çox təkrarlanırsa, retrospektivdə faktla de (3.11).
+@nümunə
+**Tapşırıq.** Bu mesajı yaxşılaşdır: “Mühit işləmir, test edə bilmirəm.” Faktlar: 10:20-dən 502 qaytarır, Chrome və Firefox-da, iki hesabla yoxlanılıb, SHOP-214 və SHOP-220 dayanıb.
+@addımlar
+1. **Nə:** “Test mühiti 502 qaytarır.”
+2. **Nə vaxtdan:** “Bu gün 10:20-dən.”
+3. **Nəyi sınadın:** “Chrome və Firefox-da, iki hesabla yoxladım.”
+4. **Nə dayanıb:** “SHOP-214 və SHOP-220-nin testi.”
+5. **Nə istəyirsən:** “Kim baxa bilər?” və ekran şəkli.
+@növbən
+Story-ni test etmək üçün Product Owner-dən cavab lazımdır. İki gündür cavab yoxdur, sprintin 7-ci günüdür. Addımlarını yaz: kimə, nə vaxt, nə deyirsən və bu arada nə edirsən.
+
+=== c4x5
+@qısa
+Reliz namizədi yoxlanır, Go/No-Go-da faktlar deyilir, deploy-dan sonra canlıda smoke aparılır, sonra monitorinq və reliz qeydləri gəlir. Tester tövsiyə edir, biznes qərar verir. Hotfix təcili kiçik düzəlişdir, rollback əvvəlki versiyaya qayıtmaqdır.
+@yadda
+- Go/No-Go-da de: nə yoxlanıb, nə yoxlanmayıb, açıq baqlar, tövsiyə.
+- Hotfix: retest, təsir analizi, smoke, canlıda yoxlama.
+- Rollback-dən sonra da smoke lazımdır.
+@dərin
+### Reliz sonrası smoke-da nə yoxlanır
+Ən vacib yollar və yeni dəyişiklik: giriş, əsas axtarış, səbət, ödəniş səhifəsinin açılması. Test hesabı ilə, real ödəniş etmədən. Siyahı əvvəlcədən hazır olur, reliz gecəsi fikirləşilmir.
+
+### Bilinən problemlər (known issues)
+Açıq baqla buraxmaq bəzən düzgün qərardır, əgər bu şüurlu seçimdirsə. Dəstək komandası bilməlidir: müştəri zəng edəndə nə deyəcəyini bilir. Siyahı reliz qeydlərinə düşür.
+
+### Hotfix-in tələləri
+Tələskənlikdə düzəliş başqa yeri sındıra bilər: ona görə təsir analizi (5.6) qısa olsa da edilir. Yoxlanmayanı yaz ki, növbəti regression-da birinci baxılsın. Düzəliş əsas koda qayıtmasa, növbəti reliz baqı geri gətirir.
+
+### Mini Store-da məşq
+Reliz testinin özünü bu bölmənin altındakı məşqdə keçə bilərsən: Mini Store 1.1-də smoke, retest, regression seçimi və tövsiyə yazmaq.
+@nümunə
+**Tapşırıq.** Canlıda ödəniş səhifəsi 500 verir. Hotfix hazırdır, staging-dədir, 20 dəqiqən var. Nəyi yoxlayırsan?
+@addımlar
+1. **Retest:** baqın öz ssenarisi: ödəniş səhifəsi açılır, test ödənişi keçir.
+2. **Təsir:** proqramçıdan soruş: nəyə toxunub? Kart, nağd, promo kod.
+3. **Smoke:** giriş, səbət, sifariş.
+4. **Yazılı nəticə:** nəyi yoxladın, nəyi yoxlamadın, build.
+5. **Deploy-dan sonra:** canlıda test hesabı ilə qısa smoke.
+6. **Sonra:** test case əlavə et, düzəlişin əsas koda düşdüyünü soruş.
+@növbən
+Go/No-Go görüşündəsən: 200 testdən 190-ı keçib, 6-sı Blocked (ödəniş xidməti test mühitində işləmir), 4-ü düşüb (2 Minor, 1 Major müvəqqəti həlli ilə, 1 Critical, müvəqqəti həlli yoxdur). 4–5 cümləlik çıxış yaz və tövsiyə ver.

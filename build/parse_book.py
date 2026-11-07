@@ -471,6 +471,10 @@ for sid, ix in json.load(open(os.path.join(BASE, 'interactive.json'), encoding='
     elif t == 'dtable':
         cids = {c['id'] for c in ix.get('conditions', [])}
         ok = len(ix.get('rules', [])) >= 2 and all(set(r['when']) == cids and r.get('result') for r in ix['rules'])
+    elif t == 'cover':
+        stm, brs = set(ix.get('stmts', [])), {b['id'] for b in ix.get('branches', [])}
+        ok = stm and brs and all(1 <= n <= len(ix.get('code', [])) for n in stm) and all(k in ix for k in ('none', 'part', 'gap', 'full')) \
+            and len(ix.get('tests', [])) >= 2 and all(t_.get('label') and set(t_['lines']) <= stm and set(t_['br']) <= brs for t_ in ix['tests'])
     else:
         ok = False
     if not sec or not ok or not ix.get('title'):
@@ -882,6 +886,18 @@ _al('g103', 'testing quadrants', 'test kvadrant~'); _al('g104', 'review', chs=[7
 _al('g106', 'shift-left', 'shift left', 'sola sürüşdürmə'); _al('g107', 'three-point estimation', 'üç nöqtəli qiymətləndirmə')
 _al('g108', 'product risk~', 'project risk~', 'məhsul risk~', 'layihə risk~'); _al('g109', 'risk level', 'risk səviyyə~')
 _al('g110', 'data-driven'); _al('g111', 'fixture~'); _al('g112', 'storageState', 'storage state', cs=True); _al('g113', 'trace viewer')
+# work process and CTFL coverage terms
+_al('g114', 'backlog refinement', 'refinement')
+_al('g115', 'branch coverage', 'budaq əhatəsi')
+_al('g116', 'bug triage', 'triage')
+_al('g117', 'definition of ready'); _al('g117', 'DoR', cs=True)
+_al('g118', 'each choice coverage', 'each choice')
+_al('g119', 'go/no-go')
+_al('g120', 'hotfix')
+_al('g121', 'rollback')
+_al('g122', 'statement coverage', 'operator əhatəsi')
+_al('g123', 'test basis', 'test əsası~')
+_al('g124', 'test condition~', 'test şərti', 'test şərtləri~')
 GL_TAIL = '[a-zəğıöüşçA-ZƏĞIİÖÜŞÇ]*'
 def _gl_regex(chnum):
     alts, idx = [], {}

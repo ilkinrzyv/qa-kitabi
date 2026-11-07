@@ -204,3 +204,33 @@ Riskə görə prioritet ver: ən çox defekt verən sahələrdə ən güclü tex
 5. **Əlavə:** error guessing — iki dəfə göndərmə, Azərbaycan hərfli ad, vergüllü məbləğ.
 @növbən
 “Aviabilet sifarişi” funksiyası üçün 4 hissə müəyyən et (məsələn, sərnişin sayı, endirim qaydaları, bilet statusları, sifariş prosesi) və hər birinə uyğun texnikanı seçib səbəbini yaz.
+
+=== c9x1
+@qısa
+Qərar cədvəlində əhatə yoxlanan mümkün sütunların, vəziyyət keçidlərində vəziyyətlərin və ya keçidlərin faizidir. Etibarlı keçid əhatəsi bütün vəziyyətləri də əhatə edir, bütün keçidlər isə ikisini də. Bir test case bir neçə keçid keçə bilər.
+@yadda
+- Mümkün olmayan sütun əhatəyə daxil deyil.
+- Bütün vəziyyətlər < etibarlı keçidlər < bütün keçidlər.
+- Bir test case-də ən çoxu bir etibarsız keçid.
+@dərin
+### Minimum test case sayını necə tapmaq
+Başlanğıcdan yol çək. Bitən vəziyyətə (son vəziyyət) gələn hər keçid ayrı test case tələb edir, çünki oradan davam etmək olmur. Dövr (geriyə gedən keçid) varsa, bir test case onu da keçə bilər. Yolu qurub keçidləri işarələ: işarələnməmiş qalmayana qədər.
+
+### Niyə bir etibarsız keçid
+Etibarsız keçid rədd edilir və test orada bitir. İkincisi heç işə düşmür və ya birincinin xətası onu gizlədir. Ona görə hər biri üçün ayrı test case lazımdır.
+
+### Bloklanmış sütunlar
+Bəzən sütun məntiqən mümkündür, amma sistem ona çatmağa imkan vermir: forma düyməni söndürür. Bu, API səviyyəsində yoxlana bilər. Belə sütunu “mümkün deyil” saymazdan əvvəl soruş.
+
+### Kritik sistemlərdə
+Sillabusa görə missiya və təhlükəsizlik baxımından kritik proqramlarda bütün keçidlər əhatəsi minimum tələbdir. Adi veb məhsulda isə etibarlı keçidlər və riskli etibarsız keçidlər çox vaxt kifayət edir.
+@nümunə
+**Tapşırıq.** Sifariş statusları: Yeni → Ödənilib → Göndərilib, həm Yeni, həm Ödənilib → Ləğv edilib. Bütün vəziyyətlər və etibarlı keçidlər əhatəsi üçün minimum neçə test case lazımdır?
+@addımlar
+1. **Vəziyyətlər:** Yeni, Ödənilib, Göndərilib, Ləğv edilib: 4.
+2. **Etibarlı keçidlər:** Yeni → Ödənilib, Ödənilib → Göndərilib, Yeni → Ləğv edilib, Ödənilib → Ləğv edilib: 4.
+3. **Son vəziyyətlər:** Göndərilib və Ləğv edilib. Bura 3 keçid gəlir, hər test case yalnız birini işlədə bilər.
+4. **Etibarlı keçidlər üçün:** TC1 Yeni → Ödənilib → Göndərilib; TC2 Yeni → Ləğv edilib; TC3 Yeni → Ödənilib → Ləğv edilib: 3 test case.
+5. **Bütün vəziyyətlər üçün:** TC1 və TC2: 2 test case.
+@növbən
+Qərar cədvəlində 3 şərt var, 8 kombinasiyadan 2-si mümkün deyil. Testlər 3 sütunu yoxlayır. Əhatə neçədir? 100% üçün neçə test əlavə olunmalıdır? Mümkün olmayan iki sütun əhatəyə niyə daxil edilmir?

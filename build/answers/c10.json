@@ -125,5 +125,15 @@
       "Tələb, test case və nəticə əlaqəsi izah olunub",
       "Testsiz tələbin görünməsi və ya dəyişikliyin təsiri qeyd olunub"
     ]
+  },
+  "c10x1m": {
+    "h": "Təsdiq, qiymət, seçim. “Olmaz” demə: sığmayanı rəqəmlə göstər.",
+    "a": "**Addımlar:**\n\n1. Sualı dəqiqləşdir: hansı üsullar, hər biri nə edir, qəbul meyarları haradadır?\n2. Dəyişiklik tiketdə əks olunsun.\n3. Təsiri tap: səbət, ödəniş, hesabat, regression.\n4. Yenidən qiymətləndir.\n5. Sığmayanı de, qərarı Product Owner-ə burax.\n\n**Mesaj:**\n\n“Aldım. Dəqiqləşdirək: hansı üç üsul və hər biri üçün gözlənilən nəticə nədir? Tiketdə qəbul meyarları yenilənsin. Mən bu story-ni bu gün bitirməli idim. Üç üsul ən azı 1 gün əlavə iş deməkdir, proqramçı işi də bura daxil deyil, bu sprintə sığmır. Variantlar: indiki story bu gün bağlanır, yeni üsullar ayrı story ilə növbəti sprintə qalır; və ya başqa story çıxarılır. Hansını seçək?”\n\nQiymət nümunədir, öz rəqəmini yaz.",
+    "c": [
+      "Tələb dəqiqləşdirilir və tiketdə yenilənir",
+      "Əlavə iş və təsiri deyilib",
+      "Variantlar təklif olunub, qərar Product Owner-ə buraxılıb",
+      "Dəyişiklik sadəcə rədd edilməyib və ya sakitcə qəbul olunmayıb"
+    ]
   }
 }

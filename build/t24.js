@@ -30,21 +30,21 @@ const go = (page, h) => page.evaluate(h => { location.hash = h; }, h).then(() =>
     if (s.keys !== 3 || !s.deep || !s.mini) bad.push('section ' + sid);
   }
   if (out.sections.c6x1.fig !== 'quadrants' || out.sections.c11x2.fig !== 'riskmatrix' || out.sections.c3x2.num !== '3.10' || out.sections.c11x2.num !== '11.10') bad.push('numbers / diagrams');
-  // the new sections sit between their neighbours: 3.8 → 3.9 → 3.10 → pitfalls (old id c3s9 kept)
+  // the new sections sit between their neighbours: 3.8 → 3.9 → 3.10 → 3.11 → 3.12 → pitfalls (old id c3s9 kept)
   await go(page, '#c3');
-  out.order = await page.$$eval('#view .sec', els => els.slice(7, 11).map(e => e.id).join(','));
-  if (out.order !== 'c3s8,c3x1,c3x2,c3s9') bad.push('order ' + out.order);
-  // glossary: 113 terms, a new one with its interview line
+  out.order = await page.$$eval('#view .sec', els => els.slice(7, 13).map(e => e.id).join(','));
+  if (out.order !== 'c3s8,c3x1,c3x2,c3x3,c3x4,c3s9') bad.push('order ' + out.order);
+  // glossary: 124 terms, a new one with its interview line
   await go(page, '#luget');
   out.glossary = await page.$eval('#glcount', el => el.textContent);
   await page.fill('#glq', 'shift left'); await page.waitForTimeout(200);
   out.term = await page.$eval('#gllist .gl-item', el => ({ en: el.querySelector('.en').textContent, say: !!el.querySelector('.say-d') }));
-  if (!out.glossary.startsWith('113 termin') || out.term.en !== 'Shift left' || !out.term.say) bad.push('glossary');
+  if (!out.glossary.startsWith('124 termin') || out.term.en !== 'Shift left' || !out.term.say) bad.push('glossary');
   // quiz: chapter 11 has the new questions
   await go(page, '#mesq');
   out.quiz11 = await page.$eval('[data-act="quiz"][data-ch="11"] .muted', el => el.textContent);
   out.mapCard = await page.$$eval('[data-act="ctfl-open"]', x => x.length);
-  if (out.quiz11 !== '12 sual' || out.mapCard !== 1) bad.push('quiz / practice card');
+  if (out.quiz11 !== '17 sual' || out.mapCard !== 1) bad.push('quiz / practice card');
   // 21.9 links the map
   await go(page, '#c21s9');
   await page.click('#c21s9 a[href="#istqb"]'); await page.waitForTimeout(500);

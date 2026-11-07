@@ -330,3 +330,67 @@ Faktlarla danışılır (rəqəmlər, misallar), günahkar axtarılmır, 1–3 t
 5. Növbəti retrospektivdə yoxlamaq: canlıda ödəniş baqlarının sayı azaldımı?
 @növbən
 Komandanız yeni mobil tətbiq yazır və testlər yalnız relizdən bir gün əvvəl aparılır. Shift-left üçün 4 konkret addım təklif et və hər birinin xərcini və faydasını bir cümlə ilə yaz.
+
+=== c3x3
+@qısa
+Tester sprintin hər hissəsində işləyir: refinement-də sual verir, planlamada test işini qiymətləndirir, sprint boyu test edib baq yazır, sonda regression aparır, review və retrospektivdə iştirak edir.
+@yadda
+- Sualın ən ucuz vaxtı refinement-dir.
+- Stand-up-da konkret danış: tiket, vəziyyət, kimdən nə lazımdır.
+- İş sığmırsa, bunu planlamada de, son gündə yox.
+@dərin
+### Story point və tester
+Çox komanda saatla yox, story point ilə qiymətləndirir: işin nisbi böyüklüyü. Planning Poker-də (11.9) tester də kart qaldırır. Proqramçı üçün kiçik görünən dəyişikliyin testi böyük ola bilər: çox brauzer, çox data, geniş regression. Fərqli rəqəm qaldırmaq mübahisə yox, gizli işi görünən etmək üsuludur.
+
+### Stand-up-ın dörd tipik halı
+- **Adi gün:** “SHOP-210 bitdi, bir Minor baq yazdım. Bu gün SHOP-214.”
+- **Bloklanma:** “SHOP-214-ü test edə bilmirəm, mühit 502 verir. Kim baxa bilər?”
+- **Diqqət tələb edən baq:** “SHOP-318 relizə mane ola bilər, görüşdən sonra Product Owner ilə 5 dəqiqə danışaq.”
+- **Xüsusi xəbər yoxdur:** “SHOP-214-ə davam edirəm, mane olan yoxdur.” Bu da kifayətdir.
+
+Ətraflı müzakirə görüşdən sonraya qalır.
+
+### Son günlərin sıxılması
+Story-lər çox vaxt son günlərdə testə gəlir və testə vaxt qalmır. Bunu şikayət kimi yox, faktla retrospektivə gətir: neçə story, neçənci gün gəlib. Təklif: story-ləri kiçiltmək, WIP limiti (3.7), tester-in erkən qoşulması.
+
+### Demo-da baq çıxsa
+Panikaya düşmə, baqı gizlətmə. “Bu halı qeyd edirəm, tiket yazacağam” de və davam et. Sonra faktla tiket yaz.
+@nümunə
+**Tapşırıq.** Bu stand-up sözünü yaxşılaşdır: “Dünən login-i test etdim, bu gün də test edirəm, problem yoxdur.” Faktlar: SHOP-301 (login) bitib, bir Major baq yazılıb (SHOP-305), növbəti story SHOP-302-dir, onun üçün test hesabı yoxdur.
+@addımlar
+1. **Dünən:** tiketi və nəticəni de: “SHOP-301 bitdi, SHOP-305 Major baqını yazdım.”
+2. **Bu gün:** konkret iş de: “Bu gün SHOP-302-yə keçirəm.”
+3. **Maneə:** gizlətmə: “Onun üçün test hesabı yoxdur.”
+4. **Kimdən nə lazımdır:** “Elvin, bu gün hesab aça bilərsən?”
+5. **Yekun 15 saniyədir:** detal və mübahisə görüşdən sonraya qalır.
+@növbən
+Sprintin 9-cu günüdür. Üç story testə hazırdır, iki baqın retest-i gözləyir, regression hələ başlamayıb. Hansı sıra ilə işləyərsən? Nəyi və kimə deyərsən?
+
+=== c3x4
+@qısa
+Definition of Ready story-nin işə götürülməsi üçün şərtlərdir (giriş meyarı), Definition of Done işin bitmiş sayılması üçün (çıxış meyarı). Hər ikisini komanda özü yazır. Story DoD-u ödəmirsə, Done deyil.
+@yadda
+- DoR — “başlamaq olarmı?”, DoD — “bitibmi?”.
+- DoD Scrum-un rəsmi hissəsidir, DoR komandanın razılaşmasıdır.
+- DoD ölçülə bilməlidir: “açıq Critical baq yoxdur”.
+@dərin
+### DoD və qəbul meyarları fərqi
+Qəbul meyarları bir story-yə aiddir: “Promo kod məbləği azaldır.” DoD bütün story-lərə aiddir: “Kod review olunub, testlər keçib.” Story bağlanmaq üçün hər ikisini ödəməlidir.
+
+### DoR niyə çox sərt olmamalıdır
+Çox uzun DoR işi ləngidir: story “hazır” olana qədər həftələr keçir, söhbəti sənəd əvəz edir. Məqsəd sual verməkdir, baryer qurmaq yox. Komanda bir neçə vacib şərt seçir.
+
+### Bitməmiş story nə olur
+Scrum-a görə DoD-u ödəməyən iş nə buraxılır, nə də Sprint Review-da hazır kimi göstərilir: Product Backlog-a qayıdır və Product Owner onu yenidən sıralayır. Bu, cəza deyil, görünən vəziyyətdir.
+
+### Tester Done-dan əvvəl nəyə baxır
+Qəbul meyarları yoxlanıb, baqlar bağlanıb və ya Product Owner-in qərarı ilə ayrıca saxlanılıb, build və mühit tiketdə yazılıb (12.10).
+@nümunə
+**Tapşırıq.** Story: “İstifadəçi şifrəsini dəyişə bilsin.” Komandanın DoR-u: qəbul meyarları yazılıb, dizayn var, test datası məlumdur. Planlamada görürsən: dizayn var, qəbul meyarı yoxdur. Nə deyirsən?
+@addımlar
+1. **Faktı tap:** DoR-un “qəbul meyarları” bəndi ödənmir.
+2. **Nəticəsini de:** “Neçə simvol, köhnə şifrə soruşulurmu, xəta mətni nədir: bunları bilmədən test edə bilmərəm.”
+3. **Həll təklif et:** “5 dəqiqə ayırıb Product Owner ilə yazaq” və ya “növbəti sprintə qalsın”.
+4. **Qərarı komandaya burax:** story sprintə girirsə, qəbul meyarları yazılandan sonra.
+@növbən
+Sprintin son günüdür. “Səbətdə kupon” story-sinin kodu hazırdır, neqativ hallar yoxlanmayıb. Proqramçı deyir: “Bağlayaq, testi sonra bitirərsən.” Komandanın DoD-unda “tester qəbul meyarlarını yoxlayıb” yazılıb. Nə deyərsən? İki cümlə yaz və iki yol təklif et.

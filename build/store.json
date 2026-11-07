@@ -147,7 +147,7 @@
     "deferredWhy": "Məlum defektdir, PO onu 1.2-yə saxlayıb (Deferred) — bu relizin qərarına yeni fakt gətirmir.",
     "decision": "build 1.1-də əvvəl işləyən funksiya sınıb və bir düzəliş retest-dən keçmir.",
     "model": "Mini Store 1.1-i bu vəziyyətdə relizə buraxmamağı tövsiyə edirəm. Səbəblər: (1) regression — Your Cart səhifəsində “Remove” məhsulu silmir (TC-06, bütün istifadəçilər; bug report yazılıb); (2) MS-15 retest-dən keçmədi və Reopened oldu. MS-12 və MS-14 Verified. MS-13 məlum defektdir, 1.2-yə saxlanılıb. Smoke keçdi: build test üçün yararlıdır. Son qərarı Product Owner verir.",
-    "sections": ["c6s3", "c12s6"]
+    "sections": ["c6s3", "c12s6", "c4x5"]
   },
   "scenarios": [
     {

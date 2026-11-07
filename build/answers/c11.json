@@ -161,5 +161,14 @@
       "Suite test case-lərin qrupudur",
       "Məqsədə görə qruplaşdırma misalı var"
     ]
+  },
+  "c11x3m": {
+    "h": "Oxuyan yeni işçidir: bir baxışda tapsın. Sonda düşün: bu səhifə yanlış adamın əlinə keçsə, nəyi görməməlidir?",
+    "a": "**Səhifə: Test mühiti**\n\n- **Yenilənib:** 2026-11-07, sahibi: Aysel\n- **Ünvan:** test mühitinin ünvanı (nümunə: `test.example.com`)\n- **Kim deploy edir:** DevOps, hər gün 11:00 və 16:00; kanal: #deploy\n- **Build nömrəsi:** səhifənin aşağısında, sağda (nümunə: 3.2.1)\n- **Problem olanda:** əvvəl #deploy kanalına bax, sonra komanda kanalına yaz\n- **Test hesabları:** “Test hesabları” səhifəsinə bax\n\n**Yazılmamalı:** şifrələr, API açarları və tokenlər, real müştəri datası. Şifrələr şifrə menecerində saxlanılır.\n\nAd və vaxtlar nümunədir.",
+    "c": [
+      "Başlıq, sahib və ya tarix var",
+      "Ünvan, deploy və build sualları cavablanıb",
+      "Şifrələrin və tokenlərin yazılmadığı deyilib"
+    ]
   }
 }

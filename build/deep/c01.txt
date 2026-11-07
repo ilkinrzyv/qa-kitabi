@@ -28,7 +28,7 @@ Onlayn mağazada tələb belədir: “Məhsulu səbətə əlavə edəndə səhif
 
 === c1s2
 @qısa
-QA prosesə baxır və problemin qarşısını almağa çalışır, QC hazır məhsulu yoxlayıb problemi aşkar edir, testing isə konkret yoxlama hərəkətləridir. Testing QC-nin, QC isə QA-nın içindədir.
+QA prosesə baxır və problemin qarşısını almağa çalışır, QC hazır məhsulu yoxlayıb problemi aşkar edir, testing isə konkret yoxlama hərəkətləridir. Testing QC-nin əsas formasıdır; QA və QC isə iki ayrı yanaşmadır.
 @yadda
 - QA — proses və qarşısını almaq, QC — məhsul və aşkar etmək.
 - Testing — QC-nin konkret hərəkətləri: yoxla, müqayisə et, qeyd et.
