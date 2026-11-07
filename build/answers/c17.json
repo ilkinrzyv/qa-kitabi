@@ -1,0 +1,142 @@
+{
+  "c17s1m": {
+    "h": "Kod ortaq deyilsə, bir platformada tapılan defekt digərini heç nəyə sübut etmir. Yalnız ortaq nəyin qaldığını düşün: server, API, tələblər.",
+    "a": "İki ayrı kod bazası, iki ayrı komanda var, ona görə plan iki müstəqil tətbiq kimi qurulur:\n\n1. **“Bir platformada kifayətdir” siyahısı demək olar ki, qalmır.** Hətta məntiq, hesablama və validasiya da iki dəfə yazılıb, hər platformada ayrıca yoxlanılır.\n2. **Qalan yeganə ortaq hissə backend-dir.** API testlərini bir dəfə etmək olar; əgər cavablar eynidirsə, server məntiqini iki dəfə yoxlamağa ehtiyac yoxdur.\n3. **Test case-lər ortaq, nəticələr ayrıcadır.** Eyni test case-i hər platformada işlədirik və statusu ayrıca qeyd edirik.\n4. **Defektlər ayrıca açılır.** Hər report-da platforma və versiya olur, düzəliş hər komandada ayrıca edilib retest olunur.\n5. **Vaxt və iş bölgüsü artır.** Hər reliz iki regression deməkdir, versiyalar eyni vaxtda çıxmaya bilər və iki tətbiqin davranışı arasında fərqi də ayrıca yoxlamaq lazımdır.",
+    "c": [
+      "Siyahının praktik olaraq qalmadığı deyilib",
+      "Bunun səbəbi ayrı kod bazaları ilə izah olunub",
+      "Backend və ya API-nin ortaq qaldığı qeyd olunub",
+      "Planın işi nə qədər artırdığı göstərilib"
+    ]
+  },
+  "c17s2m": {
+    "h": "Android payı böyükdür, ona görə çoxu Android olsun. Dəstəklənən minimumu (Android 9, iOS 15) və kuryerin ucuz, köhnə telefonunu mütləq saxla.",
+    "a": "Bu, nümunə matrisdir; konkret modelləri tətbiqin analitikasına görə dəyiş.\n\n| # | Cihaz | Sistem | Niyə |\n|---|---|---|---|\n| 1 | Ucuz köhnə Android, 2 GB RAM | Android 9 | Kuryerlər belə telefon işlədir; dəstəklənən minimumdur, yaddaş və GPS zəif olur |\n| 2 | Samsung orta seqment | Son Android-dən bir-iki əvvəlki | Ən geniş alıcı qrupunu təmsil edir; One UI davranışı |\n| 3 | Xiaomi büdcə modeli | Android, MIUI/HyperOS | Fon rejimini sərt bağlayan interfeys; kuryerin GPS və bildirişləri üçün risk |\n| 4 | Yeni Android flaqmanı | Son Android | Yeni sistemin icazələri, böyük ekran |\n| 5 | iPhone SE və ya köhnə iPhone | iOS 15 | iOS payı 15%-dir, bir cihaz; dəstəklənən minimum, kiçik ekran |\n\nBeş cihazın dördü Android-dir, çünki istifadəçilərin 85%-i oradadır. Yeni iPhone mümkünsə, bulud fermasında yoxlanılır.",
+    "c": [
+      "Beş cihazın çoxu Android-dir, biri iOS-dur",
+      "Android 9 və iOS 15 minimumu matrisdə var",
+      "Kuryerlər üçün ucuz, köhnə telefon seçilib",
+      "Hər cihazın səbəbi yazılıb"
+    ]
+  },
+  "c17s3m": {
+    "h": "Altı başlığı bir-bir götür. Qaçışın ortasında nə baş verə bilər? Əsas sual: məşq datası, yəni məsafə və vaxt, itirmi?",
+    "a": "1. **İcazələr:** ilk açılışda məkan icazəsini rədd et. Gözlənilən: tətbiq çökmür, aydın izah və ayarlara keçid göstərilir, məsafə “0”-da dayanıb aldatmır.\n2. **Fon rejimi:** məşqi başlat, ekranı kilidlə, 1 km qaç. Gözlənilən: məsafə və vaxt fasiləsiz sayılır, marşrut xəttində boşluq yoxdur.\n3. **Şəbəkə:** məşq zamanı interneti kəs, sonra aç. Gözlənilən: GPS işləməyə davam edir, data telefonda qalır və sonra serverə göndərilir, dublikat yaranmır.\n4. **Kəsinti:** məşq zamanı zəng gəlsin, cavab ver, qayıt. Gözlənilən: qeyd davam edir, məşq sıfırlanmır.\n5. **Batareya:** 1 saatlıq məşqdə sərfi ölç, enerji qənaəti rejimində də yoxla. Gözlənilən: sərf tələbdəki həddə sığır, fon sayğacı dayanmır və ya istifadəçi xəbərdar olunur.\n6. **Bildirişlər:** kilid ekranında məsafə bildirişi yenilənir, “Pauza” basılanda məşq dayanır.",
+    "c": [
+      "Altı ideya fərqli sahələrdəndir: icazə, fon, şəbəkə, kəsinti, batareya, bildiriş",
+      "Hər birində gözlənilən nəticə yazılıb",
+      "Məşq datasının itməməsi yoxlanılır"
+    ]
+  },
+  "c17s4m": {
+    "h": "Soruş: nəticə əsl avadanlıqdan asılıdırmı? Qızma, FPS, zəng real cihaz istəyir. Çoxlu ölçü və köhnə versiya üçün emulyator rahatdır.",
+    "a": "| Yoxlama | Mühit | Niyə |\n|---|---|---|\n| (a) 10 ekran nisbəti, UI | Emulyator | Ölçüləri tez dəyişmək olur, görünüş üçün kifayətdir |\n| (b) Qızma və FPS | Real cihaz | Emulyator kompüterin gücünü işlədir; qızma və zəif prosessor burada ölçülmür |\n| (c) Oyundaxili alış | Real cihaz, mağazanın test (sandbox) hesabı | Mağaza pəncərəsi, ödəniş və bərpa real sistem axınıdır |\n| (d) Köhnə Android-də quraşdırma | Emulyator, sonda bir real köhnə cihaz və ya bulud ferması | Köhnə sistem şəklini yükləmək kifayətdir, istehsalçı fərqi üçün real cihaz yaxşıdır |\n| (e) Oyun zamanı bildiriş və zəng | Real cihaz | Audio, fokus itməsi və oyunun fasiləsi əsl sistem davranışıdır; emulyator bunu tam vermir |\n\n“Emulyator genişlik, real cihaz dəqiqlik” qaydası burada işləyir.",
+    "c": [
+      "(a) və (d) üçün emulyator seçilib, (d)-də real cihaz əlavəsi ola bilər",
+      "(b), (c), (e) üçün real cihaz seçilib",
+      "Hər seçim səbəbi ilə yazılıb"
+    ]
+  },
+  "c17s5m": {
+    "h": "Bir ayar hər fona keçəndə ekranı məhv edir, nadir vəziyyəti hər dəfə yaradır. Ayarı tap, addımları sayla, logu `adb logcat` ilə götür.",
+    "a": "**Ayar:** Developer options → **Don't keep activities**. Fona keçən ekran dərhal məhv olunur, sistemin yaddaş üçün tətbiqi bağlaması hər dəfə təkrarlanır, ona görə 10-dan 2 hal daha tez çıxa bilər.\n\n**Addımlar:**\n1. Ayarı yandır, tətbiqi aç, problem ekranına keç.\n2. Home bas, 5 saniyə gözlə, son tətbiqlərdən qayıt.\n3. 10 dəfə təkrarla, ağ ekran sayını qeyd et. Eyni testi ayar sönülü də et.\n\n**Log:**\n```text\nadb logcat -c\nadb logcat > ag-ekran.txt\n```\nProblem çıxanda dayandır, log vaxtını və tətbiqin xətalarını report-a əlavə et.\n\n**Report-a:** cihaz, Android versiyası, tətbiq build-i, istehsalçı interfeysi; ayar açıq və sönülü tezlik (məsələn, 8/10 və 2/10); video (Show taps ilə), log faylı. Ayarı testdən sonra söndür, yoxsa başqa testlər də təsirlənir.",
+    "c": [
+      "“Don't keep activities” ayarı seçilib və nə etdiyi deyilib",
+      "Təkrarlama addımları və tezlik sayı var",
+      "Log `adb logcat` ilə toplanır",
+      "Report-a cihaz, build, video və log əlavə olunur"
+    ]
+  },
+  "c17s6m": {
+    "h": "Dövrü götür: bir dövrün zərəri ÷ (zərbə vaxtı + yorğunluq). TTK-da lazım olan zərbə sayını tap, ilk zərbə 0-cı saniyədədir.",
+    "a": "**Düstur:** davamlı DPS = dövrün zərəri ÷ dövrün vaxtı. TTK-da ilk zərbə 0-cı saniyədə sayılır.\n\n**Yüngül qılınc:** yorğunluq yoxdur: 15 × 3 = **45 DPS**. Lazım olan zərbə: 120 ÷ 15 = 8. TTK: 7 interval × (1 ÷ 3 s) ≈ **2,33 s**.\n\n**Ağır qılınc:** dövr: 4 zərbə, 4 × 45 = 180 zərər. Vaxt: 4 ÷ 0,8 = 5 s + 2 s = 7 s. **≈ 25,7 DPS**. Lazım olan zərbə: 120 ÷ 45 = 2,67, yəni 3 zərbə. Yorğunluğa çatmır. TTK: 2 × 1,25 s = **2,5 s**.\n\n**Dizaynerə:** “Canı 120 olan düşməndə iki qılıncın TTK-sı yaxındır (2,33 və 2,5 s), amma davamlı DPS-də yüngül 1,75 dəfə öndədir (45 və 25,7). Canı çox olan düşmənlərdə fərq böyüyür, ağır qılınc 15 zərəri də boşa verir. Ağır qılıncın başqa üstünlüyü (məsafə, geri atma, zireh) nəzərdə tutulubsa, bu belə qala bilər; yoxdursa, onu seçməyə səbəb görünmür. Niyyət nədir?” Qərar dizaynerindir, tester datanı verir.",
+    "c": [
+      "Yüngül qılıncın DPS-i 45, TTK-sı təxminən 2,33 s-dir",
+      "Ağır qılıncın DPS-i təxminən 25,7, TTK-sı 2,5 s-dir",
+      "Yorğunluq dövrə daxil edilib, 3 zərbə kifayət sayılıb",
+      "Dizaynerə data ilə sual verilib, qərar ona saxlanılıb"
+    ]
+  },
+  "c17s7m": {
+    "h": "Əşya dublikatı oyun iqtisadiyyatını pozur. Build və cihazı, “çox tez” sözünü dəqiqləşdir, tezliyi rəqəmlə yaz. Video toxunuşlu olsun.",
+    "a": "**Başlıq:** Mağazada “Al” düyməsinə sürətli iki toxunuşda əşya iki dəfə verilir, pul bir dəfə çıxılır\n\n**Mühit:** Build 1.8.2 (412), Android 13, Samsung Galaxy A54, Wi-Fi, test hesabı `qa_test_07`.\n\n**Şərt:** hesabda 500 qızıl, “Sağlamlıq iksiri” 100 qızıl, inventarda 0 ədəd.\n\n**Addımlar:**\n1. Mağaza → “Sağlamlıq iksiri”ni aç.\n2. “Al” düyməsinə 200 ms-dən az fasilə ilə iki dəfə toxun.\n3. Inventar və balansa bax.\n\n**Faktiki:** inventarda 2 iksir, balans 400 qızıl.\n\n**Gözlənilən:** ikinci toxunuş nəzərə alınmır: 1 iksir, 400 qızıl (və ya 2 alış, 300 qızıl).\n\n**Tezlik:** 10 cəhddən 2-də.\n\n**Əlavələr:** “Show taps” ilə video (00:14), logcat, hesab ID-si.\n\n**Ciddilik: Critical.** Pulsuz əşya əldə etmək oyun iqtisadiyyatını pozur və xəbər tez yayılır. Workaround yoxdur, yayılsa, geri qaytarmaq çətindir. (Yuxarıdakı cihaz, build və qiymətlər nümunədir.)",
+    "c": [
+      "Başlıq yer, problem və şərti deyir",
+      "Mühitdə build, cihaz və OS var",
+      "Faktiki və gözlənilən nəticə balans və inventar rəqəmləri ilə yazılıb",
+      "Tezlik 10-dan 2 kimi, video və log əlavəsi var",
+      "Ciddilik yüksəkdir və iqtisadiyyat pozuntusu ilə əsaslandırılıb"
+    ]
+  },
+  "c17t1": {
+    "h": "Sifarişin mərhələlərini bölüşdür: sifariş verilir, sürücü gəlir, gediş, ödəniş. Hər mərhələdə zəng, fon rejimi, internet kəsilməsi, GPS itməsi nə edir?",
+    "a": "Nümunə ideyalar (gözlənilən: data itmir, status düzgündür, istifadəçi məlumatlıdır):\n\n1. Sifariş düyməsinə basan anda internet kəsilir: iki sifariş yaranmır, aydın mesaj çıxır.\n2. Sürücü axtarılarkən zəng gəlir: axtarış davam edir, qayıdanda ekran düzgündür.\n3. Sürücü yoldaykən tətbiq fona keçir: gəlmə bildirişi çatır, qayıdanda xəritə yenilənir.\n4. Sürücü yoldaykən 4G → Wi-Fi keçidi: mövqe yenilənməsi davam edir.\n5. Gediş zamanı 5 dəqiqəlik internet itməsi: marşrut və qiymət bərpa olunur, gediş itmir.\n6. Gediş bitərkən internet yoxdur: ödəniş təkrarlanmır, status sonra yazılır.\n7. Tətbiq çökür və ya bağlanır: yenidən açanda aktiv gediş ekranı açılır.\n8. Aeroplan rejimi və geri qayıdış: tətbiq çökmür.\n9. Zəif şəbəkə (2G və ya Slow 3G): loader görünür, timeout mesajı aydındır.\n10. Batareya 5% və telefon sönür: aktiv gediş ekranı açılışda bərpa olunur, sürücüdə gediş davam edir.",
+    "c": [
+      "On ideya var, hamısı kəsinti və ya şəbəkəyə aiddir",
+      "Sifarişin müxtəlif mərhələləri əhatə olunub",
+      "Təkrar sifariş və ya ödəniş riski yoxlanılır"
+    ]
+  },
+  "c17t2": {
+    "h": "Sessiyadan əvvəl missiya yaz: bir səviyyənin divarları və vizualları, 30 dəqiqə. Qeyd apar. Baq tapanda videoya çək, yeri qeyd et, 10 dəfə sına.",
+    "a": "Oyun və nəticə sənin olacaq. Bu, uydurma report formasıdır.\n\n**Missiya:** “Liman” səviyyəsində toqquşma və vizual problemləri 30 dəqiqə ərzində axtarmaq.\n\n**Başlıq:** “Liman” səviyyəsində anbarın arxasında qaçanda oyunçu divarın içinə keçir və ilişib qalır\n\n**Mühit:** Oyun v2.3.1, PC, Windows 11, RTX 3060, qrafika: orta, 1080p.\n\n**Yer:** “Liman”, anbar A-nın şimal divarı, koordinat (312, 48, 7).\n\n**Addımlar:**\n1. Checkpoint 2-dən anbarın arxasına keç.\n2. Künc tərəfə qaçaraq tullan.\n\n**Faktiki:** personaj divarın içinə keçir, hərəkət etmir, ancaq checkpoint-i yükləmək qurtarır (softlock).\n\n**Gözlənilən:** divar oyunçunu saxlayır, keçmək olmur.\n\n**Tezlik:** 10 cəhddən 6-da.\n\n**Əlavələr:** video (00:35), save faylı.\n\nSessiyanın sonunda neçə sahəyə baxdığını və nəyi yoxlamadığını da yaz.",
+    "c": [
+      "30 dəqiqəlik sessiyanın missiyası var",
+      "Report-da dəqiq yer, mühit və build var",
+      "Tezlik rəqəmlə yazılıb",
+      "Video və ya ekran çəkilişi əlavə olunub"
+    ]
+  },
+  "c17t3": {
+    "h": "Görünüş və məntiq emulyatorda da işləyir. Əsl avadanlıqdan asılı olanı (telefon şəbəkəsi, batareya) real cihazda yoxla.",
+    "a": "- **(a) 5 ekran ölçüsündə düzülüş: emulyator.** Çox ölçünü tez yoxlamaq olur, görünüş üçün kifayətdir.\n- **(b) Zəng zamanı davranış: real cihaz.** Əsl zəng, səs və sistem pəncərəsi lazımdır. Emulyatorda zəng imitasiyası mümkündür, amma sonda real cihaz lazımdır.\n- **(c) 1 saatlıq oyunda batareya: real cihaz.** Emulyatorda əsl batareya və qızma yoxdur.\n- **(d) Qeydiyyat validasiyası: emulyator.** Bu, məntiqdir, avadanlıqdan asılı deyil.\n\nÇox edilən səhv: “emulyatorda keçdi, deməli hazırdır”. Son yoxlamanı ən azı bir real cihazda et.",
+    "c": [
+      "(a) və (d) emulyatorda, (b) və (c) real cihazda seçilib",
+      "Hər seçimin səbəbi yazılıb"
+    ]
+  },
+  "c17t4": {
+    "h": "Ayarlar → Telefon haqqında → Build number üzərinə 7 dəfə bas. Developer options → Show taps. Sonra ekran videosu çək və barmaq izlərinə bax.",
+    "a": "**Addımlar:**\n1. Ayarlar → Telefon haqqında → **Build number** üzərinə 7 dəfə bas (bəzi telefonlarda “Proqram məlumatı” içindədir). Developer options açılır.\n2. Developer options → Input → **Show taps** yandır.\n3. Ekran videosu çək: hər toxunuş ekranda dairə kimi görünür.\n\n**Niyə faydalıdır:**\n- Proqramçı videoda addımlarını görür: harada, neçə dəfə, nə qədər sürətlə basılıb.\n- Jest baqlarında və iki dəfə toxunuşda (double-tap) dəqiq sübutdur, çünki toxunuşsuz video yalnız nəticəni göstərir.\n- “Mən belə basmamışam” mübahisəsi olmur, təkrarlama asanlaşır.\n\nVideo çəkməzdən əvvəl şəxsi məlumatları (bildirişləri, şəxsi datanı) gizlət. Video təsviri əvəz etmir, addımları yenə yaz.",
+    "c": [
+      "Developer options açılıb və Show taps yandırılıb",
+      "Ekran videosu çəkilib, toxunuşlar görünür",
+      "Faydası izah olunub: toxunuşların yeri, sürəti və ya təkrarlama"
+    ]
+  },
+  "c17q1": {
+    "a": "**Native** bir platforma üçün yazılır (Kotlin, Swift), sistemin bütün imkanlarından istifadə edir, amma hər platformaya ayrıca kod lazımdır. **Cross-platform** bir kodla iki platformaya çıxır (Flutter, React Native); məntiq ortaqdır, platforma fərqi yenə baq verir.",
+    "c": [
+      "Native ayrıca kod, cross-platform ortaq kod kimi izah olunub",
+      "Cross-platform-da da hər platformanı yoxlamaq lazım olduğu və ya misal var"
+    ]
+  },
+  "c17q2": {
+    "a": "Beş nümunə: **kəsintilər** (zəng, bildiriş), **şəbəkə** (Wi-Fi, 4G, itmə), **fon rejimi və geri qayıdış**, **icazələr** (kamera, məkan), **quraşdırma və yeniləmə**. Batareya, jestlər, sensorlar da mobil sahələrdir.",
+    "c": [
+      "Beş mobil sahə sadalanıb",
+      "Kəsinti, şəbəkə, fon və ya icazə daxildir"
+    ]
+  },
+  "c17q3": {
+    "a": "**Emulyator:** pulsuz, tez başladılır, çox ölçü və versiyanı rahat yoxlayır, proqramçı alətləri ilə uyğundur. **Real cihaz:** əsl performans, batareya, jestlər, kamera, sensor, zəng və istehsalçı interfeysi. Qısası: emulyator genişlik, real cihaz dəqiqlik verir.",
+    "c": [
+      "Emulyatorun üstünlüyü: tezlik, ucuzluq və ya çox versiya",
+      "Real cihazın üstünlüyü: performans, batareya, avadanlıq"
+    ]
+  },
+  "c17q4": {
+    "a": "**Gameplay və balans** (əyləncəlidirmi, ədalətlidirmi), **toqquşma və fizika**, **FPS və kadr sabitliyi**, **softlock və hardlock**, **save və yükləmə**, **oyun iqtisadiyyatı** (dublikat, qazanc). Veb testdə bu sahələr adətən olmur.",
+    "c": [
+      "Ən azı üç oyuna xas sahə sadalanıb",
+      "Balans, toqquşma və ya FPS daxildir"
+    ]
+  },
+  "c17q5": {
+    "a": "**Dəqiq yer** (səviyyə, koordinat), **video**, **save fayl**, **build nömrəsi və qrafika ayarları**, **cihaz**, **tezlik rəqəmlə** (“10 cəhddən 3-də”). Yer, video və save birlikdə baqı tez təkrarlamağa imkan verir.",
+    "c": [
+      "Yer, video və ya save əlavəsi sadalanıb",
+      "Build və ayarlar, tezlik rəqəmlə qeyd olunub"
+    ]
+  }
+}

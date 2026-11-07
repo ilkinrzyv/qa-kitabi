@@ -1,0 +1,172 @@
+{
+  "c13s1m": {
+    "h": "Sorğunun yolunu izlə: tətbiq → server → baza və geri. Hər dayanacaqda soruş: burada nə səhv ola bilər?",
+    "a": "**Yol:**\n1. **Client (tətbiq):** “Sifariş et” basılanda ünvan, tarif və istifadəçi məlumatı ilə sorğu göndərir, gözləmə ekranı göstərir.\n2. **Server (backend):** qiyməti hesablayır, yaxın sürücünü axtarır, sifarişi yaradır.\n3. **Baza:** sifarişi yazır, sonra cavab tətbiqə qayıdır, ekranda sürücü görünür.\n\n**Mümkün defektlər:**\n- **Client:** iki dəfə basılanda düymə deaktiv olmur, iki sifariş sorğusu gedir; və ya cavab uğursuz olanda “Sifariş verildi” göstərilir.\n- **Server:** gecə tarifi yanlış hesablanır, ya da uzaq sürücü seçilir.\n- **Baza:** sifarişin statusu yazılmır; tətbiq “axtarılır”da qalır.\n\nTester ekrandakı nasazlığı görür, sonra DevTools və ya log ilə onun hansı qatda olduğunu ayırır.",
+    "c": [
+      "Client, server və baza üzrə yol ardıcıl təsvir olunub",
+      "Hər hissədə bir mümkün defekt var",
+      "Defektlər həmin hissənin işinə uyğundur"
+    ]
+  },
+  "c13s2m": {
+    "h": "URL-i böl: protokol, domen, yol, parametrlər. Yolda kart nömrəsi, parametrlərdə tarix var. Başqasının kartı və yanlış tarixlər nə verər?",
+    "a": "**Hissələr:**\n- Protokol: `https`\n- Domen: `bank.example.az`\n- Yol: `/cards/4471/transactions` (4471: kart ID-si)\n- Parametrlər: `from=2026-10-01`, `to=2026-10-31`\n\n**Test ideyaları:**\n1. **Təhlükəsizlik:** `4471`-i başqa istifadəçinin kart ID-si ilə əvəz et. Gözlənilən: 403 və ya 404, başqasının əməliyyatları görünmür.\n2. **Tarix sərhədi:** `from` və `to` eyni gün; ayın ilk və son günündə edilən əməliyyatlar siyahıya düşür.\n3. **Məntiq səhvi:** `from` `to`-dan böyükdür. Gözlənilən: boş siyahı və ya aydın xəta, 500 yox.\n4. **Format:** `from=abc`, `from=31-10-2026`, parametrsiz sorğu. Gözlənilən: 400 və ya standart dövr.\n5. **Təhlükəsizlik, sessiya:** URL-i çıxış etdikdən sonra və ya gizli pəncərədə aç. Gözlənilən: giriş səhifəsi, data görünmür.",
+    "c": [
+      "URL protokol, domen, yol, parametrlərə düzgün ayrılıb",
+      "Beş test ideyası var",
+      "Başqasının kartı və tarix sərhədləri ideyaları var"
+    ]
+  },
+  "c13s3m": {
+    "h": "Düşün: HTTP ilə girsə nə olur? Sertifikat etibarlıdırmı? Səhifənin içində HTTP ilə yüklənən nəsə varmı? Cookie necə qorunur?",
+    "a": "Nümunə yoxlamalar:\n\n1. **Yönləndirmə:** `http://portal...` yazanda avtomatik `https://` olur. Azaltdığı risk: şifrə və qiymətlərin şifrələnmədən şəbəkədə getməsi.\n2. **Sertifikat:** brauzerdə kilid simvolu var, sertifikatın müddəti bitməyib, domen adı uyğundur. Risk: tələbələrin saxta saytı tanımaması və xəbərdarlıq ekranı görüb işin dayanması.\n3. **Qarışıq məzmun (mixed content):** Console-da xəbərdarlıq yoxdur, şəkil, skript və API çağırışları da HTTPS ilədir. Risk: skriptin dəyişdirilməsi və datanın oğurlanması.\n4. **Cookie:** sessiya cookie-sində `Secure` və `HttpOnly` var. Risk: cookie-nin şifrələnməmiş sorğuda və ya skript vasitəsilə oğurlanması.",
+    "c": [
+      "Dörd HTTPS yoxlaması yazılıb",
+      "Hər birinin azaltdığı risk göstərilib",
+      "Yönləndirmə və sertifikat yoxlamaları daxildir"
+    ]
+  },
+  "c13s4m": {
+    "h": "Göndərilən və qayıdan format fərqlidir. Soruş: qayda belədirmi? Bazada nə var, ekranda nə görünür? Başqa ekranlar və formatlar nə edir?",
+    "a": "Status 200 olsa da, format fərqlidir: `+994501234567` göndərilib, `0501234567` qayıdıb.\n\n**4 addım:**\n1. **Tələbi yoxla və soruş:** “Sənəddə telefon hansı formatda saxlanılmalıdır? Bu çevrilmə qəsdəndirmi?”\n2. **Sonrakı oxunuşu yoxla:** səhifəni yenilə və `GET /api/profile` cavabına bax: hansı format var? Mümkünsə, bazaya baxılır: `SELECT phone FROM users WHERE ...`.\n3. **Telefonun istifadə olunduğu yerləri yoxla:** SMS kodu bu nömrəyə çatırmı? Ölkə kodu itdiyi üçün xarici nömrə pozulurmu? `+1...` kimi nömrə ilə sına.\n4. **Müxtəlif giriş formatlarını sına:** `0501234567`, `+994 50 123 45 67`, yanlış uzunluq: 400 qayıdırmı, ekranda və cavabda eyni format varmı?\n\nTələb başqa cür deyirsə, cavab və sorğunu sübut kimi əlavə edib bug report yazıram.",
+    "c": [
+      "Format fərqi müşahidə kimi göstərilib, status 200 yetərli sayılmayıb",
+      "Tələbə baxmaq və ya soruşmaq addımı var",
+      "Sonrakı oxunuş və ya telefonun istifadəsi yoxlanılır"
+    ]
+  },
+  "c13s5m": {
+    "h": "CRUD: yaratmaq, oxumaq (hamısı və biri), yeniləmək, silmək. Hər metodun normal statusunu yaz. Təkrar POST nə yarada bilər?",
+    "a": "| # | Sorğu | Məqsəd | Gözlənilən status |\n|---|---|---|---|\n| 1 | `POST /addresses` | Yeni ünvan yaratmaq | 201 Created |\n| 2 | `GET /addresses` | Bütün ünvanları oxumaq | 200 OK |\n| 3 | `GET /addresses/7` | Bir ünvanı oxumaq | 200 OK; olmayan ID üçün 404 |\n| 4 | `PATCH /addresses/7` (və ya PUT) | Ünvanı yeniləmək | 200 OK |\n| 5 | `DELETE /addresses/7` | Ünvanı silmək | 204 No Content (bəzi API-lərdə 200); təkrar silmədə 404 |\n\n**Təkrar POST test ideyası:** “Yadda saxla” düyməsinə tez iki dəfə bas və ya eyni `POST`-u iki dəfə göndər. Sonra `GET /addresses`-ə bax: eyni ünvan iki dəfə yaranıbmı? Dublikat yaranırsa, bu, defektdir, ya da server 409 qaytarmalıdır.",
+    "c": [
+      "POST, GET, PUT və ya PATCH, DELETE metodları düzgün məqsədlə işlənib",
+      "Yaradılmada 201, oxumada 200, silmədə 204 və ya 200 göstərilib",
+      "Təkrar POST üçün dublikat yoxlaması var"
+    ]
+  },
+  "c13s6m": {
+    "h": "401 kimlik yoxdur, 403 icazə yoxdur, 404 yoxdur, 400/422 yanlış data, 413 çox böyük, 201 yaradıldı. Mesaj istifadəçi dilində olsun, kod deyil.",
+    "a": "| Hal | Status | İstifadəçinin mesajı (nümunə) |\n|---|---|---|\n| (a) Olmayan məhsul | 404 Not Found | “Məhsul tapılmadı” və kataloqa keçid |\n| (b) Köhnə şifrə yanlış | 400 və ya 422 | “Köhnə şifrə yanlışdır” sahənin yanında |\n| (c) Login olmadan admin | 401 Unauthorized (brauzerdə çox vaxt girişə yönləndirmə) | “Davam etmək üçün daxil ol” |\n| (d) Çox böyük fayl | 413 Payload Too Large | “Fayl 5 MB-dan böyük olmamalıdır” |\n| (e) Ödəniş yaradıldı | 201 Created | “Ödəniş uğurla tamamlandı” və məbləğ |\n\n(c) üçün yadda saxla: login olmuş, amma icazəsi olmayan adi istifadəçi üçün kod 403 olardı. İstifadəçi xam “500” və ya texniki mətn görməməlidir. Bu limitlər və mətnlər nümunədir.",
+    "c": [
+      "Kodlar: (a) 404, (c) 401, (d) 413, (e) 201",
+      "(b) üçün 400 və ya 422 göstərilib",
+      "Hər hal üçün istifadəçiyə aydın mesaj yazılıb"
+    ]
+  },
+  "c13s7m": {
+    "h": "Sessiya nə zaman bitir? “Məni yadda saxla” varsa, nə qalır? İki tabda çıxanda nə olur? Çıxışdan sonra kurs səhifəsi hələ görünürmü?",
+    "a": "Nümunə ideyalar:\n\n1. **“Məni yadda saxla”:** işarələyib daxil ol, brauzeri bağlayıb aç: hələ daxilsən. İşarəsiz: yenidən giriş istənilir. Müddət bitəndə də cookie işləmir.\n2. **İki tab:** bir tabda çıxış et, o birində dərs aç. Gözlənilən: giriş səhifəsi, köhnə kurs məlumatı açılmır.\n3. **Logout:** çıxışdan sonra “Geri” düyməsi və yadda qalan kurs URL-i məzmunu göstərmir; sessiya serverdə də bitib: cookie-ni köçürən sorğu 401 alır.\n4. **Sessiya müddəti:** 30 dəqiqə (tələbdəki müddət) hərəkətsizlikdən sonra sessiya bitir, video proqresi itmir.\n5. **Cookie atributları və token:** Application panelində `HttpOnly`, `Secure` var; şifrə və token URL-də və ya `localStorage`-də açıq saxlanılmır.\n\nBaşqa cihazda şifrə dəyişəndə köhnə sessiyanın bitməsi də yaxşı testdir.",
+    "c": [
+      "Beş ideya var, “Məni yadda saxla”, iki tab və logout daxildir",
+      "Logout-dan sonra məzmunun açılmadığı yoxlanılır",
+      "Gözlənilən nəticələr konkretdir"
+    ]
+  },
+  "c13s8m": {
+    "h": "Keş üç qatda ola bilər: brauzer, CDN, server. Hər qatı ayrıca istisna et. “Bəzi istifadəçilər” sözü coğrafiya və vaxtla bağlı ola bilər.",
+    "a": "**Mümkün qatlar:**\n- **Brauzer keşi:** istifadəçinin köhnə səhifəsi və API cavabı.\n- **CDN keşi:** bəzi edge serverlər köhnə versiyanı verir, bu da “bəzi istifadəçilər” simptomuna uyğundur.\n- **Server keşi:** Redis və ya tətbiq keşi köhnə qiyməti saxlayır.\n\n**4 addım:**\n1. **Brauzeri istisna et:** Ctrl+Shift+R, gizli pəncərə, DevTools-da “Disable cache”. 20 AZN görünürsə, problem brauzer keşidir.\n2. **Cavaba bax:** Network-də qiymət sorğusu, `Cache-Control`, `Age`, `X-Cache` başlıqları. API 20 qaytarır, ekran 25 göstərirsə, frontend-ə bax.\n3. **Müxtəlif yerdən sına:** başqa şəbəkə, VPN, telefon. Yerə görə fərqlidirsə, CDN ehtimalı artır.\n4. **Bazanı və vaxtı yoxla:** bazada 20-dir? Neçə dəqiqəyə düzəlir (TTL)? Faktı report-a yaz: müddət qəbul olunandırmı? Köhnə qiymətlə sifariş veriləndə hansı məbləğ tutulur? Bu, ən ciddi nəticədir.",
+    "c": [
+      "Brauzer, CDN və server keşi göstərilib",
+      "Dörd addım var, keşi istisna etmək və cavab başlıqlarına baxmaq daxildir",
+      "Bazada və ya sifarişdə əsl qiymətin yoxlanması var"
+    ]
+  },
+  "c13s9m": {
+    "h": "Network: sorğu getdi, status nədir? Console: qırmızı xəta varmı? Elements: mesaj elementi yaranıb, amma gizlidirmi? Hər cavab nəyi göstərir?",
+    "a": "**1. Network panel:** “Göndər” basanda sorğuya baxıram.\n- Sorğu yoxdur: düymə işləmir, **frontend**.\n- 4xx: yanlış data, server cavabına baxıram: mesaj qayıdıb, amma göstərilmir → frontend; mesaj yoxdursa, API sənədini yoxlayıram.\n- 5xx: **backend** xətası.\n- 200/201: data getdi, problem sonrakı mesajın göstərilməsindədir.\n\n**2. Console panel:** qırmızı xəta axtarıram. Məsələn, `TypeError` sorğu göndərilməmiş kodun dayandığını, ya da cavabın işlənmədiyini göstərir. Mətni report-a köçürürəm.\n\n**3. Elements panel:** mesaj elementi DOM-a əlavə olunurmu? Element var, amma `display: none`dursa və ya ağ üstündə ağ mətndirsə, bu, CSS problemidir, **frontend**.\n\nNəticədə report-a addımlar, sorğunun statusu və cavabı, Console xətası əlavə olunur.",
+    "c": [
+      "Network, Console və Elements panelləri plana daxildir",
+      "Hər nəticənin nəyi göstərdiyi izah olunub: sorğu yoxdur, 5xx, xəta",
+      "Plan frontend və ya backend fərqinə gətirib çıxarır"
+    ]
+  },
+  "c13s10m": {
+    "h": "Qayda: sorğu yoxdursa, frontend; 5xx və ya səhv data cavabdadırsa, backend; cavab düzgün, ekran səhvdirsə, frontend. Sübut cavabın özüdür.",
+    "a": "**(a) 413: server limiti (backend və ya server konfiqurasiyası).** Server faylı rədd edib. Tələbdəki ölçü limiti ilə tutuşdur: fayl limitdən kiçikdirsə, defekt konfiqurasiyadadır. Limitdən böyükdürsə, 413 düzgündür, amma frontend aydın mesaj göstərməlidir. Sübut: fayl ölçüsü, sorğu və status.\n\n**(b) Frontend.** Cavab düzgün formatdadır, ekranda yanlış formatlaşdırılıb. Sübut: Network cavabı və ekran şəkli yan-yana, tələb olunan format.\n\n**(c) Backend.** 504 gateway-in serverdən cavab ala bilmədiyini göstərir: yavaş sorğu və ya baza. Sübut: sorğu URL-i və parametrləri, 30 saniyə Timing, vaxt, axtarış sözü.\n\n**(d) Frontend (ikiqat göndərmə).** Düymə basılanda iki sorğu göndərir. Backend də dublikatdan qorunmalıdır. Sübut: Network-də iki eyni sorğu, video, bazada iki qeyd varsa, onu da yaz.",
+    "c": [
+      "(a) server tərəfi və ya limit, (c) backend kimi göstərilib",
+      "(b) və (d) frontend kimi göstərilib",
+      "Hər hal üçün konkret sübut yazılıb: cavab, Timing, Network"
+    ]
+  },
+  "c13t1": {
+    "h": "Sıra: protokol://domen:port/yol?parametrlər#fraqment. `?`-dən sonrakı `&` parametrləri ayırır.",
+    "a": "| Hissə | Dəyər |\n|---|---|\n| Protokol | `https` |\n| Domen | `www.example.com` (`www`: subdomen) |\n| Port | `8080` |\n| Yol (path) | `/catalog/books` |\n| Parametrlər (query) | `author=nizami`, `page=2` |\n| Fraqment | `top` |\n\n`?` parametrləri başladır, `&` onları ayırır. `#top` serverə göndərilmir, brauzer səhifədə həmin yerə keçir. Port adətən yazılmır: HTTPS üçün standart 443-dür. Burada 8080 açıq yazıldığına görə sayt bu portda işləyir. Test üçün: `page=0`, `page=-1`, çox böyük ədəd və `author` boş olsa, nə olur?",
+    "c": [
+      "Protokol, domen, port, yol, parametrlər və fraqment düzgün ayrılıb",
+      "`author` və `page` iki ayrı parametr kimi göstərilib",
+      "`#top` fraqment kimi göstərilib"
+    ]
+  },
+  "c13t2": {
+    "h": "Kim olduğu bilinmirsə, 401. Bilinir, amma icazəsi yoxdursa, 403. Uğurla yaradılma 2xx-in xüsusi kodudur. Server xətası 5xx.",
+    "a": "- **(a) Mövcud olmayan səhifə: 404 Not Found.**\n- **(b) Login olmadan profil API-si: 401 Unauthorized.** Kimlik yoxdur.\n- **(c) Adi istifadəçi admin səhifəsini açır: 403 Forbidden.** Kimlik bilinir, icazə yoxdur.\n- **(d) Yeni istifadəçi uğurla yaradıldı: 201 Created.**\n- **(e) Serverdə xəta: 500 Internal Server Error.**\n\nƏn çox qarışdırılan (b) və (c)-dir. 401 “kim olduğunu bilmirəm”, 403 “bilirəm, amma olmaz” deməkdir. 200 uğur üçün ümumi cavabdır, amma yaradılma üçün dəqiq kod 201-dir.",
+    "c": [
+      "(a) 404, (b) 401, (c) 403",
+      "(d) 201, (e) 500",
+      "401 və 403 fərqi düzgün başa düşülüb"
+    ]
+  },
+  "c13t3": {
+    "h": "F12 → Network → səhifəni yenilə. Aşağıda sorğu sayı görünür. “Time” sütununa basıb sırala. Keşi söndür ki, nəticə düzgün olsun.",
+    "a": "Bu, cavabın formasıdır; rəqəmləri saytı açıb özün yazmalısan, sayt və vaxta görə dəyişir.\n\n**Necə ölçürəm:**\n1. DevTools → Network panelini açıram, “Disable cache”-i işarələyirəm.\n2. Səhifəni yeniləyirəm (Ctrl+R), hər şey dayanana qədər gözləyirəm.\n3. Aşağı sətirə baxıram, “Time” sütununa basıb azalan sıralayıram.\n\n**Nümunə nəticə (uydurma rəqəmlər):**\n- Sayt: bir xəbər saytı, kompüter, ev interneti.\n- Sorğu sayı: 85. Köçürülən həcm: 4,2 MB. Load: 3,1 s.\n- Ən yavaş sorğu: `banner.jpg`, 1,4 s, 1,8 MB.\n\n**Mənası:** böyük şəkil səhifəni ləngidir, sıxılmalı və ya kiçik ölçüdə verilməlidir. Ən yavaş sorğunun “Waiting” hissəsi böyükdürsə, səbəb server, “Content Download” böyükdürsə, faylın ölçüsüdür. Reklam və xarici skriptlər də sayılır.",
+    "c": [
+      "Sorğu sayı və sayt adı yazılıb",
+      "Ən yavaş sorğu adı və müddəti ilə göstərilib",
+      "Keşin söndürüldüyü və ya şərtlər qeyd olunub"
+    ]
+  },
+  "c13t4": {
+    "h": "Əvvəl daxil ol. Sonra Application → Cookies, sil, səhifəni yenilə. Soruş: server məni nəyə görə tanıyırdı? Sessiya cookie-si olmasa, nə baş verir?",
+    "a": "Nəticəni öz saytında yoxlamalısan. Adətən belə olur:\n\n**Nə baş verdi:** səhifə yenilənəndə sayt məni tanımır: giriş səhifəsi açılır və ya “Daxil ol” düyməsi görünür.\n\n**Niyə:** HTTP özü məni yadda saxlamır. Giriş edəndə server sessiya cookie-si (və ya token) yaradır, brauzer hər sorğuda onu göndərir. Cookie-ni silsəm, sorğuda kimlik yoxdur, server məni qonaq sayır, API 401 qaytara bilər.\n\n**Əgər daxil olmuş qalırsa:** sayt kimliyi başqa yerdə saxlayır: `localStorage`-də token. O zaman Application-da Local Storage-ə baxıram.\n\n**Tester üçün nəticə:** sessiya sonrası testi belə aparılır: başqa istifadəçinin cookie-si ilə giriş mümkün olmamalıdır, sessiya bitəndə yarımçıq iş itməməlidir. Yalnız öz hesabında sına.",
+    "c": [
+      "Cookie silindikdən sonra nə görünüb, yazılıb",
+      "Serverin istifadəçini sessiya cookie-si və ya token ilə tanıdığı izah olunub",
+      "Daxil qalma halı üçün başqa yaddaş (localStorage) nəzərə alınıb"
+    ]
+  },
+  "c13t5": {
+    "h": "F12 → Console, səhifəni yenilə, qırmızı sətirlərə bax. Xəta mətnində nə (tip), harada (fayl və sətir) olduğunu tap.",
+    "a": "Real saytlardakı xətalar dəyişir, ona görə öz tapdığını yaz. Nümunə xətalar və onların mənası:\n\n**Nümunə 1:**\n```text\nTypeError: Cannot read properties of undefined (reading 'price') at cart.js:42\n```\nNə deyir: `cart.js`-in 42-ci sətrində kod olmayan obyektin `price` sahəsini oxumağa çalışır. Məhsul məlumatı gəlməyib, ekran yarıda qala bilər.\n\n**Nümunə 2:**\n```text\nGET https://example.com/img/logo.png 404 (Not Found)\n```\nNə deyir: şəkil serverdə tapılmayıb, qırıq şəkil ola bilər.\n\n**Nümunə 3:**\n```text\nAccess to fetch ... has been blocked by CORS policy\n```\nNə deyir: brauzer başqa domendən gələn cavabı qadağan edib, funksiya işləməyə bilər.\n\nYadda saxla: hər xəta istifadəçiyə təsir etmir. Reklam skriptinin xətası çox vaxt zərərsizdir. Təsiri olan xətanı bug report-a mətn kimi əlavə edirik.",
+    "c": [
+      "Xətanın mətni və hansı saytda olduğu yazılıb",
+      "Xəta öz sözlərinlə izah olunub: nə, harada",
+      "Xətanın istifadəçiyə təsiri qiymətləndirilib"
+    ]
+  },
+  "c13q1": {
+    "a": "**Frontend:** istifadəçinin brauzerində görünən hissə: HTML, CSS, JavaScript. **Backend:** serverdəki məntiq: hesablamalar, qaydalar, API. **Verilənlər bazası:** datanın uzunmüddətli saxlandığı yer. Defekt üçündən birində ola bilər, tester onu ayırd etməyi öyrənir.",
+    "c": [
+      "Üç hissənin vəzifəsi düzgün izah olunub",
+      "Frontend brauzerdə, backend serverdədir"
+    ]
+  },
+  "c13q2": {
+    "a": "**GET** datanı oxuyur, dəyişdirməməlidir, parametrləri URL-də gedir və yenidən göndərmək təhlükəsizdir. **POST** yeni data yaradır, data gövdədə gedir və təkrar göndərmək dublikat yarada bilər. Ona görə şifrə kimi məlumat URL-də getməməlidir.",
+    "c": [
+      "GET oxumaq, POST yaratmaq üçündür",
+      "Datanın harada getdiyi və ya təkrar POST riski qeyd olunub"
+    ]
+  },
+  "c13q3": {
+    "a": "**401 Unauthorized:** kimlik yoxdur: server kim olduğunu bilmir, giriş lazımdır. **403 Forbidden:** kimlik bilinir, amma bu işə icazə yoxdur. Məsələn, giriş etməmiş adam 401, adi istifadəçi admin səhifəsini açanda 403 alır.",
+    "c": [
+      "401 kimlik, 403 icazə problemidir",
+      "Misal və ya fərqin aydın izahı var"
+    ]
+  },
+  "c13q4": {
+    "a": "**4xx** client tərəfi problemləridir: sorğu səhvdir, səlahiyyət yoxdur, resurs tapılmır (400, 401, 403, 404). **5xx** server tərəfi problemləridir: sorğu düzgün ola bilər, amma server işləyə bilmir (500, 502, 503, 504). Hər 5xx bug report üçün siqnaldır.",
+    "c": [
+      "4xx client, 5xx server tərəfidir",
+      "Hər qrupa ən azı bir kod misalı verilib"
+    ]
+  },
+  "c13q5": {
+    "a": "Sorğuya baxıram. **Sorğu getmirsə:** frontend. **5xx və ya cavabda səhv data varsa:** backend. **Cavab düzgündür, ekran səhvdirsə:** frontend. **Sorğunun özündə göndərilən data səhvdirsə:** frontend. Sübut kimi sorğunu və cavabı report-a əlavə edirəm.",
+    "c": [
+      "Sorğu yoxdursa frontend, 5xx və ya səhv cavab backend sayılıb",
+      "Cavab düzgün, ekran səhv halı frontend sayılıb"
+    ]
+  }
+}

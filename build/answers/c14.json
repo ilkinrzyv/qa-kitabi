@@ -1,0 +1,156 @@
+{
+  "c14s1m": {
+    "h": "Hər sahənin sərhədini və yanlış dəyərini düşün. Xəta çıxanda doldurulanlar qalırmı? Brauzer yoxlaması keçilsə, server nə edir?",
+    "a": "Nümunə ideyalar:\n\n1. **Xəta mesajı:** email `abc` yazılır, “Göndər” basılır. Mesaj email sahəsinin yanında və aydındır, düzəldiləndə yox olur.\n2. **Data itkisi:** telefon səhv olduğu üçün forma rədd olunur. Ad, email, məktub və seçilmiş CV yerində qalır, hər şeyi yenidən yazmaq lazım gəlmir.\n3. **Sərhəd:** motivasiya məktubu 999, 1000, 1001 simvol. 1000 keçir, 1001 keçmir. Simvol sayğacı düzgün göstərir.\n4. **Fayl:** icazəli formatda (PDF) CV keçir, `.exe`, 0 baytlıq fayl və limitdən böyük fayl rədd olunur.\n5. **Server validasiyası:** DevTools və ya Postman ilə brauzer yoxlamasını keçib səhv email və 2000 simvollu məktub göndər. Server 400 qaytarır, data saxlanmır.\n6. **İkiqat göndərmə:** “Göndər”ə sürətlə iki dəfə bas: bir müraciət yaranır.",
+    "c": [
+      "Altı ideya var, xəta mesajı və data itkisi daxildir",
+      "1000 simvol üçün sərhəd dəyərləri işlənib",
+      "Server validasiyasının brauzerdən yan keçərək yoxlanması var"
+    ]
+  },
+  "c14s2m": {
+    "h": "Yolu addım-addım keç və geri qayıt. Hər addımda URL-i kopyalayıb gizli pəncərədə açsan? Yanlış URL yazsan, istifadəçi hara gedir?",
+    "a": "Nümunə testlər:\n\n1. **Düz yol:** ana səhifə → “İdman” → xəbər → müəllifin digər xəbərləri: hər linkdə düzgün səhifə, başlıq və URL açılır.\n2. **“Geri” düyməsi:** xəbərdən “Geri” bas: kateqoriya səhifəsi eyni səhifə nömrəsi və sürüşmə yerində qalır, ana səhifəyə atmır.\n3. **Dərin link:** xəbərin URL-ini gizli pəncərədə aç: giriş istəmədən xəbər açılır, breadcrumb (“Ana səhifə > İdman”) düzgündür.\n4. **404:** xəbər URL-ində ID-ni dəyiş: 404 səhifəsi açılır, status həqiqətən 404-dür, ana səhifəyə və axtarışa keçid var.\n5. **Silinmiş və ya boş:** müəllifin başqa xəbəri yoxdursa, boş vəziyyət mesajı görünür. Silinmiş xəbərin linki qırıq qalmır, uyğun səhifəyə gedir.\n\nBütün linklər yeni pəncərə açmadan (lazım olmayanda) işləyir.",
+    "c": [
+      "Beş test var və xəbər saytının yolunu izləyir",
+      "“Geri”, dərin link və 404 testləri daxildir",
+      "Hər testdə gözlənilən nəticə konkretdir"
+    ]
+  },
+  "c14s3m": {
+    "h": "Bu ekranın “qeyri-adi” vəziyyətlərini düşün: sifarişi olmayan istifadəçi, 60 simvolluq ad, avatar yoxdur, məlumat hələ yüklənir.",
+    "a": "Nümunə testlər (oracle: təsdiqlənmiş maket):\n\n1. **Boş vəziyyət:** sifarişi olmayan yeni istifadəçi: “Hələ sifarişin yoxdur” mətni və kataloqa keçid görünür, boş cədvəl başlığı yox.\n2. **Uzun mətn:** 60 simvolluq ad və uzun email: “Redaktə et” düyməsini sıxışdırmır, sətir qırılır və ya `…` ilə qısalır, səhifə üfüqi sürüşmür.\n3. **Yüklənmə vəziyyəti:** yavaş şəbəkədə (Slow 3G) məlumat gələnə qədər skeleton və ya yüklənmə göstəricisi görünür, boş ekran və “undefined” mətni yox.\n4. **Avatar:** şəkil yoxdursa, ilkin avatar və ya baş hərflər (“Ş. Ə.”) çıxır; böyük və uzun şəkil dəyirmi çərçivədə təhrif olmur.\n5. **Düymə vəziyyətləri:** “Redaktə et”in normal, hover, fokus, basılı vəziyyətləri fərqlənir və rəng, ölçü, boşluq maketlə eynidir.",
+    "c": [
+      "Beş UI testi var, profil səhifəsinə aiddir",
+      "Boş vəziyyət, uzun mətn və yüklənmə vəziyyəti daxildir",
+      "Gözlənilən nəticə görünüşlə konkret təsvir olunub"
+    ]
+  },
+  "c14s4m": {
+    "h": "Bu dilə xas tələlər: ə, ş, ç, ğ, ı, ö, ü; İ–i, I–ı cütləri; sıralama (E-dən sonra Ə); “seker → şəkər”; poçt və qəbzdə kodlaşdırma.",
+    "a": "Nümunə testlər:\n\n1. **Hərflər:** ünvanda “Şəmkir, Gənclik pr. 7, mənzil 12” yaz: `ə, ş, ç, ğ, ı, ö, ü` qəbul olunur, sonra da düzgün görünür.\n2. **Böyük-kiçik hərf:** “GƏNCƏ” və “gəncə” eyni şəhəri tapır. “İ” kiçildəndə “i”, “I” kiçildəndə “ı” olur: “ŞƏKİ” → “şəki”, “BAKI” → “bakı”.\n3. **Sıralama:** şəhərlər siyahısında Azərbaycan əlifbası işləyir: “C”-dən sonra “Ç”, “E”-dən sonra “Ə”, “S”-dən sonra “Ş” gəlir. Şəmkir Z-dən sonra çıxmır.\n4. **Hərfsiz yazılış:** “Semkir”, “Gence”, “Seki” yazanda axtarış Şəmkir, Gəncə, Şəki tapır.\n5. **Kodlaşdırma:** sifarişdən sonra təsdiq e-poçtunda, SMS-də və PDF qəbzdə “ə”, “ş” hərfləri “?” və ya anlaşılmaz işarə olmur.\n6. **Saxlanma və URL:** saxlanılan ünvanı yenidən açanda hərflər pozulmayıb; axtarışda URL-də `Şəki` kodlanır (percent-encoding), səhifə düzgün açılır.",
+    "c": [
+      "Altı test var, hərflər, böyük-kiçik hərf və sıralama daxildir",
+      "“I-ı” və “İ-i” cütlərinin fərqi nəzərə alınıb",
+      "Hərfsiz yazılış və kodlaşdırma testləri var"
+    ]
+  },
+  "c14s5m": {
+    "h": "Analitikaya görə sırala. Hesabla: Safari cəmi neçə faizdir? iPhone-da digər brauzerlər də WebKit-dədir. Hansı mühərriklər əhatə olunur?",
+    "a": "**Mühərriklər üzrə pay:** Chromium: Chrome 55% + Edge 4% = **59%**. WebKit: Safari iOS 30% + macOS 6% = **36%**. Gecko: Firefox **5%**.\n\n| Brauzer | Pay | Prioritet | Əhatə |\n|---|---|---|---|\n| Chrome (son versiya) | 55% | P1 | Tam regression, ödəniş |\n| Safari iOS (iPhone) | 30% | P1 | Tam regression, real iPhone-da |\n| Safari macOS | 6% | P2 | Əsas yollar |\n| Firefox | 5% | P2 | Smoke və ödəniş |\n| Edge | 4% | P3 | Smoke; Chrome-la eyni mühərrik |\n\n**iOS xüsusiyyəti:** iPhone-da brauzerlərin çoxu WebKit üzərində işləyir, ona görə iOS-da Chrome da əsasən Safari kimi davranır. Android-də Chrome ilə əvəz edilmir: 30% payı olan bu qrup real iOS cihazında test olunmalıdır (tarix sahələri, ünvan çubuğunun hündürlüyü, `position: fixed`). Emulyator kifayət deyil. Rəqəmlər dəyişəndə matris yenilənir.",
+    "c": [
+      "Matris analitikaya görə prioritetlənib, Chrome və Safari iOS yuxarıdadır",
+      "Əhatə dərinliyi prioritetə görə fərqlidir",
+      "iOS-da WebKit xüsusiyyəti və real cihazın vacibliyi deyilib"
+    ]
+  },
+  "c14s6m": {
+    "h": "Ekranı daralt: harada düzən dəyişir? Sərhəddən bir piksel az və çox sına. Telefonu çevir. Barmaqla basılan elementlərin ölçüsünə bax.",
+    "a": "Nümunə testlər:\n\n1. **Breakpoint sərhədi:** düzən 768 px-də dəyişirsə, 767, 768, 769 px enində yoxla: kartlar sıçramır, boşluqlar düzgündür, element itmir.\n2. **Üfüqi sürüşmə:** 360 və 320 px-də səhifədə üfüqi sürüşmə yoxdur, uzun kateqoriya adı və məhsul adı kartı sındırmır, `scrollWidth` ekranı aşmır.\n3. **Landscape:** telefonu üfüqi çevir: səbət düyməsi ekranda qalır, sabit başlıq yemək şəkillərinin üstünü örtmür, klaviatura açılanda sahə görünür.\n4. **Toxunma hədəfi:** “Səbətə əlavə et”, “+”, “−” düymələri ən azı ~44 px-dir, bir-birinə çox yaxın deyil, barmaqla səhv düyməyə düşmür.\n5. **Şəkillər və menyu:** şəkillər ölçüyə uyğun yüklənir, təhrif olunmur; kateqoriya menyusu mobildə üfüqi sürüşür və ya açılır, bütün kateqoriyalar əlçatandır.\n\nSon yoxlama real telefonda olur.",
+    "c": [
+      "Beş test var və restoran menyusuna aiddir",
+      "Breakpoint sərhədi ətrafında dəyərlər, landscape və toxunma hədəfi daxildir",
+      "Üfüqi sürüşmə və ya kartların sınması yoxlanılır"
+    ]
+  },
+  "c14s7m": {
+    "h": "Siçanı kənara qoy. Tab ilə hər yerə çatırsanmı? Ekran oxuyucu sahənin adını deyirmi? Sessiya vaxtı bitəndə nə olur?",
+    "a": "Nümunə testlər:\n\n1. **Klaviatura:** yalnız Tab, Shift+Tab, Enter ilə alıcı kartı, məbləği, “Göndər” və təsdiqi keçmək olur, tələyə düşmür.\n2. **Fokus:** fokusun yeri görünür (aydın çərçivə), sıra məntiqidir: yuxarıdan aşağı; xəta çıxanda fokus səhv sahəyə və ya mesaja keçir.\n3. **Ekran oxuyucu:** NVDA və ya VoiceOver sahə adını deyir (“Məbləğ, AZN”), köçürmə yekununu oxuyur, ikon düymələrin adı var.\n4. **Xəta mesajı:** yanlış məbləğdə xəta yalnız rənglə deyil, mətn və ikonla verilir, sahəyə bağlıdır və ekran oxuyucu onu oxuyur.\n5. **Kontrast:** mətnin fonla kontrastı ən azı 4,5:1-dir, “Göndər” düyməsi və zəif boz mətn də daxil (axe, Lighthouse və ya kontrast aləti).\n6. **Sessiya vaxtı:** sessiya bitməzdən əvvəl xəbərdarlıq gəlir, istifadəçi vaxtı uzada bilir və ekran oxuyucu bunu bildirir. Yazılan məlumat itmir.",
+    "c": [
+      "Klaviatura, fokus, ekran oxuyucu üçün testlər var",
+      "Xəta mesajı, kontrast və sessiya vaxtı üçün testlər var",
+      "Kontrast rəqəmlə və ya alətlə yoxlanılır"
+    ]
+  },
+  "c14s8m": {
+    "h": "Üç başlıq: başqasının datasını görə bilirsənmi (icazə)? Çıxış və şifrə dəyişəndə nə olur (sessiya)? Mesaj çox şey deyirmi? Yalnız test mühiti.",
+    "a": "Test mühitində, icazə ilə, öz test hesablarımla:\n\n1. **İcazə (IDOR):** `GET /api/profile/15`-də ID-ni başqa test hesabının ID-si ilə dəyiş. Gözlənilən: 403 və ya 404, başqasının telefon və ünvanı görünmür. `PATCH` ilə başqasının profilini dəyişmək də alınmır.\n2. **Girişsiz sorğu:** eyni sorğunu token olmadan göndər. Gözlənilən: 401, data yoxdur.\n3. **Sessiya:** çıxış et, köhnə token və ya cookie ilə sorğu göndər. Gözlənilən: 401. Şifrə dəyişəndə başqa cihazdakı sessiya bitir.\n4. **Şifrə dəyişmə:** köhnə şifrə olmadan dəyişmək olmur. Şifrə log, URL və ya cavabda görünmür.\n5. **Xəta mesajları:** yanlış dəyərdə mesaj istifadəçi dilindədir. Stack trace, SQL və server versiyası görünmür.\n\nŞübhəli nəticəni dərinləşdirmirəm, təhlükəsizlik komandasına bildirirəm. Başqasının datası görünürsə, bu, Critical-dır.",
+    "c": [
+      "Beş yoxlama icazə, sessiya və xəta mesajlarını əhatə edir",
+      "Başqasının ID-si ilə sorğu yoxlaması var",
+      "Yalnız test mühiti və icazə şərti qeyd olunub"
+    ]
+  },
+  "c14s9m": {
+    "h": "Əvvəl şərtləri sabitləşdir: eyni şəbəkə, keşsiz. Lighthouse + Network ilə ölç, ən ağır faylı tap. Nəticə cümləsində rəqəm, şərt və hədəf olsun.",
+    "a": "**Plan:**\n1. **Şərtləri müəyyən et:** səhifə `/search?q=telefon`, 200 nəticə, Chrome, “Disable cache”, Fast 3G, mobil emulyasiya.\n2. **Lighthouse işlət:** üç dəfə, orta qiymət yaz: LCP, CLS, ümumi bal.\n3. **Network-ə bax:** ən yavaş sorğular, axtarış API-sinin vaxtı, ən böyük şəkillər, ümumi ölçü.\n4. **Hissi yoxla:** yüklənmə göstəricisi görünürmü, məzmun sıçrayırmı? Filtr dəyişəndə nəticə nə qədər tez gəlir?\n5. **Səbəb və təklif:** hədəflə tutuşdur, ən böyük səbəbi yaz və retest üçün eyni şərtləri saxla.\n\n**Nümunə cümlə (rəqəmlər uydurmadır):** “Fast 3G-də, mobil görünüşdə, axtarış nəticələri səhifəsinin LCP-si 5,8 s-dir (hədəf ≤ 2,5 s); 3 ölçmənin ortasıdır. Əsas səbəb sıxılmamış 24 məhsul şəklidir (3,4 MB). WebP-yə çevirmə və gec yükləmə təklif olunur.”",
+    "c": [
+      "Beş addım var, şərtlər sabitlənib, alət göstərilib",
+      "Nəticə cümləsində rəqəm, şərt və hədəf var",
+      "Səbəb və ya təklif əlavə olunub"
+    ]
+  },
+  "c14t1": {
+    "h": "Beş başlıq yaz, hər birinin altına 3–4 bənd. Azərbaycan dili başlığında ə, ş, sıralama; əlçatanlıqda klaviatura, etiket, fokus.",
+    "a": "**Funksional:**\n- Düzgün məlumatla qeydiyyat keçir, təsdiq e-poçtu gəlir.\n- Artıq olan email rədd olunur.\n- Şifrə və təkrarı fərqli olanda xəta çıxır.\n- Sərhəd: adın və şifrənin minimum və maksimum uzunluğu.\n\n**UI:**\n- Xəta sahənin yanında görünür, düzələndə yox olur.\n- Rədd olunandan sonra doldurulan dəyərlər (şifrədən başqa) qalır.\n- 360 px-də forma sığır, düymə görünür.\n\n**Azərbaycan dili:**\n- “Şəbnəm Əliyeva” adı qəbul olunur, düzgün saxlanılır və e-poçtda düzgün görünür.\n- “İ/ı” böyük-kiçik çevrilməsi düzgündür.\n- Mesajlar azərbaycancadır, qarışıq dil yoxdur.\n\n**Təhlükəsizlik (test mühitində):**\n- Server validasiyası var: brauzer yoxlaması keçiləndə də səhv data saxlanılmır.\n- Şifrə gizlidir, URL və cavabda görünmür.\n- `<script>` adı işə düşmür.\n\n**Əlçatanlıq:**\n- Hər sahənin etiketi (label) var, ekran oxuyucu oxuyur.\n- Forma yalnız klaviatura ilə doldurulur, fokus görünür.\n- Xəta yalnız rənglə verilmir.",
+    "c": [
+      "Beş kateqoriya var və hər birində bənd var",
+      "Azərbaycan hərfləri ilə ad və ya mesaj dili yoxlanılır",
+      "Server validasiyası və klaviatura ilə doldurma var"
+    ]
+  },
+  "c14t2": {
+    "h": "F12 → cihaz ikonu (Ctrl+Shift+M) → Responsive → eni yaz. Hər enlikdə menyu, mətn, şəkil, üfüqi sürüşmə, düymələrə bax. Problemi ekran şəkli ilə qeyd et.",
+    "a": "Bu, cavabın formasıdır; öz seçdiyin saytda baxmalısan.\n\n**Necə:** DevTools → Toggle device toolbar → Responsive, enlik: 360, 768, 1440. Hər ölçüdə səhifəni yuxarıdan aşağı keçirəm, bir də keçid formalarına (axtarış, menyu) baxıram.\n\n**Nümunə qeyd:**\n\n| En | Yer | Problem | Təsir |\n|---|---|---|---|\n| 360 px | Başlıq | Loqo axtarışı sıxışdırır, “Daxil ol” ekrandan çıxır | Üfüqi sürüşmə |\n| 360 px | Məhsul kartı | Uzun ad düyməni aşağı itələyir, kart hündürlüyü fərqlidir | Görünüş |\n| 768 px | Menyu | Burger və tam menyu birlikdə görünür | Çaşqınlıq |\n| 1440 px | Şəkil | Banner aşağı keyfiyyətli və bulanıqdır | Görünüş |\n\nProblem tapmadınsa, “yoxdur” de, amma nəyə baxdığını yaz. Son qərar üçün real telefonda da yoxla.",
+    "c": [
+      "Üç enlikdə də baxılıb və hər biri üçün nəticə yazılıb",
+      "Problemlər konkret yeri və görünüşü ilə qeyd olunub",
+      "Üfüqi sürüşmə, menyu və ya mətn sınması yoxlanılıb"
+    ]
+  },
+  "c14t3": {
+    "h": "Yalnız Tab, Shift+Tab, Enter, Boşluq, oxlar. Hər addımda soruş: fokus haradadır, görünürmü? Ən çox çətinlik açılan siyahı, təqvim və “robot” yoxlamasında olur.",
+    "a": "Sənin təcrübən fərqli olacaq, ona görə sınayıb yaz. Bu, nümunə qeyddir.\n\n**Sayt:** onlayn mağaza, Chrome, siçan qoşulu deyil.\n\n| Addım | Klaviatura | Nə baş verdi |\n|---|---|---|\n| “Qeydiyyat”a çatmaq | Tab × 23 | “Keçid” (skip link) yoxdur, çox gedilir |\n| Sahələr | Tab | Sıra düzgündür, fokus çərçivəsi çox zəifdir |\n| Doğum tarixi | Oxlar | Təqvim açılır, klaviatura ilə gün seçilmir |\n| Razılıq | Boşluq | Qutu işarələnir |\n| Xəta | Enter | Mesaj çıxır, fokus səhv sahəyə keçmir |\n\n**Çətinlik:** təqvim bloklayıcıdır: qeydiyyatı siçansız bitirmək olmur.\n\n**Niyə vacibdir:** görmə və hərəkət məhdudiyyəti olan istifadəçilər siçan işlətmir. WCAG tələbi: bütün funksiyalar klaviatura ilə işləməlidir. Bu, bug report-a yazılır.",
+    "c": [
+      "Hansı addımda çətinlik olduğu konkret yazılıb",
+      "Fokusun görünməsi və ya sırası qiymətləndirilib",
+      "Tapıntının niyə vacib olduğu izah olunub"
+    ]
+  },
+  "c14t4": {
+    "h": "F12 → Lighthouse → kateqoriyaları seç → “Analyze”. Ən aşağı bal alan kateqoriyada ilk təklifləri aç. Texniki adı öz sözlərinlə “istifadəçi nə hiss edir” kimi izah et.",
+    "a": "Audit sayta görə dəyişir, ona görə öz nəticəni yaz. Bu, nümunə izahdır.\n\n**Şərt:** Chrome, Mobile, gizli pəncərə, performans balı 47 (rəqəmlər nümunədir).\n\n**Problem 1: “Largest Contentful Paint 6,2 s”.** Səhifənin ən böyük hissəsi, burada banner şəkli, 6 saniyədən gec görünür. İstifadəçi boş ekrana baxır və çıxa bilər. Səbəb: 2 MB-lıq şəkil. Təklif: sıxmaq, WebP-yə çevirmək.\n\n**Problem 2: “Reduce unused JavaScript”.** Səhifə 900 KB skript yükləyir, onun böyük hissəsi bu səhifədə işlənmir. Telefon bu skripti yükləyib emal edir, səhifə gec cavab verir. Təklif: lazımsız skriptləri çıxarmaq, sonradan yükləmək.\n\n**Diqqət:** Lighthouse sürətli ilkin auditdir, nəticələr şəbəkə və kompüterə görə dəyişir, ona görə 3 dəfə işlədib orta götür. Əlçatanlıq üçün yalnız bir hissəni tapır.",
+    "c": [
+      "Auditin balı və şərtləri yazılıb",
+      "İki problem öz sözlərinlə, istifadəçiyə təsiri ilə izah olunub",
+      "Hər problemə ehtimal olunan səbəb və ya təklif var"
+    ]
+  },
+  "c14t5": {
+    "h": "Əlifbanı yada sal: Ç, Ə, X, Q, Ş harada gəlir? Şəhər siyahısını buna görə yoxla. Kompüter sırası çox vaxt fərqlidir.",
+    "a": "Saytı özün seçirsən, nəticə sənin müşahidəndir.\n\n**Əlifba:** A B C Ç D E Ə F G Ğ H X I İ J K Q L M N O Ö P R S Ş T U Ü V Y Z.\n\n**Düzgün sıra nümunəsi:** Bakı, Bərdə, Cəlilabad, Çeyranbatan, Daşkəsən, Ələt, Gəncə, Xaçmaz, İsmayıllı, Kürdəmir, Quba, Lənkəran, Masallı, Naxçıvan, Sumqayıt, Şamaxı, Şəki, Yevlax, Zaqatala.\n\n**Baxılacaq yerlər:**\n- **Ç** C-dən sonra, D-dən əvvəl.\n- **Ə** E-dən sonra, F-dən əvvəl: Ələt siyahının sonunda deyil.\n- **X** H-dən sonra, I-dan əvvəl: Xaçmaz ingilis sırasındakı kimi sona düşmür.\n- **Q** K-dan sonra, L-dən əvvəl: Quba Lənkərandan əvvəl gəlir.\n- **Ş** S-dən sonra, T-dən əvvəl: Şəki Z-dən sonra deyil.\n\n**Tipik baq:** kod sadə kompüter sırası ilə düzür, ona görə Ç, Ə, Ş siyahının sonuna düşür. Sübut kimi ekran şəkli çək, gözlənilən sıranı yaz. Düzgündürsə, onu da qeyd et.",
+    "c": [
+      "Yoxlanan sayt və ya siyahı yazılıb",
+      "Ç, Ə, Ş hərflərinin yeri əlifbaya görə qiymətləndirilib",
+      "Tapıntı sübutla (ekran şəkli) və ya gözlənilən sıra ilə verilib"
+    ]
+  },
+  "c14q1": {
+    "a": "**Client-side** validasiya brauzerdə işləyir, istifadəçiyə tez cavab verir, rahatlıq üçündür. **Server-side** validasiya serverdə işləyir və təhlükəsizlik üçündür. Daha vacibi serverdəkidir, çünki brauzer yoxlamasından asanlıqla yan keçmək olar, məsələn, Postman ilə.",
+    "c": [
+      "Client rahatlıq, server təhlükəsizlik üçündür",
+      "Server validasiyasının daha vacib olduğu və səbəbi deyilib"
+    ]
+  },
+  "c14q2": {
+    "a": "1. Ad və ünvanda `ə, ş, ç, ğ, ı, ö, ü` hərfləri düzgün saxlanılır və göstərilir.\n2. Əlifba sıralaması: Ç, Ə, Ş düzgün yerdədir.\n3. Axtarış hərfsiz yazılışı tanıyır: “seker” → “şəkər”. Böyük-kiçik hərfdə “İ–i” və “I–ı” də yaxşı testdir.",
+    "c": [
+      "Üç ideya Azərbaycan dilinə aiddir",
+      "Hərf, sıralama və ya hərfsiz axtarış kimi fərqli ideyalardır"
+    ]
+  },
+  "c14q3": {
+    "a": "Adətən 360 və 390 px (telefon), 768 px (planşet), 1024 və 1440 px (kompüter), üstəlik düzənin dəyişdiyi breakpoint-lərin hər iki tərəfi, məsələn, 767 və 768 px. Dəqiq siyahını analitika müəyyən edir, son yoxlama isə real cihazda olur.",
+    "c": [
+      "Telefon, planşet və kompüter enləri sadalanıb",
+      "Breakpoint və ya analitika qeyd olunub"
+    ]
+  },
+  "c14q4": {
+    "a": "1. Başqa istifadəçinin ID-si ilə datasına baxmaq cəhdi.\n2. Çıxışdan sonra “Geri” və ya köhnə tokenlə giriş.\n3. Sahəyə `<script>` yazmaq və xəta mesajında texniki məlumat axtarmaq.\n\nİcazə vacibdir, çünki icazəsiz yoxlama hüquqi məsuliyyət yarada bilər. Yalnız öz test mühitində işlə.",
+    "c": [
+      "Üç sadə yoxlama sadalanıb",
+      "İcazənin hüquqi səbəbi və test mühiti qeyd olunub"
+    ]
+  }
+}

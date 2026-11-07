@@ -1,0 +1,170 @@
+{
+  "c15s1m": {
+    "h": "Sorğunun hər hissəsini dəyiş: base, target, parametrin özü. Cavabda iki sahə var: rate və date. Hər birinin tipi və mənası nədir?",
+    "a": "Nümunə ideyalar:\n\n1. **Pozitiv:** `GET /rates?base=AZN&target=USD` → 200, `rate` sıfırdan böyükdür, `date` var.\n2. **Yanlış valyuta:** `target=XXX` → 400 və ya 404, aydın xəta; 500 yox, boş rate yox.\n3. **Parametr çatışmazlığı:** `target` olmadan sorğu → 400, mesajda hansı parametrin çatmadığı yazılır.\n4. **Tip yoxlaması:** `rate` ədəddir (`0.588`), mətn (`\"0.588\"`) deyil; `date` `YYYY-MM-DD` formatındadır.\n5. **Tarix:** `date` tələbdə yazılan gündür (bugünkü və ya son iş günü), köhnə məzənnə qaytarılmır. İstirahət günündə də yoxlanılır.\n\nƏlavə ideya: `base=USD&target=AZN` məzənnəsi təxminən tərs qiymətdirmi (`1 / 0,588 ≈ 1,70`)? Böyük fərq məlumat səhvinə işarədir.",
+    "c": [
+      "Beş ideya var: pozitiv, yanlış valyuta, parametr, tip, tarix",
+      "Neqativ hallarda 4xx gözlənilir, 500 qəbul edilmir",
+      "Tip yoxlaması rate-in ədəd olduğunu tutur"
+    ]
+  },
+  "c15s2m": {
+    "h": "Açılan siyahı yalnız 18–80 verir, API isə istənilən şeyi qəbul edə bilər. Sərhədin xaricini, yanlış tipi, boşluğu və artıq sahəni göndər.",
+    "a": "UI siyahısı olmayan dəyərləri göndərməyə imkan vermir, ona görə bu testlər ancaq API ilə mümkündür:\n\n| # | Gövdə | Gözlənilən |\n|---|---|---|\n| 1 | `{\"name\":\"Aysel\",\"age\":17}` | 400 (sərhəddən aşağı) |\n| 2 | `{\"name\":\"Aysel\",\"age\":81}` | 400 (sərhəddən yuxarı) |\n| 3 | `{\"name\":\"Aysel\",\"age\":\"on səkkiz\"}` | 400 (yanlış tip), 500 yox |\n| 4 | `{\"name\":\"Aysel\"}` | 400 (`age` yoxdur) |\n| 5 | `{\"name\":\"Aysel\",\"age\":25,\"role\":\"admin\"}` | Artıq sahə nəzərə alınmır, yeni istifadəçi admin olmur |\n\nDüz dəyərlərlə (18 və 80) pozitiv yoxlama da lazımdır: 201 qayıdır. UI məhdudiyyəti təhlükəsizlik deyil: server özü də yoxlamalıdır.",
+    "c": [
+      "Beş test API səviyyəsində, gövdəsi ilə yazılıb",
+      "Sərhəddən kənar yaş, yanlış tip və ya çatışmayan sahə var",
+      "Gözlənilən status konkretdir, serverin rədd etməsi tələb olunur"
+    ]
+  },
+  "c15s3m": {
+    "h": "Sahələri bir-bir sənədlə tutuşdur: tipə və formata bax. Sonra soruş: bu dəyəri götürən client nə hesablayır və ya nə göstərir?",
+    "a": "| Sahə | Faktiki | Sənəd | Mümkün təsir |\n|---|---|---|---|\n| `total` | `\"39,80\"` (mətn, vergül) | number | Toplama səhv olur, ümumi məbləğ `NaN` ola bilər |\n| `items` | `{...}` (obyekt) | array | Siyahı üzərində dövr işləmir, ekran boş qalır və ya çökür; bir neçə məhsul göstərilə bilmir |\n| `paid` | `1` (ədəd) | boolean | `paid === true` yoxlaması alınmır, ödənmiş sifariş “ödənilməyib” görünə bilər |\n| `createdAt` | `\"24/10/2026\"` | ISO: `2026-10-24` | Tarix oxunmur və ya gün-ay qarışır, sıralama pozulur |\n\n`orderId` sənədə uyğundur (ədəd). Status 200 olsa da, dörd uyğunsuzluq var, çünki hər client eyni müqaviləyə güvənir. Tip uyğunsuzluğu da defektdir.",
+    "c": [
+      "Dörd uyğunsuzluğun hamısı tapılıb: total, items, paid, createdAt",
+      "Hər birinə ayrıca mümkün təsir yazılıb",
+      "“Status 200-dür, deməli düzdür” nəticəsi çıxarılmayıb"
+    ]
+  },
+  "c15s4m": {
+    "h": "Ünvan və token mühitə görə dəyişir, ona görə dəyişəndir. Qovluq adı resursdur, sorğu adı isə “nə + nəticə” deyir: “Kitab yarat: boş ad → 400”.",
+    "a": "Bu, mümkün struktur nümunəsidir, sorğu adları fərqli ola bilər.\n\n**Environment (test, staging):** `baseUrl`, `token`, `bookId`, `readerId`.\n\n**Kolleksiya: Kitabxana API**\n\n```text\nKitablar/\n  GET  Kitab siyahısı → 200\n  POST Kitab yarat → 201\n  POST Kitab yarat: boş ad → 400\n  GET  Olmayan kitab → 404\nOxucular/\n  POST Oxucu yarat → 201\n  POST Oxucu yarat: təkrar email → 409\n  GET  Oxucu profili: tokensiz → 401\nGötürmələr/\n  POST Kitab götür → 201\n  POST Artıq verilmiş kitabı götür → 409\n  POST Kitabı qaytar → 200\n  POST Olmayan kitabı götür → 404\n```\n\nHər sorğuya təsvir və nümunə cavab əlavə olunur. Tokenin əsl dəyəri kolleksiyaya yazılmır, yalnız environment-in “current value” sahəsində saxlanılır.",
+    "c": [
+      "Environment-də server ünvanı və token dəyişən kimi var",
+      "Kitablar, oxucular, götürmələr üçün üç qovluq var",
+      "Hər qovluqda pozitiv və neqativ sorğu adı var",
+      "Sorğu adlarından gözlənilən nəticə anlaşılır"
+    ]
+  },
+  "c15s5m": {
+    "h": "Cavabı aç, soruş: neçə element var, hamısı doğrudan postId=1-indirmi, hər elementdə hansı sahələr var? Neqativ üçün olmayan post seç.",
+    "a": "**Sorğu:** `GET https://jsonplaceholder.typicode.com/comments?postId=1`\n\n**Müşahidə nöqtələri:**\n1. **Status:** 200 OK.\n2. **Say:** massivdə 5 şərh var.\n3. **Filtr:** bütün elementlərdə `postId` 1-dir, başqa post şərhi qarışmır.\n4. **Quruluş:** hər elementdə `postId`, `id`, `name`, `email`, `body` sahələri var, `email`-də `@` işarəsi görünür.\n\n**Neqativ variant:** `GET /comments?postId=9999` → 200 və boş massiv `[]`. Burada 404 yoxdur, çünki filtr uyğun nəticə tapmadıqda boş siyahı qaytarır. `GET /posts/9999`-la fərqi budur: orada konkret resurs axtarılır, cavab 404-dür.",
+    "c": [
+      "Status, say 5, filtr və quruluş müşahidə olunub",
+      "Beş sahənin adı düzgün yazılıb",
+      "Neqativ sorğu var, nəticəsi 200 və boş massivdir"
+    ]
+  },
+  "c15s6m": {
+    "h": "Dörd pm.test yaz. Cavabı `pm.response.json()` ilə oxu. Vaxt `pm.response.responseTime`-dadır. Tip üçün `.to.be.a(\"number\")`.",
+    "a": "```javascript\nconst data = pm.response.json();\n\npm.test(\"Status 200-dür\", function () {\n  pm.response.to.have.status(200);\n});\n\npm.test(\"userId ədəddir\", function () {\n  pm.expect(data.userId).to.be.a(\"number\");\n});\n\npm.test(\"title boş deyil\", function () {\n  pm.expect(data.title).to.be.a(\"string\");\n  pm.expect(data.title.length).to.be.above(0);\n});\n\npm.test(\"Cavab 1000 ms-dən tez gəlir\", function () {\n  pm.expect(pm.response.responseTime).to.be.below(1000);\n});\n```\n\n**Sətirlər:** `pm.response.json()` cavabı JavaScript obyektinə çevirir, `data` adlı dəyişəndə saxlayır. `pm.test` bir yoxlama elan edir, ad nəticələrdə görünür. `to.have.status` status kodunu, `to.be.a` tipi yoxlayır. `.length` mətnin uzunluğunu verir, `above(0)` boş olmadığını göstərir. `responseTime` cavab vaxtıdır (ms), `below(1000)` ondan az olmalıdır.",
+    "c": [
+      "Dörd ayrı pm.test yoxlaması var",
+      "userId tipi və title-ın boş olmaması yoxlanılır",
+      "Vaxt `pm.response.responseTime` ilə ölçülür",
+      "Hər sətrin işi izah olunub"
+    ]
+  },
+  "c15s7m": {
+    "h": "Login cavabından tokeni environment-ə yaz. Sonrakı sorğularda Authorization: Bearer Token, dəyəri {{token}}. Şifrəni kolleksiyaya yazma.",
+    "a": "**1. Login: `POST {{baseUrl}}/login`.** Gövdə: `{\"email\":\"{{email}}\",\"password\":\"{{password}}\"}`. Tests:\n\n```javascript\npm.test(\"Login 200\", function () {\n  pm.response.to.have.status(200);\n});\npm.environment.set(\"token\", pm.response.json().token);\n```\n\n**2. Profil: `GET {{baseUrl}}/me`.** Authorization: Type = Bearer Token, Token = `{{token}}`. Tests:\n\n```javascript\npm.test(\"Profil açılır\", function () {\n  pm.response.to.have.status(200);\n  pm.expect(pm.response.json().email).to.eql(pm.environment.get(\"email\"));\n});\n```\n\n**3. Yeniləmə: `PATCH {{baseUrl}}/me`.** Eyni Authorization. Gövdə: `{\"phone\":\"+994501234567\"}`. Tests:\n\n```javascript\npm.test(\"Telefon yenilənib\", function () {\n  pm.response.to.have.status(200);\n  pm.expect(pm.response.json().phone).to.eql(\"+994501234567\");\n});\n```\n\nAuthorization-u kolleksiya səviyyəsində bir dəfə yazmaq olar, sorğular “Inherit” ilə götürür. Şifrə və token yalnız environment-in “current value” sahəsində qalır.",
+    "c": [
+      "Tokeni environment-ə yazan skript loginin Tests hissəsindədir",
+      "Sonrakı iki sorğuda Bearer `{{token}}` işlənir",
+      "Üç sorğunun hər birində yoxlama var",
+      "Şifrə və token kolleksiyaya yazılmır"
+    ]
+  },
+  "c15s8m": {
+    "h": "CSV-də postId və gözlənilən say olsun. Kodda dəyəri `pm.iterationData.get(...)` ilə al. Newman-da environment `-e`, data faylı `-d` ilə verilir.",
+    "a": "**comments.csv:**\n\n```text\npostId,expectedCount\n1,5\n2,5\n100,5\n9999,0\n```\n\nSon sətir neqativdir: olmayan post, boş massiv.\n\n**Tests:**\n\n```javascript\nconst data = pm.response.json();\nconst postId = Number(pm.iterationData.get(\"postId\"));\nconst expectedCount = Number(pm.iterationData.get(\"expectedCount\"));\n\npm.test(\"Status 200-dür\", function () {\n  pm.response.to.have.status(200);\n});\n\npm.test(\"Şərh sayı gözləniləndir\", function () {\n  pm.expect(data.length).to.eql(expectedCount);\n});\n\npm.test(\"Hər şərh bu posta aiddir\", function () {\n  data.forEach(function (c) {\n    pm.expect(c.postId).to.eql(postId);\n  });\n});\n```\n\n**Newman:**\n\n```text\nnewman run comments.postman_collection.json -e test.postman_environment.json -d comments.csv\n```\n\nRunner dörd sətri dörd iterasiya kimi işlədir. `Number(...)` lazımdır, çünki CSV dəyəri mətn kimi gələ bilər.",
+    "c": [
+      "CSV-də dörd sətir var, biri neqativdir",
+      "Test kodu dəyəri `pm.iterationData` ilə oxuyur",
+      "Newman əmrində environment və data faylı göstərilib"
+    ]
+  },
+  "c15s9m": {
+    "h": "Tələb olunan yeddi hala bir də düşün: təkrar sorğu, çox uzun dəyər. Hər ideyanın sonuna gözlənilən status yaz.",
+    "a": "| # | Ssenari | Gözlənilən |\n|---|---|---|\n| 1 | Pozitiv: öz profili, düzgün `name` və `phone` | 200, yeni dəyərlər qayıdır, sonrakı `GET`-də də qalır |\n| 2 | Tokensiz sorğu | 401 |\n| 3 | Başqasının `id`-si, öz tokenim | 403 və ya 404, data dəyişmir |\n| 4 | Yanlış format: `phone: \"abc\"` | 400 və ya 422, səhv sahə göstərilir |\n| 5 | Boş gövdə `{}` | 400 və ya 200 (tələbə görə), data dəyişmir, 500 yox |\n| 6 | Mövcud olmayan `id` | 404 |\n| 7 | Yanlış metod: `DELETE /users/{id}`, dəstəklənmirsə | 405 |\n| 8 | Azərbaycan hərfləri: `name: \"Şəbnəm Əliyeva\"` | 200, hərflər olduğu kimi saxlanılır |\n\nPATCH-ın fərqi: yalnız `phone` göndərəndə `name` dəyişməməlidir. Bunu ayrıca yoxla.",
+    "c": [
+      "Səkkiz ideya tələb olunan halları əhatə edir",
+      "Başqasının profili üçün data dəyişmədiyi yoxlanılır",
+      "Hər ideyada gözlənilən status var"
+    ]
+  },
+  "c15t1": {
+    "h": "Cavab iç-içə obyektdir: `data.address.city`. Əvvəl cavaba bax, sonra gördüyün dəyəri test edən `pm.expect` yaz.",
+    "a": "**Sorğu:** `GET https://jsonplaceholder.typicode.com/users/5`\n\nCavabda `address.city` dəyəri `Roscoeview`-dur.\n\n**Tests:**\n\n```javascript\npm.test(\"Status 200-dür\", function () {\n  pm.response.to.have.status(200);\n});\n\npm.test(\"Şəhər Roscoeview-dur\", function () {\n  const data = pm.response.json();\n  pm.expect(data.address.city).to.eql(\"Roscoeview\");\n});\n```\n\nTipik səhv `data.city` yazmaqdır: bu sahə yoxdur, çünki şəhər `address` obyektinin içindədir, nəticə `undefined` olur. Test yaşıl olanda onu yoxla: dəyəri bir anlıq dəyiş və testin qırmızı olduğunu gör. Həmişə yaşıl qalan test heç nəyi yoxlamır.",
+    "c": [
+      "Sorğu GET /users/5-ə gedir",
+      "Yoxlama `data.address.city` yolu ilə edilir",
+      "Gözlənilən dəyər “Roscoeview”dur",
+      "Test Postman-da işə salınıb yaşıl görünüb"
+    ]
+  },
+  "c15t2": {
+    "h": "Cavab massivdir, `pm.response.json()` onu qaytarır. `.length` sayı verir. `to.eql(10)` ilə tutuşdur.",
+    "a": "**Sorğu:** `GET https://jsonplaceholder.typicode.com/posts?userId=3`\n\n```javascript\npm.test(\"Düz 10 post qayıdır\", function () {\n  const data = pm.response.json();\n  pm.expect(data.length).to.eql(10);\n});\n```\n\nYaxşı olar ki, filtri də yoxlayasan: say düz ola bilər, amma postlar başqasınınkı ola bilər.\n\n```javascript\npm.test(\"Hamısı userId=3-ündür\", function () {\n  pm.response.json().forEach(function (p) {\n    pm.expect(p.userId).to.eql(3);\n  });\n});\n```\n\nTipik səhv `data.length()` yazmaqdır: `length` funksiya deyil, xüsusiyyətdir, mötərizə yazılmır.",
+    "c": [
+      "Sorğuda `userId=3` parametri var",
+      "Yoxlama `.length` ilə 10-a bərabərliyi yoxlayır",
+      "Test Postman-da işə salınıb yaşıl görünüb"
+    ]
+  },
+  "c15t3": {
+    "h": "Üç müxtəlif şey yoxla: say, filtr, quruluş və ya format. Hamısı status yoxlaması olmasın. Massivdə hər element üçün `forEach`.",
+    "a": "Bu, üç mümkün testdir; başqa fərqli testlər də ola bilər.\n\n```javascript\nconst data = pm.response.json();\n\npm.test(\"5 şərh qayıdır\", function () {\n  pm.expect(data.length).to.eql(5);\n});\n\npm.test(\"Hamısı 1-ci posta aiddir\", function () {\n  data.forEach(function (c) {\n    pm.expect(c.postId).to.eql(1);\n  });\n});\n\npm.test(\"Email-lərdə @ var, mətn boş deyil\", function () {\n  data.forEach(function (c) {\n    pm.expect(c.email).to.include(\"@\");\n    pm.expect(c.body.length).to.be.above(0);\n  });\n});\n```\n\nBu testlər fərqli defektləri tutur: birincisi səhifələmə və say, ikincisi işləməyən filtr, üçüncüsü pozulmuş data. Bir yoxlamanı üç dəfə yazmaq əhatəni artırmır.",
+    "c": [
+      "Sorğu GET /comments?postId=1-ə gedir",
+      "Üç test fərqli şey yoxlayır, sadəcə status yox",
+      "Massiv elementləri `forEach` ilə yoxlanılır və ya sayı tutuşdurulur",
+      "Testlər Postman-da işə salınıb yaşıl görünüb"
+    ]
+  },
+  "c15t4": {
+    "h": "Email və şifrəni ayrı-ayrı poz: boş, yoxdur, yanlış format, yanlış tip, çox qısa, artıq var. Status 400, 409 və ya 422 ola bilər, 500 olmaz.",
+    "a": "Dəqiq status API sənədinə görədir; aşağıda çox işlənən variantlar var.\n\n| # | Gövdə | Gözlənilən |\n|---|---|---|\n| 1 | `{\"password\":\"Parol123\"}` (email yoxdur) | 400 |\n| 2 | `{\"email\":\"a@b.az\"}` (şifrə yoxdur) | 400 |\n| 3 | `{\"email\":\"abc\",\"password\":\"Parol123\"}` | 400 və ya 422 |\n| 4 | `{\"email\":\"\",\"password\":\"\"}` | 400 və ya 422 |\n| 5 | `{\"email\":\"a@b.az\",\"password\":\"123\"}` (çox qısa) | 400 və ya 422 |\n| 6 | Artıq qeydiyyatdan keçmiş email | 409 |\n| 7 | `{\"email\":123,\"password\":true}` (yanlış tip) | 400, 500 yox |\n| 8 | Pozulmuş JSON: `{\"email\":\"a@b.az\",` | 400 |\n\nHər cavabda bazada istifadəçi yaranmadığını da yoxla. Mesaj şifrənin özünü qaytarmamalıdır. Əlavə ideya: eyni email-in böyük hərflə variantı (`A@B.AZ`) dublikat sayılır, ya yox?",
+    "c": [
+      "Səkkiz neqativ ideya var, gövdələri və ya halları aydındır",
+      "Hər birində 4xx status gözlənilir, 500 qəbul edilmir",
+      "Artıq mövcud email halı daxildir",
+      "Yanlış tip və ya pozulmuş JSON halı daxildir"
+    ]
+  },
+  "c15t5": {
+    "h": "Environments → yeni environment → `baseUrl` dəyişəni. Sorğularda ünvanın başını `{{baseUrl}}` ilə əvəz et. Sağ yuxarıdan environment-i seç.",
+    "a": "**Addımlar:**\n1. Postman → **Environments** → **+** → ad: `JSONPlaceholder Test`.\n2. Dəyişən: `baseUrl`, dəyər: `https://jsonplaceholder.typicode.com`. **Save**.\n3. Sağ yuxarıda bu environment-i seç.\n4. Hər sorğuda ünvanın başını dəyiş:\n\n```text\nƏvvəl: https://jsonplaceholder.typicode.com/users/1\nSonra: {{baseUrl}}/users/1\n```\n\n5. **Yoxla:** sorğular eyni cavabı verir. Environment-i “No Environment” et: `{{baseUrl}}` qırmızı görünür, sorğu getmir. Bu, dəyişənin həqiqətən işlədiyini göstərir.\n\n**Niyə:** server dəyişəndə (test → staging) ünvanı 30 sorğuda yox, bir yerdə dəyişirsən. Sonda kolleksiyada açıq yazılmış ünvan qalmadığını axtarışla yoxla.",
+    "c": [
+      "Environment-də `baseUrl` dəyişəni yaradılıb",
+      "Bütün sorğular `{{baseUrl}}` ilə başlayır",
+      "Sorğular dəyişəndən sonra da eyni cavabı verir"
+    ]
+  },
+  "c15q1": {
+    "a": "**API** proqramların bir-biri ilə danışdığı müqavilədir: hansı sorğu hansı cavabı alır. UI testindən tezdir, çünki brauzer və ekran çəkilmir. Sabitdir, çünki düymənin yeri və ya maket dəyişəndə test pozulmur.",
+    "c": [
+      "API proqramlar arası müqavilə və ya əlaqə kimi izah olunub",
+      "Tezlik UI-nin çəkilməməsi ilə əsaslandırılıb",
+      "Sabitlik UI dəyişikliklərindən asılı olmamaqla izah olunub"
+    ]
+  },
+  "c15q2": {
+    "a": "**string** (mətn), **number** (ədəd), **boolean** (`true` və ya `false`), **null** (boş dəyər), **object** (`{ }`), **array** (`[ ]`). Tip uyğunsuzluğu da defektdir: məsələn, ədəd yerinə mətn.",
+    "c": [
+      "Altı tipin hamısı sadalanıb",
+      "object və array fərqli tip kimi göstərilib"
+    ]
+  },
+  "c15q3": {
+    "a": "**PUT** resursu bütünlüklə əvəz edir: göndərilməyən sahə itə bilər. **PATCH** yalnız göndərilən sahələri dəyişir, qalanı toxunulmaz qalır. Test ideyası: PATCH ilə bir sahəni dəyiş, digərlərinin qaldığını yoxla.",
+    "c": [
+      "PUT resursu tam, PATCH qismən dəyişir",
+      "PUT-da göndərilməyən sahənin aqibəti və ya misal deyilib"
+    ]
+  },
+  "c15q4": {
+    "a": "**`pm.test`** adı olan bir yoxlama elan edir, ad nəticələrdə görünür. **`pm.expect`** dəyərin gözlənilənə uyğunluğunu yoxlayır. **`pm.response`** gələn cavabdır: status, gövdə (`.json()`), vaxt (`.responseTime`).",
+    "c": [
+      "Üç obyektin işi düzgün izah olunub",
+      "pm.response-un cavabı təmsil etdiyi deyilib"
+    ]
+  },
+  "c15q5": {
+    "a": "Status 200 yalnız serverin sorğunu emal etdiyini deyir. Cavabda boş massiv, yanlış tip, başqasının datası, yanlış məbləğ ola bilər. Ona görə gövdəni, sahələri, tipləri, biznes qaydalarını və lazım gələndə bazanı da yoxlayırıq.",
+    "c": [
+      "Status 200 olanda data səhvinin mümkünlüyü deyilib",
+      "Gövdə, tip və ya biznes qaydası yoxlaması qeyd olunub"
+    ]
+  }
+}

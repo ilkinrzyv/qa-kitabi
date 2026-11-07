@@ -1,0 +1,178 @@
+{
+  "c18s1m": {
+    "h": "`user.address` nədir? Olmayan şeyin içindən `city` oxumaq olarmı? 18.8-dəki `?.` işarəsini və 18.3-dəki `||` operatorunu xatırla.",
+    "a": "**Təxmin:** `TypeError`.\n\n**İşə salanda:**\n\n```text\nTypeError: Cannot read properties of undefined (reading 'city')\n```\n\n**Səbəb:** `user` obyektində `address` sahəsi yoxdur, ona görə `user.address` `undefined`-dir. Kod `undefined`-in içindən `city` oxumağa çalışır və burada dayanır.\n\n**Düzəliş:**\n\n```javascript\nconst user = { name: 'Aysel' };\nconsole.log(user.address?.city || 'Ünvan yoxdur');\n// Ünvan yoxdur\n```\n\n`?.` sahə yoxdursa, xəta vermir, `undefined` qaytarır. `||` isə `undefined` olanda “Ünvan yoxdur” mətnini seçir. Tester üçün faydası: API-dən sahə gəlməyəndə tətbiqin ekranının bu xəta ilə dayanması real defektdir.",
+    "c": [
+      "Xəta növü `TypeError` kimi yazılıb",
+      "Səbəb `user.address`-in `undefined` olması ilə izah olunub",
+      "Düzəlişdən sonra “Ünvan yoxdur” çap olunur"
+    ]
+  },
+  "c18s2m": {
+    "h": "Hər sahə üçün `typeof` işlət, sonra sənədlə tutuşdur. `undefined` özü ayrıca tipdir. Mətn olan `'15'` nəyi poza bilər?",
+    "a": "```javascript\nconst user = { id: '15', email: 'leyla@example.com', age: 30, isActive: false, phone: undefined };\nconsole.log(typeof user.id);       // string\nconsole.log(typeof user.email);    // string\nconsole.log(typeof user.age);      // number\nconsole.log(typeof user.isActive); // boolean\nconsole.log(typeof user.phone);    // undefined\n```\n\n**Uyğunsuzluqlar:**\n\n| Sahə | Faktiki | Sənəd | Risk |\n|---|---|---|---|\n| `id` | string | number | `user.id === 15` yalandır, müqayisə və ya axtarış alınmaya bilər; `user.id + 1` isə `'151'` verir |\n| `phone` | undefined | string, məcburi | Məcburi məlumat yoxdur: SMS göndərilə bilmir, `user.phone.length` `TypeError` verir |\n\n`isActive: false` defekt deyil: dəyər yalandır, amma tipi düzgündür. `email` və `age` də sənədə uyğundur.",
+    "c": [
+      "Beş sahənin tipi `typeof` ilə yoxlanılıb",
+      "`id` və `phone` uyğunsuzluq kimi tapılıb",
+      "`isActive: false` defekt sayılmayıb",
+      "Hər uyğunsuzluğun riski yazılıb"
+    ]
+  },
+  "c18s3m": {
+    "h": "`-`, `*`, `/` mətni ədədə çevirir, `+` isə mətn görəndə yapışdırır. Düzəliş üçün `Number(...)` işlət.",
+    "a": "**Nəticə:**\n\n```text\n40 5010 5\n```\n\n**Səhv olan:** ikincisi, `price + discount` → `'5010'`. `+` mətn görəndə toplamır, yapışdırır. `-`, `*`, `/` isə mətni ədədə çevirir, ona görə 40 və 5 düzgün görünür. Bu, təsadüfi düzgünlükdür.\n\n**Düzəliş:**\n\n```javascript\nconst price = Number('50');\nconst discount = Number('10');\nconsole.log(price - discount, price + discount, price * discount / 100);\n// 40 60 5\n```\n\nTester üçün nəticə: formadan və ya API-dən gələn mətn ədədə çevrilməsə, səbət cəmi “5010 AZN” kimi çıxa bilər. Cəmi hesablayan ekranlarda buna baxmaq lazımdır.",
+    "c": [
+      "Nəticə `40 5010 5` təxmin edilib və yoxlanılıb",
+      "`+` operatorunun mətni yapışdırması səbəb kimi deyilib",
+      "Düzəlişdən sonra `+` 60 verir"
+    ]
+  },
+  "c18s4m": {
+    "h": "İki nəticəni də çap et və `.length`-ə bax: 8, yoxsa 10? `İ` kiçiləndə əlavə işarə yarana bilər. Həll dil qaydasıdır: `'az'`.",
+    "a": "**Səbəb:**\n\n```javascript\nconst name = 'İSTİ ÇAY';\nconst a = name.toLowerCase();\nconst b = name.toLocaleLowerCase('az');\nconsole.log(a.length, a.includes('isti')); // 10 false\nconsole.log(b.length, b.includes('isti')); // 8 true\n```\n\n`toLowerCase()` hər `İ` hərfini `i` və görünməz nöqtə işarəsinə çevirir, ona görə uzunluq 10 olur, `'isti'` tapılmır. Ekranda fərq görünmür. `toLocaleLowerCase('az')` düz `isti çay` verir.\n\n**Düzəliş:**\n\n```javascript\nfunction search(word, productName) {\n  const w = word.trim().toLocaleLowerCase('az');\n  return productName.toLocaleLowerCase('az').includes(w);\n}\nconsole.log(search('isti', 'İSTİ ÇAY')); // true\n```\n\n**Test dəyərləri (məhsul: `İSTİ ÇAY`):**\n1. `isti` → tapılır\n2. `İSTİ` → tapılır\n3. `ÇAY` → tapılır\n4. `qəhvə` → tapılmır\n\nƏlavə: `ISTI` tapılmır, çünki Azərbaycan dilində `I` kiçiləndə `ı` olur. Bunu dizaynerə sual kimi vermək olar.",
+    "c": [
+      "İki metodun nəticəsi kodla müqayisə olunub",
+      "Səbəb `İ` hərfinin görünməz işarə yaratması ilə izah olunub",
+      "Düzəlişdə hər iki tərəf `toLocaleLowerCase('az')` ilə çevrilir",
+      "Dörd test dəyəri gözlənilən nəticə ilə yazılıb"
+    ]
+  },
+  "c18s5m": {
+    "h": "Əvvəl ən kiçik aralığı yoxla, sonra qalanını. Sərhədlər: 7–8 və 11–12. Boş parol ayrıca sualdır: 0 uzunluq “zəif”dir, yoxsa xəta?",
+    "a": "```javascript\nfunction passwordStrength(password) {\n  if (password.length < 8) {\n    return 'zəif';\n  } else if (password.length < 12) {\n    return 'orta';\n  } else {\n    return 'güclü';\n  }\n}\n\nconsole.log(passwordStrength('1234567'));      // zəif\nconsole.log(passwordStrength('12345678'));     // orta\nconsole.log(passwordStrength('12345678901'));  // orta\nconsole.log(passwordStrength('123456789012')); // güclü\n```\n\n**Test dəyərləri:**\n\n| Uzunluq | Gözlənilən | Niyə |\n|---|---|---|\n| 7 | zəif | Sərhəddən bir az |\n| 8 | orta | “orta”nın başlanğıcı |\n| 11 | orta | “orta”nın sonu |\n| 12 | güclü | “güclü”nün başlanğıcı |\n| 0 | müzakirə | Boş parol |\n\n**Boş parol:** kod “zəif” qaytarır, amma bu, tələbdə olmayan qərardır. Parol yazılmayıb, ona görə “zəif” əvəzinə “Parol daxil edin” mesajı daha düzgün görünür. Tələbin sahibindən soruşuram. Parol `null` olsa, `.length` `TypeError` verir: bu da test ideyasıdır.",
+    "c": [
+      "Funksiya üç nəticəni düzgün qaytarır",
+      "Sərhəd dəyərləri 7, 8, 11, 12 test olunur",
+      "Boş parol ayrıca müzakirə olunub"
+    ]
+  },
+  "c18s6m": {
+    "h": "`rate = 18` ikinci arqument verilməyəndə işləyir. Mənfi məbləğdə də, mətndə də nəticəni kodla yoxla. Nəticəni görüb soruş: bu düzdürmü?",
+    "a": "```javascript\nfunction calculateTax(amount, rate = 18) {\n  return amount * rate / 100;\n}\n```\n\n| # | Çağırış | Gözlənilən nəticə | Qeyd |\n|---|---|---|---|\n| 1 | `calculateTax(100)` | 18 | Default faiz işləyir |\n| 2 | `calculateTax(100, 10)` | 10 | Verilən faiz default-u əvəz edir |\n| 3 | `calculateTax(0)` | 0 | Sıfır məbləğ |\n| 4 | `calculateTax(-50)` | Faktiki: -9 | Mənfi vergi məntiqsizdir, funksiya rədd etməlidir: defekt və ya tələb sualı |\n| 5 | `calculateTax('200')` | Faktiki: 36 | `*` mətni ədədə çevirir, nəticə düz görünür, amma tip səhvi gizlənir |\n\n`calculateTax()` isə `NaN` qaytarır: məbləğ verilməyib. Sıra 4 və 5-də “funksiya işlədi” kifayət deyil, gözlənilən davranışı tələb müəyyən edir.",
+    "c": [
+      "Funksiya vergini düzgün hesablayır, default 18-dir",
+      "Default, mənfi və mətn dəyərləri üçün cəmi 5 test var",
+      "Mənfi məbləğdə -9, mətndə 36 nəticəsi görülüb"
+    ]
+  },
+  "c18s7m": {
+    "h": "Əvvəl əl ilə hesabla. Sonra `filter` ilə ləğv edilməyənləri seç, cəm üçün dövr yaz. Sayı `filter(...).length` verir.",
+    "a": "**Əl ilə:** ləğv edilməyənlər: 45,5 + 120 + 80 = **245,5**. Ən bahalı: 120, yəni **202**. `paid`: 201 və 204, yəni **2**.\n\n```javascript\nconst orders = [\n  { id: 201, total: 45.5, status: 'paid' },\n  { id: 202, total: 120, status: 'shipped' },\n  { id: 203, total: 15, status: 'cancelled' },\n  { id: 204, total: 80, status: 'paid' },\n];\n\nlet sum = 0;\nfor (const o of orders.filter(o => o.status !== 'cancelled')) {\n  sum += o.total;\n}\n\nlet top = orders[0];\nfor (const o of orders) {\n  if (o.total > top.total) top = o;\n}\n\nconst paidCount = orders.filter(o => o.status === 'paid').length;\n\nconsole.log(sum, top.id, paidCount); // 245.5 202 2\n```\n\nƏl hesabı ilə kodun cavabı eynidir. Tipik səhv: `cancelled` sifarişi cəmə qatmaq: 260,5 alınır. Bu, test oracle-ının niyə kodsuz, əl ilə hesablandığını göstərir.",
+    "c": [
+      "Cəm 245,5, ən bahalı id 202, paid sayı 2-dir",
+      "Nəticələr kodla hesablanıb",
+      "Əl hesabı ilə kodun nəticəsi müqayisə olunub"
+    ]
+  },
+  "c18s8m": {
+    "h": "JSON-un iki qaydasını xatırla: mətn yalnız cüt dırnaqla yazılır, son elementdən sonra vergül olmur. Təhlükəsiz kod üçün `try/catch`.",
+    "a": "**Xəta mesajı (Node.js 24):**\n\n```text\nSyntaxError: Unexpected token ''', ...\", \"name\": 'Termos', \"... is not valid JSON\n```\n\nMətn Node.js versiyasına görə dəyişir, `SyntaxError` isə eyni qalır.\n\n**İki problem:**\n1. `'Termos'`: JSON-da mətn yalnız cüt dırnaqla yazılır, `\"Termos\"` olmalıdır.\n2. `19.9,}`: son elementdən sonra vergül olmur.\n\n**Düzəldilmiş:**\n\n```javascript\nconst product = JSON.parse(`{\"id\": 7, \"name\": \"Termos\", \"price\": 19.9}`);\nconsole.log(product.name); // Termos\n```\n\n**Təhlükəsiz emal:**\n\n```javascript\nfunction safeParse(text) {\n  try {\n    return JSON.parse(text);\n  } catch (err) {\n    console.log('JSON səhvdir:', err.message);\n    return null;\n  }\n}\n\nconsole.log(safeParse(`{\"id\": 7, \"name\": 'Termos', \"price\": 19.9,}`)); // null\n```\n\nTester üçün: birinci xəta düzələndən sonra ikinci görünür, ona görə xətanı bir dəfə düzəltmək kifayət olmaya bilər.",
+    "c": [
+      "`SyntaxError` və aldığın mesaj yazılıb",
+      "Tək dırnaq və son vergül problemləri tapılıb",
+      "Düzəldilmiş JSON uğurla oxunur",
+      "Səhv JSON `try/catch` ilə çökmədən emal olunur"
+    ]
+  },
+  "c18s9m": {
+    "h": "`loadPosts()` gözlənilmədən çağırılır, növbəti sətir dərhal işləyir. Xətada `fetch` nə edir? `response.ok`-a bax, `try/catch`-ə sal.",
+    "a": "**Ardıcıllıq:**\n\n```text\nHazırdır!\nYazıların sayı: 10\n```\n\n`loadPosts()` çağırılır, ilk `await`-də funksiya gözləyir, kod isə davam edib “Hazırdır!” yazır. Sayı isə sonra gəlir.\n\n**Düzəliş:**\n\n```javascript\nasync function loadPosts() {\n  try {\n    const res = await fetch('https://jsonplaceholder.typicode.com/posts?userId=1');\n    if (!res.ok) {\n      throw new Error('Status: ' + res.status);\n    }\n    const posts = await res.json();\n    console.log('Yazıların sayı:', posts.length);\n  } catch (err) {\n    console.log('Xəta:', err.message);\n  }\n}\n\nasync function main() {\n  await loadPosts();\n  console.log('Hazırdır!');\n}\n\nmain();\n```\n\n`fetch` 404 və 500-də xəta atmır, yalnız şəbəkə kəsiləndə atır. Ona görə `res.ok` ayrıca yoxlanılır. Xəta halını sınamaq üçün URL-i `/posts-yoxdur` et: “Xəta: Status: 404” çıxır, “Hazırdır!” sonra gəlir.",
+    "c": [
+      "Əvvəl “Hazırdır!”, sonra say çap olunduğu izah olunub",
+      "Düzəlişdə “Hazırdır!” `await`-dən sonra işləyir",
+      "`res.ok` yoxlanılır, `fetch`-in 404-də xəta vermədiyi nəzərə alınıb",
+      "Xəta halı `try/catch` ilə tutulur"
+    ]
+  },
+  "c18s10m": {
+    "h": "Uzunluğu dəqiq olan adları `'a'.repeat(n)` ilə yarat. Hansı sərhəd düşür? Şərtdəki `>` ilə `>=`-ə bax. Emoji üçün `.length`-i çap et.",
+    "a": "```javascript\nfunction check(description, actual, expected) {\n  if (actual === expected) {\n    console.log('PASS:', description);\n  } else {\n    console.log('FAIL:', description, '| gözlənilən:', expected, '| faktiki:', actual);\n  }\n}\n\nfunction isValidUsername(name) {\n  return name.length > 3 && name.length <= 15 && !name.includes(' ');\n}\n\ncheck('2 simvol', isValidUsername('ab'), false);\ncheck('3 simvol', isValidUsername('abc'), true);\ncheck('15 simvol', isValidUsername('a'.repeat(15)), true);\ncheck('16 simvol', isValidUsername('a'.repeat(16)), false);\ncheck('Boşluqlu', isValidUsername('ali veli'), false);\n```\n\n**Nəticə:** 3 simvol üçün `FAIL ... gözlənilən: true | faktiki: false`, qalanı PASS.\n\n**Defekt:** `name.length > 3` 3 simvolu rədd edir. **Düzəliş:** `name.length >= 3`. Yenidən işə salanda hamısı PASS olur.\n\n**Bonus:** `'😀'.length` 2-dir. 14 hərf və 1 emoji gözlə 15 simvol görünür, `.length` isə 16 verir, ad rədd olunur. Həll: `[...name].length`. Bu, tələb sualıdır: “15 simvol” necə sayılır?",
+    "c": [
+      "2, 3, 15, 16 simvol və boşluqlu ad üçün `check` yazılıb",
+      "3 simvolda düşən test tapılıb",
+      "`>` yerinə `>=` yazılıb, yenidən yoxlanılıb",
+      "Emoji üçün `.length`-in fərqli saydığı izah olunub"
+    ]
+  },
+  "c18t1": {
+    "h": "Şərt: uzunluq ≥ 8 və ≤ 20. Dəqiq uzunluq üçün `'a'.repeat(7)`. `check()` kitabda 18.10-dadır.",
+    "a": "```javascript\nfunction check(description, actual, expected) {\n  if (actual === expected) {\n    console.log('PASS:', description);\n  } else {\n    console.log('FAIL:', description, '| gözlənilən:', expected, '| faktiki:', actual);\n  }\n}\n\nfunction isValidPassword(password) {\n  return password.length >= 8 && password.length <= 20;\n}\n\ncheck('7 simvol', isValidPassword('a'.repeat(7)), false);\ncheck('8 simvol', isValidPassword('a'.repeat(8)), true);\ncheck('20 simvol', isValidPassword('a'.repeat(20)), true);\ncheck('21 simvol', isValidPassword('a'.repeat(21)), false);\n```\n\nDörd sətir də `PASS` çap olunur. Sərhədin hər iki tərəfi yoxlandığı üçün `>=` əvəzinə `>` yazılsa, 8 simvol testi düşər. Testin işlədiyini bilmək üçün şərti bir anlıq `>`-ə dəyiş və `FAIL` gör.",
+    "c": [
+      "Funksiya 8 və 20-ni qəbul edir, 7 və 21-i rədd edir",
+      "Dörd `check` yoxlaması var",
+      "Nəticədə dörd PASS görünür"
+    ]
+  },
+  "c18t2": {
+    "h": "`filter` ilə seç, sonra dövrlə topla. “50-dən böyük” sözünə diqqət: 50-nin özü daxildirmi?",
+    "a": "```javascript\nconst amounts = [45.5, 120, 15, 80, 30, 200, 50];\nconst big = amounts.filter(a => a > 50);\n\nlet sum = 0;\nfor (const a of big) {\n  sum += a;\n}\n\nconsole.log(big); // [ 120, 80, 200 ]\nconsole.log(sum); // 400\n```\n\n**Nəticə:** seçilənlər 120, 80, 200; cəm **400**. 50 daxil deyil, çünki şərt “böyük”dür. `>=` yazılsa, 450 alınar: bu, BVA-nın tutduğu sərhəd səhvinin eynisidir.",
+    "c": [
+      "Seçilənlər 120, 80, 200-dür",
+      "Cəm 400-dür",
+      "50 sərhədi şərtə daxil edilməyib"
+    ]
+  },
+  "c18t3": {
+    "h": "Obyekt `{ ... }` ilə yaradılır, sahə nöqtə ilə oxunur. Mətndə axtarış üçün `includes` işlət.",
+    "a": "```javascript\nconst user = {\n  name: 'Leyla',\n  email: 'leyla@example.com',\n};\n\nconsole.log(user.email.includes('@')); // true\n\nif (user.email.includes('@')) {\n  console.log('Email-də @ var');\n} else {\n  console.log('Email-də @ yoxdur');\n}\n```\n\nFərqli nəticəni də sına: `email: 'leyla.example.com'` yaz və `false` gör.\n\nDiqqət: bu, tam email yoxlaması deyil. `a@` da `true` verir, amma düzgün email deyil. `@` işarəsinin olması yalnız ən sadə yoxlamadır.",
+    "c": [
+      "İstifadəçi obyektində `email` sahəsi var",
+      "Yoxlama `user.email.includes('@')` və ya bərabər formada yazılıb",
+      "Nəticə çap olunub"
+    ]
+  },
+  "c18t4": {
+    "h": "Kitabdakı `calculateTotal`-a (18.10) `-10` ver. Nəticə mənalıdır? Düzəliş üçün əvvəlcə tələbi soruş, sonra funksiyada qoruma əlavə et.",
+    "a": "```javascript\nfunction calculateTotal(price, quantity, discountPercent) {\n  const subtotal = price * quantity;\n  const discount = subtotal * discountPercent / 100;\n  return subtotal - discount;\n}\n\nconsole.log(calculateTotal(-10, 3, 0)); // -30\n```\n\n**Nəticə:** `-30`. Xəta yoxdur, funksiya mənfi məbləğ qaytarır.\n\n**Defektdirmi?** Bəli, qiymətin mənfi ola bilməyəcəyi tələbdə varsa. Müştəri səbətdə “−30 AZN” görə bilər, ödənişdə pul geri qaytarıla bilər. Funksiyanın öz məntiqi düz işləyir, amma giriş yoxlanılmır.\n\n**Düzəliş:**\n\n```javascript\nfunction calculateTotal(price, quantity, discountPercent) {\n  if (price < 0 || quantity < 0) {\n    throw new Error('Qiymət və say mənfi ola bilməz');\n  }\n  const subtotal = price * quantity;\n  const discount = subtotal * discountPercent / 100;\n  return subtotal - discount;\n}\n```\n\nTest: `calculateTotal(-10, 3, 0)` indi xəta verir, `calculateTotal(10, 3, 0)` isə 30 verir. Eyni qoruma serverdə də olmalıdır.",
+    "c": [
+      "Mənfi qiymətin nəticəsi görülüb, misalda -30",
+      "Bunun niyə defekt ola biləcəyi izah olunub",
+      "Düzəliş mənfi girişi rədd edir",
+      "Normal hal düzəlişdən sonra da işləyir"
+    ]
+  },
+  "c18t5": {
+    "h": "İkisini `===` ilə tutuşdur və nəticəni çap et. `.length`-ə də bax: `ilkin` 5 hərfdir, birinci nəticə neçə verir?",
+    "a": "```javascript\nconst name = 'İLKİN';\nconst a = name.toLowerCase();\nconst b = name.toLocaleLowerCase('az');\n\nconsole.log(a === 'ilkin', a.length); // false 7\nconsole.log(b === 'ilkin', b.length); // true 5\n```\n\n**Gördüyüm:** ekranda hər ikisi `ilkin` kimi görünə bilər, amma `toLowerCase()` nəticəsi `'ilkin'`-ə bərabər deyil. Çünki hər `İ` hərfi `i` və görünməz nöqtə işarəsinə çevrilir, uzunluq 7 olur. `toLocaleLowerCase('az')` düzgün `ilkin` verir.\n\n**Mənası:** kod `toLowerCase()` işlədirsə, “İLKİN” adlı istifadəçi axtarışda tapılmaya, login zamanı tanınmaya bilər. Azərbaycan məhsullarında bu test işlədilir (Fəsil 14).",
+    "c": [
+      "`toLowerCase()` nəticəsi false, `toLocaleLowerCase('az')` true verir",
+      "Fərq görünməz işarə və ya uzunluqla izah olunub",
+      "Testçi üçün mənası deyilib"
+    ]
+  },
+  "c18q1": {
+    "a": "**`const`** ilə yaradılan dəyişənə yeni dəyər vermək olmur, **`let`** ilə olur. Default olaraq `const` işlədirik, dəyər dəyişəcəksə `let`. `const` massiv və obyektin içini dəyişməyə mane olmur, yalnız yeni dəyər verməyə.",
+    "c": [
+      "const-a yenidən dəyər verilmədiyi, let-ə verildiyi deyilib",
+      "Default olaraq const seçimi və ya misal var"
+    ]
+  },
+  "c18q2": {
+    "a": "**`==`** tipləri çevirib müqayisə edir: `5 == '5'` `true` verir. **`===`** həm dəyəri, həm tipi yoxlayır: `5 === '5'` `false` verir. Testdə `===` işlədirik, çünki tip fərqi də defekt ola bilər.",
+    "c": [
+      "`===` tipi də yoxlayır, `==` çevirir",
+      "`5` və `'5'` və ya oxşar misal var"
+    ]
+  },
+  "c18q3": {
+    "a": "**`filter`** şərtə uyğun elementləri yeni massivdə qaytarır. **`map`** hər elementi çevirib eyni uzunluqda yeni massiv qaytarır. **`find`** şərtə uyğun ilk elementi qaytarır, tapmasa, `undefined`.",
+    "c": [
+      "filter seçir, map çevirir",
+      "find tək elementi və ya undefined qaytarır"
+    ]
+  },
+  "c18q4": {
+    "a": "`await` asinxron işin (Promise) nəticəsini gözləyir. Onsuz kod nəticəni gözləmədən irəli qaçır, sonrakı sətir hələ gəlməmiş dəyərlə işləyir. Playwright və API testlərində `await` unudulması ən çox görülən səhvlərdən biridir.",
+    "c": [
+      "await-in Promise nəticəsini gözlədiyi deyilib",
+      "Onsuz kodun irəli qaçdığı izah olunub"
+    ]
+  },
+  "c18q5": {
+    "a": "Kompüter ədədləri ikilik sistemdə saxlayır, 0,1 və 0,2 orada dəqiq yazılmır. `0.1 + 0.2` `0.30000000000000004` verir. Ona görə məbləğləri fərqin çox kiçik olması ilə müqayisə edir və ya qəpiklə (tam ədəd) hesablayırıq.",
+    "c": [
+      "İkilik saxlanma səbəb kimi deyilib",
+      "Həll: kiçik fərqlə müqayisə və ya tam ədəd"
+    ]
+  }
+}
