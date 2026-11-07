@@ -602,7 +602,7 @@ for l in playwright['locators']:
     if not ok:
         print('ERR playwright locator', l.get('id'), file=sys.stderr); errors += 1
     pw_ids.add(l.get('id'))
-REQS = {'pass': (), 'fail': ('m',), 'has': ('re',), 'no': ('re',), 'state': (), 'count': ('n',)}
+REQS = {'pass': (), 'fail': ('m',), 'has': ('re',), 'no': ('re',), 'state': (), 'count': ('n',), 'softs': ('n',)}
 for t in playwright['tasks']:
     ok = t.get('id') and t['id'] not in pw_ids and all(t.get(k) for k in ('title', 'goal', 'code', 'model', 'hints', 'reqs')) \
         and all(r.get('t') in REQS and r.get('l') and all(r.get(k) for k in REQS[r['t']]) for r in t['reqs'])

@@ -188,6 +188,55 @@
       ]
     }
   ],
+  "c18x1": [
+    {
+      "id": "js-class", "lang": "js", "title": "Class: bir qəlib, iki obyekt",
+      "code": [
+        "class Cart {",
+        "  constructor(owner) {",
+        "    this.owner = owner;",
+        "    this.count = 0;",
+        "  }",
+        "",
+        "  add(n) {",
+        "    this.count = this.count + n;",
+        "    return this.count;",
+        "  }",
+        "}",
+        "",
+        "const a = new Cart('Aysel');",
+        "const b = new Cart('Leyla');",
+        "const first = a.add(2);",
+        "const second = b.add(5);",
+        "console.log(a.owner, first);",
+        "console.log(b.owner, second);",
+        "console.log(a.count, b.count);"
+      ],
+      "steps": [
+        { "l": 1, "n": "class yalnız qəlib elan edir: hələ heç bir obyekt yoxdur." },
+        { "l": 13, "n": "new Cart('Aysel') yeni obyekt yaradır və constructor-u çağırır." },
+        { "l": 2, "v": {"owner": "'Aysel'"}, "n": "new-dakı dəyər constructor-un owner parametrinə gəlir." },
+        { "l": 3, "v": {"this.owner": "'Aysel'"}, "n": "this indi yaranan obyektdir: ad obyektin içində saxlanır." },
+        { "l": 4, "v": {"this.count": "0"} },
+        { "l": 13, "x": ["owner", "this.owner", "this.count"], "v": {"a": "{ owner: 'Aysel', count: 0 }"}, "n": "constructor bitdi, hazır obyekt a dəyişənindədir." },
+        { "l": 14, "v": {"b": "{ owner: 'Leyla', count: 0 }"}, "n": "Eyni qəlibdən ikinci obyekt: öz owner və count sahələri ilə." },
+        { "l": 15, "n": "a.add(2): metod a üzərindən çağırılır, ona görə bu dəfə this a-dır." },
+        { "l": 7, "v": {"n": "2"} },
+        { "l": 8, "v": {"a": "{ owner: 'Aysel', count: 2 }"}, "n": "this.count = 0 + 2. Yalnız a dəyişir, b-yə toxunulmur." },
+        { "l": 9, "n": "return 2: dəyər çağırılan yerə qayıdır." },
+        { "l": 15, "x": ["n"], "v": {"first": "2"} },
+        { "l": 16, "n": "b.add(5): indi this b-dir. Eyni kod, başqa obyekt." },
+        { "l": 7, "v": {"n": "5"} },
+        { "l": 8, "v": {"b": "{ owner: 'Leyla', count: 5 }"} },
+        { "l": 9 },
+        { "l": 16, "x": ["n"], "v": {"second": "5"} },
+        { "l": 17, "o": "Aysel 2" },
+        { "l": 18, "o": "Leyla 5" },
+        { "l": 19, "o": "2 5", "n": "Hər obyektin öz datası var. Page Object-də də hər test öz new LoginPage(page) obyektini yaradır." },
+        { "l": 19, "x": ["a", "b"], "n": "Proqram bitdi." }
+      ]
+    }
+  ],
   "c19s6": [
     {
       "id": "pw-login", "lang": "pw", "title": "Playwright: uğurlu giriş",

@@ -10,7 +10,7 @@ Interactive Azerbaijani textbook on software QA for a beginner (no programming b
 
 ```bash
 pip install -r requirements.txt
-python3 build/parse_book.py   # → build/book.json (gitignored); expect "deep layers 178 missing 0", "answers 371 missing 0" and "errors 0"
+python3 build/parse_book.py   # → build/book.json (gitignored); expect "deep layers 183 missing 0", "answers 385 missing 0" and "errors 0"
 python3 build/build_pwa.py    # → docs/ and dist/qa-kitabi-offline.zip; prints the new version
 python3 build/build_page.py   # → dist/qa-kitab.html and build/test.html (page used by the t*.js checks)
 python3 build/diagrams.py     # diagram self-check; must report 0 issues
@@ -72,7 +72,7 @@ Screenshots land in `build/shots/` (gitignored).
   assertion spans for Playwright).
 - `build/playwright.json` — the Playwright practice (`#lokator-l5`, `#playwright-pw3`): locator exercises (`start`
   state, `target` = the model locator, `why`) and test tasks (`code` = starter, `model`, `hints`, `reqs`: pass / fail
-  (`m` = the matcher it must fail on) / has / no (regex on the code) / state (page, cart)). The reader's code is parsed,
+  (`m` = the matcher it must fail on) / has / no (regex on the code) / state (page, cart, `w` = the settings page's state) / count / softs (`n` soft failures, test ran to the end)). The reader's code is parsed,
   never eval'd (`pwLex` / `pwParser` / `pwEval` / `pwStmt` in `app.js`; it reaches only `PW_VAL_M` and `PW_GLOBALS`): page, locators (role + accessible name, text, placeholder,
   label, test id = `data-test`, CSS, XPath, filter / first / last / nth), actions and web-first assertions with
   Playwright's strict mode, timeouts and error texts; missing `await` is a lint error. The framework part runs too: classes
@@ -80,6 +80,8 @@ Screenshots land in `build/shots/` (gitignored).
   `request` fixture on the practice API's `apiServe`, `storageState` (kept for one run) and `test.step`; operators are not modelled. `pwDecorate` gives the shop's DOM
   saucedemo's data-test ids, so the book's code runs as written. Code and done marks are the `pw` store doc (exported).
   `t27.js` runs every model answer and the book's own Playwright programs from trace.json; `t31.js` the framework features and what the reader's code cannot reach.
+  Real page actions (19.18, 19.19; PW-14 to PW-19, `show: true` draws the page in the task) run on a model page that exists only here, `https://ministore.test/settings.html`: `st.w` is its state, `pwSetHTML` its DOM, `pwWAct` its behaviour. check / uncheck, selectOption, hover, keyboard, setInputFiles (no disk: any path counts as a file), `page.on('dialog')`, `frameLocator` (a `[data-frame]` block plain locators cannot see into), `waitForEvent('popup')` and `waitForResponse` (`$wait`, resolved by `pwAwait`), `page.route`, `expect.soft`, `test.beforeAll` / `afterAll`. `page.route` covers the document of goto / reload too; a `$wait` nobody finished fails the test (`Test ended`). The file's variables are one object per run (`prog.vars`), with a for-of row on top; after a failed test the model does what Playwright's new worker does: afterAll, variables reset, beforeAll again. A failed beforeAll: the first test fails, the rest `did not run`, afterAll still runs. Hooks inside `test.describe`, `toHaveScreenshot` and a few API names are refused with a reason (`PW_NOPE_HINT`) rather than faked. `t33.js` holds the edge cases, each run in real Playwright 1.63 on a local page with a real iframe, confirm(), popup and fetch; a change to this behaviour should be checked the same way.
+  The engine's own values are objects with `$`-keys, so the reader's code must never be able to make one: `pwBadKey` refuses such keys in object literals and assignments, `pwJson` drops them from `JSON.parse`, `pwGet` reads destructured params from plain data only. A new way to create an object from the reader's code has to keep this; `t33.js` tries the known ways out.
 - `build/git.json` — the Git practice (`#git`, `#git-g5`): file templates (`files`, arrays of lines), tasks with a start
   repository (`commits` with `parents` / `set` / `br` / `mate`, `branches`, `head`, `work` / `index` overrides,
   `remote.branches`, `tracking`, `upstream`, `init: false` and `cfg: false` for an empty folder without an identity) and

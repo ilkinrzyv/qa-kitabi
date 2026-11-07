@@ -1089,6 +1089,7 @@ function chDiagram(c) { // the chapter's first diagram, as rendered in the reade
 const unP = h => String(h || '').replace(/<\/?p>/g, ' ').trim();
 // a long chapter's sheet keeps one sentence per idea, so it still fits one page at a readable size
 const sumFirst = h => { const m = /^[\s\S]*?[.!?…](?=\s+[A-ZƏÇŞĞÖÜİ“<`])/.exec(h); return m && (m[0].match(/<code/g) || []).length === (m[0].match(/<\/code/g) || []).length ? m[0] : h; };
+const sumFirstLis = (html, n) => { const d = document.createElement('div'); d.innerHTML = html; [...d.querySelectorAll('li')].slice(n).forEach(x => x.remove()); return d.innerHTML; }; // a long chapter's sheet keeps to one page
 function sumHTML(c, hl) {
   const L = P().learned, st = chStats(c);
   const secs = c.sections.filter(s => s.x), brief = secs.length > 12;
@@ -1104,7 +1105,7 @@ function sumHTML(c, hl) {
         ${q ? `<span class="chip${st.q ? (st.q.best / st.q.n >= .7 ? ' pass' : ' warn') : ''}">${st.q ? `Test ${st.q.best}/${st.q.n}` : `Test: ${q.length} sual`}</span>` : ''}</div></header>
     <section class="sum-ideas"><h3 class="sum-l">${icon('bulb')}Əsas fikirlər</h3><ol>${secs.map(s => `<li${L[s.id] ? ' class="ok"' : ''}><span class="n">${esc(s.num)}</span><div><b>${esc(s.title)}.</b> ${brief ? sumFirst(unP(s.x.short)) : unP(s.x.short)}</div></li>`).join('')}</ol></section>
     ${dg ? `<section class="sum-dg"><h3 class="sum-l">${icon('layers')}Sxem</h3>${dg}</section>` : ''}
-    ${pit ? `<section class="sum-pit"><h3 class="sum-l">${icon('x')}Tez-tez edilən səhvlər</h3><div class="sum-pit-b">${pit.html}</div></section>` : ''}
+    ${pit ? `<section class="sum-pit"><h3 class="sum-l">${icon('x')}Tez-tez edilən səhvlər</h3><div class="sum-pit-b">${brief ? sumFirstLis(pit.html, 6) : pit.html}</div></section>` : ''}
     ${self ? `<section class="sum-self"><h3 class="sum-l">${icon('help')}Özünü yoxla</h3><ul>${(brief ? self.items.slice(0, 5) : self.items).map(i => `<li>${unP(i.html)}</li>`).join('')}</ul></section>` : ''}
     ${terms.length ? `<section class="sum-terms"><h3 class="sum-l">${icon('abc')}Terminlər</h3><ul>${terms.map(g => `<li><button class="gt" data-act="gt" data-g="${g.id}">${esc(g.en)}</button> — ${esc(g.az)}</li>`).join('')}</ul></section>` : ''}
     <footer class="sum-f"><span>${esc(SITE.replace(/^https:\/\//, ''))}#${c.id}</span>${q ? `<span>Fəsil testi: ${q.length} sual</span>` : ''}</footer>
@@ -1933,12 +1934,43 @@ function pwDecorate(root) {
   $$('.sm-done-h', root).forEach(el => { el.setAttribute('role', 'heading'); el.setAttribute('aria-level', '2'); });
   return root;
 }
-function pwDom(st) { const root = document.createElement('div'); root.innerHTML = smDevHTML(st); return pwDecorate(root); }
+// the settings page (19.18, 19.19): the kinds of element the shop has none of. https://ministore.test/settings.html exists only in this model
+const PW_W_URL = { settings: '/settings.html', rules: '/rules.html' };
+const PW_ORDERS = [{ id: 1001, total: 45.5 }, { id: 1002, total: 120 }];
+const pwW0 = () => ({ news: false, sms: true, country: 'az', tip: false, terms: false, q: '', result: '', file: 'Fayl seçilməyib', account: 'Hesab aktivdir', pay: 'Ödəniş gözləyir', orders: null });
+function pwSetHTML(w) {
+  const o = w.orders, ck = (id, k, l) => `<div class="pw-w-row"><input type="checkbox" id="${id}" data-w-c="${k}"${w[k] ? ' checked' : ''}><label for="${id}">${l}</label></div>`;
+  const opt = (v, l) => `<option value="${v}"${w.country === v ? ' selected' : ''}>${l}</option>`;
+  const alert = t => `<div class="sm-err" role="alert"><span>${esc(t)}</span></div>`;
+  const orders = !o ? '' : o.k === 'wait' ? '<p class="pw-w-note">Yüklənir…</p>' : o.k === 'off' ? alert('İnternet bağlantısı yoxdur') : o.k === 'err' ? alert(`Sifarişlər yüklənmədi (${o.st})`)
+    : o.k === 'empty' ? '<p data-test="orders-empty">Sifariş yoxdur</p>' : `<ul class="pw-w-list" data-test="orders-list">${o.list.map(x => `<li>Sifariş ${esc(x)}</li>`).join('')}</ul>`;
+  return `<div class="sm-ph"><h2 class="sm-title" data-test="title">Ayarlar</h2></div><div class="pw-w">
+    <section class="pw-w-sec">${ck('w-news', 'news', 'Xəbərlər gəlsin')}${ck('w-sms', 'sms', 'SMS bildirişləri')}
+      <div class="pw-w-row"><label for="w-country">Ölkə</label><select class="sm-sort" id="w-country" data-w-s="country">${opt('az', 'Azərbaycan')}${opt('ge', 'Gürcüstan')}${opt('tr', 'Türkiyə')}</select></div>
+      <div class="pw-w-row"><button class="sm-btn" data-w="tip">Kömək</button><button class="sm-btn" data-w="terms">Şərtlər</button></div>
+      ${w.tip ? '<div class="pw-w-tip" role="tooltip">Bildirişləri bu səhifədə seçirsən</div>' : ''}
+      ${w.terms ? '<div class="pw-w-modal" role="dialog" aria-label="Şərtlər"><p>Çatdırılma 3 iş günü çəkir.</p><button class="sm-btn" data-w="terms-x">Bağla</button></div>' : ''}
+      <input class="sm-in" data-w-f="q" placeholder="Məhsul axtar" value="${esc(w.q)}" autocomplete="off">
+      ${w.result ? `<p data-test="search-result">${esc(w.result)}</p>` : ''}</section>
+    <section class="pw-w-sec"><div class="pw-w-row"><label for="w-cv">CV faylı</label><input type="file" id="w-cv" data-w-file="1"></div><p data-test="file-status">${esc(w.file)}</p></section>
+    <section class="pw-w-sec"><div class="pw-w-row"><button class="sm-btn rm" data-w="delete">Hesabı sil</button></div><p data-test="account-status">${esc(w.account)}</p></section>
+    <div class="pw-w-frame" id="pay" title="Ödəniş" src="https://pay.ministore.test/" data-frame="1"><span class="pw-w-note">iframe · pay.ministore.test</span><button class="sm-btn main" data-w="pay">Ödə</button><p data-test="pay-status">${esc(w.pay)}</p></div>
+    <section class="pw-w-sec"><a href="/rules.html" target="_blank" data-w="popup">Çatdırılma qaydaları</a></section>
+    <section class="pw-w-sec"><div class="pw-w-row"><button class="sm-btn" data-w="orders">Sifarişləri yüklə</button></div>${orders}</section></div>`;
+}
+const PW_RULES_HTML = '<div class="sm-ph"><h2 class="sm-title">Çatdırılma qaydaları</h2></div><div class="pw-w"><p data-test="rules-text">Sifariş 3 iş günündə çatdırılır.</p></div>';
+function pwDom(st) {
+  const root = document.createElement('div');
+  if (st.w || st.page === 'rules') { root.innerHTML = st.w ? pwSetHTML(st.w) : PW_RULES_HTML; return root; }
+  root.innerHTML = smDevHTML(st); return pwDecorate(root);
+}
+const PW_CLOSED = () => PwErr('Error: Target page, context or browser has been closed', 'Səhifə bağlanıb: bağlandıqdan sonra ona müraciət etmək olmur.');
+const pwRootOf = (env, loc) => { if (loc.pg ? loc.pg.closed : env.closed) throw PW_CLOSED(); return pwDom(loc.pg ? loc.pg.st : env.st); }; // a popup is its own document
 // ---- the locator engine: ARIA role and accessible name, text, placeholder, label, test id (data-test), CSS and XPath
 function PwErr(msg, hint, line) { const e = new Error(msg); e.pw = 1; e.hint = hint || ''; if (line) e.line = line; return e; }
 const pwNorm = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
 const pwHidden = el => !!el.closest('[hidden],[aria-hidden="true"]');
-const PW_IN = { button: 'button', submit: 'button', reset: 'button', image: 'button', checkbox: 'checkbox', radio: 'radio', range: 'slider', number: 'spinbutton', search: 'searchbox' };
+const PW_IN = { button: 'button', submit: 'button', reset: 'button', image: 'button', file: 'button', checkbox: 'checkbox', radio: 'radio', range: 'slider', number: 'spinbutton', search: 'searchbox' };
 function pwRole(el) {
   const r = el.getAttribute('role'); if (r) return r.trim().split(/\s+/)[0];
   const t = el.tagName.toLowerCase();
@@ -1947,9 +1979,11 @@ function pwRole(el) {
   return { button: 'button', a: el.hasAttribute('href') ? 'link' : null, textarea: 'textbox', select: el.multiple || el.size > 1 ? 'listbox' : 'combobox', option: 'option',
     ul: 'list', ol: 'list', li: 'listitem', img: el.getAttribute('alt') === '' ? 'presentation' : 'img', table: 'table', tr: 'row', td: 'cell', th: 'columnheader', nav: 'navigation', p: 'paragraph' }[t] || null;
 }
-const PW_ROLES = ['alert', 'button', 'cell', 'checkbox', 'columnheader', 'combobox', 'heading', 'img', 'link', 'list', 'listbox', 'listitem', 'navigation', 'option', 'paragraph', 'radio', 'row', 'searchbox', 'slider', 'spinbutton', 'table', 'textbox'];
-const PW_TEXT_NAME = /^(button|link|heading|option|cell|columnheader|checkbox|radio|row)$/;
-const pwTextOf = el => el.tagName === 'INPUT' ? (/^(submit|button|reset)$/.test(el.type) ? el.value : '') : el.textContent;
+const PW_ROLES = ['alert', 'button', 'cell', 'checkbox', 'columnheader', 'combobox', 'dialog', 'heading', 'img', 'link', 'list', 'listbox', 'listitem', 'navigation', 'option', 'paragraph', 'radio', 'row', 'searchbox', 'slider', 'spinbutton', 'table', 'textbox', 'tooltip'];
+const PW_TEXT_NAME = /^(button|link|heading|option|cell|columnheader|checkbox|radio|row|tooltip)$/;
+// a frame is another document: its text is not the text of the elements around it
+const pwOwnText = el => { if (el.hasAttribute('data-frame')) return ''; if (!el.querySelector('[data-frame]')) return el.textContent; const c = el.cloneNode(true); $$('[data-frame]', c).forEach(x => x.remove()); return c.textContent; };
+const pwTextOf = el => el.tagName === 'INPUT' ? (/^(submit|button|reset)$/.test(el.type) ? el.value : '') : pwOwnText(el);
 const pwLabelFor = el => el.id ? el.getRootNode().querySelector(`label[for="${CSS.escape(el.id)}"]`) : null;
 function pwName(el) {
   const al = el.getAttribute('aria-label'); if (al && al.trim()) return pwNorm(al);
@@ -1983,20 +2017,21 @@ function pwQuery(ctx, s) {
   }
   return [];
 }
-function pwResolve(loc, root) {
-  let set = [root];
+function pwResolve(loc, root, entered) {
+  let set = [root]; const frames = entered || new Set(); // the frames a {k:'frame'} step has gone into
   for (const s of loc.steps) {
     if (s.k === 'nth') { const el = set[s.i < 0 ? set.length + s.i : s.i]; set = el ? [el] : []; continue; }
     if (s.k === 'filter') {
-      set = set.filter(el => (s.has === undefined || pwMatch(s.has, el.textContent, false)) && (s.hasNot === undefined || !pwMatch(s.hasNot, el.textContent, false)) && (!s.inner || pwResolve(s.inner, el).length > 0));
+      set = set.filter(el => (s.has === undefined || pwMatch(s.has, pwOwnText(el), false)) && (s.hasNot === undefined || !pwMatch(s.hasNot, pwOwnText(el), false)) && (!s.inner || pwResolve(s.inner, el, frames).length > 0));
       continue;
     }
-    const out = new Set(); set.forEach(ctx => pwQuery(ctx, s).forEach(el => out.add(el)));
+    if (s.k === 'frame') { set = set.filter(el => el.hasAttribute('data-frame')); set.forEach(f => frames.add(f)); continue; }
+    const out = new Set(); set.forEach(ctx => pwQuery(ctx, s).forEach(el => { const f = el.parentElement && el.parentElement.closest('[data-frame]'); if (!f || frames.has(f)) out.add(el); }));
     set = [...out].sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
   }
   return set;
 }
-const pwLoc = (steps, desc) => ({ $loc: 1, steps, desc });
+const pwLoc = (steps, desc, pg) => ({ $loc: 1, steps, desc, pg });
 function pwFmt(v) { // a value as Playwright prints it in a locator
   if (v instanceof RegExp) return String(v);
   if (typeof v === 'string') return `'${v.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
@@ -2147,6 +2182,10 @@ function pwParser(T) {
     if (is('id', 'const') || is('id', 'let') || is('id', 'var')) {
       i++;
       if (opt('p', '{')) { const names = namesIn(); eat('p', '='); const aw = opt('id', 'await'); s = { k: 'let', names, aw, e: expr() }; }
+      else if (opt('p', '[')) {
+        const arr = []; while (!is('p', ']')) { if (opt('p', ',')) { arr.push(null); continue; } arr.push(eat('id', undefined, 'dəyişənin adı').v); if (!opt('p', ',')) break; } eat('p', ']');
+        eat('p', '='); const aw = opt('id', 'await'); s = { k: 'let', arr, aw, e: expr() };
+      }
       else { const name = eat('id', undefined, 'dəyişənin adı'); if (opt('p', '=')) { const aw = opt('id', 'await'); s = { k: 'let', name: name.v, aw, e: expr() }; } else s = { k: 'let', name: name.v, e: { t: 'lit', v: undefined, line: name.line } }; }
     } else if (opt('id', 'return')) { const aw = opt('id', 'await'); s = { k: 'ret', aw, e: is('p', ';') || is('p', '}') ? { t: 'lit', v: undefined, line: k.line } : expr() }; }
     else if (opt('id', 'for')) {
@@ -2191,8 +2230,9 @@ function pwParser(T) {
     }
     eat('p', '}'); prog.classes[nm.v] = cls;
   }
-  const prog = { tests: [], before: [], after: [], hookFix: [], classes: {}, fixtures: {}, asyncM: new Set() };
-  const testNames = new Set(['test']), topVars = {};
+  const topVars = {}; // the file's variables: every test, hook and top-level function shares this one object during a run
+  const prog = { tests: [], before: [], after: [], beforeAll: [], afterAll: [], hookFix: [], classes: {}, fixtures: {}, asyncM: new Set(), vars: topVars };
+  const testNames = new Set(['test']); let inDescribe = 0;
   const topEnv = () => ({ vars: topVars, locOnly: true, classes: prog.classes });
   let use = {};
   function top(inGroup) {
@@ -2227,7 +2267,7 @@ function pwParser(T) {
         if (!Array.isArray(rows)) throw PwErr(`TypeError: ${pwSrc(eList)} is not iterable`, 'for … of massiv üzərində işləyir.', k.line);
         eat('p', '{');
         const start = i;
-        rows.forEach(r => { i = start; if (names) names.forEach(n => { topVars[n] = r == null ? undefined : r[n]; }); else topVars[name] = r; top(true); });
+        rows.forEach(r => { i = start; if (names) names.forEach(n => { topVars[n] = pwGet(r, n); }); else topVars[name] = r; top(true); });
         if (!rows.length) { let d = 0; while (!(d === 0 && is('p', '}'))) { if (is('eof')) break; if (is('p', '{')) d++; else if (is('p', '}')) d--; i++; } }
         eat('p', '}'); opt('p', ';'); continue;
       }
@@ -2237,8 +2277,17 @@ function pwParser(T) {
         eat('p', '(');
         if (mod === 'use') { use = Object.assign({}, use, pwEval(expr(), topEnv())); eat('p', ')'); opt('p', ';'); continue; }
         if (mod === 'beforeEach' || mod === 'afterEach') { const f = testFn(); (mod === 'beforeEach' ? prog.before : prog.after).push(...f.body); prog.hookFix.push(...f.fix); eat('p', ')'); opt('p', ';'); continue; }
-        if (mod === 'describe') { if (is('tpl')) i++; else eat('str', undefined, 'qrupun adı'); eat('p', ','); opt('id', 'async'); eat('p', '('); eat('p', ')'); eat('p', '=>'); eat('p', '{'); const use0 = use; top(true); use = use0; eat('p', '}'); eat('p', ')'); opt('p', ';'); continue; }
-        if (mod && mod !== 'only' && mod !== 'skip') throw PwErr(`SyntaxError: test.${mod} bu məşqdə dəstəklənmir`, 'Dəstəklənir: test, test.describe, test.beforeEach, test.afterEach, test.use, test.step, test.extend, test.only, test.skip.', k.line);
+        if (mod === 'beforeAll' || mod === 'afterAll') {
+          if (inDescribe) throw PwErr(`Error: test.describe içində ${mod} bu məşqin modelində yoxdur`, `Real Playwright-da işləyir, qrupun testlərinə aid olur. Burada ${mod}-u faylın yuxarısına yaz.`, k.line);
+          if (is('str')) { i++; eat('p', ','); }
+          const f = testFn();
+          if (f.fix.some(x => x === 'page' || x === 'context')) throw PwErr(`Error: "context" and "page" fixtures are not supported in "${mod}" since they are created on a per-test basis.`, 'page hər test üçün yenidən yaradılır. Burada request işlət, səhifə hazırlığını isə beforeEach-ə və ya fixture-ə yaz (19.12, 19.19).', k.line);
+          const other = f.fix.find(x => x !== 'request');
+          if (other) throw PwErr(`Error: ${mod}: «${other}» bu məşqin modelində yoxdur`, 'Bu məşqdə burada yalnız request işləyir.', k.line);
+          prog[mod].push({ fix: f.fix, body: f.body, vars: Object.assign({}, topVars) }); eat('p', ')'); opt('p', ';'); continue;
+        }
+        if (mod === 'describe') { if (is('tpl')) i++; else eat('str', undefined, 'qrupun adı'); eat('p', ','); opt('id', 'async'); eat('p', '('); eat('p', ')'); eat('p', '=>'); eat('p', '{'); const use0 = use; inDescribe++; top(true); inDescribe--; use = use0; eat('p', '}'); eat('p', ')'); opt('p', ';'); continue; }
+        if (mod && mod !== 'only' && mod !== 'skip') throw PwErr(`SyntaxError: test.${mod} bu məşqdə dəstəklənmir`, 'Dəstəklənir: test, test.describe, test.beforeEach, test.afterEach, test.beforeAll, test.afterAll, test.use, test.step, test.extend, test.only, test.skip.', k.line);
         const name = pwEval(is('tpl') ? primary() : { t: 'lit', v: eat('str', undefined, 'testin adı (mətn)').v }, topEnv()); eat('p', ',');
         let tag; if (is('p', '{')) { const o = pwEval(expr(), topEnv()); tag = o && o.tag; eat('p', ','); } // test('ad', { tag: '@smoke' }, async …)
         const f = testFn(); eat('p', ')'); opt('p', ';');
@@ -2261,31 +2310,39 @@ function pwParseLoc(src) {
   if (!v || !v.$loc) throw PwErr('Bu, lokator deyil', "Lokator page.getBy… və ya page.locator(…) ilə başlayır: page.getByRole('button', { name: 'Login' })", 1);
   return v;
 }
-const PW_PAGE = { $page: 1 }, PW_EXPECT = { $fn: 'expect' }, PW_CONSOLE = { $console: 1 }, PW_KEYS = { $keys: 1 }, PW_REQ = { $req: 1 }, PW_CTX = { $ctx: 1 }, PW_TEST = { $test: 1 };
+const PW_PAGE = { $page: 1 }, PW_EXPECT = { $fn: 'expect' }, PW_SOFT = { $fn: 'expect.soft' }, PW_PROMISE = { $promise: 1 }, PW_CONSOLE = { $console: 1 }, PW_KEYS = { $keys: 1 }, PW_REQ = { $req: 1 }, PW_CTX = { $ctx: 1 }, PW_TEST = { $test: 1 };
 const PW_Q = ['getByRole', 'getByText', 'getByLabel', 'getByPlaceholder', 'getByTestId', 'locator'];
-const PW_PAGE_M = PW_Q.concat(['goto', 'url', 'title', 'reload', 'waitForTimeout', 'waitForURL', 'waitForLoadState', 'click', 'fill', 'screenshot', 'pause', 'context']);
-const PW_LOC_M = PW_Q.concat(['filter', 'first', 'last', 'nth', 'click', 'dblclick', 'fill', 'clear', 'press', 'pressSequentially', 'type', 'selectOption', 'check', 'uncheck', 'hover', 'focus',
+const PW_PAGE_M = PW_Q.concat(['goto', 'url', 'title', 'reload', 'waitForTimeout', 'waitForURL', 'waitForLoadState', 'click', 'fill', 'screenshot', 'pause', 'context', 'frameLocator', 'on', 'once', 'route', 'waitForEvent', 'waitForResponse', 'close']);
+const PW_LOC_M = PW_Q.concat(['filter', 'first', 'last', 'nth', 'click', 'dblclick', 'fill', 'clear', 'press', 'pressSequentially', 'type', 'selectOption', 'check', 'uncheck', 'setChecked', 'setInputFiles', 'hover', 'focus', 'frameLocator', 'contentFrame', 'isChecked',
   'textContent', 'innerText', 'inputValue', 'getAttribute', 'count', 'isVisible', 'isHidden', 'waitFor', 'allTextContents', 'allInnerTexts']);
-const PW_MATCH_L = ['toBeVisible', 'toBeHidden', 'toHaveText', 'toContainText', 'toHaveCount', 'toHaveValue', 'toBeEnabled', 'toBeDisabled', 'toHaveAttribute', 'toBeEmpty'];
+const PW_MATCH_L = ['toBeVisible', 'toBeHidden', 'toHaveText', 'toContainText', 'toHaveCount', 'toHaveValue', 'toBeEnabled', 'toBeDisabled', 'toHaveAttribute', 'toBeEmpty', 'toBeChecked'];
 const PW_MATCH_P = ['toHaveURL', 'toHaveTitle'];
 const PW_MATCH_V = ['toBe', 'toEqual', 'toContain', 'toBeTruthy', 'toBeFalsy', 'toBeGreaterThan', 'toBeLessThan', 'toHaveLength', 'toMatch', 'toBeNull', 'toBeUndefined', 'toBeDefined', 'toHaveProperty', 'toBeGreaterThanOrEqual', 'toBeLessThanOrEqual'];
 const PW_REQ_M = ['get', 'post', 'put', 'patch', 'delete'], PW_RES_M = ['ok', 'status', 'statusText', 'url', 'headers', 'json', 'text'];
 const PW_ASYNC = new Set(['goto', 'reload', 'waitForTimeout', 'waitForURL', 'waitForLoadState', 'title', 'screenshot', 'pause', 'click', 'dblclick', 'fill', 'clear', 'press', 'pressSequentially', 'type',
   'selectOption', 'check', 'uncheck', 'hover', 'focus', 'textContent', 'innerText', 'inputValue', 'getAttribute', 'count', 'isVisible', 'isHidden', 'waitFor', 'allTextContents', 'allInnerTexts',
-  'step', 'storageState', 'json', 'text', 'toBeOK'].concat(PW_MATCH_L, PW_MATCH_P, PW_REQ_M));
-const PW_NOPE = ['getByAltText', 'getByTitle', 'frameLocator', '$', '$$', 'evaluate', 'evaluateAll', 'waitForSelector', 'setViewportSize', 'route', 'mouse', 'and', 'or', 'all'];
+  'step', 'storageState', 'json', 'text', 'toBeOK', 'setChecked', 'setInputFiles', 'isChecked', 'route'].concat(PW_MATCH_L, PW_MATCH_P, PW_REQ_M));
+const PW_NOPE = ['getByAltText', 'getByTitle', '$', '$$', 'evaluate', 'evaluateAll', 'waitForSelector', 'setViewportSize', 'mouse', 'and', 'or', 'all', 'toHaveScreenshot', 'waitForRequest', 'fetch', 'unroute', 'off', 'removeListener', 'defaultValue', 'body', 'request', 'goto', 'then'];
+const PW_NOPE_HINT = { toHaveScreenshot: 'Şəkil müqayisəsi real brauzer istəyir: bu məşqdə işləmir, öz layihəndə sına (19.19).', waitForRequest: 'Bu məşqdə cavabı gözlə: page.waitForResponse (19.19). Real layihədə waitForRequest də var.', fetch: 'Bu məşqdə route.fulfill, route.abort və route.continue işləyir (19.19).', unroute: 'Bu məşqdə route testin sonuna qədər qalır.', off: 'Bu məşqdə dinləyicini silmək olmur: bir dəfəlik cavab üçün page.once yaz.', removeListener: 'Bu məşqdə dinləyicini silmək olmur: bir dəfəlik cavab üçün page.once yaz.', defaultValue: 'Bu səhifədə prompt pəncərəsi yoxdur.', body: 'response.text() və ya response.json() yaz.', request: 'Bu məşqdə cavabdan sorğuya keçmək olmur: status və gövdəni yoxla.', goto: 'Bu məşqdə yeni tabda baxmaq və yoxlamaq olur, başqa səhifəyə keçmək olmur.', then: 'await yaz.' };
 // plain values: the methods a test needs on text and lists, and a few globals. Nothing else of JavaScript is reachable from the reader's code.
 const PW_VAL_M = ['map', 'filter', 'find', 'some', 'every', 'forEach', 'includes', 'join', 'slice', 'sort', 'reverse', 'indexOf', 'concat', 'trim', 'toLowerCase', 'toUpperCase', 'replace', 'startsWith', 'endsWith', 'split', 'localeCompare', 'toFixed'];
-const PW_GLOBALS = { Number, String, Boolean, process: { env: { SAUCE_PASSWORD: 'secret_sauce', BASE_URL: 'https://www.saucedemo.com' } }, Date: { now: Date.now }, Math: { random: Math.random, round: Math.round, floor: Math.floor, ceil: Math.ceil, abs: Math.abs, max: Math.max, min: Math.min }, JSON: { stringify: JSON.stringify, parse: JSON.parse } };
-const PW_NATIVE = new Set([Number, String, Boolean, Date.now, Math.random, Math.round, Math.floor, Math.ceil, Math.abs, Math.max, Math.min, JSON.stringify, JSON.parse]);
+const PW_GLOBALS = { Number, String, Boolean, process: { env: { SAUCE_PASSWORD: 'secret_sauce', BASE_URL: 'https://www.saucedemo.com' } }, Date: { now: Date.now }, Math: { random: Math.random, round: Math.round, floor: Math.floor, ceil: Math.ceil, abs: Math.abs, max: Math.max, min: Math.min }, JSON: { stringify: JSON.stringify, parse: s => pwJson(s) } };
+const PW_NATIVE = new Set([Number, String, Boolean, Date.now, Math.random, Math.round, Math.floor, Math.ceil, Math.abs, Math.max, Math.min, JSON.stringify, PW_GLOBALS.JSON.parse]);
 const pwOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+const pwBadKey = k => String(k)[0] === '$' || k === '__proto__'; // the engine's own values are objects with $-keys: the reader's code cannot make one
+const pwKeyErr = (k, line) => PwErr(`SyntaxError: «${k}» açarı bu məşqdə işlədilə bilməz`, 'Açarın adı $ ilə başlamasın, __proto__ da olmasın.', line);
+const pwGet = (o, k) => o && typeof o === 'object' && pwOwn(o, k) && !Object.keys(o).some(x => x[0] === '$') ? o[k] : undefined; // destructuring: plain data only
+const pwJson = s => JSON.parse(s, (k, v) => pwBadKey(k) ? undefined : v);
 // which scope holds a variable: a function's variables sit on top of the ones it closes over
 const pwVar = (vars, name) => { for (let v = vars; v && v !== Object.prototype; v = Object.getPrototypeOf(v)) if (pwOwn(v, name)) return v; return null; };
 function pwLev(a, b) { const d = Array.from({ length: a.length + 1 }, (_, i) => [i]); for (let j = 1; j <= b.length; j++) d[0][j] = j; for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[a.length][b.length]; }
 function pwNear(w, list) { let best = null, bd = 3; list.forEach(x => { const d = pwLev(w.toLowerCase(), x.toLowerCase()); if (d < bd) { bd = d; best = x; } }); return best; }
 const pwSrc = n => n.t === 'id' ? n.name : n.t === 'this' ? 'this' : n.t === 'mem' ? `${pwSrc(n.obj)}.${n.name}` : n.t === 'call' ? `${pwSrc(n.fn)}(…)` : '…';
 function pwMember(o, name, n) {
-  const list = o === PW_PAGE ? PW_PAGE_M : o && o.$loc ? PW_LOC_M : o && o.$expect ? PW_MATCH_L.concat(PW_MATCH_P, PW_MATCH_V, ['toBeOK']) : o === PW_CONSOLE ? ['log', 'info', 'error'] : o === PW_KEYS ? ['press', 'type']
+  if (o === PW_EXPECT && name === 'soft') return PW_SOFT;
+  if (o && o.$wait) throw PwErr(name === 'then' ? `Error: .then bu məşqin modelində yoxdur` : `TypeError: ${pwSrc(n.obj)}.${name} is not a function`, name === 'then' ? 'await yaz: const x = await p;' : `${pwSrc(n.obj)} hələ Promise-dir: əvvəlcə gözlə. Məsələn: const popup = await popupPromise;`, n.line);
+  const list = o === PW_PAGE ? PW_PAGE_M : o === PW_PROMISE ? ['all'] : o && o.$popup ? PW_Q.concat(['url', 'title', 'close', 'waitForLoadState', 'waitForURL', 'reload', 'screenshot']) : o && o.$dialog ? ['accept', 'dismiss', 'message', 'type'] : o && o.$route ? ['fulfill', 'abort', 'continue', 'fallback', 'request'] : o && o.$rq ? ['url', 'method']
+    : o && o.$frame ? PW_Q.concat(['frameLocator', 'first', 'last', 'nth']) : o && o.$loc ? PW_LOC_M : o && o.$expect ? PW_MATCH_L.concat(PW_MATCH_P, PW_MATCH_V, ['toBeOK']) : o === PW_CONSOLE ? ['log', 'info', 'error'] : o === PW_KEYS ? ['press', 'type']
     : o === PW_REQ ? PW_REQ_M : o && o.$res ? PW_RES_M : o === PW_CTX ? ['storageState'] : o === PW_TEST ? ['step'] : null;
   if (o === PW_PAGE && name === 'keyboard') return PW_KEYS;
   if (o === PW_PAGE && name === 'request') return PW_REQ;
@@ -2297,7 +2354,7 @@ function pwMember(o, name, n) {
   }
   if (list) {
     if (list.includes(name)) return { $m: name, self: o };
-    if (PW_NOPE.includes(name)) throw PwErr(`Error: ${name} bu kitabın modelində yoxdur`, 'Dəstəklənən lokatorlar: getByRole, getByText, getByLabel, getByPlaceholder, getByTestId, locator; filter, first, last, nth.', n.line);
+    if (PW_NOPE.includes(name)) throw PwErr(`Error: ${name} bu kitabın modelində yoxdur`, PW_NOPE_HINT[name] || 'Dəstəklənən lokatorlar: getByRole, getByText, getByLabel, getByPlaceholder, getByTestId, locator; filter, first, last, nth.', n.line);
     const near = pwNear(name, list);
     throw PwErr(`TypeError: ${pwSrc(n.obj)}.${name} is not a function`, near ? `Bəlkə ${near}?` : 'Metodun adını yoxla: böyük-kiçik hərf fərqlidir.', n.line);
   }
@@ -2316,34 +2373,45 @@ function pwInvoke(f, args, env, line) {
   if (env.depth > 40) { env.depth = 0; throw PwErr('RangeError: Maximum call stack size exceeded', 'Metod özü-özünü dayanmadan çağırır.', line); }
   const n = f.$f, vars0 = env.vars, self0 = env.self, ret0 = env.ret;
   env.vars = Object.create(f.vars || env.top || null); if (f.self !== undefined) env.self = f.self; env.ret = undefined;
-  n.params.forEach((p, i) => { if (p.names) p.names.forEach(k => { env.vars[k] = args[i] == null ? undefined : args[i][k]; }); else env.vars[p.name] = args[i]; });
+  n.params.forEach((p, i) => { if (p.names) p.names.forEach(k => { env.vars[k] = pwGet(args[i], k); }); else env.vars[p.name] = args[i]; });
   try {
     if (n.expr) return pwEval(n.expr, env);
     pwExec(n.body, env);
     return env.ret;
   } finally { env.vars = vars0; env.self = self0; env.ret = ret0; if (env.depth) env.depth--; }
 }
+// await on a saved page.waitForEvent / waitForResponse: the event has happened since, or it never comes
+function pwAwait(v, line) {
+  if (!v || !v.$wait) return v;
+  if (v.got) return v.got;
+  throw Object.assign(PwErr(`Error: page.${v.$wait}: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for ${v.what}\n============================================================`, `Gözlənilən hadisə gəlmədi. Gözləməni hərəkətdən əvvəl başlat, await-i hərəkətdən sonra yaz: const p = page.${v.$wait}(…); await …click(); const x = await p;`, line), { ms: 30000 });
+}
 // one statement; true means `return` ran and the caller stops
 function pwStmt(s, env) {
   switch (s.k) {
-    case 'do': pwEval(s.e, env); return false;
-    case 'let': { const v = pwEval(s.e, env); if (s.names) s.names.forEach(k => { if (v == null) throw PwErr(`TypeError: Cannot destructure property '${k}' of ${v}`, '', s.line); env.vars[k] = pwMember(v, k, { obj: s.e, line: s.line }); }); else env.vars[s.name] = v; return false; }
+    case 'do': { const v = pwEval(s.e, env); if (s.aw) pwAwait(v, s.line); return false; }
+    case 'let': { let v = pwEval(s.e, env); if (s.aw) v = pwAwait(v, s.line); if (s.arr) { if (!Array.isArray(v)) throw PwErr(`TypeError: ${pwSrc(s.e)} is not iterable`, 'Bu yazılış massiv üçündür (18.13).', s.line); s.arr.forEach((k, i) => { if (k) env.vars[k] = v[i]; }); return false; } if (s.names) s.names.forEach(k => { if (v == null) throw PwErr(`TypeError: Cannot destructure property '${k}' of ${v}`, '', s.line); env.vars[k] = pwMember(v, k, { obj: s.e, line: s.line }); }); else env.vars[s.name] = v; return false; }
     case 'set': {
-      const v = pwEval(s.e, env);
-      if (s.to.t === 'id') { (pwVar(env.vars, s.to.name) || env.vars)[s.to.name] = v; return false; }
+      let v = pwEval(s.e, env); if (s.aw) v = pwAwait(v, s.line);
+      if (s.to.t === 'id') {
+        const holder = pwVar(env.vars, s.to.name);
+        if (!holder) throw PwErr(`ReferenceError: ${s.to.name} is not defined`, `Dəyişəni əvvəlcə let ilə yarat. Class-ın sahəsidirsə, this.${s.to.name} yaz (18.11).`, s.line);
+        holder[s.to.name] = v; return false;
+      }
       if (s.to.t !== 'mem') throw PwErr('SyntaxError: bu dəyərə yazmaq olmur', '', s.line);
+      if (pwBadKey(s.to.name)) throw pwKeyErr(s.to.name, s.line);
       const o = pwEval(s.to.obj, env);
       if (o == null) throw PwErr(`TypeError: Cannot set properties of ${o} (setting '${s.to.name}')`, '', s.line);
       if (o.$inst) o.f[s.to.name] = v; else if (typeof o === 'object' && !Array.isArray(o) && !o.$loc && o !== PW_PAGE) o[s.to.name] = v; else throw PwErr(`TypeError: ${pwSrc(s.to)} yazıla bilməz`, '', s.line);
       return false;
     }
-    case 'ret': env.ret = pwEval(s.e, env); return true;
+    case 'ret': env.ret = pwEval(s.e, env); if (s.aw) env.ret = pwAwait(env.ret, s.line); return true;
     case 'if': return pwExec(pwEval(s.e, env) ? s.then : s.els || [], env);
     case 'for': {
       const xs = pwEval(s.e, env);
       if (!Array.isArray(xs)) throw PwErr(`TypeError: ${pwSrc(s.e)} is not iterable`, 'for … of massiv üzərində işləyir.', s.line);
       for (const x of xs) {
-        if (s.names) s.names.forEach(k => { env.vars[k] = x == null ? undefined : x[k]; }); else env.vars[s.name] = x;
+        if (s.names) s.names.forEach(k => { env.vars[k] = pwGet(x, k); }); else env.vars[s.name] = x;
         if (pwExec(s.body, env)) return true;
       }
       return false;
@@ -2357,8 +2425,8 @@ function pwEval(n, env) {
     case 'lit': return n.v;
     case 'tpl': return n.parts.map(p => typeof p === 'string' ? p : String(pwEval(p, env))).join('');
     case 'arr': { const out = []; n.items.forEach(x => { if (x.t === 'spread') { const v = pwEval(x.e, env); if (!Array.isArray(v)) throw PwErr(`TypeError: ${pwSrc(x.e)} is not iterable`, '', n.line); out.push(...v); } else out.push(pwEval(x, env)); }); return out; }
-    case 'obj': { const o = {}; n.props.forEach(([k, v]) => { o[k] = pwEval(v, env); }); return o; }
-    case 'await': return pwEval(n.e, env);
+    case 'obj': { const o = {}; n.props.forEach(([k, v]) => { if (pwBadKey(k)) throw pwKeyErr(k, n.line); o[k] = pwEval(v, env); }); return o; }
+    case 'await': return pwAwait(pwEval(n.e, env), n.line);
     case 'this': if (env.self) return env.self; throw PwErr("TypeError: Cannot read properties of undefined (reading 'this')", 'this yalnız class-ın içində işləyir.', n.line);
     case 'fn': return { $f: n, vars: env.vars, self: env.self };
     case 'new': {
@@ -2375,14 +2443,15 @@ function pwEval(n, env) {
       if (n.name === 'expect') return PW_EXPECT;
       if (n.name === 'console') return PW_CONSOLE;
       if (n.name === 'test' && !env.locOnly) return PW_TEST;
+      if (n.name === 'Promise') return PW_PROMISE;
       if (pwOwn(PW_GLOBALS, n.name)) return PW_GLOBALS[n.name];
-      throw PwErr(`ReferenceError: ${n.name} is not defined`, (h => h ? `Bəlkə ${h}?` : 'Dəyişəni əvvəlcə const ilə yarat.')(pwNear(n.name, ['page', 'request', 'expect', 'console'].concat(Object.keys(env.vars)))) + (n.name === 'page' || n.name === 'request' ? ` ${n.name} fixture-dir: testin başlığında istə: async ({ ${n.name} }) => { … }` : ''), n.line);
+      throw PwErr(`ReferenceError: ${n.name} is not defined`, (h => h ? `Bəlkə ${h}?` : 'Dəyişəni əvvəlcə const ilə yarat.')(pwNear(n.name, ['page', 'request', 'expect', 'console'].concat((() => { const k = []; for (const x in env.vars) k.push(x); return k; })()))) + (n.name === 'page' || n.name === 'request' ? ` ${n.name} fixture-dir: testin başlığında istə: async ({ ${n.name} }) => { … }` : ''), n.line);
     }
     case 'mem': return pwMember(pwEval(n.obj, env), n.name, n);
     case 'idx': { const o = pwEval(n.obj, env), k = pwEval(n.ix, env); if (o == null) return undefined; return (Array.isArray(o) || typeof o === 'string') && typeof k === 'number' ? o[k] : typeof o === 'object' && pwOwn(o, k) ? o[k] : undefined; }
     case 'call': {
       const f = pwEval(n.fn, env), args = n.args.map(a => pwEval(a, env));
-      if (f === PW_EXPECT) return { $expect: 1, v: args[0], not: false };
+      if (f === PW_EXPECT || f === PW_SOFT) return { $expect: 1, v: args[0], not: false, soft: f === PW_SOFT };
       if (f && f.$m) return pwCall(f.self, f.$m, args, n, env);
       if (f && f.$f) return pwInvoke(f, args, env, n.line);
       if (f && f.$v) {
@@ -2413,11 +2482,14 @@ function pwResp(r, m, line) {
   switch (m) {
     case 'ok': return r.st >= 200 && r.st < 300;
     case 'status': return r.st;
-    case 'statusText': return { 200: 'OK', 201: 'Created', 400: 'Bad Request', 401: 'Unauthorized', 403: 'Forbidden', 404: 'Not Found', 405: 'Method Not Allowed', 409: 'Conflict' }[r.st] || '';
+    case 'statusText': return { 200: 'OK', 201: 'Created', 400: 'Bad Request', 401: 'Unauthorized', 403: 'Forbidden', 404: 'Not Found', 405: 'Method Not Allowed', 409: 'Conflict', 500: 'Internal Server Error', 502: 'Bad Gateway', 503: 'Service Unavailable' }[r.st] || '';
     case 'url': return r.url;
     case 'headers': { const o = {}; Object.entries(r.hdrs || {}).forEach(([k, v]) => { o[k.toLowerCase()] = v; }); return o; }
-    case 'text': return JSON.stringify(r.body);
-    default: if (r.body === undefined) throw PwErr('SyntaxError: Unexpected end of JSON input', 'Cavabın gövdəsi yoxdur: əvvəl statusu yoxla.', line); return JSON.parse(JSON.stringify(r.body));
+    case 'text': return r.raw ? (r.body === undefined ? '' : String(r.body)) : JSON.stringify(r.body);
+    default:
+      if (r.body === undefined) throw PwErr('SyntaxError: Unexpected end of JSON input', 'Cavabın gövdəsi yoxdur: əvvəl statusu yoxla.', line);
+      if (r.raw) { try { return pwJson(String(r.body)); } catch (e) { throw PwErr(`SyntaxError: ${e.message}`, 'Cavabın gövdəsi JSON deyil: response.text() ilə bax.', line); } } // route.fulfill({ body: '…' })
+      return JSON.parse(JSON.stringify(r.body));
   }
 }
 const PW_OPT = { getByRole: ['name', 'exact', 'level'], getByText: ['exact'], getByLabel: ['exact'], getByPlaceholder: ['exact'], locator: ['hasText', 'hasNotText'], filter: ['hasText', 'hasNotText', 'has'] };
@@ -2438,19 +2510,26 @@ function pwQueryStep(m, a, line) {
   if (typeof s !== 'string' && !(s instanceof RegExp)) throw PwErr(`Error: ${m}: arqument mətn və ya regex olmalıdır`, '', line);
   if (m === 'getByTestId') return { k: 'testid', v: s };
   pwCheckOpts(m, o, line);
-  return { k: { getByText: 'text', getByLabel: 'label', getByPlaceholder: 'ph', locator: 'css' }[m], v: s, exact: o && o.exact };
+  return { k: { getByText: 'text', getByLabel: 'label', getByPlaceholder: 'ph', locator: 'css' }[m], v: m === 'locator' && typeof s === 'string' && !/^(xpath=|\/\/|\.\.)/.test(s) ? s.replace(/\biframe\b/g, '[data-frame]') : s, exact: o && o.exact };
 }
-function pwChild(base, m, a, line) {
+function pwChild(base, m, a, line, pg) {
+  if (m === 'frameLocator' || m === 'contentFrame') { // only locators can start from a frame
+    const fs = base ? base.steps.slice() : [];
+    if (m === 'frameLocator') { if (typeof a[0] !== 'string') throw PwErr('Error: frameLocator: selektor mətn olmalıdır', "Məsələn: page.frameLocator('#pay')", line); fs.push({ k: 'css', v: a[0].replace(/\biframe\b/g, '[data-frame]') }); }
+    fs.push({ k: 'frame' });
+    return Object.assign(pwLoc(fs, (base ? base.desc + '.' : '') + (m === 'frameLocator' ? `locator(${pwFmt(a[0])}).contentFrame()` : 'contentFrame()'), base ? base.pg : pg), { $frame: 1 });
+  }
   const desc = (base ? base.desc + '.' : '') + `${m}(${a.map(pwFmt).join(', ')})`, steps = base ? base.steps.slice() : [];
   if (PW_Q.includes(m)) {
     steps.push(pwQueryStep(m, a, line));
     if (m === 'locator' && a[1]) steps.push({ k: 'filter', has: a[1].hasText, hasNot: a[1].hasNotText });
   } else if (m === 'filter') {
     pwCheckOpts(m, a[0], line);
-    if (a[0].has && !a[0].has.$loc) throw PwErr('Error: filter: has lokator olmalıdır', '', line);
-    steps.push({ k: 'filter', has: a[0].hasText, hasNot: a[0].hasNotText, inner: a[0].has });
+    const fo = a[0] || {};
+    if (fo.has && !fo.has.$loc) throw PwErr('Error: filter: has lokator olmalıdır', '', line);
+    steps.push({ k: 'filter', has: fo.hasText, hasNot: fo.hasNotText, inner: fo.has });
   } else steps.push({ k: 'nth', i: m === 'first' ? 0 : m === 'last' ? -1 : +a[0] });
-  return pwLoc(steps, desc);
+  return pwLoc(steps, desc, base ? base.pg : pg);
 }
 function pwCall(self, m, a, n, env) {
   const line = n.line;
@@ -2463,11 +2542,27 @@ function pwCall(self, m, a, n, env) {
     env.shared.states[a[0].path] = { user: env.st ? env.st.user : null, cart: env.st ? env.st.cart.slice() : [] };
     return undefined;
   }
+  if (self === PW_PROMISE) { if (!Array.isArray(a[0])) throw PwErr('TypeError: Promise.all massiv gözləyir', '', line); return a[0].map(x => pwAwait(x, line)); }
+  if (self && self.$dialog) {
+    if (m === 'message') return self.text; if (m === 'type') return self.kind;
+    if (self.done) throw PwErr(`Error: dialog.${m}: Cannot ${m} dialog which is already handled!`, 'Bir pəncərəyə bir cavab verilir: bir dinləyici kifayətdir.', line);
+    self.done = m; return undefined;
+  }
+  if (self && self.$route) {
+    if (m === 'request') return { $rq: 1, url: self.url };
+    if (self.done) throw PwErr(`Error: route.${m}: Route is already handled!`, 'Bir sorğuya bir cavab verilir.', line);
+    self.done = { k: m, o: a[0] || {} }; return undefined;
+  }
+  if (self && self.$rq) return m === 'url' ? self.url : 'GET';
   if (self === PW_PAGE && m === 'context') return PW_CTX;
-  const isQ = PW_Q.includes(m) || ((m === 'filter' || m === 'first' || m === 'last' || m === 'nth') && self.$loc);
-  if (isQ) return pwChild(self === PW_PAGE ? null : self, m, a, line);
+  const isQ = PW_Q.includes(m) || ((m === 'filter' || m === 'first' || m === 'last' || m === 'nth') && self.$loc) || ((m === 'frameLocator' || m === 'contentFrame') && (self === PW_PAGE || self.$loc));
+  if (isQ) return pwChild(self === PW_PAGE || self.$popup ? null : self, m, a, line, self.$popup ? self : undefined);
   if (env.locOnly) throw PwErr(`Burada yalnız lokator yaz: ${m}() hərəkət və ya yoxlamadır`, 'Hərəkəti (click, fill) və yoxlamanı «Test yaz» bölməsində et.', line);
-  if (self.$expect) return pwAssert(self, m, a, line, env);
+  if (self.$expect) {
+    if (!self.soft) return pwAssert(self, m, a, line, env);
+    try { return pwAssert(self, m, a, line, env); } catch (e) { if (!e.pw) throw e; if (!e.line) e.line = line; env.softs.push(e); return undefined; } // noted; the test goes on and fails at its end
+  }
+  if (self === PW_KEYS && env.st && env.st.w) { if (m === 'press') pwWKey(env, a[0]); else if (env.focus) env.st.w[env.focus] += String(a[0]); return undefined; }
   if (self === PW_KEYS) { // the keyboard acts on the field that has the focus
     if (m === 'press' && a[0] === 'Enter' && env.focus && env.st) smApply(env.st, { ev: env.st.page === 'login' ? 'login' : 'continue' }, env.found);
     if (m === 'type' && env.focus && env.st) smFill(env.st, env.focus, (env.st.f[env.focus] || '') + String(a[0]), env.found);
@@ -2475,33 +2570,59 @@ function pwCall(self, m, a, n, env) {
   }
   if (self === PW_PAGE) {
     switch (m) {
-      case 'goto': pwGoto(env, a[0], line); return null;
+      case 'goto': return pwGoto(env, a[0], line);
       case 'url': return pwUrl(env);
       case 'title': return env.st ? 'Mini Store' : '';
-      case 'reload': if (env.st) { env.st.menu = false; env.st.err = ''; } return null;
+      case 'reload': { if (!env.st) return null; const res = pwDocLoad(env, pwUrl(env), line, 'reload'); env.st.menu = false; env.st.err = ''; env.focus = null; if (env.st.w) env.st.w = pwW0(); return res; }
       case 'waitForTimeout': env.wait += +a[0] || 0; return undefined;
       case 'waitForURL': if (!(a[0] instanceof RegExp ? a[0].test(pwUrl(env)) : pwUrl(env) === a[0])) throw PwErr(`Error: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to ${pwFmt(a[0])}`, 'Səhifə gözlənilən URL-ə keçmədi.', line); return undefined;
-      case 'click': case 'fill': return pwAct(env, pwChild(null, 'locator', [a[0]], line), m, a.slice(1), line); // the old page.click(selector) form
-      default: return undefined; // waitForLoadState, screenshot, pause: nothing to do in this model
+      case 'close': env.closed = true; return undefined;
+      case 'click': case 'fill': // the old page.click(selector) form
+        if (!env.st) throw PwErr(`Error: page.${m}: Test timeout of 30000ms exceeded.`, 'Səhifə hələ açılmayıb: əvvəlcə await page.goto(…) yaz.', line);
+        return pwAct(env, pwChild(null, 'locator', [a[0]], line), m, a.slice(1), line);
+      case 'on': case 'once':
+        if (a[0] !== 'dialog') throw PwErr(`Error: page.${m}('${a[0]}') bu məşqin modelində yoxdur`, "Bu məşqdə page.on('dialog', dialog => dialog.accept()) işləyir (19.18).", line);
+        if (!a[1] || !a[1].$f) throw PwErr(`Error: page.${m}: ikinci arqument funksiya olmalıdır`, "Yaz: page.on('dialog', dialog => dialog.accept());", line);
+        env.dialogs.push({ f: a[1], once: m === 'once' }); return undefined;
+      case 'route':
+        if (!a[1] || !a[1].$f) throw PwErr('Error: page.route: ikinci arqument funksiya olmalıdır', "Yaz: await page.route('**/api/orders', route => route.fulfill({ json: [] }));", line);
+        env.routes.unshift({ p: a[0], f: a[1] }); return undefined;
+      case 'waitForEvent': {
+        if (a[0] !== 'popup') throw PwErr(`Error: page.waitForEvent('${a[0]}') bu məşqin modelində yoxdur`, "Bu məşqdə page.waitForEvent('popup') işləyir (19.18).", line);
+        const w = { $wait: 'waitForEvent', kind: 'popup', what: 'event "popup"', got: null, line }; env.waits.push(w); return w;
+      }
+      case 'waitForResponse': { const w = { $wait: 'waitForResponse', kind: 'response', p: a[0], what: `response ${a[0] && a[0].$f ? 'predicate' : a[0] instanceof RegExp ? String(a[0]) : JSON.stringify(a[0])}`, got: null, line }; env.waits.push(w); return w; }
+      default: return undefined; // waitForLoadState, screenshot, pause, close: nothing to do in this model
     }
+  }
+  if (self.$popup) {
+    if (m === 'close') { self.closed = true; return undefined; }
+    if (m === 'waitForURL' && !(a[0] instanceof RegExp ? a[0].test(self.url) : self.url === a[0])) throw Object.assign(PwErr(`Error: page.waitForURL: Timeout 30000ms exceeded.\nwaiting for navigation to ${pwFmt(a[0])}`, 'Yeni tabın ünvanı fərqlidir.', line), { ms: 30000 });
+    return m === 'url' ? self.url : m === 'title' ? 'Mini Store' : undefined;
   }
   // a locator: an action or a read
   if (!env.st) throw PwErr(`Error: locator.${m}: Test timeout of 30000ms exceeded.\nCall log:\n  - waiting for ${self.desc}`, 'Səhifə hələ açılmayıb: əvvəlcə await page.goto(…) yaz.', line);
-  if (['textContent', 'innerText', 'inputValue', 'getAttribute', 'count', 'isVisible', 'isHidden', 'allTextContents', 'allInnerTexts'].includes(m)) return pwRead(env, self, m, a, line);
-  if (m === 'waitFor') { const st = (a[0] && a[0].state) || 'visible', k = pwResolve(self, pwDom(env.st)).length; if ((st === 'visible' || st === 'attached') !== (k > 0)) throw Object.assign(PwErr(`Error: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n  - waiting for ${self.desc} to be ${st}`, '', line), { ms: 30000 }); return undefined; }
+  if (['textContent', 'innerText', 'inputValue', 'getAttribute', 'count', 'isVisible', 'isHidden', 'isChecked', 'allTextContents', 'allInnerTexts'].includes(m)) return pwRead(env, self, m, a, line);
+  if (m === 'waitFor') { const st = (a[0] && a[0].state) || 'visible', k = pwResolve(self, pwRootOf(env, self)).length; if ((st === 'visible' || st === 'attached') !== (k > 0)) throw Object.assign(PwErr(`Error: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n  - waiting for ${self.desc} to be ${st}`, '', line), { ms: 30000 }); return undefined; }
   return pwAct(env, self, m, a, line);
 }
-const pwUrl = env => env.st ? env.origin + TR_URL[env.st.page] : 'about:blank';
+const pwUrl = env => env.st ? env.origin + (PW_W_URL[env.st.page] || TR_URL[env.st.page]) : 'about:blank';
 function pwGoto(env, url, line) {
   let u; try { u = new URL(String(url), env.baseURL || undefined); } catch (e) { throw PwErr('Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL', 'URL tam yazılmalıdır, protokolla birlikdə: https://www.saucedemo.com/ (qısa yol üçün config-də və ya test.use-da baseURL lazımdır, 19.11)', line); }
+  if (env.closed) throw PwErr('Error: page.goto: Target page, context or browser has been closed', 'Səhifə bağlanıb.', line);
   if (!PW_HOSTS.includes(u.hostname)) throw PwErr(`Error: page.goto: net::ERR_NAME_NOT_RESOLVED at ${url}`, 'Bu məşqdə yalnız Mini Store (saucedemo.com-un modeli) açılır: https://www.saucedemo.com/', line);
-  const page = Object.keys(TR_URL).find(k => TR_URL[k] === u.pathname);
-  if (!page) throw PwErr(`Error: page.goto: 404 Not Found — ${u.pathname}`, `Modeldə belə səhifə yoxdur. Səhifələr: ${Object.values(TR_URL).join(', ')}`, line);
-  env.origin = u.origin;
+  const wp = u.hostname === 'ministore.test' ? Object.keys(PW_W_URL).find(k => PW_W_URL[k] === u.pathname) : null;
+  const page = wp || Object.keys(TR_URL).find(k => TR_URL[k] === u.pathname);
+  if (!page) throw PwErr(`Bu məşqin modelində belə səhifə yoxdur: ${u.pathname}`, `Səhifələr: ${Object.values(TR_URL).join(', ')}. Real Playwright-da goto 404 cavabında xəta vermir: səhifəni yoxlamaq sənin işindir.`, line);
+  const res = pwDocLoad(env, u.href, line, 'goto');
+  env.origin = u.origin; env.focus = null;
   if (!env.st) { env.st = smFresh({ page: 'login' }); if (env.auth) { env.st.user = env.auth.user; env.st.cart = env.auth.cart.slice(); } } // test.use({ storageState })
-  if (page === 'login') { Object.assign(env.st, { page: 'login', err: '', menu: false }); Object.assign(env.st.f, { user: '', pass: '' }); }
+  delete env.st.w;
+  if (wp) { Object.assign(env.st, { page: wp, err: '', menu: false }); if (wp === 'settings') env.st.w = pwW0(); } // these two pages need no login
+  else if (page === 'login') { Object.assign(env.st, { page: 'login', err: '', menu: false }); Object.assign(env.st.f, { user: '', pass: '' }); }
   else if (!env.st.user) Object.assign(env.st, { page: 'login', err: `Epic sadface: You can only access '${u.pathname}' when you are logged in.` }); // as on saucedemo
   else Object.assign(env.st, { page, err: '', menu: false });
+  return res;
 }
 // exactly one element, as Playwright's strict mode wants for actions and most assertions
 function pwOne(loc, root, what, line, found) {
@@ -2517,9 +2638,11 @@ function pwStrict(what, loc, els, root, line) {
     `Lokator ${els.length} element tapdı, Playwright isə hansını götürəcəyini bilmir (strict mode). Lokatoru birmənalı et: məhsulun kartını .filter({ hasText: … }) ilə seç, dəqiq ad yaz və ya getByTestId işlət.`, line);
 }
 function pwAct(env, loc, m, a, line) {
-  const root = pwDom(env.st), els = pwResolve(loc, root);
+  const root = pwRootOf(env, loc), els = pwResolve(loc, root);
   els.forEach(e => e.classList.add('pw-hl')); env.snap = root.innerHTML; // the trace's "before": the target, or every match in strict mode
-  const el = pwOne(loc, root, 'locator.' + m, line, els), st = env.st, f = el.dataset.smF;
+  const el = pwOne(loc, root, 'locator.' + m, line, els), st = loc.pg ? loc.pg.st : env.st, f = el.dataset.smF;
+  if (st.w) return pwWAct(env, el, m, a, line);
+  if (m === 'setInputFiles') throw PwErr('Error: locator.setInputFiles: Error: Node is not an HTMLInputElement', 'setInputFiles() fayl sahəsi üçündür: input type="file".', line);
   if (m === 'click' || m === 'dblclick') {
     if (el.dataset.act === 'sm') smApply(st, Object.assign({ ev: el.dataset.e }, el.dataset.item ? { item: el.dataset.item, where: el.dataset.where } : {}), env.found);
     env.focus = f || null;
@@ -2532,28 +2655,149 @@ function pwAct(env, loc, m, a, line) {
     env.focus = f || null;
   } else if (m === 'selectOption') {
     if (el.tagName !== 'SELECT') throw PwErr('Error: locator.selectOption: Error: Element is not a <select> element', 'selectOption() açılan siyahı (select) üçündür.', line);
-    const w = a[0], o = [...el.options].find(x => w && typeof w === 'object' ? x.value === w.value || x.textContent === w.label : x.value === w || x.textContent === w);
-    if (!o) throw PwErr('Error: locator.selectOption: did not find some options', `Seçimlər: ${[...el.options].map(x => `'${x.value}' (${x.textContent})`).join(', ')}`, line);
-    smApply(st, { ev: 'sort', v: o.value }, env.found);
-  } else if (m === 'check' || m === 'uncheck') throw PwErr(`Error: locator.${m}: Error: Not a checkbox or radio button`, `${m}() yalnız checkbox və radio düymələri üçündür.`, line);
+    smApply(st, { ev: 'sort', v: pwOption(el, a[0], line).value }, env.found);
+  } else if (m === 'check' || m === 'uncheck' || m === 'setChecked') throw PwErr(`Error: locator.${m}: Error: Not a checkbox or radio button`, `${m}() yalnız checkbox və radio düymələri üçündür.`, line);
   else if (m === 'focus') env.focus = f || null;
   return undefined;
 }
+// the settings page's behaviour
+function pwDialog(env, kind, text, line) {
+  if (!env.dialogs.length) return 'dismiss'; // no listener: Playwright dismisses it itself
+  const d = { $dialog: 1, kind, text, done: null };
+  env.dialogs.slice().forEach(l => { if (l.once) env.dialogs.splice(env.dialogs.indexOf(l), 1); pwInvoke(l.f, [d], env, line); });
+  if (!d.done) throw Object.assign(PwErr('Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n  - performing click action', 'Dinləyici var, amma dialog.accept() və ya dialog.dismiss() çağırılmayıb: səhifə pəncərəni gözləyir və klik bitmir (19.18).', line), { ms: 30000 });
+  return d.done;
+}
+function pwGlob(p, url, env, line) {
+  if (p instanceof RegExp) return p.test(url);
+  if (p && p.$f) { const u = new URL(url); return !!pwInvoke(p, [{ href: u.href, origin: u.origin, hostname: u.hostname, pathname: u.pathname, search: u.search }], env, line); }
+  if (typeof p !== 'string') return false;
+  let g = p; if (env.baseURL && g.startsWith('/')) { try { g = new URL(env.baseURL).origin + g; } catch (e) { /* the page gives the error */ } }
+  let re = '', brace = 0;
+  for (let i = 0; i < g.length; i++) {
+    const c = g[i];
+    if (c === '*') { if (g[i + 1] === '*') { re += '.*'; i++; } else re += '[^/]*'; }
+    else if (c === '{') { re += '(?:'; brace++; }
+    else if (c === '}' && brace) { re += ')'; brace--; }
+    else if (c === ',' && brace) re += '|';
+    else re += c.replace(/[.+^$()|[\]\\?{}]/g, '\\$&');
+  }
+  try { return new RegExp(`^${re}$`).test(url); } catch (e) { return false; }
+}
+// one request through page.route: the answer, { abort: true }, or null when a handler answers nothing and the request hangs
+function pwRoute(env, url, line, st, body) {
+  for (const r of env.routes) {
+    if (!pwGlob(r.p, url, env, line)) continue;
+    const h = { $route: 1, url, done: null };
+    pwInvoke(r.f, [h], env, line);
+    if (!h.done) return null;
+    if (h.done.k === 'fallback') continue;
+    if (h.done.k === 'abort') return { abort: true };
+    if (h.done.k === 'fulfill') { const o = h.done.o; return { fake: true, st: o.status === undefined ? 200 : o.status, body: o.json !== undefined ? o.json : o.body, raw: o.json === undefined }; }
+    break;
+  }
+  return { st, body };
+}
+function pwRespond(env, url, a, line) {
+  const res = { $res: 1, url, st: a.st, body: a.body, raw: a.raw, hdrs: { 'Content-Type': 'application/json' } };
+  env.waits.forEach(x => { if (x.kind === 'response' && !x.got && (x.p && x.p.$f ? pwInvoke(x.p, [res], env, line) : pwGlob(x.p, url, env, line))) x.got = res; });
+  return res;
+}
+// the document of goto and reload
+function pwDocLoad(env, url, line, what) {
+  const a = pwRoute(env, url, line, 200, '');
+  if (!a) throw Object.assign(PwErr(`Error: page.${what}: Test timeout of 30000ms exceeded.`, 'page.route bu səhifənin özünü də tutdu, handler isə cavab vermədi. Naxışı daralt.', line), { ms: 30000 });
+  if (a.abort) throw PwErr(`Error: page.${what}: net::ERR_FAILED at ${url}`, 'page.route bu səhifənin özünü də kəsdi: naxışı daralt, məsələn **/api/orders.', line);
+  if (a.fake) throw PwErr(`Error: page.${what}: səhifənin özünü saxta cavabla əvəz etmək bu məşqin modelində yoxdur`, "Burada saxta cavab sorğular üçündür: '**/api/orders'.", line);
+  return pwRespond(env, url, { st: 200, body: '', raw: true }, line);
+}
+// "Sifarişləri yüklə": the request goes through page.route, then whoever waits for the response gets it
+function pwWOrders(env, line) {
+  const w = env.st.w, url = env.origin + '/api/orders';
+  w.orders = { k: 'wait' };
+  const a = pwRoute(env, url, line, 200, PW_ORDERS.map(x => Object.assign({}, x)));
+  if (!a) return; // the handler answered nothing: "Yüklənir…" stays
+  if (a.abort) { w.orders = { k: 'off' }; return; } // no response: waitForResponse keeps waiting
+  pwRespond(env, url, a, line);
+  if (!(a.st >= 200 && a.st < 300)) { w.orders = { k: 'err', st: a.st }; return; }
+  // as the page's own code: r.json(), then list.length; what it cannot read lands in its catch
+  let list = a.body;
+  try { if (a.raw) list = pwJson(String(a.body)); if (Array.isArray(list) && list.some(x => x == null)) throw new Error('item'); } catch (e) { w.orders = { k: 'off' }; return; }
+  w.orders = !list || !list.length ? { k: 'empty' } : { k: 'list', list: Array.from(list, x => (x.id !== null && typeof x.id === 'object' ? '[object Object]' : String(x.id))) };
+}
+const pwField = el => (el.tagName === 'LABEL' && el.htmlFor && el.parentElement && el.parentElement.querySelector('#' + CSS.escape(el.htmlFor))) || el; // a label stands for its field, as in Playwright
+function pwOption(el, v, line) {
+  const k = Array.isArray(v) ? v[0] : v;
+  const o = [...el.options].find((x, i) => k && typeof k === 'object' ? (k.index !== undefined ? i === k.index : x.value === k.value || x.textContent === k.label) : x.value === k || x.textContent === k);
+  if (!o) throw PwErr('Error: locator.selectOption: did not find some options', `Seçimlər: ${[...el.options].map(x => `'${x.value}' (${x.textContent})`).join(', ')}`, line);
+  return o;
+}
+function pwWClick(env, act, line) {
+  const w = env.st.w;
+  if (act === 'terms') w.terms = true;
+  else if (act === 'terms-x') w.terms = false;
+  else if (act === 'pay') w.pay = 'Ödəniş qəbul olundu';
+  else if (act === 'delete') w.account = pwDialog(env, 'confirm', 'Hesabı silmək istəyirsən?', line) === 'accept' ? 'Hesab silindi' : 'Ləğv edildi';
+  else if (act === 'orders') pwWOrders(env, line);
+  else if (act === 'popup') { const pop = { $popup: 1, st: { page: 'rules', cart: [], f: {} }, url: env.origin + PW_W_URL.rules }; env.waits.forEach(x => { if (x.kind === 'popup' && !x.got) x.got = pop; }); }
+}
+function pwWKey(env, key) {
+  const w = env.st.w;
+  if (key === 'Escape') w.terms = false;
+  else if (key === 'Enter' && env.focus === 'q') {
+    const q = w.q.trim().toLowerCase(), n = Object.values(prodById).filter(p => p.name.toLowerCase().includes(q)).length;
+    w.result = !q ? '' : n ? `«${w.q.trim()}» üçün ${n} nəticə` : 'Nəticə tapılmadı';
+  }
+}
+function pwWAct(env, el0, m, a, line) {
+  const el = pwField(el0), w = env.st.w, fld = el.dataset.wF, ck = el.dataset.wC;
+  const notCk = () => PwErr(`Error: locator.${m}: Error: Not a checkbox or radio button`, `${m}() yalnız checkbox və radio düymələri üçündür.`, line);
+  switch (m) {
+    case 'click': case 'dblclick':
+      w.tip = el.dataset.w === 'tip'; // the pointer moves onto what it clicks
+      if (ck) { if (m === 'click') w[ck] = !w[ck]; } else if (el.dataset.w) { pwWClick(env, el.dataset.w, line); if (m === 'dblclick') pwWClick(env, el.dataset.w, line); }
+      env.focus = fld || null; break;
+    case 'check': case 'uncheck': if (!ck) throw notCk(); w[ck] = m === 'check'; w.tip = false; break;
+    case 'setChecked': if (!ck) throw notCk(); w[ck] = !!a[0]; w.tip = false; break;
+    case 'hover': w.tip = el.dataset.w === 'tip'; break;
+    case 'focus': env.focus = fld || null; break;
+    case 'press': env.focus = fld || null; pwWKey(env, a[0]); break;
+    case 'fill': case 'clear': case 'type': case 'pressSequentially':
+      if (!fld) throw PwErr(`Error: locator.${m}: Error: Element is not an <input>, <textarea> or [contenteditable] element`, `${m}() yalnız mətn sahəsinə yazır: lokator sahəni tapmalıdır, ${pwOuter(el)} isə sahə deyil.`, line);
+      if (m !== 'clear' && typeof a[0] !== 'string') throw PwErr(`Error: locator.${m}: value: expected string, got ${a[0] === undefined ? 'undefined' : typeof a[0]}`, "Yazılacaq mətni dırnaqda ver: .fill('bolt')", line);
+      w[fld] = m === 'clear' ? '' : m === 'fill' ? a[0] : w[fld] + a[0]; env.focus = fld; break;
+    case 'selectOption': {
+      if (el.tagName !== 'SELECT') throw PwErr('Error: locator.selectOption: Error: Element is not a <select> element', 'selectOption() açılan siyahı (select) üçündür.', line);
+      w[el.dataset.wS] = pwOption(el, a[0], line).value; break;
+    }
+    case 'setInputFiles': {
+      if (el.type !== 'file') throw PwErr(`Error: locator.setInputFiles: Error: ${el.tagName === 'INPUT' ? 'Input of type "file" expected' : 'Node is not an HTMLInputElement'}`, 'setInputFiles() fayl sahəsi üçündür: input type="file".', line);
+      const list = Array.isArray(a[0]) ? a[0] : [a[0]];
+      if (list.some(x => typeof x !== 'string')) throw PwErr('Error: locator.setInputFiles: faylın yolu mətn olmalıdır', "Yaz: .setInputFiles('cv.pdf') və ya təmizləmək üçün .setInputFiles([])", line);
+      if (list.length > 1) throw PwErr('Error: locator.setInputFiles: Error: Non-multiple file input can only accept single file', 'Bu sahə bir fayl qəbul edir.', line);
+      const name = list.length ? list[0].split(/[\\/]/).pop() : '';
+      w.file = !name ? 'Fayl seçilməyib' : /\.pdf$/i.test(name) ? `Seçildi: ${name}` : 'Yalnız PDF faylı olar'; break; // this model has no disk: every path counts as an existing file
+    }
+  }
+  return undefined;
+}
 function pwRead(env, loc, m, a, line) {
-  const root = pwDom(env.st), els = pwResolve(loc, root);
+  const root = pwRootOf(env, loc), els = pwResolve(loc, root);
   els.forEach(e => e.classList.add('pw-hl')); env.snap = root.innerHTML;
   if (m === 'count') return els.length;
-  if (m === 'allTextContents') return els.map(e => e.textContent);
-  if (m === 'allInnerTexts') return els.map(e => pwNorm(e.textContent));
+  if (m === 'allTextContents') return els.map(pwOwnText);
+  if (m === 'allInnerTexts') return els.map(e => pwNorm(pwOwnText(e)));
   if (m === 'isVisible' || m === 'isHidden') { if (els.length > 1) throw pwStrict('locator.' + m, loc, els, root, line); return m === 'isVisible' ? els.length === 1 : !els.length; }
   const el = pwOne(loc, root, 'locator.' + m, line, els);
-  if (m === 'textContent') return el.textContent;
-  if (m === 'innerText') return pwNorm(el.textContent);
+  if (m === 'textContent') return pwOwnText(el);
+  if (m === 'innerText') return pwNorm(pwOwnText(el));
   if (m === 'getAttribute') return el.getAttribute(a[0]);
-  if (el.dataset.smF) return env.st.f[el.dataset.smF];
-  if (el.tagName === 'SELECT') return env.st.sort;
+  const fe = pwField(el);
+  if (m === 'isChecked') { if (fe.type !== 'checkbox' && fe.type !== 'radio') throw PwErr('Error: locator.isChecked: Error: Not a checkbox or radio button', '', line); return fe.checked; }
+  if (fe.dataset.smF || fe.dataset.wF || fe.dataset.wS || fe.tagName === 'SELECT') return pwVal(env, fe);
   throw PwErr('Error: locator.inputValue: Error: Node is not an <input>, <textarea> or <select> element', '', line);
 }
+const pwVal = (env, e0, el = pwField(e0)) => el.dataset.smF ? env.st.f[el.dataset.smF] : el.dataset.wF ? env.st.w[el.dataset.wF] : el.dataset.wS ? env.st.w[el.dataset.wS] : el.tagName === 'SELECT' ? env.st.sort : el.getAttribute('value') || '';
 const pwQ = v => v instanceof RegExp ? String(v) : JSON.stringify(v);
 // web-first assertions: on the page, on a locator (strict for one element), plain value checks
 function pwAssert(x, m, a, line, env) {
@@ -2565,23 +2809,27 @@ function pwAssert(x, m, a, line, env) {
     if ((t.st >= 200 && t.st < 300) === neg) throw Object.assign(PwErr(`Error: expect(response).${mm}()\n\nExpected: ${neg ? 'not ' : ''}OK (200–299)\nReceived: ${t.st}\nResponse: ${JSON.stringify(t.body)}`, 'Cavabın gövdəsi səbəbi deyir: token, data və ya URL səhvdir.', line), { matcher: m });
     return undefined;
   }
-  if (t === PW_PAGE) {
+  if (t === PW_PAGE || (t && t.$popup)) {
+    if (t.$popup ? t.closed : env.closed) throw PW_CLOSED();
     if (!PW_MATCH_P.includes(m)) throw PwErr(`Error: expect(page).${m} — page üçün bu yoxlama yoxdur`, 'page üçün: toHaveURL, toHaveTitle. Element üçün expect(lokator) yaz.', line);
-    const got = m === 'toHaveURL' ? pwUrl(env) : env.st ? 'Mini Store' : '';
-    env.snap = env.st ? pwDom(env.st).innerHTML : null;
+    const got = m === 'toHaveURL' ? (t.$popup ? t.url : pwUrl(env)) : env.st ? 'Mini Store' : '';
+    env.snap = t.$popup ? pwDom(t.st).innerHTML : env.st ? pwDom(env.st).innerHTML : null;
     if ((exp instanceof RegExp ? exp.test(got) : got === exp) === neg)
       fail(`Timed out 5000ms waiting for expect(page).${mm}(expected)`, `Expected ${exp instanceof RegExp ? 'pattern' : 'string'}: ${pwQ(exp)}\nReceived string: "${got}"`,
         m === 'toHaveTitle' && exp === 'Swag Labs' ? 'Bu modelin səhifə başlığı «Mini Store»-dur (real saytda «Swag Labs»).' : m === 'toHaveURL' ? 'URL gözləniləndən fərqlidir: səhifə dəyişməyib və ya başqa səhifə açılıb. Trace-də addımın ekranına bax.' : '');
     return undefined;
   }
   if (t && t.$loc) {
+    if (t.$frame) throw PwErr(`Error: ${m} can be only used with Locator object, was called with FrameLocator`, "frameLocator iframe-in özü deyil, onun içinə yoldur: içindəki elementi yoxla, məsələn expect(pay.getByTestId('pay-status')).", line);
     if (!PW_MATCH_L.includes(m)) throw PwErr(`Error: expect(locator).${m} — lokator üçün bu yoxlama yoxdur`, `Lokator üçün: ${PW_MATCH_L.join(', ')}.`, line);
     if (!env.st) fail(`Timed out 5000ms waiting for expect(locator).${mm}()`, `Locator: ${t.desc}\nExpected: ${m}\nReceived: <element(s) not found>`, 'Səhifə hələ açılmayıb: əvvəlcə await page.goto(…) yaz.');
-    const root = pwDom(env.st), els = pwResolve(t, root);
+    const root = pwRootOf(env, t), els = pwResolve(t, root);
     els.forEach(el => el.classList.add('pw-hl')); env.snap = root.innerHTML;
     if (m !== 'toHaveCount' && !(m === 'toHaveText' && Array.isArray(exp)) && els.length > 1) throw Object.assign(pwStrict(`expect.${mm}`, t, els, root, line), { ms: 5000 });
     const el = els[0], text = el ? pwNorm(pwTextOf(el)) : null, nf = '<element(s) not found>';
-    const val = el ? (el.dataset.smF ? env.st.f[el.dataset.smF] : el.tagName === 'SELECT' ? env.st.sort : el.getAttribute('value') || '') : null;
+    const val = el ? pwVal(env, el) : null;
+    // not.* on an element that does not exist fails too, so a mistyped locator is not green. Only not.toBeVisible and a count hold
+    if (!el && neg && m !== 'toBeVisible' && m !== 'toHaveCount' && !(m === 'toHaveText' && Array.isArray(exp))) fail(`Timed out 5000ms waiting for expect(locator).${mm}(${['toBeHidden', 'toBeEnabled', 'toBeDisabled', 'toBeEmpty', 'toBeChecked'].includes(m) ? '' : 'expected'})`, `Locator: ${t.desc}\nReceived: ${nf}`, 'Element tapılmadı: not ilə yoxlama da elementin olmasını tələb edir. Lokatoru yoxla. Element olmamalıdırsa, not.toBeVisible() yaz.');
     let pass, e1, r1, hint = '';
     switch (m) {
       case 'toBeVisible': pass = !!el; e1 = `Expected: ${neg ? 'not visible' : 'visible'}`; r1 = `Received: ${el ? 'visible' : nf}`; hint = el ? 'Element ekranda görünür.' : 'Element ekranda yoxdur: lokatoru və səhifəni yoxla (trace addımın anındakı ekranı göstərir).'; break;
@@ -2596,9 +2844,15 @@ function pwAssert(x, m, a, line, env) {
       case 'toHaveValue': pass = !!el && full(exp, val); e1 = `Expected ${exp instanceof RegExp ? 'pattern' : 'string'}: ${pwQ(exp)}`; r1 = el ? `Received string: "${val}"` : `Received: ${nf}`; hint = 'Sahənin dəyəri fərqlidir.'; break;
       case 'toBeEnabled': case 'toBeDisabled': pass = !!el && (m === 'toBeEnabled') === !el.disabled; e1 = `Expected: ${m === 'toBeEnabled' ? 'enabled' : 'disabled'}`; r1 = `Received: ${el ? (el.disabled ? 'disabled' : 'enabled') : nf}`; break;
       case 'toHaveAttribute': pass = !!el && el.hasAttribute(exp) && (a[1] === undefined || full(a[1], el.getAttribute(exp))); e1 = `Expected: ${exp}${a[1] === undefined ? '' : '=' + pwQ(a[1])}`; r1 = `Received: ${el ? (el.hasAttribute(exp) ? pwQ(el.getAttribute(exp)) : 'no attribute') : nf}`; break;
-      case 'toBeEmpty': pass = !!el && (el.dataset.smF ? !val : !text); e1 = 'Expected: empty'; r1 = `Received: ${el ? pwQ(el.dataset.smF ? val : text) : nf}`; break;
+      case 'toBeEmpty': { const inp = el && (pwField(el).dataset.smF || pwField(el).dataset.wF); pass = !!el && (inp ? !val : !text); e1 = 'Expected: empty'; r1 = `Received: ${el ? pwQ(inp ? val : text) : nf}`; break; }
+      case 'toBeChecked': {
+        const box = el && pwField(el);
+        if (box && box.type !== 'checkbox' && box.type !== 'radio') throw PwErr('Error: Not a checkbox or radio button', 'toBeChecked() yalnız checkbox və radio düymələri üçündür.', line);
+        const want = !(exp && exp.checked === false);
+        pass = !!box && box.checked === want; e1 = `Expected: ${neg ? 'not ' : ''}${want ? 'checked' : 'unchecked'}`; r1 = `Received: ${box ? (box.checked ? 'checked' : 'unchecked') : nf}`; hint = 'Qutunun vəziyyəti fərqlidir: check() və uncheck() lazımi vəziyyəti özü qurur.'; break;
+      }
     }
-    if (pass === neg) fail(`Timed out 5000ms waiting for expect(locator).${mm}(${['toBeVisible', 'toBeHidden', 'toBeEnabled', 'toBeDisabled', 'toBeEmpty'].includes(m) ? '' : 'expected'})`, `Locator: ${t.desc}\n${e1}\n${r1}`, neg ? 'not ilə yoxlama tərsinə işləyir: şərt doğru olmamalı idi.' : hint);
+    if (pass === neg) fail(`Timed out 5000ms waiting for expect(locator).${mm}(${['toBeVisible', 'toBeHidden', 'toBeEnabled', 'toBeDisabled', 'toBeEmpty', 'toBeChecked'].includes(m) ? '' : 'expected'})`, `Locator: ${t.desc}\n${e1}\n${r1}`, neg ? 'not ilə yoxlama tərsinə işləyir: şərt doğru olmamalı idi.' : hint);
     return undefined;
   }
   if (!PW_MATCH_V.includes(m)) throw PwErr(`Error: expect(value).${m} — bu yoxlama dəyər üçün deyil`, PW_MATCH_L.includes(m) ? `${m} lokator üçündür: expect(page.getBy…(…)).${m}(…) yaz.` : '', line);
@@ -2623,13 +2877,13 @@ function pwLint(prog, src) {
   const walk = (body, useName) => body.forEach(s => {
     const m = pwLast(s.e), r = pwRoot(s.e);
     // a method of the reader's own class counts too; `return x()` hands the promise to the caller, which is fine
-    if (s.k !== 'ret' && m && (PW_ASYNC.has(m) || prog.asyncM.has(m)) && !s.aw && !(r === 'expect' && PW_MATCH_V.includes(m)))
+    if (s.k !== 'ret' && m && (PW_ASYNC.has(m) || prog.asyncM.has(m)) && !s.aw && !(r === 'expect' && PW_MATCH_V.includes(m)) && !(m === 'type' && !s.e.args.length))
       L.push({ err: 1, line: s.line, msg: `await yoxdur (playwright/missing-playwright-await)`, hint: `${m}() Promise qaytarır: await olmadan Playwright onu gözləmir və növbəti sətir hərəkət bitməmiş işləyir — test bəzən keçir, bəzən düşür (flaky, 19.9).` });
     if (useName && pwIsUse(s, useName) && !s.aw) L.push({ err: 1, line: s.line, msg: 'await yoxdur: use(…)', hint: 'await use(x) testin bitməsini gözləyir. await olmasa, təmizlik testdən əvvəl işləyər (19.12).' });
     if (m === 'waitForTimeout') L.push({ line: s.line, msg: 'Sabit gözləmə: waitForTimeout (19.8)', hint: 'Playwright elementi özü gözləyir (auto-waiting). Şərti gözləmək lazımdırsa, expect(…) işlət.' });
     pwKids(s).forEach(k => walk(k, useName));
   });
-  walk(prog.before); walk(prog.after);
+  walk(prog.before); walk(prog.after); prog.beforeAll.concat(prog.afterAll).forEach(h => walk(h.body));
   Object.values(prog.classes).forEach(c => { if (c.ctor) walk(c.ctor.body); Object.values(c.m).forEach(f => walk(f.body)); });
   Object.values(prog.fixtures).forEach(f => walk(f.body, f.use));
   const seen = new Set();
@@ -2644,22 +2898,32 @@ function pwLint(prog, src) {
   if (smart >= 0) L.push({ line: smart + 1, msg: 'Ağıllı dırnaqlar adi dırnağa çevrildi', hint: '“ ” və ‘ ’ real faylda SyntaxError verir: kodda \' və ya " işlət.' });
   return L.sort((p, q) => p.line - q.line);
 }
-function pwRunTest(t, prog, lines, shared) {
-  const use = t.use || {};
-  const env = { st: null, origin: '', vars: Object.assign({}, t.vars), top: t.vars || {}, out: [], found: {}, focus: null, snap: null, wait: 0, classes: prog.classes, shared, baseURL: use.baseURL, auth: null }, steps = [];
+const pwRow = (x, init) => { const r = {}; Object.keys(x.vars || {}).forEach(k => { if (x.vars[k] !== init[k]) r[k] = x.vars[k]; }); return r; };
+function pwRunTest(t, prog, lines, shared, first, last) {
+  const use = t.use || {}, tops = Object.assign(Object.create(prog.vars), pwRow(t, shared.init)); // a for...of row sits on top of the file's variables
+  const env = { st: null, origin: '', vars: Object.create(tops), top: tops, closed: false, dialogs: [], routes: [], waits: [], softs: [], out: [], found: {}, focus: null, snap: null, wait: 0, classes: prog.classes, shared, baseURL: use.baseURL, auth: null }, steps = [];
   let err = null, ms = 0;
   const step = s => {
     const code = lines.slice(s.line - 1, s.end).map(x => x.trim()).join(' ');
     if (err) { steps.push({ line: s.line, src: code, skip: true }); return undefined; }
-    env.snap = null; env.wait = 0; const urlB = pwUrl(env);
+    env.snap = null; env.wait = 0; const urlB = pwUrl(env), soft0 = env.softs.length;
     let v;
     try { if (s.useOf) v = pwEval(s.e.args[0], env); else pwStmt(s, env); }
     catch (e) { if (!e.pw) { console.error(e); e.pw = 1; e.hint = 'Kitabın modelində daxili xəta: bu sətri sadələşdir.'; } err = e; if (!e.line) e.line = s.line; }
-    const m = pwLast(s.e), dur = err ? err.ms || 0 : m === 'goto' ? 240 : PW_MATCH_L.concat(PW_MATCH_P).includes(m) ? 6 + s.line % 9 : m && (PW_ASYNC.has(m) || prog.asyncM.has(m)) ? 30 + s.line * 7 % 50 : 0;
-    steps.push({ line: s.line, src: code, ok: !err, ms: dur + env.wait, before: env.snap, urlB, after: env.st ? pwDom(env.st).innerHTML : null, url: pwUrl(env) });
+    const softBad = env.softs.length > soft0, m = pwLast(s.e), dur = err ? err.ms || 0 : softBad ? 5000 : m === 'goto' ? 240 : PW_MATCH_L.concat(PW_MATCH_P).includes(m) ? 6 + s.line % 9 : m && (PW_ASYNC.has(m) || prog.asyncM.has(m)) ? 30 + s.line * 7 % 50 : 0;
+    steps.push({ line: s.line, src: code, ok: !err && !softBad, ms: dur + env.wait, before: env.snap, urlB, after: env.st ? pwDom(env.st).innerHTML : null, url: pwUrl(env) });
     ms += dur + env.wait;
     return v;
   };
+  // beforeAll / afterAll: the hook's own variables sit on the file's, so what it writes to them reaches the tests
+  const hooks = list => list.forEach(h => {
+    const vars0 = env.vars; env.vars = Object.create(Object.assign(Object.create(prog.vars), pwRow(h, shared.init)));
+    if (h.fix.length) env.vars.request = PW_REQ;
+    h.body.forEach(step);
+    env.vars = vars0;
+  });
+  if (first) { hooks(prog.beforeAll); if (err) shared.hookErr = err; }
+  const hookFailed = !!err;
   // fixtures: everything up to `await use(x)` runs before the test, the rest after it
   const got = { page: PW_PAGE, request: PW_REQ }, tear = [];
   const fixture = name => {
@@ -2667,7 +2931,7 @@ function pwRunTest(t, prog, lines, shared) {
     if (!pwOwn(prog.fixtures, name)) throw PwErr(`Error: Test has unknown parameter "${name}".`, 'Dəstəklənir: page, request və base.extend({ … }) ilə yazdığın fixture-lər (19.12).', t.line);
     const fx = prog.fixtures[name], own = {};
     fx.deps.forEach(d => { own[d] = fixture(d); });
-    const vars0 = env.vars; env.vars = Object.assign({}, env.top, own);
+    const vars0 = env.vars; env.vars = Object.assign(Object.create(env.top), own);
     let used = false;
     for (let i = 0; i < fx.body.length && !err; i++) {
       const s = fx.body[i];
@@ -2685,20 +2949,32 @@ function pwRunTest(t, prog, lines, shared) {
   if (!err) { try { t.fix.concat(prog.hookFix).forEach(name => { const v = fixture(name); env.vars[name] = v; }); } catch (e) { if (!e.pw) throw e; err = e; } }
   if (t.info) env.vars[t.info] = { title: t.name, retry: 0, parallelIndex: 0, workerIndex: 0 };
   prog.before.concat(t.body).forEach(step);
-  // the clean-up runs even when the test has failed
+  // the clean-up runs even when the test has failed. A failed beforeAll: the test never started, so its own clean-up has nothing to do
   const testErr = err; err = null;
-  prog.after.forEach(step);
+  if (!hookFailed) prog.after.forEach(step);
   tear.forEach(x => { const v0 = env.vars; env.vars = x.vars; x.body.forEach(step); env.vars = v0; });
-  err = testErr || err;
-  return { name: t.name, line: t.line, ok: !err, err, steps, ms, out: env.out, st: env.st, fixes: t.fix };
+  err = testErr || err || env.softs[0] || null;
+  const open = !err && env.waits.find(x => !x.got); // a wait nobody finished: Playwright fails the test when it ends
+  if (open) err = PwErr(`Error: page.${open.$wait}: Test ended.`, 'Gözlənilən hadisə test bitənə qədər baş vermədi: hərəkəti yaz və ya gözləməni sil.', open.line);
+  // afterAll: after the last test, and after a failed one, since Playwright then ends this worker and starts a new one for the next test
+  if (last || err) { const e0 = err; err = null; hooks(prog.afterAll); err = e0 || err; }
+  return { name: t.name, line: t.line, ok: !err, err, softs: env.softs, steps, ms, out: env.out, st: env.st, fixes: t.fix };
 }
 function pwRun(src) {
   const res = { lint: [], tests: [] };
   let prog; try { prog = pwParse(src); } catch (e) { if (!e.pw) throw e; res.syntax = e; return res; }
   res.lint = pwLint(prog, src);
   if (res.lint.some(l => l.err)) return res;
-  const only = prog.tests.some(t => t.only), lines = pwPlain(src).split('\n'), shared = { states: {}, api: null };
-  prog.tests.forEach(t => res.tests.push(t.skip || (only && !t.only) ? { name: t.name, line: t.line, skip: true, steps: [] } : pwRunTest(t, prog, lines, shared)));
+  const only = prog.tests.some(t => t.only), lines = pwPlain(src).split('\n'), init = Object.assign({}, prog.vars), shared = { states: {}, api: null, hookErr: null, init };
+  const off = t => t.skip || (only && !t.only), ons = prog.tests.filter(t => !off(t));
+  let fresh = true; // a new worker: the first test, and the one after a failed test. The file's variables and beforeAll start over
+  prog.tests.forEach(t => {
+    if (off(t)) { res.tests.push({ name: t.name, line: t.line, skip: true, steps: [] }); return; }
+    if (shared.hookErr) { res.tests.push({ name: t.name, line: t.line, skip: true, notRun: true, steps: [] }); return; } // beforeAll failed: the others do not start
+    if (fresh && t !== ons[0]) { Object.keys(prog.vars).forEach(k => { delete prog.vars[k]; }); Object.assign(prog.vars, init); }
+    const r = pwRunTest(t, prog, lines, shared, fresh, t === ons[ons.length - 1]);
+    res.tests.push(r); fresh = !r.ok;
+  });
   return res;
 }
 function pwReqs(task, res, src) {
@@ -2711,8 +2987,9 @@ function pwReqs(task, res, src) {
     else if (!t0) ok = false;
     else if (r.t === 'pass') ok = ran.every(t => t.ok);
     else if (r.t === 'count') ok = ran.length >= r.n;
+    else if (r.t === 'softs') ok = (t0.softs || []).length === r.n && t0.steps.every(x => !x.skip);
     else if (r.t === 'fail') ok = !t0.ok && new RegExp(`^(${r.m})$`).test(t0.err.matcher || '');
-    else { const x = r.last ? ran[ran.length - 1] : t0; ok = !!x.st && (r.page === undefined || x.st.page === r.page) && (r.cart === undefined || x.st.cart.slice().sort().join() === r.cart.slice().sort().join()); }
+    else { const x = r.last ? ran[ran.length - 1] : t0; ok = !!x.st && (r.page === undefined || x.st.page === r.page) && (r.cart === undefined || x.st.cart.slice().sort().join() === r.cart.slice().sort().join()) && (r.w === undefined || (!!x.st.w && Object.keys(r.w).every(k => x.st.w[k] === r.w[k]))); }
     return { l: r.l, ok };
   });
 }
@@ -2772,15 +3049,16 @@ function pwOutHTML() {
   if (r.syntax) return `<div class="sm-fb-h">Test işə salınmadı</div>${pwErrHTML(r.syntax)}`;
   const lint = r.lint.length ? `<ul class="pw-lint">${r.lint.map(x => `<li class="${x.err ? 'err' : 'warn'}"><b>Sətir ${x.line}:</b> ${esc(x.msg)}<div>${esc(x.hint)}</div></li>`).join('')}</ul>` : '';
   if (r.lint.some(x => x.err)) return `<div class="sm-fb-h">Test işə salınmadı: əvvəlcə xətaları düzəlt</div>${lint}`;
-  const ran = r.tests.filter(x => !x.skip), fail = ran.filter(x => !x.ok).length, tot = ran.reduce((p, x) => p + x.ms, 0);
+  const ran = r.tests.filter(x => !x.skip), notRun = r.tests.filter(x => x.notRun).length, fail = ran.filter(x => !x.ok).length, tot = ran.reduce((p, x) => p + x.ms, 0);
   const rep = r.tests.map((x, i) => `<button class="pw-rep ${x.skip ? 'skip' : x.ok ? 'ok' : 'bad'}${i === PW.ti ? ' cur' : ''}" data-act="pw-trace" data-i="${i}">${x.skip ? '–' : x.ok ? '✓' : '✘'} <span>${esc(x.name)}</span>${x.skip ? '' : `<i>${(x.ms / 1000).toFixed(1)}s</i>`}</button>`).join('');
   const T = r.tests[PW.ti] || ran[0];
-  const sum = `<div class="tr-sum ${fail ? 'bad' : 'ok'}">${[fail ? `${fail} failed` : '', ran.length - fail ? `${ran.length - fail} passed` : '', r.tests.length - ran.length ? `${r.tests.length - ran.length} skipped` : ''].filter(Boolean).join(', ')} (${(tot / 1000).toFixed(1)}s)</div>`;
+  const sum = `<div class="tr-sum ${fail ? 'bad' : 'ok'}">${[fail ? `${fail} failed` : '', ran.length - fail ? `${ran.length - fail} passed` : '', r.tests.length - ran.length - notRun ? `${r.tests.length - ran.length - notRun} skipped` : '', notRun ? `${notRun} did not run` : ''].filter(Boolean).join(', ')} (${(tot / 1000).toFixed(1)}s)</div>`;
   let trace = '';
   if (T && !T.skip) {
     const k = PW.step >= 0 && PW.step < T.steps.length ? PW.step : T.steps.reduce((p, s, i) => s.skip ? p : i, 0), s = T.steps[k];
     const view = s && (PW.shot === 'after' && s.after ? 'after' : PW.shot === 'before' && s.before ? 'before' : s.before ? 'before' : 'after'), html = s && (view === 'before' ? s.before : s.after);
-    trace = `${T.err ? pwErrHTML(T.err) : ''}<div class="sm-fb-h">Trace — addıma bas, o anki ekranı gör</div>
+    const errs = (T.softs || []).concat(T.err && !(T.softs || []).includes(T.err) ? [T.err] : []);
+    trace = `${errs.length > 1 ? `<div class="sm-fb-h">${errs.length} xəta: ${T.steps.some(x => x.skip) ? 'test dayandı' : 'test sona qədər işləyib'}</div>` : ''}${errs.map(e => pwErrHTML(e)).join('')}<div class="sm-fb-h">Trace — addıma bas, o anki ekranı gör</div>
       <ol class="pw-steps">${T.steps.map((x, i) => `<li><button class="${x.skip ? 'skip' : x.ok ? 'ok' : 'bad'}${i === k ? ' cur' : ''}" data-act="pw-step" data-i="${i}"><span class="pw-ln">${x.line}</span><code>${esc(x.src)}</code><span class="pw-ms">${x.skip ? 'skip' : x.ms + ' ms'}</span></button></li>`).join('')}</ol>
       ${s && !s.skip && html ? `<div class="tr-box"><div class="pw-shot-h"><div class="tr-h">Brauzer · addım ${k + 1}</div>${s.before && s.after ? `<div class="seg pw-ba" role="group" aria-label="Ekran">${[['before', 'Əvvəl'], ['after', 'Sonra']].map(([v, l]) => `<button data-act="pw-shot" data-v="${v}" aria-pressed="${view === v}">${l}</button>`).join('')}</div>` : ''}</div>
         <div class="tr-url">${esc(view === 'before' ? s.urlB : s.url)}</div><div class="sm-dev tr-dev pw-shot" inert>${html}</div>
@@ -2798,7 +3076,8 @@ function pwTestHTML() {
   return `<div class="sm-pick">${pick}</div>
     <div class="card sm-case"><div class="sm-id">PW-${i + 1} · ${esc(t.title)}</div><p class="sm-p">${esc(t.goal)}</p>
       <ul class="pw-goals">${t.reqs.map(x => `<li>${esc(x.l)}</li>`).join('')}</ul>
-      <details class="cmp-why"><summary>${icon('bulb')}İpucu</summary><ul class="pw-goals">${t.hints.map(h => `<li>${esc(h)}</li>`).join('')}</ul></details></div>
+      <details class="cmp-why"><summary>${icon('bulb')}İpucu</summary><ul class="pw-goals">${t.hints.map(h => `<li>${esc(h)}</li>`).join('')}</ul></details>
+      ${t.show ? `<details class="cmp-why"><summary>${icon('eye')}Məşq səhifəsinə bax</summary><div class="tr-url">https://ministore.test/settings.html</div><div class="sm-dev tr-dev pw-shot" inert>${pwSetHTML(pwW0())}</div></details>` : ''}</div>
     <div class="pw-ed-wrap"><pre class="pw-gut" aria-hidden="true">${code.split('\n').map((_, k) => k + 1).join('\n')}</pre><textarea class="pw-ed" id="pw-ed" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-label="Testin kodu">${esc(code)}</textarea></div>
     <div class="row pw-acts"><button class="btn primary" data-act="pw-run">${icon('play')}İşə sal</button><button class="btn ghost" data-act="pw-code-reset">${icon('refresh')}Başlanğıc kod</button><span class="muted pw-kbd">Ctrl + Enter</span></div>
     <div id="pw-out" aria-live="polite">${pwOutHTML()}</div>

@@ -1088,6 +1088,17 @@ pre.code.tr-code{margin:8px 0 0;padding:8px 0;font-size:12.8px;line-height:1.55}
 .pw-alts code{font-family:var(--f-mono);font-size:12px;overflow-wrap:anywhere}
 #pw-res{display:flex;flex-direction:column;gap:8px}
 #pw-res:empty{display:none}
+.pw-w{display:flex;flex-direction:column;gap:12px;padding:12px}
+.pw-w p{margin:0}
+.pw-w-sec{display:flex;flex-direction:column;gap:8px;padding-bottom:12px;border-bottom:1px solid #EEF0F3}
+.pw-w-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.pw-w-row input[type=file]{min-width:0;max-width:100%;font-size:13px}
+.pw-w a{color:#3446C8;text-decoration:underline}
+.pw-w-note{font-size:12px;color:#5B6472}
+.pw-w-list{margin:0;padding-left:1.2em}
+.pw-w-tip{padding:6px 10px;border-radius:6px;background:#2F3B52;color:#FFFFFF;font-size:13px}
+.pw-w-modal{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:10px;border:1px solid #C9CDD4;border-radius:8px;background:#F4F5F7}
+.pw-w-frame{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:10px;border:2px dashed #8A93A3;border-radius:8px}
 .pw-hl{outline:2px solid #3446C8;outline-offset:2px;box-shadow:0 0 0 6px rgba(52,70,200,.18)}
 .pw-picking{cursor:crosshair;box-shadow:0 0 0 3px var(--accent)}
 .pw-picking *{cursor:crosshair}
