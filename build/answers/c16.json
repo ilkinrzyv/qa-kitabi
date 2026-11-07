@@ -188,5 +188,24 @@
       "Əvvəl eyni `WHERE` ilə `SELECT` işlətmək qeyd olunub",
       "Tranzaksiya (`ROLLBACK`) və ya yalnız test bazasında işləmək qeyd olunub"
     ]
+  },
+  "c16x1m": {
+    "h": "Birinci alt sorğu: sifarişi olan müştərilər (IN). İkinci: paid sifarişi olanlar (NOT IN).",
+    "a": "```sql\nSELECT name\nFROM customers\nWHERE id IN (SELECT customer_id FROM orders)\n  AND id NOT IN (SELECT customer_id FROM orders WHERE status = 'paid');\n```\n\nNəticə: **Murad Əliyev** (yalnız cancelled sifariş) və **Orxan Quliyev** (yalnız shipped). Aysel və Leyla-nın paid sifarişi var, Nigar-ın sifarişi yoxdur.\n\n`NOT IN` burada təhlükəsizdir, çünki `orders`-da `customer_id` NULL deyil. NULL ola bilərdisə, `NOT EXISTS` yazardım.",
+    "c": [
+      "IN ilə sifarişi olanlar seçilib",
+      "NOT IN və ya NOT EXISTS ilə paid olanlar çıxarılıb",
+      "Nəticə Murad Əliyev və Orxan Quliyevdir"
+    ]
+  },
+  "c16x2m": {
+    "h": "Unikal qayda: eyni email ikinci dəfə olmamalıdır. Eyni sayılan, amma fərqli yazılan emaillər haqqında düşün.",
+    "a": "Mümkün ideyalar:\n\n1. **Eyni email ikinci dəfə:** qeydiyyat rədd olunur, “Bu email artıq qeydiyyatdadır” kimi aydın mesaj çıxır, 500 yox.\n2. **Böyük hərflə:** `Aysel@Example.com`: tələb emailləri hərfə həssas saymırsa, bu da rədd olunmalıdır. Tələbdə yazılmayıbsa, soruş.\n3. **Əvvəlində və ya sonunda boşluq:** ` aysel@example.com `: boşluq kəsilməli və təkrar kimi tanınmalıdır.\n4. **Eyni anda iki qeydiyyat:** iki brauzerdən eyni emaillə eyni anda: yalnız biri uğurlu olmalıdır, bazada iki sətir yaranmamalıdır.\n\nBaşqa ideya: hesab silinəndən sonra eyni emaillə yenidən qeydiyyat. Nəticə biznes qaydasından asılıdır, soruş.",
+    "c": [
+      "Dörd fərqli ideya var",
+      "Hərf və boşluq fərqi kimi qeyri-aşkar hallar var",
+      "Hər ideyanın gözlənilən nəticəsi deyilib",
+      "Aydın olmayan yerdə tələbi soruşmaq qeyd olunub"
+    ]
   }
 }

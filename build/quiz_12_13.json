@@ -25,6 +25,8 @@
  {"s":"13.8","q":"Proqramçı “düzəltdim” deyir, sən isə köhnə versiyanı görürsən. İlk nə edirsən?","o":["Dərhal Reopened edirsən","Sərt yeniləmə (Ctrl + Shift + R) edir və ya gizli pəncərədə yoxlayırsan","Kompüteri yenidən quraşdırırsan","Proqramçıya inanmırsan və menecerə yazırsan"],"a":1,"e":"Brauzer faylları keşdə saxlayır. “Düzəlməyib” deməzdən əvvəl keşi istisna et."},
  {"s":"13.10","q":"Düyməni basırsan, Network panelində heç bir sorğu getmir. Problem çox güman ki, haradadır?","o":["Backend-də","Frontend-də — Console-da xəta axtarmaq lazımdır","Verilənlər bazasında","DNS-də"],"a":1,"e":"Sorğu heç getmirsə, server heç nə bilmir — problem brauzer tərəfindədir."},
  {"s":"13.10","q":"Sorğu 200 qaytarır, cavabdakı data düzgündür, amma ekranda səhv göstərilir. Problem haradadır?","o":["Backend","Frontend","Baza","Şəbəkə"],"a":1,"e":"Data düzgün gəlir, amma ekran onu səhv göstərir — frontend. Cavabdakı data özü səhv olsaydı, backend olardı."},
- {"s":"13.7","q":"sessionStorage-dakı data nə vaxt silinir?","o":["Heç vaxt","Tab bağlananda","Hər sorğudan sonra","Kompüter söndürüləndə"],"a":1,"e":"localStorage brauzerdə qalır, sessionStorage isə tab bağlananda silinir."}
+ {"s":"13.7","q":"sessionStorage-dakı data nə vaxt silinir?","o":["Heç vaxt","Tab bağlananda","Hər sorğudan sonra","Kompüter söndürüləndə"],"a":1,"e":"localStorage brauzerdə qalır, sessionStorage isə tab bağlananda silinir."},
+ {"s":"13.11","q":"Log sətri: 2026-11-08T09:14:07.044Z ERROR … Bakı vaxtı ilə bu, nə vaxtdır?","o":["05:14","09:14","13:14","11:14"],"a":2,"e":"Z UTC deməkdir. Bakı UTC+4-dür: 09:14 + 4 = 13:14."},
+ {"s":"13.11","q":"Bug report-a logdan nə əlavə etmək yaxşıdır?","o":["Bütün log faylını","Sorğu ID-si, ERROR sətri və stack trace-in ilk sətirləri, şəxsi məlumatsız","Yalnız “logda xəta var” cümləsini","Son bir saatın bütün WARN sətirlərini"],"a":1,"e":"Proqramçıya lazım olan sətirlər kifayətdir. Email, şifrə, token kimi məlumatlar çıxarılır."}
 ]
 }

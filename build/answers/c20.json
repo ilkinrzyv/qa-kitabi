@@ -180,5 +180,23 @@
       "Artifact adı shard-a görə fərqlidir",
       "“Require status checks” və flaky riski qeyd olunub"
     ]
+  },
+  "c20x2m": {
+    "h": "Select-String axtarır, -Context 0,3 tapılandan sonra 3 sətir göstərir. Tapılanı ikinci Select-String-ə ötürmək olar.",
+    "a": "```powershell\nSelect-String \"req-c0d1\" app.log\nSelect-String \"ERROR \\[req-c0d1\\]\" app.log -Context 0,3\n```\n\nBirinci sorğunun bütün sətirlərini göstərir. İkincidə `-Context 0,3` tapılandan əvvəl 0, sonra 3 sətir göstərir: stack trace də görünür. `[` və `]` axtarışda xüsusi simvoldur, ona görə qarşısında `\\` var. Nəticəni fayla yazmaq üçün sona `> bug-412.txt` əlavə et.",
+    "c": [
+      "Select-String ilə sorğu ID-si axtarılıb",
+      "-Context 0,3 və ya ona bərabər üsul var",
+      "Mötərizənin xüsusi simvol olduğu nəzərə alınıb və ya yalnız req-c0d1 ilə axtarılıb"
+    ]
+  },
+  "c20x3m": {
+    "h": "Hər qaçışdan əvvəl bazanı ilkin vəziyyətə qaytarmaq: down -v, up -d. Risk: volume-dakı nə silinir?",
+    "a": "```bash\ndocker compose down -v\ndocker compose up -d\n```\n\n`down -v` konteynerləri dayandırır və volume-ları, yəni bazanın məlumatlarını silir. `up -d` hər şeyi təmiz qaldırır: hər test qaçışı eyni datadan başlayır.\n\n**Risk:** `-v` əllə yaratdığın faydalı test datasını da silir. Paylaşılan mühitdə bu əmri komandaya xəbər vermədən işlətmə. İlkin data compose ilə yüklənmirsə, baza boş qalacaq.",
+    "c": [
+      "down -v və up -d əmrləri yazılıb",
+      "Bazanın ilkin vəziyyətə qayıtdığı izah olunub",
+      "Datanın silinməsi riski deyilib"
+    ]
   }
 }

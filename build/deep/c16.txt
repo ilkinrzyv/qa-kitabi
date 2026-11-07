@@ -358,3 +358,60 @@ Bəzən ssenari üçün xüsusi vəziyyət lazımdır: “müddəti bitmiş kupo
 5. **Geri qaytar:** `ROLLBACK;` → status yenidən `new`.
 @növbən
 Məşq bazasında 103 nömrəli sifarişi silməzdən əvvəl hansı yoxlamaları edərdin? SELECT, tranzaksiya, DELETE və geri qaytarma addımlarını sorğularla yaz və hər addımda gözlənilən nəticəni qeyd et.
+
+=== c16x1
+@qısa
+Alt sorğu başqa sorğunun içindəki sorğudur. `IN` siyahıya görə, tək dəyərli alt sorğu müqayisə üçün, `NOT EXISTS` qarşılığı olmayan sətirləri tapmaq üçün işlənir. Sütunda NULL ola bilərsə, `NOT IN` əvəzinə `NOT EXISTS` yaz.
+@yadda
+- `WHERE id IN (SELECT …)` — siyahıdakılar.
+- `WHERE total > (SELECT AVG(total) …)` — tək dəyərlə müqayisə.
+- `NOT IN` NULL görəndə boş qaytarır: `NOT EXISTS` təhlükəsizdir.
+@dərin
+### Alt sorğu, yoxsa JOIN?
+Çox sualı ikisi ilə də yazmaq olur. “Ödənilmiş sifarişi olan müştərilər”: `IN` ilə hər müştəri bir dəfə çıxır, `JOIN` ilə isə hər ödənilmiş sifariş üçün bir dəfə, yəni təkrar ola bilər. Siyahı lazımdırsa, alt sorğu sadədir. Hər iki cədvəldən sütun lazımdırsa, JOIN.
+
+### Tester üçün tipik yoxlamalar
+- Yetim sətirlər: valideyni olmayan sifarişlər (`NOT IN`, `NOT EXISTS`).
+- Gözlənilməz dəyərlər: ortadan çox böyük məbləğlər.
+- Ekrandakı rəqəmlə bazanın tutuşdurulması: hesabatdakı “orta sifariş” 77,21-dir?
+
+### Alt sorğunun özünü yoxla
+Mürəkkəb sorğuda əvvəl içəridəki sorğunu ayrıca işə sal və nəticəsinə bax. Gözlədiyin siyahı çıxırsa, çöldəkini əlavə et. Səhv nəticənin səbəbi çox vaxt içəridədir.
+@nümunə
+**Tapşırıq.** Ləğv olunmuş (cancelled) sifarişi olan müştərilərin adlarını tap.
+@addımlar
+1. **İçəridən başla:** `SELECT customer_id FROM orders WHERE status = 'cancelled'` → 2.
+2. **Çöldəki sorğu:** `SELECT name FROM customers WHERE id IN (…)`.
+3. **Birləşdir:** `SELECT name FROM customers WHERE id IN (SELECT customer_id FROM orders WHERE status = 'cancelled');`
+4. **Nəticə:** Murad Əliyev.
+@növbən
+Sifarişi olan, amma heç bir sifarişi `paid` statusunda olmayan müştəriləri tap. İpucu: iki alt sorğu lazımdır, biri `IN`, biri `NOT IN`.
+
+=== c16x2
+@qısa
+Tranzaksiya bir neçə dəyişikliyi bütöv edir: ya hamısı (`COMMIT`), ya heç biri (`ROLLBACK`). İndeks axtarışı sürətləndirir, unikal indeks isə təkrarı qadağan edir: ikisi də test ideyası verir.
+@yadda
+- `BEGIN … ROLLBACK` dəyişikliyi geri qaytarır.
+- İndeks olmayanda baza bütün cədvəli oxuyur: `SCAN`.
+- Unikal indeks: `UNIQUE constraint failed`.
+@dərin
+### Yarımçıq əməliyyatı necə test etmək
+Ödənişin ortasında xətanı simulyasiya et (test mühitində xidməti söndürmək, şəbəkəni kəsmək) və bazaya bax: sifariş yaranıb, pul çıxılmayıb? Tranzaksiya düzgün qurulubsa, ikisi də olmamalıdır. Belə hallar canlıda nadir, amma bahalıdır.
+
+### Yavaş sorğunu necə görmək
+Səhifə yavaş açılırsa, Network-də ağır sorğunu tap (13.9), sonra proqramçıdan soruş: hansı SQL işləyir? `EXPLAIN QUERY PLAN` (SQLite), `EXPLAIN` (MySQL, PostgreSQL) bazanın planını göstərir. Böyük cədvəldə `SCAN` görünürsə, indeks çatışmaya bilər.
+
+### İndeksin qiyməti
+İndeks oxumanı sürətləndirir, yazmanı bir az yavaşladır və yer tutur. Ona görə hər sütuna qoyulmur. Bu, proqramçının qərarıdır, tester-in işi problemi faktla göstərməkdir.
+
+### Canlı baza
+Canlı bazada `UPDATE`, `DELETE` və tranzaksiya testi edilmir. Oxuma icazən olsa da, ağır sorğu canlı sistemi yavaşlada bilər: əvvəl soruş.
+@nümunə
+**Tapşırıq.** 104 nömrəli sifarişin statusunu `shipped` et, nəticəni yoxla və dəyişikliyi geri qaytar.
+@addımlar
+1. **Başla:** `BEGIN;`
+2. **Dəyiş:** `UPDATE orders SET status = 'shipped' WHERE id = 104;`
+3. **Yoxla:** `SELECT status FROM orders WHERE id = 104;` → `shipped`.
+4. **Geri qaytar:** `ROLLBACK;`, sonra yenə `SELECT`: `paid`.
+@növbən
+Qeydiyyat forması üçün unikal email qaydasından çıxan 4 test ideyası yaz. Hər biri üçün gözlənilən nəticəni de.
