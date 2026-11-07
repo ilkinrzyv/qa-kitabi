@@ -1,0 +1,120 @@
+{
+  "c5s1m": {
+    "h": "Sərhəd 50-dir. Sərhədin özünü, ondan bir addım aşağını, bir də hər iki tərəfdən adi dəyərləri götür. AAA: hazırla, çağır, yoxla.",
+    "a": "Hər test AAA quruluşundadır: **Arrange** (dəyəri hazırla), **Act** (funksiyanı çağır), **Assert** (nəticəni yoxla).\n\n| # | Arrange: total | Act | Assert: gözlənilən |\n|---|---|---|---|\n| 1 | 50 | `calculateDelivery(50)` | 0 (sərhəd, “50 və yuxarı”) |\n| 2 | 49.99 | `calculateDelivery(49.99)` | 3 (sərhəddən bir addım aşağı) |\n| 3 | 120 | `calculateDelivery(120)` | 0 (adi böyük sifariş) |\n| 4 | 10 | `calculateDelivery(10)` | 3 (adi kiçik sifariş) |\n\n50 və 49.99 ən vacib ikisidir: `>=` əvəzinə `>` yazılsa, yalnız 50 bunu tutur. Mənfi dəyər və boş səbət tələbdə yoxdur, onları proqramçıdan soruşmaq lazımdır. Bu testlər UI, server və baza olmadan funksiyanı birbaşa çağırır.",
+    "c": [
+      "Dörd testin hər birində dəyər və gözlənilən nəticə var",
+      "50 və 49,99 kimi sərhəd dəyərləri daxildir, 50-də nəticə 0-dır",
+      "Test AAA quruluşu ilə izah olunub və ya yazılıb"
+    ]
+  },
+  "c5s2m": {
+    "h": "Tikiş yerlərinə bax: tətbiq → bank → e-poçt. Məlumat formatı, servisin cavab verməməsi, addımların sırası və xüsusi hərflər harada problem yaradar?",
+    "a": "Nümunə ideyalar:\n\n1. **Format:** tətbiq məbləği “12,50”, bank isə “12.50” və ya qəpiklə 1250 gözləyir. Yoxla: bankın aldığı məbləğ dəqiq 12,50 AZN-dir.\n2. **Xəta halı:** bank servisi 500 qaytarır və ya cavab vermir. Yoxla: sifariş “ödənilib” olmur, pul iki dəfə tutulmur, istifadəçi aydın mesaj görür, qəbz getmir.\n3. **Ardıcıllıq:** qəbz yalnız bank ödənişi təsdiqlədikdən sonra göndərilir. Bank rədd edəndə qəbz getməməlidir, e-poçt servisi yavaş işləyəndə ödəniş dayanmamalıdır.\n4. **Azərbaycan hərfləri:** müştərinin adı “Əli Şükürov”, ünvan “Gənclik”. Yoxla: qəbzdə “ə, ş, ü” düzgün görünür, “?” və ya simvol qarışığı çıxmır.\n\nHər ideya tək servisin yox, iki hissənin əlaqəsini yoxlayır.",
+    "c": [
+      "Format, xəta halı, ardıcıllıq və Azərbaycan hərfləri üçün bir ideya var",
+      "Hər ideyada yoxlanacaq nəticə göstərilib",
+      "İdeyalar iki hissə arasındakı əlaqəni yoxlayır"
+    ]
+  },
+  "c5s3m": {
+    "h": "Bir oxucunun bütün yolunu düşün: axtarış, seçim, rezervasiya, təsdiq, sonra kitabxanaçının gördüyü. Hər addımda ekranda nə görünməlidir?",
+    "a": "**Ssenari:** Oxucu kitab axtarır, rezerv edir və kitabxanaçı onu görür. Fərziyyə: oxucu hesabı var, kitabın 1 nüsxəsi mövcuddur.\n\n| # | Addım | Yoxlanacaq |\n|---|---|---|\n| 1 | Oxucu kimi daxil ol | Giriş uğurludur, ad görünür |\n| 2 | “Qarabağnamə” axtar | Kitab nəticələrdədir, status “Mövcuddur” |\n| 3 | Kitabı aç, “Rezerv et” bas | Təsdiq mesajı, qaytarma və ya götürmə tarixi düzgündür |\n| 4 | “Rezervlərim” səhifəsinə keç | Kitab siyahıdadır, e-poçt bildirişi gəlib, kitab statusu “Rezerv olunub” oldu |\n| 5 | Kitabxanaçı kimi daxil ol | Rezerv oxucunun adı ilə görünür, başqa oxucu eyni nüsxəni rezerv edə bilmir |\n\nSistem testidir, çünki UI, server, baza və e-poçt birlikdə işləyir və mühit canlıya yaxındır.",
+    "c": [
+      "Beş addım var və bir uçdan-uca yol təşkil edir",
+      "Hər addımın yanında yoxlanacaq nəticə var",
+      "Rezervin nəticəsi başqa yerdə də yoxlanılır: siyahı, status, bildiriş və ya kitabxanaçı"
+    ]
+  },
+  "c5s4m": {
+    "h": "Əsas söz real istifadəçinindir: kim iştirak edir? Ssenarilər gündəlik işlərdən olsun. Meyar rəqəmlə yoxlanılsın, “xoşlarına gəlsin” olmasın.",
+    "a": "**İştirakçılar:** 3 müəllim, 2 sinif rəhbəri, 5 valideyn, 1 direktor müavini. Tester hazırlayır və kömək edir, ssenariləri isə onlar özləri keçir.\n\n**Hazırlıq:** canlıya yaxın mühit, bir sinfin real strukturu ilə anonim data, hesablar, qısa təlimat, rəy forması, 1 həftəlik vaxt.\n\n**Ssenarilər:**\n1. Müəllim dərsdə davamiyyəti qeyd edir və qiymət yazır.\n2. Valideyn uşağının qiymətini və qayıbını telefondan görür.\n3. Sinif rəhbəri rüblük hesabat çıxarır.\n4. Müəllim səhv yazdığı qiyməti düzəldir, dəyişiklik tarixçədə qalır.\n\n**Qəbul meyarı:** dörd ssenarinin hamısını iştirakçıların ən azı 90%-i köməksiz bitirir, açıq Critical defekt yoxdur, müəllimlər qiymət yazmağı 2 dəqiqəyə edir.",
+    "c": [
+      "Dörd ssenari real istifadəçilərin gündəlik işidir",
+      "İştirakçılar müəllim, valideyn və ya məktəb işçiləridir",
+      "Hazırlıq yazılıb və qəbul meyarı rəqəm və ya bəli/xeyr ilə ölçülür"
+    ]
+  },
+  "c5s5m": {
+    "h": "Soruş: bu səhvi tutmaq üçün ən azı nəyi işə salmaq lazımdır? Bir funksiya, iki hissə, bütöv tətbiq, yoxsa real istifadəçi?",
+    "a": "Nümunə defektlər:\n\n1. **Unit:** qiymət funksiyası gecə tarifini 20% əvəzinə 2% hesablayır. Bir funksiyanı çağırmaq kifayətdir, ən ucuz yer budur.\n2. **İnteqrasiya:** xəritə xidməti məsafəni metrlə verir, tariflər modulu kilometr gözləyir, qiymət 1000 dəfə böyük çıxır. Hər modul ayrıca düzgündür, səhv əlaqədədir.\n3. **Sistem:** sürücü sifarişi ləğv edəndən sonra sərnişin ekranı köhnə statusda qalır, kart yenə də tutulur. Bütün zənciri birlikdə işlətmədən görünmür.\n4. **Qəbul:** hər şey tələbə uyğun işləyir, amma yaşlı sürücülər yeni qəbul düyməsini maşın sürərkən rahat basa bilmir. Bunu yalnız real sürücülərlə sınaq göstərir.\n\nPrinsip: defekti ən aşağı mümkün səviyyədə tapmaq ən ucuzudur.",
+    "c": [
+      "Dörd defekt dörd fərqli səviyyəyə aiddir: unit, inteqrasiya, sistem, qəbul",
+      "Hər defektin yanında niyə bu səviyyədə tutulduğu yazılıb",
+      "İnteqrasiya defektində hər hissə ayrıca işləyir, problem əlaqədədir"
+    ]
+  },
+  "c5x1m": {
+    "h": "Köçürmədə kod dəyişmir, mühit dəyişir. Soruş: data tam gəldi? Hər şey işləyir? Əlaqələr, sürət və geri dönmə necədir?",
+    "a": "Nümunə plan:\n\n1. **Data tamlığı:** səhifə, sifariş, istifadəçi və fayl sayı köhnə və yeni serverdə eynidir, nümunə qeydlər açılır, Azərbaycan hərfləri pozulmayıb.\n2. **Smoke və regression:** giriş, axtarış, forma, ödəniş kimi əsas yollar yeni mühitdə işləyir.\n3. **Konfiqurasiya və əlaqələr:** domen, SSL sertifikatı, yönləndirmələr, e-poçt, xarici API-lər və fayl yolları düzgündür, köhnə serverə istinad qalmayıb.\n4. **Performans:** buludda yüklənmə vaxtı köhnədən pis deyil, gözlənilən yükdə sistem dayanır.\n5. **Ehtiyat və geri dönmə:** ehtiyat nüsxə bərpa olunur, problem çıxsa, köhnə serverə qayıtmaq planı işləyir. Köhnə server dərhal söndürülmür.\n\nKöçürmə gecəsi üçün məsul şəxs və qərar meyarı əvvəlcədən yazılır.",
+    "c": [
+      "Beş bənd var və hamısı köçürməyə aiddir, yeni funksiyaya yox",
+      "Data tamlığının yoxlanması var",
+      "Geri dönmə planı və ya ehtiyat nüsxə var"
+    ]
+  },
+  "c5t1": {
+    "h": "Dörd səviyyə: unit, inteqrasiya, sistem, qəbul. Eyni tətbiqdə miqyas böyüdükcə yoxlama da böyüsün: funksiya → əlaqə → bütöv yol → real istifadəçi.",
+    "a": "Nümunə yoxlamalar:\n\n| Səviyyə | Yoxlama | Kim |\n|---|---|---|\n| **Unit** | `calcTotal([{ price: 10, qty: 2 }], 3)` funksiyası 23 qaytarır: yemək + çatdırılma | Proqramçı |\n| **İnteqrasiya** | Sifariş yaradılanda restoran panelinin servisi sifarişi düzgün məhsul və məbləğlə alır; ödəniş servisi xəta verəndə sifariş “ödənilməyib” qalır | Proqramçı, tester |\n| **Sistem** | Daxil ol → restoran seç → yemək əlavə et → kartla ödə → statusu izlə: bütün yol test mühitində işləyir, bildiriş gəlir | Tester |\n| **Qəbul (UAT)** | Real kuryer və restoran işçiləri bir həftə gündəlik sifarişləri sınaqdan keçirir: işi rahat görürlərmi, “qəbul edirik” deyirlərmi? | Real istifadəçilər, PO |\n\nHər səviyyənin miqyası və icraçısı fərqlidir, biri digərini əvəz etmir.",
+    "c": [
+      "Dörd səviyyənin hər birində bir yoxlama yazılıb",
+      "Unit bir funksiyanı, inteqrasiya iki hissəni, sistem bütöv yolu yoxlayır",
+      "Qəbul testini real istifadəçilər və ya sifarişçi edir"
+    ]
+  },
+  "c5t2": {
+    "h": "UAT-ın sualı “tələbə uyğundurmu?” deyil. Tester proqramı yaxşı bilir, amma gündəlik işi kim daha yaxşı bilir?",
+    "a": "UAT-ın məqsədi defekt tapmaqdan çox “bu məhsul bizim işimizi görürmü, qəbul edirikmi?” sualına cavab verməkdir. Bu suala ən yaxşı cavabı işi gündəlik görən adam verir.\n\n**Səbəblər:**\n- **Real iş bilikləri:** mühasib hesabatın düzgünlüyünü, kassir növbədə işin sürətini hər hansı tester-dən yaxşı bilir.\n- **Təzə baxış:** tester sistemi artıq öyrənib, çətin yerləri görməyə bilər. Real istifadəçi orada ilişir.\n- **Qərar məsuliyyəti:** məhsulu qəbul edən biznesdir, tester yox.\n\nTester yenə iştirak edir: mühit və data hazırlayır, ssenarilərə kömək edir, tapılanları sənədləşdirir. Sadəcə qəbul qərarı onun deyil.",
+    "c": [
+      "Məqsədin “qəbul edirikmi?” sualı olduğu deyilib",
+      "Real istifadəçinin iş bilgisi səbəb kimi göstərilib",
+      "Tester-in hazırlıq və ya kömək rolu qeyd olunub"
+    ]
+  },
+  "c5t3": {
+    "h": "İki servis arasında ötürülən bir dəyər seç. Birinin göndərdiyi format, vahid və ya ad o birinin gözlədiyindən fərqli olsa nə olar?",
+    "a": "Mümkün misallardan biridir.\n\n**Vəziyyət:** Sifariş xidməti məbləği qəpiklə göndərir: `{ \"amount\": 1250 }`, yəni 12,50 AZN. Ödəniş xidməti isə `amount` sahəsini manat kimi qəbul edir.\n\n- **Sifariş xidməti ayrıca işləyir:** unit testləri keçir, məbləğ qəpiklə düzgün hesablanır.\n- **Ödəniş xidməti ayrıca işləyir:** unit testdə ona 12.5 verilir, düzgün ödəyir.\n- **Birlikdə işləmir:** müştərinin kartından 1250 AZN tutulmağa cəhd olunur.\n\n**Niyə inteqrasiya defektidir:** kodda heç bir modul özlüyündə səhv deyil, problem onların razılaşmasındadır: vahid fərqlidir. Belə defekti yalnız iki hissəni birlikdə işlədən test tutur. Həlli: API sənədində vahidi dəqiq yazmaq.",
+    "c": [
+      "İki hissənin hər biri ayrıca işlədiyi göstərilib",
+      "Problem onların əlaqəsindədir: format, vahid, ardıcıllıq və ya ad fərqi",
+      "Nəticədə istifadəçinin gördüyü səhv yazılıb"
+    ]
+  },
+  "c5t4": {
+    "h": "Cədvəldə eyni sətirləri müqayisə et: kim edir, harada, məhsul nə dərəcədə hazırdır, nə üçün edilir.",
+    "a": "| | Alpha test | Beta test |\n|---|---|---|\n| **Kim edir** | Şirkətin öz əməkdaşları: tester, dəstək, başqa komandalar | Real istifadəçilərin kiçik qrupu |\n| **Harada** | Şirkət daxilində, test mühitində | İstifadəçilərin öz cihazında, real şəraitdə |\n| **Nə vaxt** | Sistem testindən sonra, betadan əvvəl | Alphadan sonra, tam relizdən əvvəl |\n| **Məhsul** | Bəzi hissələr hələ qeyri-sabit ola bilər | Demək olar hazırdır |\n| **Məqsəd** | Böyük problemləri xaricə çıxmadan tapmaq | Real şəraitdə rəy və gözlənilməz problemləri tapmaq |\n| **Nəzarət** | Yüksəkdir, proqramçılar yaxındır | Azdır, cihaz və internet müxtəlifdir |",
+    "c": [
+      "Cavab cədvəl şəklindədir",
+      "Alpha şirkət daxilində, beta real istifadəçilərlə aparılır",
+      "Vaxt və ya məhsulun hazırlığı müqayisə olunub"
+    ]
+  },
+  "c5q1": {
+    "a": "**Unit:** bir funksiyanı təcrid olunmuş yoxlayır. **İnteqrasiya:** hissələrin və servislərin birlikdə işləməsini yoxlayır. **Sistem:** bütöv məhsulu tələblərə qarşı yoxlayır. **Qəbul:** real istifadəçi və sifarişçi üçün “qəbul edirikmi?” sualına cavab verir.",
+    "c": [
+      "Unit, inteqrasiya, sistem və qəbul sadalanıb",
+      "Hər səviyyənin məqsədi düzgün göstərilib"
+    ]
+  },
+  "c5q2": {
+    "a": "İkisi də inteqrasiya testində hazır olmayan modulun yerini tutur. **Stub** aşağı modulu əvəz edir: çağırılanda sadə, hazır cavab qaytarır. **Driver** yuxarı modulu əvəz edir: test olunan modulu çağırır, ona məlumat verir.",
+    "c": [
+      "Stub çağırılan aşağı modulu əvəz edir, hazır cavab verir",
+      "Driver yuxarı modulu əvəz edir, test olunan modulu çağırır"
+    ]
+  },
+  "c5q3": {
+    "a": "Səviyyə **harada, hansı miqyasda** test etdiyini deyir: unit, inteqrasiya, sistem, qəbul. Növ isə **nəyi** yoxladığını: funksional, performans, təhlükəsizlik, regression. Eyni növ bir neçə səviyyədə ola bilər: regression həm unit, həm sistem səviyyəsində aparılır.",
+    "c": [
+      "Səviyyə miqyası, növ isə yoxlanan xüsusiyyəti bildirir",
+      "İkisinin bir-birini kəsdiyi, misalla göstərilib"
+    ]
+  },
+  "c5q4": {
+    "a": "Beta test real istifadəçilərin kiçik qrupu tərəfindən, öz cihazlarında və real şəraitdə, şirkətdən kənarda aparılır. Məhsul demək olar hazır olur, məqsəd tam relizdən əvvəl real rəy və gözlənilməz problemləri tapmaqdır.",
+    "c": [
+      "Beta-nı real istifadəçilər edir",
+      "Yer şirkət daxili deyil, istifadəçinin real mühitidir"
+    ]
+  }
+}

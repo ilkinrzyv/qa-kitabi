@@ -1,0 +1,165 @@
+{
+  "c11s1m": {
+    "h": "Yuxarıdan aşağı: şirkətin ümumi yanaşması → bu layihənin planı → nə yoxlanır → necə yoxlanır → hansı dəyərlərlə.",
+    "a": "Nümunə:\n\n- **Strategiya (şirkət):** bütün pul əməliyyatları təhlükəsizlik və regression testindən keçir, əsas axınlar avtomatlaşdırılır.\n- **Plan (layihə):** “Kartdan karta köçürmə 2.0” üçün scope, mühit (test bankı), cədvəl, risklər, çıxış meyarı: açıq Critical yoxdur.\n- **Ssenari (nə):** istifadəçi limit daxilində başqa banka köçürmə edir.\n- **Test case (necə):** TC-204. İlkin şərt: daxil olunub, kartda 500 AZN var. Addımlar: karta köçürməni aç, alan kartı və 100 AZN yaz, “Göndər” bas, SMS kodunu daxil et. Gözlənilən: “Köçürmə uğurludur”, balans 400 AZN.\n- **Test data:** göndərən test kartı 4169 0000 0000 0001, balans 500 AZN; alan test kartı 4169 0000 0000 0002; məbləğ 100, 0,01 və 5 000 AZN (sərhəd).",
+    "c": [
+      "Beş səviyyənin hər biri üçün bir misal var",
+      "Ssenari “nə”, test case isə addımları ilə “necə” kimi fərqlənir",
+      "Test data konkret dəyərlərdir, real kart məlumatı deyil"
+    ]
+  },
+  "c11s2m": {
+    "h": "Scope-da “nə test olunmur” da yazılsın. Məhsul riski proqramda nəyin xarab ola biləcəyidir, layihə riski işin özündə nəyin pozula biləcəyidir.",
+    "a": "Nümunə: musiqi tətbiqi, versiya 8.2. Tətbiqi özün seçirsən.\n\n**Məqsəd:** yeni “Birgə playlist” funksiyasını və əsas səsləndirməni relizdən əvvəl yoxlamaq.\n\n**Scope:** daxildir: birgə playlist yaratmaq, dəvət, əlavə və silmə, səsləndirmə regression-u. Xaricdir: ödəniş sistemi (dəyişməyib), planşet versiyası.\n\n**Mühit:** Android 13–15, iOS 17–18, test hesabları, Wi-Fi və 4G.\n\n**Cədvəl:** 3–4 noyabr dizayn, 5–7 noyabr icra, 8 noyabr retest, 9 noyabr hesabat.\n\n**Meyarlar:** Giriş: smoke keçib, test hesabları hazırdır. Çıxış: testlərin 95%-i icra olunub, açıq Critical yoxdur.\n\n**Risklər:**\n- **Məhsul riski:** iki istifadəçi eyni anda dəyişəndə mahnılar itə bilər. Cavab: eyni vaxtda redaktə testləri.\n- **Layihə riski:** build gecikə bilər, test vaxtı qısalar. Cavab: prioritetə görə test sırası, reliz tarixini PO ilə əvvəlcədən razılaşdırmaq.",
+    "c": [
+      "Məqsəd, scope (daxil və xaric), mühit və cədvəl var",
+      "İki meyar ölçülə biləndir",
+      "Biri məhsul, biri layihə riski olan iki risk ehtiyat tədbiri ilə yazılıb"
+    ]
+  },
+  "c11s3m": {
+    "h": "Beş kateqoriya başlıq olsun, hər birinin altına qısa bənd yaz. Bənd “nəyi” deyir, addımları yazmır.",
+    "a": "**Funksional:**\n- Məhsul kartındakı ürəklə sevimlilərə əlavə olunur.\n- Sevimlilərdən silinir, siyahı dərhal yenilənir.\n- Sevimlilərdən səbətə əlavə olunur.\n\n**Sərhəd:**\n- Boş siyahı mesajı görünür.\n- Maksimum say (məsələn, 100) və 101-ci məhsul.\n- Stokda qalmayan və satışdan çıxan məhsul.\n\n**UI:**\n- Ürək ikonunun vəziyyəti siyahı və məhsul səhifəsində eynidir.\n- Uzun məhsul adı kartı sındırmır.\n\n**Təhlükəsizlik:**\n- Giriş etməyən istifadəçi başqasının siyahısını görmür.\n- URL-də başqa istifadəçinin ID-sini yazmaq icazə vermir.\n\n**Mobil:**\n- Siyahı telefon ekranına sığır, ürək barmaqla rahat basılır.\n- Telefondakı əlavə kompüterdə görünür (eyni hesab).\n\nHər bənd bir yoxlama ideyasıdır.",
+    "c": [
+      "Beş kateqoriya var, cəmi ən azı 10 bənd",
+      "Hər bənd bir yoxlama ideyasıdır, addım-addım test case deyil",
+      "Boş siyahı və ya başqasının siyahısı kimi xəta halları var"
+    ]
+  },
+  "c11s4m": {
+    "h": "Əsas üçlük: ilkin şərt, addımlar, gözlənilən nəticə. Bir test case bir məqsəd. Data və sifariş nömrəsi konkret olsun.",
+    "a": "**ID:** TC-OH-012\n**Başlıq:** Sifariş tarixçəsi: “Təkrarla” bütün məhsulları səbətə əlavə edir\n**Prioritet:** Medium\n\n**İlkin şərtlər:**\n1. `test_user1@example.com` ilə daxil olunub.\n2. Səbət boşdur.\n3. Tarixçədə çatdırılmış #1045 sifarişi var: Backpack × 1, Bike Light × 2.\n\n**Data:** sifariş #1045; hər iki məhsul stokdadır.\n\n**Addımlar:**\n1. “Sifarişlərim” səhifəsini aç.\n2. #1045 sifarişini tap.\n3. “Təkrarla” düyməsini bas.\n\n**Gözlənilən nəticə:**\n1. Səbət səhifəsi açılır.\n2. Səbətdə Backpack × 1 və Bike Light × 2 var.\n3. Məbləğ bugünkü qiymətlərlə hesablanıb.\n4. #1045 sifarişi tarixçədə dəyişməz qalıb.\n\n**Son şərt:** səbəti təmizlə.",
+    "c": [
+      "ID, başlıq, ilkin şərtlər, data, addımlar, gözlənilən, prioritet, son şərt var",
+      "Data və sifariş konkretdir: məhsul adı, say",
+      "Gözlənilən nəticə yoxlanıla biləndir, “düzgün işləyir” yazılmayıb"
+    ]
+  },
+  "c11s5m": {
+    "h": "Başlıq nəyi yoxlayır? “Bir şey” hansı sözdür? “Filtr də” ikinci testdir. “Düzgündür” necə yoxlanılır? Hamısını konkretləşdir.",
+    "a": "**Problemlər:**\n- Başlıq yalnız “Axtarış”dır, nəyin yoxlandığını demir.\n- “Bir şey” konkret data deyil, hər kəs başqa söz yazar.\n- İki məqsəd bir testdədir: axtarış və filtr.\n- İlkin şərt yoxdur.\n- “Nəticələr düzgündür” yoxlanılmır.\n\n**Yenidən yazılmış:**\n\n**Başlıq:** Axtarış: tam məhsul adı ilə axtarış uyğun məhsulu göstərir\n**ID:** TC-S-001 | **Prioritet:** High\n**İlkin şərt:** ana səhifə açıqdır, “Backpack” məhsulu kataloqdadır.\n**Data:** axtarış sözü “Backpack”.\n**Addımlar:**\n1. Axtarış sahəsinə “Backpack” yaz.\n2. Enter bas.\n**Gözlənilən:**\n1. Nəticələr səhifəsi açılır.\n2. Siyahıda “Backpack” məhsulu görünür.\n3. Adında “Backpack” olmayan məhsul yoxdur.\n\n**Filtr üçün ayrıca test case:** “Axtarış: qiymət filtri nəticələri süzür”.",
+    "c": [
+      "Başlıq nəyi yoxladığını deyir",
+      "Data konkretdir və gözlənilən nəticə yoxlanıla biləndir",
+      "Filtr ayrıca testə çıxarılıb"
+    ]
+  },
+  "c11s6m": {
+    "h": "Hansı bildiriş, kimə, hansı hadisədə? Əvvəl bir konkret hadisə seç. Gözlənilən nəticədə mətn, vaxt və açılan səhifəni nömrələ.",
+    "a": "**Başlıq:** Bildirişlər: sifariş “Yolda” statusuna keçəndə push bildiriş gəlir\n**ID:** TC-N-007 | **Prioritet:** Medium\n\n**İlkin şərtlər:**\n1. Android 14, tətbiq 3.2, `test_user1` ilə daxil olunub.\n2. Telefonun ayarlarında tətbiqin bildirişlərinə icazə var.\n3. “Hazırlanır” statusunda #2210 sifarişi var.\n4. Tətbiq fondadır.\n\n**Data:** sifariş #2210; statusu admin paneldən dəyişəcək test hesabı.\n\n**Addımlar:**\n1. Admin paneldə #2210 statusunu “Yolda” et.\n2. 60 saniyə ərzində telefona bax.\n3. Gələn bildirişə bas.\n\n**Gözlənilən nəticə:**\n1. 60 saniyə ərzində bir bildiriş gəlir.\n2. Mətn: “#2210 sifarişiniz yoldadır”.\n3. Basanda #2210 sifarişinin səhifəsi açılır.\n4. Bildiriş ikinci dəfə gəlmir.",
+    "c": [
+      "Başlıq konkret hadisəni deyir, sadəcə “Bildirişlər” deyil",
+      "İlkin şərtlərdə icazə və ya sifariş vəziyyəti var",
+      "Gözlənilən nəticə nömrələnib, konkret mətn və ya müddət var"
+    ]
+  },
+  "c11s7m": {
+    "h": "Test zamanı nə lazım olacaq? Müxtəlif hesablar, müxtəlif statuslu sifarişlər, sərhəd məbləğləri. Sonda sistemi necə təmiz vəziyyətə qaytarırsan?",
+    "a": "Nümunə siyahı (real şəxsi data yoxdur):\n\n**Hesablar:**\n- `buyer1@test.example`: tarixçəsi olan müştəri.\n- `new1@test.example`: sifarişi olmayan yeni müştəri.\n- `blocked1@test.example`: bloklanmış hesab.\n- `admin1@test.example`: qaytarma təsdiqləyən admin.\n\n**Məhsullar:** stokda çox olan, stokda 1 ədəd, qaytarılmayan (gigiyena malı), endirimli, çəkisi böyük məhsul.\n\n**Sifarişlər:** “Yeni”, “Yolda”, “Çatdırılıb” (2 gün əvvəl), “Çatdırılıb” (31 gün əvvəl, qaytarma müddəti keçib), qismən qaytarılmış.\n\n**Sərhəd dəyərləri:** məbləğ 0,01 və 50,00 AZN (pulsuz çatdırılma həddi), qaytarma günü 29, 30, 31, say 1 və limit.\n\n**Ödəniş:** test kart nömrələri, rədd olunan kart.\n\n**Təmizləmə qaydası:** test sifarişləri `TEST-` prefiksi ilə yaranır, hər run-dan sonra skriptlə silinir, stok ilkin sayına qaytarılır, ödənişlər sınaq rejimindədir.",
+    "c": [
+      "Hesablar, məhsullar və sərhəd dəyərləri siyahıda var",
+      "Sifarişlərin və qaytarmanın müxtəlif statusları nəzərə alınıb",
+      "Təmizləmə qaydası var, real şəxsi data yoxdur"
+    ]
+  },
+  "c11s8m": {
+    "h": "Alətin məntiqi: case → suite → run → nəticə. Hər birinə vərəq düşün. Pass rate: keçən / icra olunan, Not Run sayılmır.",
+    "a": "**Vərəqlər:**\n1. **Test case-lər:** ID, başlıq, ilkin şərt, addımlar, gözlənilən, prioritet, tələb.\n2. **Run-Reliz 1.4:** test case ID, status, icra tarixi, icra edən, mühit, build, bug linki, qeyd.\n3. **Hesabat:** rəqəmlər.\n\n**Status siyahısı:** Passed, Failed, Blocked, Skipped, Not Run (açılan siyahı ilə).\n\n**Pass rate düsturunun məntiqi:** `keçən / icra olunan × 100`. İcra olunan = Passed + Failed. Blocked və Not Run məxrəcə düşmür.\n\nStatus sütunu D-dirsə:\n\n```text\n=COUNTIF(D:D,\"Passed\") / (COUNTIF(D:D,\"Passed\") + COUNTIF(D:D,\"Failed\"))\n```\n\n**İcra faizi:** icra olunan / bütün test case-lər × 100. Failed sətrinin bug linki boşdursa, şərti formatlaşdırma ilə qırmızı göstərmək olar. Hər yeni reliz üçün run vərəqi kopyalanır, test case-lər isə bir yerdə qalır.",
+    "c": [
+      "Vərəqlər ayrılıb: test case-lər, run və hesabat",
+      "Status siyahısında ən azı Passed, Failed, Blocked və Not Run var",
+      "Pass rate keçən bölünsün icra olunan kimi izah olunub"
+    ]
+  },
+  "c11x1m": {
+    "h": "E = (a + 4m + b) / 6, SD = (b − a) / 6. a optimist, m ən ehtimallı, b pessimist qiymətdir.",
+    "a": "**Hesablama:**\n- E = (2 + 4 × 3 + 10) / 6 = 24 / 6 = **4 saat**.\n- SD = (10 − 2) / 6 = 8 / 6 ≈ **1,3 saat**.\n\nYəni qiymət təxminən 4 ± 1,3 saatdır. Diqqət: E (4) ən ehtimallı qiymətdən (3) böyükdür, çünki pessimist qiymət çox uzaqdır.\n\n**Pessimist qiymət niyə böyük ola bilər (iki səbəb):**\n1. **Mühit problemi:** test mühiti və ya auth servisi işləmir, giriş dayanır və testlər saatlarla gözləyir.\n2. **Çox defekt çıxması:** login-də ciddi baq tapılır, düzəliş və retest dövrü bir neçə dəfə təkrarlanır, regression yenidən işlədilir.\n\nBaşqa səbəblər də ola bilər: test datası hazır deyil, SSO və ya 2FA əlavə olunub.",
+    "c": [
+      "E 4 saat kimi hesablanıb",
+      "SD təxminən 1,3 saatdır",
+      "Pessimist qiymətə iki real səbəb yazılıb"
+    ]
+  },
+  "c11x2m": {
+    "h": "Məhsul riski proqramın özündədir, layihə riski işin gedişindədir. Məhsul riskini ehtimal × təsirlə qiymətləndir və testlə cavab ver.",
+    "a": "**Məhsul riskləri (1–5 şkalası):**\n\n| Risk | Ehtimal | Təsir | Səviyyə | Tədbir |\n|---|---|---|---|---|\n| Yük altında cavablar itir (imtahan vaxtı) | 3 | 5 | 15 | Load testi, avtomatik saxlama testi, internet kəsilmə ssenariləri |\n| Tələbə başqasının suallarını və ya qiymətini görür | 2 | 5 | 10 | Rol və giriş testləri, API-də başqasının ID-si ilə sorğu |\n\n**Layihə riskləri (planda idarə olunur):**\n1. **Test mühiti imtahan sessiyasından əvvəl hazır olmaya bilər.** Tədbir: mühiti 2 həftə əvvəl hazırlamaq, ehtiyat mühit.\n2. **Müəllimlər UAT-a vaxt ayırmaya bilər.** Tədbir: dekanlıqla tarixi əvvəlcədən razılaşdırmaq, iştirakçıları əvəzləmək.\n\nƏn yüksək riskə birinci və daha çox test vaxtı verilir.",
+    "c": [
+      "İki məhsul və iki layihə riski fərqləndirilib",
+      "Məhsul riskləri ehtimal və təsirlə qiymətləndirilib",
+      "Hər məhsul riskinə tədbir yazılıb"
+    ]
+  },
+  "c11t1": {
+    "h": "Bir testdə bir səhv: boş ad, boş şifrə, yanlış şifrə, bloklanmış istifadəçi, olmayan ad. Hər birində səhifədə dəqiq nə görünməlidir?",
+    "a": "Mini Store-un girişi üzərində. Ümumi ilkin şərt: login səhifəsi açıqdır, heç kim daxil olmayıb. Prioritet: High.\n\n**TC-L-N1. Login: boş Username xəta verir.** Data: Username boş, Password `secret_sauce`. Addımlar: 1) Password-u yaz. 2) “Login” bas. Gözlənilən: “Epic sadface: Username is required” görünür, Login səhifəsində qalır.\n\n**TC-L-N2. Login: boş Password xəta verir.** Data: `standard_user`, Password boş. Addımlar: 1) Username-i yaz. 2) “Login” bas. Gözlənilən: “Epic sadface: Password is required”.\n\n**TC-L-N3. Login: yanlış şifrə rədd olunur.** Data: `standard_user`, `wrong_pass`. Gözlənilən: “Epic sadface: Username and password do not match any user in this service”.\n\n**TC-L-N4. Login: olmayan istifadəçi rədd olunur.** Data: `no_such_user`, `secret_sauce`. Gözlənilən: N3-dəki eyni mesaj.\n\n**TC-L-N5. Login: bloklanmış istifadəçi daxil ola bilmir.** Data: `locked_out_user`, `secret_sauce`. Gözlənilən: “Epic sadface: Sorry, this user has been locked out.”\n\nHamısında Products səhifəsi açılmır.",
+    "c": [
+      "Beş neqativ test var, hər birində yalnız bir səhv",
+      "Hər testin başlığı, data, addımları və gözlənilən nəticəsi var",
+      "Gözlənilən nəticə konkret mesajdır, “xəta çıxır” deyil"
+    ]
+  },
+  "c11t2": {
+    "h": "Hər sahə üçün: boş, sərhəd, format, simvol. Sonra sahələr arası qayda, razılıq, göndərmə, təhlükəsizlik, UI və mobil başlıqlarını əlavə et.",
+    "a": "**Ad:**\n1. Boş ad xəta verir.\n2. Minimum və maksimum uzunluq (BVA).\n3. Azərbaycan hərfləri (Şəbnəm, Əli) qəbul olunur.\n4. Rəqəm və skript (`<script>`) qəbul olunmur və ya zərərsiz saxlanılır.\n\n**Email:**\n5. Boş email xəta verir.\n6. Səhv format: `abc`, `abc@`, `@mail.com`.\n7. Artıq qeydiyyatdan keçmiş email rədd olunur.\n8. Böyük hərflə yazılmış eyni email dublikat sayılır.\n\n**Şifrə:**\n9. Minimum uzunluqdan bir simvol az rədd olunur.\n10. Mürəkkəblik qaydası (rəqəm, hərf) yoxlanılır.\n11. Şifrə ekranda gizlidir, göstərmə düyməsi işləyir.\n12. Şifrə və təkrarı fərqli olanda xəta çıxır.\n\n**Razılıq və göndərmə:**\n13. Şərtlər işarələnməyibsə, qeydiyyat olmur.\n14. Şərtlər linki açılır.\n15. “Göndər”ə iki dəfə basmaq iki hesab yaratmır.\n16. Uğurlu qeydiyyatdan sonra təsdiq emaili gəlir və giriş işləyir.\n\n**UI və mobil:**\n17. Xəta mesajı hansı sahəyə aid olduğu aydındır, doldurulmuş dəyərlər silinmir.\n18. Forma telefon ekranına sığır, klaviatura düzgündür.",
+    "c": [
+      "Ən azı 15 bənd var",
+      "Beş sahənin hər biri üçün bənd var",
+      "Şifrə ilə təkrarının fərqli olması və artıq olan email daxildir"
+    ]
+  },
+  "c11t3": {
+    "h": "“Səbət” başlıq deyil, “məhsul at” konkret deyil, “düzgün işləyir” yoxlanılmır. Hansı məhsul, hansı istifadəçi, ekranda dəqiq nə görünür?",
+    "a": "**Problemlər:** başlıq nəyi yoxladığını demir, ilkin şərt və data yoxdur, “məhsul at” qeyri-müəyyəndir, “düzgün işləyir” yoxlanılmır.\n\n**Düzəldilmiş:**\n\n**ID:** TC-C-001 | **Prioritet:** High\n**Başlıq:** Products: “Add to cart” məhsulu səbətə əlavə edir və nişanı yeniləyir\n\n**İlkin şərtlər:**\n1. `standard_user` ilə daxil olunub.\n2. Products səhifəsi açıqdır.\n3. Səbət boşdur.\n\n**Data:** məhsul “Backpack”, $29.99.\n\n**Addımlar:**\n1. “Backpack” məhsulunun “Add to cart” düyməsinə bas.\n2. Səbət ikonuna bas.\n\n**Gözlənilən nəticə:**\n1. 1-ci addımdan sonra düymənin mətni “Remove” olur.\n2. Səbət nişanında “1” görünür.\n3. Səbət səhifəsində bir sətir var: Backpack, $29.99, say 1.\n\n**Son şərt:** məhsulu səbətdən sil.",
+    "c": [
+      "Başlıq konkretdir: harada və nə yoxlanır",
+      "İlkin şərt və məhsul datası var",
+      "Gözlənilən nəticə nömrələnib: düymə, nişan, səbət sətri"
+    ]
+  },
+  "c11t4": {
+    "h": "Yalnız başlıq yaz, addım yox. Hər başlıq nəyi yoxladığını desin: tam söz, hissə, boş, tapılmayan, hərf, filtr, sıralama, səhifələmə.",
+    "a": "Nümunə başlıqlar:\n\n1. Axtarış: tam məhsul adı ilə nəticə göstərir.\n2. Axtarış: sözün bir hissəsi ilə uyğun məhsulları tapır.\n3. Axtarış: böyük və kiçik hərfi fərqləndirmir.\n4. Axtarış: Azərbaycan hərfləri ilə (“şəkər”) nəticə tapır.\n5. Axtarış: mövcud olmayan söz üçün “Nəticə tapılmadı” mesajı göstərir.\n6. Axtarış: boş sətirlə və yalnız boşluqla göndərildikdə düzgün reaksiya verir.\n7. Axtarış: nəticələr qiymət filtri ilə süzülür, filtr geri qayıdanda qalır.\n8. Axtarış: nəticələr çox olanda səhifələmə və sıralama işləyir.\n\nSsenari “nə” deyir, addımları test case yazır.",
+    "c": [
+      "Səkkiz başlıq yazılıb, addım yoxdur",
+      "Hər başlıq nəyi yoxladığını deyir",
+      "Pozitiv və xəta halları birlikdə var: tapılmayan söz, boş axtarış"
+    ]
+  },
+  "c11t5": {
+    "h": "Yalnız dörd başlıq: nə test olunur və olunmur, harada, nə xarab ola bilər, nə vaxt bitir. Hər cümlə bu saytla bağlı olsun.",
+    "a": "Bu, bir nümunədir: onlayn kitab mağazası üçün. Öz saytını seç.\n\n**Scope:**\n- Daxildir: axtarış, məhsul səhifəsi, səbət, qeydiyyat, ödəniş səhifəsinə qədər.\n- Xaricdir: real ödəniş (test rejimi yoxdur), admin panel, performans testi.\n\n**Mühit:**\n- Canlı sayt, yalnız oxuma və test hesabı ilə.\n- Chrome və Firefox-un son versiyası, Windows 11; Chrome-da 390 px mobil görünüş.\n\n**Risklər:**\n1. **Məhsul:** səbət məbləği yanlış hesablanır. Tədbir: səbətə prioritet, müxtəlif say və endirimlə test.\n2. **Məhsul:** azərbaycanca hərflərlə axtarış nəticə vermir. Tədbir: “ə, ş, ç” olan sözlərlə test.\n3. **Layihə:** canlı saytda sifariş vermək olmur. Tədbir: test ödəniş səhifəsinə qədər aparılır.\n\n**Çıxış meyarları:**\n- Hazırlanan test case-lərin ən azı 90%-i icra olunub.\n- Tapılan bütün defektlər bug report kimi yazılıb.\n- Əsas yolda (axtarış → səbət) açıq Critical yoxdur.",
+    "c": [
+      "Scope-da daxil və xaric olanlar yazılıb",
+      "Mühit konkretdir: brauzer, versiya, cihaz",
+      "Risklər tədbirlə, çıxış meyarları isə ölçülə bilən formadadır"
+    ]
+  },
+  "c11q1": {
+    "a": "**Test ssenarisi** “nə” yoxlandığını deyən qısa cümlədir: “Yanlış şifrə ilə giriş”. **Test case** isə “necə”ni deyir: ilkin şərt, konkret data, addımlar, gözlənilən nəticə. Bir ssenaridən adətən bir neçə test case çıxır.",
+    "c": [
+      "Ssenari “nə”, test case “necə” kimi fərqləndirilib",
+      "Test case-də addım və gözlənilən nəticənin olduğu deyilib"
+    ]
+  },
+  "c11q2": {
+    "a": "Vaxt azdır, funksiya tez dəyişir, tester təcrübəlidir və ya exploratory test üçün ideya lazımdır. Checklist “nəyi” yoxlamağı xatırladır, tez yazılır. Təfərrüat bir başqasına ötürüləcəksə, sənədləşmə və izləmə tələb olunursa, test case daha yaxşıdır.",
+    "c": [
+      "Vaxtın azlığı və ya tez dəyişən funksiya göstərilib",
+      "Checklist-in addım yox, yoxlama ideyası olduğu deyilib"
+    ]
+  },
+  "c11q3": {
+    "a": "1. Başlıq nəyi yoxladığını deyir.\n2. Bir test case bir məqsəd yoxlayır.\n3. İlkin şərt və data konkretdir.\n4. Addımları hər kəs eyni cür icra edə bilir.\n5. Gözlənilən nəticə konkret və yoxlanıla biləndir.\n\nBaşqa qaydalar: müstəqildir, tələbə istinad edir.",
+    "c": [
+      "Beş qayda sadalanıb",
+      "Konkret gözlənilən nəticə və aydın başlıq qaydaları var"
+    ]
+  },
+  "c11q4": {
+    "a": "Test suite məqsədə görə qruplaşdırılmış test case-lər toplusudur: məsələn, smoke suite, “Ödəniş” suite-i, regression suite. Run üçün lazımi testləri bir yerdən seçməyə kömək edir, eyni test case bir neçə suite-də ola bilər.",
+    "c": [
+      "Suite test case-lərin qrupudur",
+      "Məqsədə görə qruplaşdırma misalı var"
+    ]
+  }
+}

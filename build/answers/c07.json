@@ -1,0 +1,138 @@
+{
+  "c7s1m": {
+    "h": "Kodu görmürsən, yalnız giriş və çıxış var. Doğru cavabı necə bilərsən? Oracle kimi başqa mənbə tap: əl ilə hesab və ya başqa kalkulyator.",
+    "a": "Fərz edirəm ki, bu gün 15.11.2026-dır. Tarix formatı tələbdə göstərilməlidir.\n\n1. **Pozitiv:** 15.05.2000. Gözlənilən: 26 yaş.\n2. **Sərhəd:** ad günü bu gündür (15.11.2000): 26; sabahdır (16.11.2000): 25; bu gün doğulub (15.11.2026): 0; sabah doğulacaq (16.11.2026): xəta.\n3. **Format:** 32.13.2000, “abc”, boş sahə, 2000/05/15. Gözlənilən: aydın xəta mesajı, proqram çökmür.\n4. **Xüsusi tarix:** 29.02.2000 (uçuq il) qəbul olunur, 29.02.2001 rədd olunur; uçuq il doğulanın yaşı düzgün hesablanır.\n5. **Oracle:** nəticəni əl ilə hesablayıb və ya başqa etibarlı kalkulyatorla tutuşdururam. Black box-da “düzgün cavabı” koddan yox, belə mənbədən bilirəm.",
+    "c": [
+      "Beş ideya tələb olunan kateqoriyaları əhatə edir",
+      "Sərhəd ideyasında ad gününün özü və ya sabahı var",
+      "Oracle kimi kənar yoxlama mənbəyi göstərilib"
+    ]
+  },
+  "c7s2m": {
+    "h": "Əvvəl neçə yol olduğunu say: üç `return` var. Hər yola bir dəyər kifayətdir. Sonra sərhədlər 50 və 90 ətrafında nə verir?",
+    "a": "**Minimum 3 test (100% branch coverage):**\n\n| score | Birinci `if` (≥ 50) | İkinci `if` (≥ 90) | Nəticə |\n|---|---|---|---|\n| 30 | false | | kəsildi |\n| 70 | true | false | keçdi |\n| 95 | true | true | əla |\n\nHər şərtin həm `true`, həm `false` qolu ən azı bir dəfə işləyir.\n\n**Sərhəd dəyərləri əlavə edirəm:**\n\n| score | Gözlənilən |\n|---|---|\n| 49 | kəsildi |\n| 50 | keçdi |\n| 89 | keçdi |\n| 90 | əla |\n\nCoverage 100% olsa da, `score > 50` yazılsaydı, 30, 70, 95 testləri bunu tutmazdı. Bu səhvi yalnız 50 dəyəri tutur. Ona görə sərhəd testləri coverage-dən sonra da lazımdır.",
+    "c": [
+      "Minimum 3 testdir, biri hər `return` üçün",
+      "Sərhəd dəyərləri 49, 50, 89, 90 əlavə olunub",
+      "Hər testin gözlənilən nəticəsi düzgündür"
+    ]
+  },
+  "c7s3m": {
+    "h": "Məlumatın yolunu izlə: ekran → API → baza → e-poçt. Hər addımda məbləğə bax. Hansı addımda dəyər dəyişir?",
+    "a": "Nümunə plan:\n\n1. **DevTools, Network:** kodu tətbiq edəndə və sifarişi təsdiqləyəndə sorğulara baxıram. `POST /orders` sorğusunda və cavabında hansı məbləğ gedir: yeni, yoxsa köhnə?\n2. **SQL, baza:** `SELECT total, discount FROM orders WHERE id = ...` ilə sifarişin qeydinə baxıram. Bazada yeni məbləğ varsa, problem e-poçtdadır; köhnə varsa, server endirimi saxlamır.\n3. **Log və e-poçt şablonu:** e-poçt xidmətinin logunda və ya test e-poçtunda hansı sahənin göndərildiyinə baxıram: `total`, yoxsa endirimsiz `subtotal`?\n4. **Bug report:** səbəbi fakt kimi yazıram: “Ekran və baza 80 AZN, e-poçt 100 AZN göstərir; e-poçt şablonu `subtotal` götürür, ehtimal.” Dəqiq düzəlişi proqramçı edir.\n\nBeləcə “e-poçt səhvdir” yox, defektin harada olduğunu göstərirəm.",
+    "c": [
+      "Məbləğ ən azı iki qatda yoxlanılır: Network, baza və ya log",
+      "Hansı qatda dəyərin fərqləndiyi plana daxildir",
+      "Son addımda nəticə bug report kimi rəsmiləşdirilir"
+    ]
+  },
+  "c7s4m": {
+    "h": "Hər cümləni yoxla: ölçülür? “Kiçik” nə qədərdir? Hansı format? Nə qədər ölçü? Uğursuz olanda nə baş verir?",
+    "a": "**Tapıntılar:**\n\n1. **“Kiçik” ölçülmür:** neçə MB, neçə piksel? Tester hansı dəyəri sərhəd götürsün?\n2. **“Böyük” də ölçülmür:** “kiçik” və “böyük” arasındakı ölçü nə olur? Bu iki cümlə sərhədi müəyyən etmir.\n3. **Format yazılmayıb:** JPG, PNG, HEIC? PDF yüklənsə, nə olur? “Şəkil” adlı `.exe` necə?\n4. **Xəta davranışı yoxdur:** böyük şəkil rədd olunanda hansı mesaj çıxır? Yükləmə internet kəsiləndə yarıda qalsa, nə olur?\n5. **Nəticə qeyri-müəyyəndir:** şəkil dərhal görünür, yoxsa yeniləmədən sonra? Köhnə şəkil nə olur? Başqa istifadəçilər görürmü?\n6. **Kim və haradan:** “istifadəçi” bütün rollardırmı? Mobil tətbiqdən də yüklənə bilərmi?\n\nBu, statik testdir: kod işə salınmadan birbaşa defekt tapılır.",
+    "c": [
+      "Ən azı 4 problem tapılıb",
+      "“Kiçik” və “böyük” sözlərinin ölçülmədiyi göstərilib",
+      "Format və ya xəta davranışının yazılmadığı qeyd olunub"
+    ]
+  },
+  "c7s5m": {
+    "h": "Sərhəd 1 və 9-dur. Pozitivlərdə içəridəki dəyərlər, neqativlərdə kənar dəyər, səhv tip, boş sahə, xüsusi simvol və s. Hər testdə bir səhv olsun.",
+    "a": "| # | Növ | Dəyər | Gözlənilən nəticə |\n|---|---|---|---|\n| 1 | Pozitiv | 1 | Axtarış işləyir, 1 sərnişin üçün qiymət görünür |\n| 2 | Pozitiv | 9 | Axtarış işləyir, 9 sərnişin üçün ümumi qiymət görünür |\n| 3 | Neqativ | 0 | Xəta: “Sərnişin sayı 1-dən 9-a qədər olmalıdır”, axtarış getmir |\n| 4 | Neqativ | 10 | Eyni xəta, axtarış getmir |\n| 5 | Neqativ | boş | Xəta: “Sərnişin sayını daxil et” |\n| 6 | Neqativ | abc | Xəta, ya da hərf yazmaq mümkün deyil |\n| 7 | Neqativ | -1 və ya 2,5 | Xəta: tam və müsbət ədəd tələb olunur |\n\nMesaj mətni nümunədir, dəqiqi tələbdən gəlir. “Sistem düzgün reaksiya verir” kimi gözlənilən nəticə yazmıram. Hər neqativ testdə yalnız bir səhv var ki, bir xəta digərini gizlətməsin.",
+    "c": [
+      "İki pozitiv və beş neqativ test var",
+      "0 və 10 sərhəd dəyərləri neqativlərdədir",
+      "Hər testin gözlənilən nəticəsi konkretdir, ümumi cümlə deyil"
+    ]
+  },
+  "c7s6m": {
+    "h": "Charter üç hissədir: nəyi, nə ilə, nəyi tapmaq üçün. Heuristika seç: dəyiş-əks et, sərhəd, kəsilmə. Qeyd üçün: nə etdim, nə gördüm, sual.",
+    "a": "Bu, nümunədir; öz tətbiqinə uyğunlaşdır.\n\n**Charter:** Playlist yaratma və redaktə funksiyasını zəif internet, uzun adlar və eyni mahnının təkrarı ilə araşdır ki, məlumat itkisi və qeyri-sabit davranış tapılsın.\n\n**Vaxt:** 30 dəqiqə, sonda 5 dəqiqə nəticə yazmaq.\n\n**3 heuristika:**\n1. **Sərhəd:** çox uzun və ya boş ad, 0 və 1000 mahnı.\n2. **Kəsilmə:** əlavə edərkən interneti kəs, zəng gəlsin, tətbiqi bağla: mahnı qaldı, ya itdi?\n3. **Ardıcıllıq, təkrar:** eyni mahnını iki dəfə əlavə et, sırasını dəyiş, sil, geri al.\n\n**Qeyd formatı:**\n\n| Vaxt | Nə etdim | Nə gördüm | Baq, sual, ideya |\n|---|---|---|---|\n| 10:05 | Internet kəsilərkən mahnı əlavə etdim | Mahnı göründü, açanda yoxdur | Baq? |",
+    "c": [
+      "Charter nəyi araşdırdığını və məqsədi deyir",
+      "Üç heuristika seçilib və playlist üçün tətbiq olunub",
+      "Qeyd formatında edilən, görünən və tapıntı var"
+    ]
+  },
+  "c7s7m": {
+    "h": "Hər test üçün iki sual: tez-tez və eyni şəkildə təkrarlanır? Yoxsa insanın müşahidəsi və rəyi lazımdır?",
+    "a": "**(a) Avtomatik.** Hər gecə təkrarlanır, addımlar sabitdir, 5 brauzerdə əl ilə etmək vaxt itkisidir.\n\n**(b) Manual.** Yeni funksiyanın ilk exploratory sessiyası kəşfdir, addımları əvvəlcədən yazmaq olmur. Tester sınadıqca nəyə baxacağını özü seçir. Sonra sabit hissələri avtomatlaşdırmaq olar.\n\n**(c) Avtomatik.** 50 endpoint, hər dəfə eyni yoxlama, UI yoxdur. Sabit və sürətlidir, ona görə avtomatlaşdırma üçün ən yaxşı namizəddir.\n\n**(d) Manual.** “Əyləncəli” insan rəyidir, kod bunu ölçə bilmir. Real oyunçularla playtest lazımdır.",
+    "c": [
+      "(a) və (c) avtomatik, (b) və (d) manualdır",
+      "Avtomatik qərar təkrarlanma və sabitliklə əsaslandırılıb",
+      "Manual qərar insan müşahidəsi və rəyi ilə əsaslandırılıb"
+    ]
+  },
+  "c7x1m": {
+    "h": "“Düzgün işləməlidir” nə deməkdir? Soruş: say, stok, giriş, məbləğ, səbətin saxlanması. Hər tapıntını müəllifə sual kimi yaz.",
+    "a": "**Tapıntılar və suallar:**\n\n1. **“Düzgün işləməlidir” ölçülmür, test olunmur.** Sual: “Səbətin düzgün işləməsi dəqiq nə deməkdir? Qəbul meyarlarını sadalaya bilərsən: sayı, məbləğ, silmə?”\n2. **Stok qaydası yoxdur.** Sual: “Stokda olmayan məhsulu əlavə etmək olar? Anbarda 2 ədəd varsa, 3 ədəd seçmək?”\n3. **Giriş etməyən istifadəçi yazılmayıb.** Sual: “Daxil olmamış istifadəçi əlavə edə bilər? Daxil olandan sonra səbət nə olur?”\n4. **Say və təkrar yazılmayıb.** Sual: “Eyni məhsulu iki dəfə əlavə edəndə sayı artır, yoxsa ikinci sətir yaranır? Maksimum say nədir?”\n5. **Nəticə və saxlanma aydın deyil.** Sual: “Əlavə edəndən sonra istifadəçi nə görür? Səbət nə qədər saxlanılır?”\n\nDiqqət: review-da müəllifi yox, sənədi müzakirə edirəm.",
+    "c": [
+      "Ən azı 4 tapıntı var",
+      "Hər tapıntının yanında müəllifə konkret sual var",
+      "“Düzgün işləməlidir” ifadəsinin ölçülmədiyi göstərilib"
+    ]
+  },
+  "c7t1": {
+    "h": "Hər `if`-in həm doğru, həm yanlış qolu işləməlidir. Nəticə neçə cür ola bilər? Hər nəticəyə bir dəyər kifayətdirmi?",
+    "a": "**Minimum 4 test lazımdır**, çünki kodda dörd çıxış yolu var və hər biri ayrı testlə keçilir:\n\n| score | ≥ 90 | ≥ 70 | ≥ 50 | Nəticə |\n|---|---|---|---|---|\n| 95 | true | | | A |\n| 80 | false | true | | B |\n| 60 | false | false | true | C |\n| 30 | false | false | false | F |\n\nBu dörd testlə üç şərtin hər birinin həm `true`, həm də `false` qolu işləyir: **100% branch coverage**. Dəyərləri kod hansı qola düşürsə, başqa cür də seçmək olar: 90, 70, 50, 49 da eyni coverage verir, üstəlik sərhədləri də yoxlayır.\n\nDiqqət: bir test neçə qoldan keçsə də, 3 test kifayət etmir, çünki hər test yalnız bir nəticəyə çatır. Coverage 100% olsa da, `>=` və `>` səhvini tutmaq üçün sərhəd dəyərləri ayrıca lazımdır.",
+    "c": [
+      "Dörd test var, nəticələri A, B, C və F-dir",
+      "Hər `if`-in true və false qolunun işlədiyi izah olunub",
+      "Üç testin kifayət etmədiyi aydındır"
+    ]
+  },
+  "c7t2": {
+    "h": "Formatı əvvəl özün dəqiqləşdir: +994 + operator kodu + 7 rəqəm. Neqativlərdə hər dəfə bir şeyi poz: uzunluq, kod, simvol, boş.",
+    "a": "Fərz edirəm ki, format `+994XXXXXXXXX`-dir (ölkə kodundan sonra 9 rəqəm), operator kodları 50, 51, 55, 70, 77, 99, 10-dur. Dəqiq qaydanı tələbdən yoxlamaq lazımdır.\n\n**Pozitiv:**\n1. `+994501234567` (50 operatoru): qəbul olunur.\n2. `+994771234567` (77 operatoru): qəbul olunur.\n3. `+994 50 123 45 67` (boşluqla): tələbə görə qəbul olunur və boşluqsuz saxlanılır.\n\n**Neqativ (hər testdə bir səhv):**\n1. Boş sahə: “Nömrə mütləqdir”.\n2. `+99450123456` (8 rəqəm): uzunluq xətası.\n3. `+9945012345678` (10 rəqəm): uzunluq xətası.\n4. `+1501234567` (başqa ölkə kodu): format xətası.\n5. `+99450abc4567` (hərflər): format xətası.\n6. `+994121234567`: 12 operator kodu deyil, Bakı stasionar kodudur; tələbə görə rədd olunur.\n\nMesajlar nümunədir, tələbdən yoxlanılır.",
+    "c": [
+      "Üç pozitiv və altı neqativ ideya var",
+      "Neqativlərdə uzunluq, ölkə kodu, hərf və boş sahə var",
+      "Hər neqativdə yalnız bir səhv var"
+    ]
+  },
+  "c7t3": {
+    "h": "Əvvəl charter yaz, taymer qur, sonra başla. Sessiya bitəndə iki qrup yaz: nə tapdın, nəyə baxa bilmədin. Sessiyanı özün keçməlisən.",
+    "a": "Bu, formanı göstərən nümunədir. Saytı özün sınamalısan, nəticələrin fərqli olacaq.\n\n**Charter:** Mağazanın axtarışını səhv yazılmış söz, kiril hərfləri və filtrlərlə araşdır ki, nəticələrin itməsi və yanlış sıralanması tapılsın.\n\n**Mühit:** Chrome, kompüter, telefon ekranı ölçüsü. **Vaxt:** 30 dəqiqə.\n\n**Qeydlər:**\n\n| Dəq. | Nə etdim | Nə gördüm |\n|---|---|---|\n| 0–8 | “ayaqqabi”, “ayaqqabı”, “туфли” yazdım | Birincisi nəticə vermir, ikincisi verir |\n| 9–18 | Filtr seçib geri qayıtdım | Filtrlər sıfırlanır |\n| 19–30 | 200 simvol, `<b>`, boşluq yazdım | Boşluqla 0 nəticə, səhifə sınmır |\n\n**Tapıntılar:** 1 ehtimal baq (filtr itir), 1 təkmilləşdirmə (hərf səhvinə dözümlülük).\n\n**Baxılmadı:** mobil tətbiq, səsli axtarış. **Sual:** kiril dəstəklənməlidir?",
+    "c": [
+      "Charter nəyi araşdırdığını və məqsədi yazır, vaxt 30 dəqiqədir",
+      "Qeydlərdə edilən və görünən ayrıca yazılıb",
+      "Sonda tapıntılar və baxılmayan sahələr göstərilib"
+    ]
+  },
+  "c7t4": {
+    "h": "Soruş: tez-tez təkrarlanacaq? Addımlar sabitdir? İnsan rəyi lazımdır? Bir dəfə işlənəcək test üçün avtomatlaşdırma xərci geri qayıdırmı?",
+    "a": "**(a) Login regression: avtomatik.** Hər relizdə təkrarlanır, addımlar sabitdir, əsas yoldur.\n\n**(b) Yeni dizaynın rahatlığı: manual.** “Rahatdırmı?” insan rəyidir, kod onu ölçə bilmir. Usability sessiyası lazımdır.\n\n**(c) 500 məhsulun qiymət hesablaması: avtomatik.** Çox dəyər, eyni məntiq, data-driven test üçün idealdır, əl ilə həm uzun, həm səhvə açıqdır. UI yox, API və ya unit səviyyəsində etmək daha yaxşıdır.\n\n**(d) Bir dəfəlik məlumat köçürülməsi: manual yoxlama, kömək üçün skript.** Tam avtomat framework yazmağa dəyməz, xərc geri qayıtmır. Sayları və nümunələri SQL və ya birdəfəlik skriptlə tutuşdurmaq olar. Bu cavabda hər iki hissəni izah et.\n\n**(e) Gecə smoke testi: avtomatik.** “Hər gecə” artıq insanın işi deyil, CI-da avtomatik işləyir.",
+    "c": [
+      "(a), (c), (e) avtomatikdir, (b) manualdır",
+      "(d) üçün birdəfəlik işin avtomatlaşdırma xərcini ödəmədiyi nəzərə alınıb",
+      "Hər qərarın yanında səbəb yazılıb"
+    ]
+  },
+  "c7q1": {
+    "a": "**Black box:** kodu bilmədən, giriş və çıxışa görə test. **White box:** kodu bilərək, daxili yollara görə test. **Grey box:** kodu tam bilmədən, amma sistemin quruluşundan istifadə edərək test: DevTools, API, SQL, loglar.",
+    "c": [
+      "Üçünün kod barədə bilik səviyyəsi düzgün fərqləndirilib",
+      "Grey box üçün alət və ya bilik misalı var"
+    ]
+  },
+  "c7q2": {
+    "a": "**Statement coverage:** kod sətirlərinin neçə faizi işə düşüb. **Branch coverage:** qərar qollarının, yəni `if`-in həm doğru, həm yanlış yolunun neçə faizi işə düşüb. Branch daha güclüdür: 100% branch adətən 100% statement verir, tərsi isə yox.",
+    "c": [
+      "Statement icra olunan sətirləri, branch isə qərar qollarını ölçür",
+      "Branch coverage-in daha güclü olduğu deyilib"
+    ]
+  },
+  "c7q3": {
+    "a": "**Ad hoc** plansızdır: qaydasız sınaq, qeyd yoxdur, nəticəni təkrarlamaq çətindir. **Exploratory** isə idarə olunan kəşfdir: charter (məqsəd), timebox (vaxt) və qeydlər var. Test dizaynı və icra eyni vaxtda gedir, tapılanlar sənədləşir.",
+    "c": [
+      "Exploratory-də charter, vaxt və qeydlər var",
+      "Ad hoc-un plansız və sənədsiz olduğu deyilib"
+    ]
+  },
+  "c7q4": {
+    "a": "Coverage yalnız kodun işə düşdüyünü göstərir, nəticənin düzgünlüyünü yox: test yoxlama etməyə də bilər. Üstəlik kodda olmayan şeyi tapa bilmir: unudulmuş tələb, səhv məntiq, sərhəd dəyəri (`>` və `>=`), inteqrasiya və istifadəçi ehtiyacı problemləri buraxıla bilər.",
+    "c": [
+      "Kodun işə düşməsinin nəticəni yoxlamaq demək olmadığı deyilib",
+      "Tapa bilmədiyi bir hal göstərilib: unudulmuş tələb və ya sərhəd səhvi"
+    ]
+  }
+}

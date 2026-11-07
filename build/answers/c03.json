@@ -1,0 +1,166 @@
+{
+  "c3s1m": {
+    "h": "Mərhələləri sırala: tələblər, dizayn, kod, test, yerləşdirmə, dəstək. Hər birində soruş: dərs cədvəlində burada nə səhv gedə bilər?",
+    "a": "Nümunə işlər:\n\n1. **Tələblər:** sənədi oxuyub soruşur: “Bir müəllimin eyni vaxtda iki dərsi ola bilərmi? Cədvəl dəyişəndə tələbəyə bildiriş gedirmi?”\n2. **Dizayn:** maketə baxır: 8 dərslik gün telefon ekranına sığırmı, boş gün necə görünür?\n3. **Kod:** test case və test datası hazırlayır, proqramçı ilə test edilə bilməni müzakirə edir.\n4. **Test:** test case-ləri icra edir, bug report yazır, düzəlişləri retest edir.\n5. **Yerləşdirmə:** canlıda smoke test edir: giriş işləyir, cədvəl açılır.\n6. **Dəstək:** semestr başında gələn şikayətləri təkrarlayır, yeni versiyanı regression ilə yoxlayır.",
+    "c": [
+      "Altı mərhələnin hər birində bir iş yazılıb",
+      "İşlər dərs cədvəli tətbiqinə aiddir, ümumi cümlə deyil",
+      "Tester-in işi test mərhələsindən əvvəl başlayır"
+    ]
+  },
+  "c3s2m": {
+    "h": "Hər hal üçün soruş: qərarı kim verir? Reliz qərarı, maket və tələb fərqli adamların sahəsidir. Mesajda fakt və istəyini yaz.",
+    "a": "**(a) Product Owner (və ya reliz qərarını verən şəxs), proqramçını da əlavə edirəm:** “Sabahkı relizə kritik baq BUG-123 açıqdır: X addımında ödəniş keçmir. Təsiri: bütün istifadəçilər. Düzəliş bu günə çatacaqmı, yoxsa relizi təxirə salaq? Qərarınız lazımdır.”\n\n**(b) Dizayner:** “Maketdəki ‘Yadda saxla’ düyməsi azərbaycanca mətnlə sığmır: mətn iki sətrə düşür (şəkil əlavə olunub). Düymə ölçüsünü böyütmək olar, yoxsa mətni qısaldaq?”\n\n**(c) Product Owner və ya biznes analitik:** “Eyni funksiya üçün iki sənəd fərqlidir: A-da limit 5, B-də 10 yazılıb. Hansı doğrudur? Düzgün olan yeniləsin, biz testləri ona görə yazırıq.”\n\nHər mesajda fakt, təsir və lazım olan qərar var. Emosiya və ittiham yoxdur.",
+    "c": [
+      "(a) reliz qərarı verənə, (b) dizaynerə, (c) PO və ya analitikə ünvanlanıb",
+      "Hər mesajda konkret fakt var",
+      "Hər mesajda nə gözlənildiyi və ya hansı qərar lazım olduğu yazılıb"
+    ]
+  },
+  "c3s3m": {
+    "h": "Kod hələ test olunmur, amma sənədlər artıq var. 2 ayda sənəddən nə tapmaq və növbəti mərhələ üçün nə hazırlamaq olar?",
+    "a": "Nümunə işlər:\n\n1. **Tələb sənədinin review-u:** ziddiyyət və boşluqları tapmaq. Azaltdığı risk: səhv tələbin koda keçməsi və gec, baha düzəlişi.\n2. **Test planı yazmaq:** əhatə, resurslar, meyarlar. Risk: test mərhələsində nəyin, kim tərəfindən, nə qədər vaxta yoxlanacağının bilinməməsi.\n3. **Test case-lər və izlənmə cədvəli (traceability):** hər tələbin testi olur. Risk: tələbin testsiz qalması.\n4. **Test mühiti və datanı hazırlamaq:** serverlərə sorğu, hesablar, data. Risk: test mərhələsinin mühit yoxluğundan gecikməsi.\n\nWaterfall-da bu, xüsusilə vacibdir: test sonda gəlsə də, tester-in hazırlığı erkən başlayır.",
+    "c": [
+      "Dörd iş yazılıb və hər biri kod hazır olmadan görülə bilir",
+      "Hər işin yanında azaltdığı risk var",
+      "Tələb sənədinin review-u daxildir"
+    ]
+  },
+  "c3s4m": {
+    "h": "İnteqrasiya testi modullar arasındakı əlaqəni yoxlayır. Sensordan ekrana qədər məlumat hansı hissələrdən keçir, burada nə qırıla bilər?",
+    "a": "Fərz edirəm ki, arxitektura belədir: sensor modulu → məsafəni hesablayan modul → səs siqnalı və ekran modulu.\n\n1. **Sensor → hesablama:** sensor 80 sm siqnal göndərir. Gözlənilən: hesablama modulu dəyəri düzgün vahidlə (sm) alır, 800 və ya 8 kimi yox.\n2. **Hesablama → səs:** məsafə 30 sm-dən aşağı düşür. Gözlənilən: səs modulu dərhal “sürətli siqnal” əmrini alır, gecikmə icazə verilən həddən çox olmur.\n3. **Sensor xətası → ekran:** sensor məlumat göndərmir (kəsilir). Gözlənilən: hesablama modulu xətanı ötürür, ekranda “sensor işləmir” görünür, köhnə məsafə qalmır.\n\nHər ssenari tək modulu yox, iki modulun əlaqəsini yoxlayır.",
+    "c": [
+      "Üç ssenari yazılıb və hər biri iki modul arasındakı əlaqəni yoxlayır",
+      "Hər ssenarinin gözlənilən nəticəsi var",
+      "Ən azı biri xəta və ya siqnalın olmaması halıdır"
+    ]
+  },
+  "c3s5m": {
+    "h": "Dörd dəyəri yadına sal: insanlar və ünsiyyət, işləyən məhsul, müştəri ilə əməkdaşlıq, dəyişikliyə reaksiya. Hər işi birinə bağla.",
+    "a": "Nümunə:\n\n| Tester-in işi | Manifestin dəyəri |\n|---|---|\n| Refinement-də proqramçı və PO ilə qəbul meyarlarını müzakirə edir | İnsanlar və ünsiyyət, alət və proseslərdən üstün |\n| Hazır story-ni sprint içində test edir, baqı proqramçı ilə dərhal həll edir | İşləyən məhsul, geniş sənəddən üstün |\n| Sprint Review-da nəticəni göstərir, PO-nun rəyini test ideyalarına çevirir | Müştəri ilə əməkdaşlıq |\n| Tələb dəyişəndə testləri həmin gün yeniləyir | Dəyişikliyə reaksiya, plana bağlılıqdan üstün |\n| Uzun sənəd əvəzinə qısa checklist yazır, regression-u avtomatlaşdırır | İşləyən məhsul |\n\nDiqqət: manifest sənədin lazım olmadığını demir, işləyən məhsulun daha vacib olduğunu deyir.",
+    "c": [
+      "Beş konkret iş yazılıb, ümumi “komanda ilə işləyir” deyil",
+      "Hər iş manifestin bir dəyərinə bağlanıb",
+      "Sənədin tam ləğv olunduğu deyilmir"
+    ]
+  },
+  "c3s6m": {
+    "h": "“Kod yazılıb” hələ “işləyir” demək deyil. Soruş: story-ni kim yoxlayıb, köhnə funksiyalar qırılmayıb, qalan baq varmı?",
+    "a": "Nümunə bəndlər:\n\n1. **Qəbul meyarlarının hamısı test olunub və keçib.** Qarşısını aldığı problem: yarımçıq və ya səhv anlaşılmış funksiyanın “hazır” sayılması.\n2. **Unit və API testləri yazılıb, CI-da yaşıldır.** Problem: kiçik dəyişikliyin başqa yeri sındırması və bunun gec tapılması.\n3. **Əlaqəli sahələrdə regression edilib.** Problem: yeni funksiya işləyir, amma köhnəsi qırılıb.\n4. **Açıq Critical və Major baq yoxdur, qalan baqları PO qəbul edib.** Problem: ağır baqla reliz və qərarın gizli qalması.\n\nBaşqa yaxşı bəndlər: test mühitində yoxlanılıb, sənəd yenilənib, mobil və əsas brauzerdə baxılıb.",
+    "c": [
+      "Dörd bənd əlavə olunub və hər biri yoxlanıla biləndir",
+      "Hər bəndin qarşısını aldığı problem yazılıb",
+      "Test və baq statusu ilə bağlı bənd var"
+    ]
+  },
+  "c3s7m": {
+    "h": "Darboğaz “Testing”-dədir. Soruş: işlər niyə çıxmır: çoxmu gəlir, ləngmi yoxlanılır, geri qayıdırmı, yoxsa nəsə gözləyir?",
+    "a": "Nümunə səbəblər və həllər:\n\n1. **Tester azdır və ya işlər çox gəlir.** Həll: “Testing” sütununa WIP limiti qoymaq; limit dolanda proqramçılar yeni iş başlamır, teste kömək edir.\n2. **İşlər zəif keyfiyyətlə gəlir, baqla geri qayıdır.** Həll: “In Progress”dən çıxış qaydası: unit test keçib, code review olunub; qəbul meyarları kod yazılmazdan əvvəl razılaşdırılır.\n3. **Manual regression çox vaxt aparır, ya da mühit tez-tez işləmir.** Həll: tez-tez təkrarlanan testləri avtomatlaşdırmaq, stabil test mühiti ayırmaq.\n\nSəbəbi rəqəmlə yoxlayıram: bir işin “Testing”-də nə qədər qaldığı (cycle time), neçəsinin geri qayıtdığı.",
+    "c": [
+      "Üç fərqli səbəb yazılıb",
+      "Hər səbəbin ayrıca həlli var",
+      "Həll konkretdir, məsələn, WIP limiti, keçid qaydası və ya avtomatlaşdırma"
+    ]
+  },
+  "c3s8m": {
+    "h": "Üç şeyə bax: tələblər nə qədər dəyişir, səhvin qiyməti nədir, iş partiyalarla, yoxsa axınla gəlir?",
+    "a": "Bir mümkün cavab:\n\n**(a) Startap: Scrum (Agile).** Tələblər tez dəyişir, ideyanı bazarda sınamaq lazımdır. Qısa sprintlər və tez rəy səhv istiqamətə gedən vaxtı azaldır.\n\n**(b) Aeroport baqaj sistemi: V-model və ya hibrid.** Tələblər aydındır və səhvin qiyməti yüksəkdir. Hər mərhələnin qarşısında planlanan test səviyyəsi və sənədləşmə bu riskə uyğundur.\n\n**(c) Saytın dəstəyi: Kanban.** İşlər hər gün kiçik sorğu kimi gəlir, sprintə sığdırmaq süni olardı. Davamlı axın və WIP limiti növbəni görünən edir.",
+    "c": [
+      "Üç layihənin hər biri üçün model seçilib",
+      "Hər seçim tələbin sabitliyi, risk və ya iş axını ilə əsaslandırılıb",
+      "(c) üçün davamlı axın (Kanban) nəzərə alınıb"
+    ]
+  },
+  "c3x1m": {
+    "h": "Üç vəziyyət qur: 3-cü səhvdən əvvəl düzgün şifrə, düz 3-cü səhv şifrə, 15 dəqiqə bloklanma ərzində və sonra cəhd. Given-When-Then yaz.",
+    "a": "```gherkin\nScenario: Pozitiv: sayğac dolmayıb, düzgün şifrə ilə giriş\n  Given istifadəçi şifrəni 2 dəfə yanlış yazıb\n  When o düzgün şifrəni yazır\n  Then o hesaba daxil olur\n  And yanlış cəhd sayğacı sıfırlanır\n\nScenario: Sərhəd: 3-cü yanlış cəhd hesabı bloklayır\n  Given istifadəçi şifrəni 2 dəfə yanlış yazıb\n  When o şifrəni 3-cü dəfə yanlış yazır\n  Then hesab 15 dəqiqəlik bloklanır\n  And “Hesab 15 dəqiqəlik bloklanıb” mesajı görünür\n\nScenario: Bloklanmadan sonra: müddət bitib\n  Given hesab 15 dəqiqə əvvəl bloklanıb\n  When istifadəçi düzgün şifrəni yazır\n  Then o hesaba daxil olur\n```\n\nBloklanma ərzində düzgün şifrənin də rədd olunması (14-cü dəqiqə) ayrıca yaxşı ssenaridir.",
+    "c": [
+      "Üç ssenari Given, When, Then quruluşundadır",
+      "Sərhəd ssenarisində düz 3-cü yanlış cəhd hesabı bloklayır",
+      "Üçüncü ssenari bloklanmadan sonrakı vəziyyəti yoxlayır"
+    ]
+  },
+  "c3x2m": {
+    "h": "Testi relizdən əvvələ çək: tələb, kod, CI. Hər addım üçün soruş: bu, komandaya nəyə başa gəlir, əvəzində hansı səhvi erkən tutur?",
+    "a": "Nümunə addımlar:\n\n1. **Tələb review-u, sprintin əvvəlində.** Xərc: hər story üçün 15–30 dəqiqə görüş. Fayda: qeyri-müəyyən tələb kod yazılmazdan əvvəl bir sualla düzəlir.\n2. **Unit testlər, hər story-də.** Xərc: proqramçının vaxtının 10–20%-i. Fayda: sadə səhvlər testə çatmadan tutulur.\n3. **CI: hər commit-də avtomatik build və smoke test.** Xərc: quraşdırma üçün bir neçə gün. Fayda: sınan build elə həmin gün görünür.\n4. **Hər story hazır olanda test.** Xərc: tester-in iş rejimini dəyişmək. Fayda: baqlar relizdən bir gün əvvəl yığılmır, kontekst təzə ikən düzəlir.\n\nXərc rəqəmləri təxminidir, komandaya görə dəyişir.",
+    "c": [
+      "Dörd konkret addım yazılıb",
+      "Hər addımın həm xərci, həm də faydası var",
+      "Addımlar testi relizdən daha erkənə çəkir"
+    ]
+  },
+  "c3t1": {
+    "h": "Hər layihədə iki sualı ver: tələblər nə qədər sabitdir? Nəticə nə qədər tez lazımdır? Sonra modeli seç.",
+    "a": "Bir mümkün cavab:\n\n**(a) Onlayn oyun: Agile (Scrum).** Hər ay yeni məzmun çıxır, oyunçu rəyi növbəti buraxılışa təsir edir. Qısa və təkrarlanan dövr buna uyğundur. Ayda bir buraxılış Scrum sprintləri ilə rahat qurulur. Canlı oyundakı kiçik düzəlişlər üçün Kanban da əlavə oluna bilər.\n\n**(b) Bankın hesabat sistemi: V-model (və ya Waterfall).** Tələblər bir dəfə təsdiqlənir və dəyişməsi gözlənilmir. Bank sahəsi sənəd və yoxlama izi tələb edir. V-model hər mərhələnin qarşısına test səviyyəsini qoyduğu üçün Waterfall-dan daha yaxşıdır: test sona qalmır.\n\n**(c) Yeni sosial şəbəkə: Agile (Scrum).** İdeyanın bazara lazım olub-olmadığı hələ bilinmir, tələblər dəyişəcək. Tez buraxmaq və rəy almaq səhv məhsula çox pul xərcləməkdən qoruyur.",
+    "c": [
+      "(a) və (c) üçün Agile (və ya hibrid) seçilib",
+      "(b) üçün sabit tələbə görə V-model və ya Waterfall seçilib",
+      "Hər seçim tələblərin sabitliyi və ya tez rəylə izah olunub"
+    ]
+  },
+  "c3t2": {
+    "h": "V-də sol qolun hər addımının qarşısında sağ qolda bir test səviyyəsi durur. Arxitektura hissələrin bir-birinə necə bağlandığını təsvir edir.",
+    "a": "**Uyğun səviyyə: inteqrasiya testi.** Arxitektura sistemin hissələrini və onların necə əlaqələndiyini təsvir edir, inteqrasiya testi də məhz bu əlaqələri yoxlayır.\n\n**Tester bu mərhələdə nə edə bilər (hələ kod yoxdur):**\n- Arxitektura sənədini oxuyub soruşur: “Ödəniş xidməti cavab verməsə, sifariş nə olur?”\n- İnteqrasiya test planı və ssenariləri hazırlayır: modullar arasında hansı məlumat gedir, xəta halında nə gözlənilir.\n- Test üçün lazım olanları müəyyən edir: test mühiti, xarici xidmət üçün stub və ya mock, test datası.\n\nBeləcə kod yazılanda testlər artıq hazır olur.",
+    "c": [
+      "Arxitekturaya inteqrasiya testinin uyğun gəldiyi deyilib",
+      "Tester-in konkret işi yazılıb: sənədi oxumaq, sual vermək, ssenari hazırlamaq",
+      "Bu işlərin kod yazılmazdan əvvəl görüldüyü aydındır"
+    ]
+  },
+  "c3t3": {
+    "h": "Dörd görüşü sırala: Planning, Daily, Review, Retrospective. Hər birində tester nə gətirir, nə aparır?",
+    "a": "**Sprint Planning (sprintin əvvəli):** story-ləri müzakirə edirəm, qəbul meyarlarını aydınlaşdırıram, test işinin həcmini qiymətləndirməyə qatılıram: “Bu story üçün test datası və regression nə qədər vaxt aparar?”\n\n**Daily Scrum (hər gün, 15 dəqiqə):** dünən nəyi test etdiyimi, bu gün nə edəcəyimi və mane olanı deyirəm: “Mühit işləmir, iki story bloklanıb.” Baqları uzun-uzadı müzakirə etmirəm, görüşdən sonra ayrıca danışıram.\n\n**Sprint Review (sprintin sonu):** hazır funksiyanın göstərilməsində iştirak edirəm, keyfiyyət barədə faktları deyirəm, PO-nun rəyindən yeni test ideyaları yazıram.\n\n**Sprint Retrospective (sprintin sonu):** prosesi müzakirə edirəm: “Story-lər sprintin sonuna yığıldı, növbəti sprintdə test üçün iki gün əvvəl verilsin.” Konkret bir yaxşılaşdırma razılaşdırılır.",
+    "c": [
+      "Dörd görüşün hər birində tester-in işi yazılıb",
+      "Daily-də qısa status və maneə deyilir, baq uzun müzakirə olunmur",
+      "Retrospektivdə məhsul yox, proses və konkret yaxşılaşdırma müzakirə olunur"
+    ]
+  },
+  "c3t4": {
+    "h": "Üç sütun çək və hər tapşırığı bir sütuna qoy. Yazarkən özünü yoxla: eyni anda “In Progress”də neçə iş var?",
+    "a": "Bu, nümunədir; sənin tapşırıqların öz kursundan olmalıdır.\n\n| To Do | In Progress | Done |\n|---|---|---|\n| Fəsil 12: bug report məşqi | Fəsil 8: sərhəd dəyərləri tapşırıqları | Fəsil 1–7-ni oxumaq |\n| API testi: Postman quraşdırmaq | Portfolio üçün test case yazmaq | Git quraşdırmaq |\n| SQL məşqi: JOIN | | Fəsil 8-in testi |\n\n**Nəyi yoxla:**\n- Hər tapşırıq kiçikdir və bir cümlə ilə başa düşülür: “QA öyrənmək” çox böyükdür.\n- “In Progress”də az iş var. Özünə WIP limiti qoy, məsələn, 2: birini bitirməmiş yenisinə başlama.\n- Tapşırıq bitəndə kartı sağa keçirirsən, nəyin ilişdiyi lövhədə görünür.",
+    "c": [
+      "To Do, In Progress, Done sütunları var və tapşırıqlar paylanıb",
+      "Tapşırıqlar kiçik və konkretdir",
+      "“In Progress”də az iş var və ya WIP limiti nəzərə alınıb"
+    ]
+  },
+  "c3t5": {
+    "h": "Soruş: bir iş nə vaxt həqiqətən bitib? Kod, test, baq, regression və sənəd üçün bir yoxlanıla bilən bənd yaz.",
+    "a": "Mümkün variantlardan biridir, öz komandana görə dəyişə bilərsən.\n\n**Definition of Done:**\n\n1. Kod yazılıb və başqa proqramçı tərəfindən review olunub.\n2. Unit testlər yazılıb, CI-da bütün testlər yaşıldır.\n3. Qəbul meyarlarının hamısı test mühitində yoxlanılıb və keçib.\n4. Əlaqəli sahələrdə regression edilib; açıq Critical və Major baq yoxdur.\n5. Sənəd yenilənib (lazımdırsa), PO funksiyanı görüb və qəbul edib.\n\nYaxşı bənd yes/no ilə yoxlanılır: “testlər keçib” yoxlanılır, “keyfiyyətli işlənib” yoxlanılmır. DoD komanda ilə razılaşdırılır və hər story-yə eyni tətbiq olunur.",
+    "c": [
+      "Beş bənd var və hər biri bəli/xeyr ilə yoxlanılır",
+      "Test və baq statusu bəndlərdə göstərilib",
+      "“Keyfiyyətli işlənib” kimi ölçülməz cümlə yoxdur"
+    ]
+  },
+  "c3q1": {
+    "a": "Tələblər (requirements), dizayn, kodlaşdırma, test, yerləşdirmə (deployment) və dəstək (maintenance). Tester-in işi yalnız test mərhələsində deyil: tələb və dizayndan başlayır, canlıya çıxışda və dəstəkdə də davam edir.",
+    "c": [
+      "Altı mərhələ düzgün sırayla sadalanıb",
+      "Tələblər əvvəldə, dəstək isə sondadır"
+    ]
+  },
+  "c3q2": {
+    "a": "Test layihənin sonunda cəmləşir, ona görə defektlər gec tapılır. Tələbdəki səhv ancaq sonda görünür və onu düzəltmək üçün geri qayıtmaq çətin və bahadır. Tarix sıxışanda test vaxtı da ən çox buradan kəsilir.",
+    "c": [
+      "Testin sona qaldığı deyilib",
+      "Defektlərin gec tapıldığı və baha düzəldiyi izah olunub"
+    ]
+  },
+  "c3q3": {
+    "a": "**3 rol:** Product Owner, Scrum Master, Developers (tester də bura daxildir). **4 görüş:** Sprint Planning, Daily Scrum, Sprint Review, Sprint Retrospective.",
+    "c": [
+      "Üç rol düzgün adlandırılıb",
+      "Dörd görüş düzgün adlandırılıb",
+      "Tester-in Developers-in bir hissəsi olduğu bilinir"
+    ]
+  },
+  "c3q4": {
+    "a": "Definition of Done, bir işin “hazır” sayılması üçün komandanın razılaşdırdığı keyfiyyət minimumudur. Tester üçün ona görə vacibdir ki, test olunmamış iş “hazır” sayıla bilmir: test artıq sprintin sonunda sıxışdırılan əlavə deyil, işin rəsmi şərtidir.",
+    "c": [
+      "DoD-un hazırlıq üçün razılaşdırılmış minimum olduğu deyilib",
+      "Testin “hazır” sayılmağın şərti olduğu göstərilib"
+    ]
+  }
+}

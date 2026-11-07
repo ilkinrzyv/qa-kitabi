@@ -1,0 +1,173 @@
+{
+  "c20s1m": {
+    "h": "Hansı ad testin nəyi yoxladığını daha aydın deyir? Həll: markerləri sil, bir ad saxla, `git add`, `git commit`. Sonra testi işə sal.",
+    "a": "**Saxlayıram:** `test('istifadəçi məhsulu səbətə əlavə edir və nişanda 1 görür', …)`. Bu ad testin nəyi yoxladığını deyir, test düşəndə problem hesabatdan anlaşılır. Qərarı adı dəyişən həmkarla da dəqiqləşdirirəm, çünki hər iki dəyişikliyin səbəbi ola bilər.\n\n**Əmrlər:**\n\n```bash\ngit status\n# faylı aç: <<<<<<<, =======, >>>>>>> sətirlərini sil, seçilən adı saxla\ngit add tests/cart.spec.js\ngit commit\n```\n\n`git commit` merge üçün hazır mesajı açır. `git status` “both modified” göstərən faylları tapır.\n\n**Həlldən sonra yoxlayıram:**\n1. Faylda marker qalmayıb: `git grep -n \"<<<<<<<\"`.\n2. Testin gövdəsi itməyib, kod işləyir: `npx playwright test tests/cart.spec.js`.\n3. Testin adından asılı olan başqa yer yoxdur (`--grep` əmri, skript).\n4. Bütün dəst keçir, sonra push edirəm.",
+    "c": [
+      "Seçilən ad səbəblə göstərilib",
+      "Markerlər silinir, `git add` və `git commit` ardıcıllığı var",
+      "Həlldən sonra test işə salınır",
+      "Markerin qalmadığı yoxlanılır"
+    ]
+  },
+  "c20s2m": {
+    "h": "Hələ commit yoxdur, deməli staging-dən çıxarmaq kifayətdir: `git restore --staged`. Gələcək üçün `.gitignore`, bir də `git add .` əvəzinə fayl adı.",
+    "a": "**Staging-dən çıxar:**\n\n```bash\ngit restore --staged debug.log .env\ngit status\n```\n\n`git status`-da yalnız `tests/cart.spec.js` “to be committed” görünməlidir. Fayllar diskdə qalır, sadəcə commit-ə getmir.\n\n**Commit et:**\n\n```bash\ngit commit -m \"Səbət testləri əlavə olundu\"\n```\n\n**Gələcək üçün:** `.gitignore` faylına yaz:\n\n```text\n.env\n*.log\n```\n\n```bash\ngit add .gitignore\ngit commit -m \".env və log faylları Git-dən kənarda saxlanılır\"\n```\n\nCommit etməzdən əvvəl `git status` və `git diff --staged` yoxlayıram, `git add .` əvəzinə adı ilə əlavə edirəm. `.env` commit olunsaydı, faylı silmək kifayət etməzdi: şifrə tarixçədə qalır, onu dəyişmək lazım gələrdi.",
+    "c": [
+      "`git restore --staged` və ya `git reset` ilə iki fayl çıxarılır",
+      "Yalnız test faylı commit olunur",
+      "`.env` və `*.log` `.gitignore`-a əlavə olunur",
+      "`git status` ilə yoxlama var"
+    ]
+  },
+  "c20s3m": {
+    "h": "`.gitignore` yalnız izlənməyən fayllara təsir edir. Fayl əvvəl commit olunubsa, Git izləməyə davam edir. Faylı izləmədən çıxar, diskdən yox.",
+    "a": "**Səbəb:** `debug.log` `.gitignore`-a yazılmamışdan əvvəl artıq commit olunub. `.gitignore` yalnız hələ izlənməyən fayllara təsir edir, izlənən faylı Git dəyişiklik kimi göstərməyə davam edir.\n\n**Həll:**\n\n```bash\ngit rm --cached debug.log\ngit status\ngit commit -m \"debug.log izlənmədən çıxarıldı\"\ngit push\n```\n\n`--cached` faylı yalnız Git-in izləməsindən çıxarır, diskdəki fayl qalır. `git status`-da `deleted: debug.log` görünəcək, bu, gözlənilən haldır.\n\n**Yoxlama:** faylı dəyiş, `git status`-da artıq görünmür.\n\nDiqqət: fayl köhnə commit-lərdə qalır. İçində şifrə olsaydı, şifrəni dəyişmək lazım gələrdi.",
+    "c": [
+      "Səbəb faylın əvvəlcədən commit olunması ilə izah olunub",
+      "`git rm --cached debug.log` işlənib",
+      "Sonra commit var və push edilir",
+      "Faylın diskdə qaldığı deyilib"
+    ]
+  },
+  "c20s4m": {
+    "h": "Budaq adı işi deyir. Commit mesajları nə və niyə deyir, hər biri bir məntiqi addımdır. PR təsvirində üç hissə olsun.",
+    "a": "Bu, nümunədir, komandanın qaydalarına uyğunlaşdır.\n\n**Budaq:** `test/checkout-validation`\n\n**Commit-lər:**\n1. `CheckoutPage class-ı əlavə olundu: forma sahələri və xəta mesajı`\n2. `Boş ad və soyad üçün checkout validasiyası testləri əlavə olundu`\n3. `Boş poçt kodu üçün validasiya testi əlavə olundu`\n\n**PR başlığı:** `Checkout formasının validasiyası üçün 3 Playwright testi`\n\n**PR təsviri:**\n\n```text\nNiyə\nCheckout formasının boş sahə yoxlamaları hələ avtomatlaşdırılmamışdı,\nregression zamanı əl ilə yoxlanılırdı.\n\nNə dəyişdi\n- pages/CheckoutPage.js: sahələr, Continue düyməsi, xəta mesajı\n- tests/checkout.spec.js: boş ad, boş soyad, boş poçt kodu üçün 3 test\n\nNecə yoxlamaq olar\nnpx playwright test tests/checkout.spec.js\nGözlənilən: 3 test keçir. Məhsul kodu dəyişməyib.\n```",
+    "c": [
+      "Budaq adı işi təsvir edir",
+      "Üç commit mesajı nə dəyişdiyini deyir, “fix” kimi ümumi deyil",
+      "PR təsvirində niyə, nə dəyişdi, necə yoxlamaq olar var"
+    ]
+  },
+  "c20s5m": {
+    "h": "“Utils” dəyişibsə, qiymət göstərilən hər ekran riskdədir. `Checkout.jsx` və `orders.js` isə pul axınıdır. Format dəyişib, məbləğ dəyişməməlidir: bunu yoxla.",
+    "a": "| # | Prioritet | Test ideyası |\n|---|---|---|\n| 1 | Yüksək | Checkout-da ekrandakı cəm serverə gedən və sifarişdə saxlanılan məbləğlə eynidir |\n| 2 | Yüksək | `POST /orders` məbləği ədəddir, format mətni (`\"1 250,50 AZN\"`) serverə getmir |\n| 3 | Yüksək | Sifariş tam keçir: ödəniş, təsdiq, sifariş tarixçəsi |\n| 4 | Orta | Sərhəd dəyərləri: 0, 0,1, 0,10, 1000, 1000000 düzgün formatlanır, yuvarlaqlaşdırma xətası yoxdur |\n| 5 | Orta | `formatPrice`-ı işlədən digər ekranlar: kataloq, səbət, sifariş tarixçəsi, e-poçt, PDF qəbz |\n| 6 | Aşağı | Fərqli dil və valyuta, mobil enlikdə uzun qiymət düzəni sındırmır |\n\n**Gözlənilmədən təsirlənən sahələr:** `src/utils/formatPrice.js` ortaq köməkçidir, ona görə PR təsvirində sadalanmayan ekranlar da dəyişə bilər. `orders.js` təsvirdə yoxdur, amma API-yə toxunur: “niyə dəyişib?” proqramçıdan soruşuram. Kiçik görünən təsvir böyük təsir gizlədə bilər.",
+    "c": [
+      "Altı test ideyası prioritetlə yazılıb",
+      "Sifariş məbləği və ödəniş axını yüksək prioritetdir",
+      "Ortaq `formatPrice`-ın başqa ekranlara təsiri deyilib",
+      "`orders.js` dəyişikliyinin təsvirdə olmaması diqqətə alınıb"
+    ]
+  },
+  "c20s6m": {
+    "h": "“No commits yet” deyir: push ediləcək heç nə yoxdur, `main` hələ yaranmayıb. Əvvəl `.gitignore`, sonra add, commit, budaq adı, push.",
+    "a": "**Səbəb:** hələ heç bir commit yoxdur, ona görə `main` budağı da yoxdur. Push etməyə bir şey tapılmır. `git init` budağı tam yaratmır, ilk commit yaradır.\n\n**Düzgün ardıcıllıq:**\n\n```bash\ngit status\ngit add .gitignore package.json package-lock.json playwright.config.js tests pages\ngit commit -m \"Playwright testləri ilə ilk versiya\"\ngit branch -M main\ngit remote -v\ngit push -u origin main\n```\n\nƏgər `git commit` “Please tell me who you are” desə, əvvəl:\n\n```bash\ngit config --global user.name \"Adın\"\ngit config --global user.email \"email@example.com\"\n```\n\n**Push-dan əvvəl yoxlayıram:**\n- `git status`: `node_modules`, `.env`, `test-results`, `playwright-report` commit-də yoxdur.\n- `git log --oneline`: commit var.\n- `git remote -v`: ünvan düzgündür.\n\nSonra GitHub-da faylların düşdüyünə baxıram.",
+    "c": [
+      "Səbəb commit olmaması, budağın hələ yaranmaması ilə izah olunub",
+      "Ardıcıllıq `add`, `commit`, `branch -M main`, `push`-dur",
+      "Push-dan əvvəl `.gitignore` və ya `node_modules` yoxlanılır"
+    ]
+  },
+  "c20s7m": {
+    "h": "Ən böyük pay E2E-nindir: 39 dəq. Üç vasitə: paralel işlətmək, E2E-ni PR-da azaltmaq, bəzi yoxlamaları aşağı səviyyəyə köçürmək. Hər birinin riskini yaz.",
+    "a": "**İndi:** 4 + 12 + 39 = 55 dəq, ardıcıl. Rəqəmlər təxminidir, ilk ölçmədən sonra dəqiqləşir.\n\n**Plan:**\n\n| Qərar | Nəticə | Risk |\n|---|---|---|\n| Unit və API eyni vaxtda; API 4 worker-də | 12 → 3 dəq, mərhələ ≈ 4 dəq | Paylaşılan data flaky yarada bilər: test datası ayrılmalıdır |\n| PR-da yalnız smoke E2E (40 test, 200-dən) | 39 → ≈ 8 dəq | Qalan E2E baqı PR-da görünmür, sonra tapılır |\n| Smoke-u 3 shard-a böl | 8 → ≈ 3 dəq | Runner xərci artır, hesabatları birləşdirmək lazımdır |\n| Tam E2E gecə və ya relizdən əvvəl (4 shard) | ≈ 10 dəq | Baq gec tapılır, qırmızını səhər dərhal baxmaq vacibdir |\n| Təkrar E2E-ni API-yə köçür | Dəst kiçilir | Köçürmə vaxt tələb edir, UI inteqrasiyası itməsin |\n\n**Yekun PR pipeline:** ≈ 4 + 3 + qurulum 3 ≈ **10 dəq**: 15 dəqiqəyə sığır.\n\n**Birləşdirmə qaydası:** nəticəni gözləməmək prosesdir: `main`-də **required status checks** açılır. Risk: qırmızı dayandırır, ona görə flaky testlər tez düzəldilməlidir.",
+    "c": [
+      "55 dəqiqənin E2E-dən gəldiyi nəzərə alınıb",
+      "Paralellik və E2E-nin PR-da azaldılması plandadır",
+      "Plan 15 dəqiqəyə sığır, hesablanıb",
+      "Hər qərarın riski yazılıb",
+      "Nəticəsiz birləşdirmənin qarşısı alınır"
+    ]
+  },
+  "c20s8m": {
+    "h": "GitHub cron-u UTC-dədir, Bakı UTC+4-dür. `strategy.matrix` paralel job yaradır. Hesabat adına `${{ matrix.browser }}` əlavə et, yoxsa adlar toqquşur.",
+    "a": "```yaml\nname: Playwright Tests\non:\n  pull_request:\n    branches: [main]\n  schedule:\n    - cron: '0 18 * * 0'\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      fail-fast: false\n      matrix:\n        browser: [chromium, firefox]\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: lts/*\n      - name: Paketləri qur\n        run: npm ci\n      - name: Brauzeri qur\n        run: npx playwright install --with-deps ${{ matrix.browser }}\n      - name: Testləri işə sal\n        run: npx playwright test --project=${{ matrix.browser }}\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: playwright-report-${{ matrix.browser }}\n          path: playwright-report/\n          retention-days: 30\n```\n\n**Dəyişikliklər:**\n1. **Tetikləyici:** `push` çıxarılıb. `cron` UTC-dədir: bazar 22:00 Bakı = bazar 18:00 UTC. `0` bazardır. Cədvəl gecikə bilər və yalnız əsas budaqda işləyir.\n2. **Matrix:** iki paralel job yaranır. `fail-fast: false` biri düşəndə o birinin də bitməsini təmin edir.\n3. **Hesabat:** ad brauzerə görə fərqlidir, çünki eyni adlı artifact yüklənə bilməz. Config-də `chromium` və `firefox` layihələri olmalıdır.",
+    "c": [
+      "`on`-da yalnız `pull_request` və `schedule` var",
+      "Cron UTC-yə çevrilib: `0 18 * * 0`",
+      "`strategy.matrix`-də chromium və firefox var, `--project` istifadə olunur",
+      "Artifact adı brauzerə görə fərqlidir"
+    ]
+  },
+  "c20s9m": {
+    "h": "Dörd ehtimal: məhsul, test, mühit, flaky. Hamısı eyni anda, eyni şəbəkə xətası ilə düşüb, səhər keçib. Sübutu vaxtla yoxla, yenidən işə salmaqla kifayətlənmə.",
+    "a": "**Təsnifat: mühit (environment).** `ERR_CONNECTION_REFUSED` serverin qoşulmanı rədd etdiyini deyir: səhifə heç açılmayıb. 47 test eyni anda, eyni xəta ilə düşüb, səhər kod dəyişmədən keçib. Bu, testin və ya funksiyanın məntiqi deyil.\n\n**Yoxlayıram:**\n1. Testlərin düşdüyü vaxt aralığı: bir dəqiqəlikdir, yoxsa bütün gecə?\n2. Həmin vaxt test serverinin monitorinqi, restart, deploy, yedəkləmə, yaddaş.\n3. Düşən 47 test sonrakı 73-dən fərqlənirmi: hamısı eyni host-a gedirmi?\n4. Əvvəlki gecələr: eyni vaxtda təkrarlanırmı?\n\n**Mesaj:**\n\n```text\nGecə icrası: 120 E2E-dən 47-si düşdü (02:10–02:18), hamısında\nnet::ERR_CONNECTION_REFUSED. Səhər təkrar icrada hamısı keçdi.\nƏhatə: test mühiti, məhsul defekti əlamətləri yoxdur.\nSual (DevOps): bu vaxt test serverində deploy və ya restart olubmu?\nTəklif: gecə icrasından əvvəl serverin hazır olduğunu yoxlayan addım.\nHesabat: <link>\n```\n\nSaatlar nümunədir. Hər gecə təkrarlansa, təsadüf deyil: tapşırıq açılır.",
+    "c": [
+      "Mühit problemi kimi təsnif olunub",
+      "Səbəb eyni xəta, eyni vaxt, sonra keçməklə əsaslandırılıb",
+      "Server və deploy vaxtı yoxlanılır",
+      "Komandaya fakt və sual olan mesaj yazılıb"
+    ]
+  },
+  "c20t1": {
+    "h": "GitHub-da boş repo yarat, `.gitignore`-u yoxla, sonra `git add`, `commit`, `remote add`, `push -u`. Linki gizli pəncərədə açıb yoxla.",
+    "a": "Link sənin olacaq. Addımlar nümunədir:\n\n```bash\ngit init\ngit status\ngit add .gitignore package.json package-lock.json playwright.config.js tests pages\ngit commit -m \"Playwright testləri ilə ilk versiya\"\ngit branch -M main\ngit remote add origin https://github.com/ADIN/qa-playwright.git\ngit push -u origin main\n```\n\n**Cavab sahəsinə:** `https://github.com/ADIN/qa-playwright`\n\n**Linki yoxla:**\n- Gizli pəncərədə açılır (repo public-dirsə).\n- `tests/` və `playwright.config.js` görünür.\n- `node_modules/`, `.env` görünmür.\n- README layihənin nə olduğunu və necə işə salındığını deyir.\n\nŞifrə və ya token kodda varsa, push etmə.",
+    "c": [
+      "Repo GitHub-da açılır, testlər görünür",
+      "`node_modules` və `.env` repo-da yoxdur",
+      "Link cavab sahəsinə yazılıb"
+    ]
+  },
+  "c20t2": {
+    "h": "İki sual ver: yenidən yaradıla bilərmi? Gizli qalmalıdırmı? Bəlidirsə, `.gitignore`-a düşür. Paketlər, hesabatlar və şifrələri xatırla.",
+    "a": "| Yazılış | Nədir | Niyə repo-da olmur |\n|---|---|---|\n| `node_modules/` | Quraşdırılan paketlər | Çox böyükdür, `npm ci` yenidən qurur |\n| `test-results/` | Son icranın nəticələri, video və trace | Hər icrada dəyişir, yenidən yaranır |\n| `playwright-report/` | HTML hesabat | Yenidən yaranır, CI-da artifact olaraq saxlanılır |\n| `playwright/.auth/` | Saxlanmış login vəziyyəti | Kimlik məlumatıdır |\n| `.env` | Şifrə və token | Heç vaxt repo-ya düşməməlidir |\n| `*.log` | Log faylları | Hər dəfə dəyişir, şəxsi data ola bilər |\n\nİki qayda: yenidən yaradıla bilən hər şey və gizli qalmalı hər şey. `package.json` və `package-lock.json` isə repo-da qalır, çünki paketləri onlarla qururuq. Xatırla: artıq commit olunmuş fayla `.gitignore` təsir etmir.",
+    "c": [
+      "`node_modules`, hesabat və nəticə qovluqları sadalanıb",
+      "`.env` və ya şifrə faylları sadalanıb",
+      "Hər birinin səbəbi öz sözlərinlə yazılıb"
+    ]
+  },
+  "c20t3": {
+    "h": "`.github/workflows/playwright.yml` yarat, 20.8-dəki məzmunu yaz, push et. Repo-da Actions tabına keç. İşləmirsə, qırmızı addımı aç.",
+    "a": "**Addımlar:**\n\n```bash\ngit switch -c ci/playwright\n# .github/workflows/playwright.yml faylını yarat (20.8-dəki YAML)\ngit add .github/workflows/playwright.yml\ngit commit -m \"Playwright testləri üçün GitHub Actions əlavə olundu\"\ngit push -u origin ci/playwright\n```\n\nSonra `main`-ə PR aç. Workflow `pull_request` ilə işə düşür.\n\n**Actions tabında göstər:**\n- Yaşıl icranın adı və vaxtı.\n- “Testləri işə sal” addımının açılmış çıxışı: `X passed`.\n- Artifacts bölməsində `playwright-report`.\n\n**Tipik problemlər:**\n- Qırmızı `npm ci`: `package-lock.json` repo-da yoxdur.\n- YAML xətası: boşluq əvəzinə tab, yanlış girinti.\n- Kompüterdə keçən test CI-da düşür: `--headed`, sabit gözləmə, mühit fərqi.\n\nSübut üçün icranın linkini və ya ekran şəklini cavaba əlavə et.",
+    "c": [
+      "Workflow faylı `.github/workflows/` qovluğundadır",
+      "Actions tabında yaşıl icra görünür",
+      "Hesabat artifact-ı və ya icranın linki göstərilib"
+    ]
+  },
+  "c20t4": {
+    "h": "Ayrıca budaqda gözlənilən mətni dəyiş, push et. Actions-da qırmızı addımı aç, xətanı oxu. Hesabatı Artifacts-dan yüklə. Sonda dəyişikliyi geri qaytar.",
+    "a": "**Addımlar:**\n\n```bash\ngit switch -c test/ci-sinag\n# testdə 'locked out' yerinə 'locked inn' yaz\ngit add tests/login.spec.js\ngit commit -m \"CI sınağı: test qəsdən sındırıldı\"\ngit push -u origin test/ci-sinag\n```\n\n**Actions-da nümunə nəticə:**\n\n```text\n1 failed\n[chromium] › tests/login.spec.js:12:1 › bloklanmış istifadəçi xəta görür\nExpected substring: \"locked inn\"\nReceived string: \"Epic sadface: Sorry, this user has been locked out.\"\n```\n\n(Sətir nömrəsi və ad sənin faylına görə olacaq.)\n\n**Oxunuş:**\n- **Harada:** `tests/login.spec.js`, göstərilən sətir, chromium.\n- **Niyə:** gözlənilən mətn saytdakı ilə uyğun gəlmir.\n- **Kimin problemidir:** burada testin, çünki qəsdən dəyişmişəm. Real halda tələbə baxardım.\n\nArtifacts-dan hesabatı yüklə, trace varsa, aç. Sonda budağı bağla: bu commit `main`-ə düşmür.",
+    "c": [
+      "Qəsdən sındırılmış test push olunub, CI qırmızıdır",
+      "Düşən fayl, sətir və səbəb yazılıb",
+      "Gözlənilən və alınan dəyər oxunub",
+      "Sındırılmış test main-ə düşmür"
+    ]
+  },
+  "c20t5": {
+    "h": "Əvvəl `main`-i yenilə, sonra yeni budaq. Bir test, bir commit, push. PR-da niyə, nə dəyişdi, necə yoxlamaq olar sualları cavablansın.",
+    "a": "```bash\ngit switch main\ngit pull\ngit switch -c test/sebetden-silme\n# tests/cart.spec.js faylına testi əlavə et\nnpx playwright test tests/cart.spec.js\ngit add tests/cart.spec.js\ngit commit -m \"Səbətdən məhsul silmə testi əlavə olundu\"\ngit push -u origin test/sebetden-silme\n```\n\nGitHub-da **Compare & pull request** bas.\n\n**Başlıq:** `Səbətdən məhsul silmə testi`\n\n**Təsvir:**\n\n```text\nNiyə\nSəbətdən silmə ssenarisi avtomatik testdə yox idi.\n\nNə dəyişdi\ntests/cart.spec.js: bir yeni test.\n\nNecə yoxlamaq olar\nnpx playwright test tests/cart.spec.js\n```\n\n**PR açılandan sonra:** “Files changed”-də yalnız test faylı görünür, CI yaşıldır. Budaq adı və PR linkini cavaba yaz.",
+    "c": [
+      "İş `main`-də yox, yeni budaqda edilib",
+      "Bir test əlavə olunub və PR açılıb",
+      "PR təsviri dəyişikliyi və yoxlamanı izah edir",
+      "“Files changed”-də artıq fayl yoxdur"
+    ]
+  },
+  "c20q1": {
+    "a": "**Commit:** layihənin bir anlıq “şəkli”, mesajı ilə birlikdə. **Branch:** paralel iş xətti, əsas kodu pozmadan işləmək üçün. **Pull request:** budağı `main`-ə birləşdirmək üçün açılan sorğu, burada review və CI yoxlaması aparılır.",
+    "c": [
+      "Üç anlayışın hər biri düzgün izah olunub",
+      "PR-da review və ya birləşdirmə qeyd olunub"
+    ]
+  },
+  "c20q2": {
+    "a": "**`git add`** dəyişikliyi staging-ə qoyur: növbəti commit-ə nə düşəcəyini seçir. **`git commit`** staging-dəkiləri tarixçədə mesajla qeyd edir. Hər ikisi lokaldır, GitHub-a yalnız `git push` göndərir.",
+    "c": [
+      "add seçir, commit qeyd edir",
+      "Staging anlayışı işlənib"
+    ]
+  },
+  "c20q3": {
+    "a": "**`.gitignore`** Git-in izləməməli olduğu faylları göstərir: `node_modules`, hesabatlar, loglar, `.env`. Beləcə repo kiçik qalır, şifrələr GitHub-a düşmür. Artıq commit olunmuş fayla təsir etmir.",
+    "c": [
+      "İzlənməyəcək faylların siyahısı kimi izah olunub",
+      "Misal və ya şifrə qorunması qeyd olunub"
+    ]
+  },
+  "c20q4": {
+    "a": "**CI (Continuous Integration):** hər dəyişiklikdə kodun avtomatik yığılıb test olunması. **CD:** relizin avtomatlaşdırılması: Continuous Delivery-də son addım təsdiqlə, Deployment-də canlıya da avtomatik gedir. Məqsəd: səhvi erkən tapmaq.",
+    "c": [
+      "CI avtomatik yoxlama kimi izah olunub",
+      "Delivery və Deployment fərqi və ya CD-nin relizlə bağlılığı deyilib"
+    ]
+  },
+  "c20q5": {
+    "a": "Dərhal baxır, “sonra baxarıq” demir. Hansı addım düşüb, hesabat və trace nə deyir? Dörd ehtimal: **məhsul**, **test**, **mühit**, **flaky**. Sübutla təsnif edir, məhsul defektidirsə, report açır, komandaya məlumat verir.",
+    "c": [
+      "Nəticəyə dərhal baxılır, sübut oxunur",
+      "Məhsul, test, mühit, flaky ehtimalları ayrılır"
+    ]
+  }
+}

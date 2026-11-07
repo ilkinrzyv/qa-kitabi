@@ -1,0 +1,156 @@
+{
+  "c12s1m": {
+    "h": "Müşahidədə ən vacib məlumat şərtdir: kamera ilə olur, qalereya ilə yox. Report-un ürəyi: addımlar, gözlənilən, faktiki. Mühiti də yaz.",
+    "a": "**Başlıq:** Profil: kamera ilə çəkilən şəkil yüklənəndə 90 dərəcə dönmüş görünür\n\n**Mühit:** Android 14, Samsung A54, tətbiq 3.2.1, Wi-Fi (nümunə).\n**Severity:** Minor. **Priority:** Medium (təklif).\n\n**İlkin şərt:** istifadəçi daxil olub, kameraya icazə verilib.\n\n**Addımlar:**\n1. Profil səhifəsini aç.\n2. “Şəkli dəyiş” → “Kamera” seç.\n3. Telefon dik vəziyyətdə şəkil çək və təsdiqlə.\n\n**Gözlənilən nəticə:** şəkil çəkilən istiqamətdə, düz görünür.\n\n**Faktiki nəticə:** şəkil 90 dərəcə dönmüş görünür.\n\n**Təkrarlanma:** 5 cəhddən 5-də.\n\n**Əlavə:** eyni addımlarla qalereyadan seçilən şəkil düz görünür. Ehtimal: EXIF oriyentasiya məlumatı nəzərə alınmır. Əlavələr: ekran şəkli, nümunə fayl.",
+    "c": [
+      "Başlıq formula uyğundur: harada, nə baş verir, hansı şərtdə",
+      "Addımlar, gözlənilən və faktiki nəticə ayrı-ayrı yazılıb",
+      "Mühit, severity və qalereya ilə fərq qeyd olunub"
+    ]
+  },
+  "c12s2m": {
+    "h": "Formula: [Harada]: [nə baş verir] [hansı şərtdə]. Məlumat çatışmırsa, nümunə kimi fərz et. Hər başlığa nə əlavə etdiyini yanında yaz.",
+    "a": "Dəqiq şərtlər nümunədir, faktiki baqda öz müşahidən yazılır.\n\n**(a)** “Bildirişlər: sifariş “Yolda” olanda iOS-da push bildiriş gəlmir.”\nƏlavə olunan: hansı bildiriş, hansı hadisə, platforma.\n\n**(b)** “Qeydiyyat: artıq olan email ilə “Göndər” basanda 500 xətası çıxır.”\nƏlavə olunan: hansı şərt, səhvin növü.\n\n**(c)** “Məhsul səhifəsi: 2000 px-dən böyük şəkil telefonda bulanıq və kəsilmiş görünür.”\nƏlavə olunan: harada, “pis”in mənası, şərt.\n\n**(d)** “Profil: 5 MB-dan böyük şəkil yükləyəndə Android tətbiqi çökür.”\nƏlavə olunan: harada, səbəb olan hərəkət, platforma.\n\nYaxşı başlıq axtarışda tapılır və report-u açmadan problemi deyir.",
+    "c": [
+      "Dörd başlığın hər biri harada, nə baş verir, hansı şərtdə hissələrini verir",
+      "Hər başlığa nə əlavə olunduğu yazılıb",
+      "“Səhv”, “pis” kimi ümumi sözlər konkretləşdirilib"
+    ]
+  },
+  "c12s3m": {
+    "h": "Severity: “nə qədər pisdir?” Pul və təhlükəsizlik yuxarıdır, görünüş aşağıdır. Yolu varsa, bir pillə düşə bilər.",
+    "a": "**(a) Critical.** Hər sifarişdə müştəridən artıq pul alınır: birbaşa maddi zərər və hüquqi risk.\n\n**(b) Minor (və ya Trivial).** Yalnız görünüş problemidir: mətn zəif görünsə də, funksiya işləyir. Əlçatanlıq baxımından oxunmursa, Minor düzgündür.\n\n**(c) Critical.** Sessiya bitmir, başqası eyni cihazda profili aça bilir: şəxsi məlumatın təhlükəsizlik riski. Komandada Major da qəbul oluna bilər, amma təhlükəsizlik adətən yuxarı götürülür.\n\n**(d) Major.** Əsas funksiya işləyir, amma hər açılış 10 saniyə ləngiyir. Bütün istifadəçilər təsirlənir, xəta yoxdur, ona görə Critical deyil.",
+    "c": [
+      "(a) Critical, (b) Minor və ya Trivial kimi qiymətləndirilib",
+      "(c) təhlükəsizlik riski kimi yüksək qiymətləndirilib",
+      "Hər cavab bir cümlə ilə əsaslandırılıb"
+    ]
+  },
+  "c12s4m": {
+    "h": "Severity texniki təsirdir: funksiya işləyir? Priority isə vaxtdır: kampaniyaya iki gün qalıb. İkisi fərqli ola bilər.",
+    "a": "**Severity: Minor.** Banner açılır, mətn yanlışdır, sayt və alış-veriş işləyir. Texniki təsir azdır.\n\n**Priority: High.** Kampaniya 2 gün sonra başlayır, banner ana səhifədədir və hər ziyarətçi yanlış tarixi görür. Tarix səhv qalsa, müştəri kampaniyanı buraxa bilər, reklam xərci boşa gedir, marka ciddi görünmür.\n\n**Təklif:** “Severity kiçikdir, amma kampaniya başlamazdan əvvəl düzəlməlidir: ən geci sabah.” Düzəliş də sadədir: mətni dəyişmək. Bu, klassik “aşağı severity, yüksək priority” halıdır. Qərarı son nəticədə məhsul sahibi verir, tester təklif edir.",
+    "c": [
+      "Severity aşağı (Minor və ya Trivial), priority yüksəkdir",
+      "Priority kampaniya tarixi ilə əsaslandırılıb",
+      "Tester-in təklif etdiyi, qərarın biznesdə olduğu aydındır"
+    ]
+  },
+  "c12s5m": {
+    "h": "Dörd xana: yüksək-yüksək, yüksək-aşağı, aşağı-yüksək, aşağı-aşağı. “Yüksək-aşağı” üçün nadir hal, “aşağı-yüksək” üçün görünən yer düşün.",
+    "a": "**1. Yüksək severity, yüksək priority:** alınmış oyun hesaba düşmür, pul isə tutulur. Əsas funksiya, pul itkisi, hər alıcı təsirlənir, dərhal düzəlməlidir.\n\n**2. Yüksək severity, aşağı priority:** köhnə “Windows 7” rejimində oyun yükləyən alət çökür. Çökmə ağırdır, amma istifadəçilərin 0,1%-i oradadır və bu versiya tezliklə dayandırılır.\n\n**3. Aşağı severity, yüksək priority:** ana səhifədə mağazanın loqosunda və ya böyük qara cümə banneri mətnində orfoqrafiya səhvi. Funksiya pozulmur, amma hamı görür, kampaniya sabah başlayır.\n\n**4. Aşağı severity, aşağı priority:** “Haqqımızda” səhifəsində piksel qədər yerdəyişmiş ikon. Az adam baxır, təsiri yoxdur, boş vaxtda düzəlir.\n\nSeverity ziyanı, priority isə növbəni bildirir.",
+    "c": [
+      "Dörd kombinasiyanın hər biri üçün bir misal var",
+      "Misallar onlayn oyun mağazasına aiddir",
+      "Hər misal təsir və ya biznes təcililiyi ilə əsaslandırılıb"
+    ]
+  },
+  "c12s6m": {
+    "h": "Mübahisə etmə, faktı gücləndir: tezlik, şərt, sübut. Proqramçıya görmədiyi şərti göstər. Bir də proqramçının mühitinin səninkindən nə fərqi var?",
+    "a": "Nümunə addımlar:\n\n1. **Şərti daralt:** yenidən sınayıram və nə zaman çökdüyünü qeyd edirəm: hansı kart, məbləğ, cihaz, internet (Wi-Fi, 4G), tətbiq versiyası. “10-dan 3-ü” tezliyini report-a yazıram.\n2. **Sübut topla:** çökmə anının ekran videosu, cihaz logu (Android-də logcat, iOS-da crash report), vaxt, build nömrəsi.\n3. **Report-u yenilə və proqramçı ilə danış:** “Təsadüfi görünür, amma 3 dəfə 4G-də, 3-ü də ‘Ödə’dən dərhal sonra oldu. Log əlavədir. Birlikdə mənim cihazımda baxa bilərikmi?” Mühitləri tutuşdururuq.\n4. **Statusu aç:** yeni faktlarla baqı yenidən açmağı (Reopened/To Do) təklif edirəm. Hələ də təkrarlanmırsa, təsir ciddi olduğuna görə PO-ya məlumat verirəm və monitorinq əlavə edilməsini təklif edirəm.\n\nTon: fakt, ittiham yox.",
+    "c": [
+      "Şərtlər araşdırılır və tezlik (10-dan 3) qeyd olunur",
+      "Sübut var: video, log, build",
+      "Proqramçı ilə faktla danışılır və baqın statusu yenidən müzakirə olunur"
+    ]
+  },
+  "c12s7m": {
+    "h": "Bu mesajda iki ayrı problem var, ona görə iki report lazımdır. “Bu nə işdir” kimi ifadəni at, ekran, cihaz və addımları soruş və yaz.",
+    "a": "**Mesajı belə yazıram:**\n\n> Salam. Mobil tətbiqdə iki problem tapmışam, ikisini ayrıca açıram:\n> 1. BUG-101: Login: Android-də düzgün şifrə ilə “Daxil ol” basanda heç nə baş vermir.\n> 2. BUG-102: Profil: 5 MB-dan kiçik şəkil yüklənmir, “Xəta 413” çıxır.\n>\n> Video və loglar report-dadır. Baxa bilsəniz, sevinərəm.\n\n**Report 1. Başlıq:** Login: Android-də düzgün şifrə ilə “Daxil ol” basanda heç bir reaksiya olmur. **Mühit:** Android 14, tətbiq 3.2.1. **Addımlar:** 1) Tətbiqi aç. 2) Düzgün məlumat yaz. 3) “Daxil ol” bas. **Gözlənilən:** ana səhifə açılır. **Faktiki:** ekran dəyişmir.\n\n**Report 2. Başlıq:** Profil: 1 MB-lıq şəkil yükləmə 413 xətası verir.\n\n“Heç nə işləmir” yazmıram, çünki bu, yoxlanılmayıb. Cihaz, ölçü və nömrələr nümunədir.",
+    "c": [
+      "Login və şəkil üçün iki ayrı report ayrılıb",
+      "Ton hörmətli və faktlıdır, emosional cümlə yoxdur",
+      "“Heç nə işləmir” yerinə konkret şərt və addımlar yazılıb"
+    ]
+  },
+  "c12s8m": {
+    "h": "“Bəzən” sözünü rəqəmə çevir. Düşün: görünüş üçün video, səbəb üçün log, şəbəkə üçün sorğu, fayl üçün nümunə.",
+    "a": "**4 sübut və necə əldə edilir:**\n\n1. **Ekran videosu:** telefonun ekran yazısı ilə yükləmə və donma anı. Addımları və vaxtı göstərir.\n2. **Cihaz logu:** Android-də Android Studio Logcat və ya `adb logcat`, iOS-da Xcode konsolu. Donma vaxtındakı xəta və yaddaş mesajları.\n3. **Şəbəkə sorğusu:** proxy (Charles, Fiddler) ilə yükləmə sorğusu: status, ölçü, müddət. Hər sorğu timeout olurmu?\n4. **Nümunə fayl:** donduran foto: ölçü, format, piksel. Şəxsi məlumatsız test şəkli saxlanılır.\n\n**Tezliyin qeydi:** “Bəzən” yazmıram. 20 cəhd edirəm və sayıram: “20 cəhddən 6-da (30%) donur; hamısı 8 MB-dan böyük HEIC fayl, 4G. Kiçik JPG-də 20-dən 0.” Şərt də tezlik qədər vacibdir. Video və logda şifrə və şəxsi datanı gizlədirəm.",
+    "c": [
+      "Dörd sübut yazılıb və necə toplandığı göstərilib",
+      "Tezlik rəqəmlədir, “bəzən” deyil, şərtlə birlikdə",
+      "Şəxsi məlumatın gizlədilməsi nəzərə alınıb"
+    ]
+  },
+  "c12s9m": {
+    "h": "AND və OR birlikdədirsə, mötərizə lazımdır: `(A OR B)`. Sənin adın: `currentUser()`. Sıralama: `ORDER BY priority DESC`.",
+    "a": "```text\nproject = APP\nAND type = Bug\nAND reporter = currentUser()\nAND (status = \"Ready for Test\" OR updated >= -3d)\nORDER BY priority DESC\n```\n\n**Niyə mötərizə lazımdır:** AND, OR-dan güclüdür. Mötərizəsiz yazılsa, `updated >= -3d` şərti tək qalır və başqa layihələrin, başqa adamların son 3 gündə yenilənən bütün issue-ları da nəticəyə düşür.\n\n`-3d` son 3 gün deməkdir. `currentUser()` hər istifadəçi üçün öz adını qoyur, ona görə filtri başqası ilə bölüşmək olur.",
+    "c": [
+      "`project = APP`, `type = Bug` və `reporter = currentUser()` var",
+      "`status` və `updated` şərtləri mötərizə içində OR ilə birləşib",
+      "`ORDER BY priority DESC` ilə bitir"
+    ]
+  },
+  "c12t1": {
+    "h": "Hər biri üçün iki sual: nə qədər ziyan var (severity)? Nə qədər tez düzəlməlidir (priority)? Azərbaycan saytında “ə” hərfi nəyi təsirləndirir?",
+    "a": "| Defekt | Severity | Priority | Səbəb |\n|---|---|---|---|\n| Pul iki dəfə çıxılır | Critical | High | Birbaşa maddi zərər, hər alıcı, dərhal düzəlməlidir |\n| Footer-də il 2025 | Trivial | Low | Funksiyaya təsir yoxdur, az adam fikir verir; növbəti buraxılışa qala bilər |\n| 1000+ sətirli ixrac çökür | Major | Medium | Sistem çökür, amma az istifadəçi və nadir ssenari; kiçik hissələrlə ixrac kimi müvəqqəti yol var |\n| Qaranlıq rejimdə ikon görünmür | Minor | Low | Görünüş, funksiya işləyir, bir rejimdə |\n| “ə” hərfi ilə axtarış nəticə vermir | Major | High | Azərbaycan dilli sözlərin çoxu tapılmır, əsas funksiya və çox istifadəçi təsirlənir |\n\nSeverity və priority fərqli pillələrdə ola bilər. Bunlar təklifdir: dəqiq qərarı komanda verir, məsələn, ixrac mühasibat üçün hər ay lazımdırsa, priority yüksəlir.",
+    "c": [
+      "Pul iki dəfə çıxılır: Critical, High",
+      "Footer ili aşağı severity və aşağı priority-dir",
+      "“ə” hərfi Azərbaycan saytı üçün yüksək priority alır, hər cavabda səbəb var"
+    ]
+  },
+  "c12t2": {
+    "h": "Əsas fakt “ə” hərfidir: eyni söz “e” ilə tapılır. Başlıqda şərti, addımlarda hər iki sınağı, faktikidə konkret nəticəni yaz.",
+    "a": "**Başlıq:** Axtarış: “ə” hərfi olan sorğu (“şəkər”) nəticə vermir, “e” ilə (“sekər”) verir\n\n**Mühit:** Chrome 130, Windows 11, test.mağaza.az, build 1.4.2 (nümunə).\n**Severity:** Major. **Priority:** High (təklif).\n\n**İlkin şərt:** kataloqda “Şəkər 1 kq” məhsulu var, ana səhifə açıqdır.\n\n**Addımlar:**\n1. Axtarış sahəsinə `şəkər` yaz, Enter bas.\n2. Nəticəyə bax.\n3. Axtarış sahəsinə `sekər` yaz, Enter bas.\n\n**Gözlənilən nəticə:** 1-ci addımda “Şəkər 1 kq” məhsulu görünür.\n\n**Faktiki nəticə:** 1-ci addımda “Nəticə tapılmadı” çıxır. 3-cü addımda “Şəkər 1 kq” görünür.\n\n**Təkrarlanma:** 5 cəhddən 5-də.\n\n**Əlavə:** “ə” olan başqa sözlər də (“əl”) yoxlanmalıdır. Ehtimal: axtarış “ə” hərfini normallaşdırmır və ya kodlaşdırmada itirir. Ekran şəkilləri və sorğunun Network-dən cavabı əlavə olunub.",
+    "c": [
+      "Başlıq “ə” hərfi şərtini göstərir",
+      "Addımlarda “şəkər” və “sekər” ayrıca sınanır, gözlənilən və faktiki fərqlənir",
+      "Mühit, severity və priority yazılıb"
+    ]
+  },
+  "c12t3": {
+    "h": "Sayt seç, kiçik yeri seç: yazı səhvi, kəsilən mətn, sınmış şəkil. Sonra report-u yenidən oxu: başqası bunu addımlarla təkrarlaya bilərmi?",
+    "a": "Bu, formanı göstərən nümunədir. Real saytda özün tapıb yazmalısan, ona görə sayt adını və faktları özün dəqiqləşdir.\n\n**Başlıq:** Ana səhifə: “Əlaqə” bölməsində “ünsiyyət” sözü “ünsiyyət” kimi yazılıb\n\n**Mühit:** Chrome 130, Windows 11, 1920×1080, səhifə URL-i, yoxlama tarixi.\n**Severity:** Trivial. **Priority:** Low (təklif).\n\n**Addımlar:**\n1. Saytın ana səhifəsini aç.\n2. Aşağıda “Əlaqə” bölməsinə keç.\n\n**Gözlənilən nəticə:** “ünsiyyət” düzgün yazılıb.\n\n**Faktiki nəticə:** mətndə “ünsiyyət” yazılıb.\n\n**Təkrarlanma:** hər dəfə.\n\n**Əlavə:** ekran şəkli, problem yeri işarələnib. Telefonda da eynidir.\n\nDiqqət: açıq baq barədə sayta yazmaq istəsən, onların əlaqə kanalından hörmətli ton ilə yaz, saytın işinə mane olan test etmə.",
+    "c": [
+      "Başlıq formula uyğundur, problemin yeri bəllidir",
+      "Addımlar, gözlənilən və faktiki nəticə var, mühit və tarix yazılıb",
+      "Sübut və ya ekran şəkli əlavə olunub, severity və priority realdır"
+    ]
+  },
+  "c12t4": {
+    "h": "Əsas yolu çək: New → ... → Closed. Sonra yan statusları əlavə et: Rejected, Duplicate, Deferred, Cannot Reproduce, Reopened.",
+    "a": "Komandaya görə adlar fərqli ola bilər. Kitabdakı axın belədir:\n\n```text\nNew → Assigned/Open → In Progress → Fixed → Ready for Test → In Test\n                                                                 |\n                                              keçdi → Verified → Closed\n                                              düşdü → Reopened → (yenidən In Progress)\n\nNew/Open-dan yan statuslar:\n  Rejected (defekt deyil)\n  Duplicate (artıq var)\n  Deferred (sonrakı relizə)\n  Cannot Reproduce (təkrarlanmır → tester əlavə məlumat verir, yenidən Open)\n```\n\n**Vacib nöqtələr:**\n- Verified və Closed-u yalnız retest-dən sonra tester edir.\n- Reopened: düzəliş işləmədi və ya baq qayıtdı.\n- Rejected və Cannot Reproduce müzakirə üçün siqnaldır, son deyil.\n- Closed olmuş baq sonra yenə çıxırsa, adətən Reopened və ya yeni baq olur.",
+    "c": [
+      "Əsas yol New-dan Closed-a qədər ardıcıl çəkilib",
+      "Rejected, Duplicate, Deferred, Cannot Reproduce statusları var",
+      "Retest-dən keçid Verified və Reopened ilə göstərilib"
+    ]
+  },
+  "c12t5": {
+    "h": "Dörd şərt: layihə, növ, yaradılma tarixi (`created`), status. Tarix üçün nisbi dəyər `-14d`, “olmayan” üçün `!=`.",
+    "a": "```text\nproject = SHOP AND type = Bug AND created >= -14d AND status != Closed ORDER BY created DESC\n```\n\n**Hissələr:**\n- `project = SHOP`: yalnız bu layihə.\n- `type = Bug`: yalnız baqlar, story və tapşırıqlar yox.\n- `created >= -14d`: son 14 gündə yaradılmış. `updated` yazılsa, başqa şey olardı: köhnə baqın da son 14 gündə yenilənməsi.\n- `status != Closed`: bağlanmamışlar.\n- `ORDER BY created DESC`: ən yenilər yuxarıda. Sual bunu tələb etmir, amma baxmaq rahat olur.\n\nBurada yalnız AND var, ona görə mötərizə lazım deyil.",
+    "c": [
+      "`project = SHOP` və `type = Bug` var",
+      "`created >= -14d` işlənib, `updated` yox",
+      "`status != Closed` şərti var"
+    ]
+  },
+  "c12q1": {
+    "a": "**[Harada]: [nə baş verir] [hansı şərtdə].** Məsələn: “Səbət: məbləğ sıfırlanır, məhsul sayı 0 ediləndə.” Başlıq problemi report-u açmadan deyir və axtarışda tapılır. “İşləmir”, “TƏCİLİ” yaxşı başlıq deyil.",
+    "c": [
+      "Formul harada, nə baş verir, hansı şərtdə kimi verilib",
+      "Misal var və ya pis başlıq nümunəsi göstərilib"
+    ]
+  },
+  "c12q2": {
+    "a": "**Severity** “nə qədər pisdir?” (texniki təsir), **priority** “nə vaxt düzəltməliyik?” (biznes təcililiyi).\n\n- Yüksək, yüksək: ödənişdə pul iki dəfə çıxılır.\n- Yüksək, aşağı: nadir köhnə cihazda çökür.\n- Aşağı, yüksək: ana səhifədə şirkət adı səhvdir.\n- Aşağı, aşağı: nadir səhifədə ikon bir az sürüşüb.",
+    "c": [
+      "Severity texniki təsir, priority biznes təcililiyi kimi izah olunub",
+      "Dörd kombinasiyanın hər biri üçün misal var"
+    ]
+  },
+  "c12q3": {
+    "a": "Düzəldilmiş kimi qeyd olunan baq retest-dən keçmədikdə, yəni eyni addımlarla problem yenə çıxanda. Baq yenidən proqramçıya qayıdır, retest nəticəsi, build və sübut yazılır. Başqa, yeni problemdirsə, Reopened yox, yeni report açılır.",
+    "c": [
+      "Retest-də problemin qaldığı hal kimi izah olunub",
+      "Yeni problem üçün ayrıca report açıldığı və ya sübut yazıldığı qeyd olunub"
+    ]
+  },
+  "c12q4": {
+    "a": "**Duplicate:** eyni problem artıq başqa report-da yazılıb, bu report ona bağlanır. **Cannot Reproduce:** proqramçı addımlarla problemi təkrarlaya bilmir. Tester əlavə məlumat verir: tezlik, mühit, video, log. Bu, baqın olmadığı demək deyil.",
+    "c": [
+      "Duplicate artıq açılmış eyni report kimi izah olunub",
+      "Cannot Reproduce təkrarlana bilməyən kimi izah olunub, tester-in əlavə məlumat verdiyi deyilib"
+    ]
+  }
+}

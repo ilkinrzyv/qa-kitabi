@@ -1,0 +1,192 @@
+{
+  "c16s1m": {
+    "h": "Foreign key “çox” tərəfdə durur: bir sifariş kimə və hansı restorana aiddir? Məhdudiyyət üçün düşün: hansı sahə boş qala bilməz, nə təkrarlana bilməz?",
+    "a": "Bu, mümkün variantlardan biridir; sənin sütun adların fərqli ola bilər.\n\n| Cədvəl | Primary key | Foreign key | 2 məhdudiyyət |\n|---|---|---|---|\n| `customers` | `id` | yoxdur | `name` NOT NULL, `phone` UNIQUE |\n| `restaurants` | `id` | yoxdur | `name` NOT NULL, `min_order` CHECK (`min_order >= 0`) |\n| `orders` | `id` | `customer_id` → `customers.id`, `restaurant_id` → `restaurants.id` | `status` NOT NULL, `total` CHECK (`total > 0`) |\n\nForeign key-lər `orders`-dədir, çünki bir müştərinin və bir restoranın çox sifarişi olur (1:N).\n\n**Test ideyası:** `customer_id = 999` (belə müştəri yoxdur) ilə sifariş yaratmağa cəhd et. FK bunu rədd etməlidir; rədd etmirsə, məşq bazasındakı 107 nömrəli kimi “yetim” sifariş yaranır.",
+    "c": [
+      "Hər üç cədvəlin primary key-i göstərilib",
+      "`orders`-də iki foreign key var: müştəriyə və restorana",
+      "Hər cədvəldə 2 məhdudiyyət yazılıb (NOT NULL, UNIQUE, CHECK kimi)",
+      "Test ideyası mövcud olmayan müştəri və ya restoranla sifariş yaratmaqdır, rədd gözlənilir"
+    ]
+  },
+  "c16s2m": {
+    "h": "Sətirləri saymaq üçün hansı aqreqat lazımdır? Filtrdə mətn dırnaq içində yazılır. Sonra nəticəni ekrandakı rəqəmlə yan-yana qoy.",
+    "a": "```sql\nSELECT COUNT(*) AS baku_count\nFROM customers\nWHERE city = 'Bakı';\n```\n\n**Nəticə:** 2 (Aysel Məmmədova və Leyla Hüseynova).\n\n**Müqayisə:** UI 3, baza isə 2 göstərir, yəni uyğun deyil. Bu, defekt ola bilər: bug report-a hər iki rəqəmi və sorğunu əlavə et.\n\nHansı tərəfin səhv olduğunu hələ bilmirsən: SQL ikinci oracle-dır, tək həqiqət mənbəyi yox. Ekran başqa filtr işlədə və ya başqa şeyi saya bilər, bunu tələbi oxuyub proqramçı ilə aydınlaşdır.",
+    "c": [
+      "Sorğuda `COUNT(*)` və `WHERE city = 'Bakı'` var",
+      "Nəticə 2 kimi yazılıb",
+      "UI-dəki 3 ilə bazadakı 2 uyğunsuzluq kimi qeyd olunub"
+    ]
+  },
+  "c16s3m": {
+    "h": "Sərhəd dəyərlərinin analizini xatırla: icazəli aralığın kənarları və ondan bir addım kənar dəyərlər ən yaxşı test datasıdır. Qaydanı CHECK şərtinə yaz.",
+    "a": "```sql\nCREATE TABLE reviews (\n  id INTEGER PRIMARY KEY,\n  order_id INTEGER NOT NULL,\n  rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),\n  comment TEXT\n);\n\n-- Düzgün: hər ikisi qəbul olunur (sərhəd dəyərləri)\nINSERT INTO reviews (id, order_id, rating, comment) VALUES (1, 101, 5, 'Əla');\nINSERT INTO reviews (id, order_id, rating, comment) VALUES (2, 104, 1, 'Gec gəldi');\n\n-- Neqativ: hər ikisi CHECK xətası verir, sətir yazılmır\nINSERT INTO reviews (id, order_id, rating, comment) VALUES (3, 102, 0, 'Aşağıdan kənar');\nINSERT INTO reviews (id, order_id, rating, comment) VALUES (4, 102, 6, 'Yuxarıdan kənar');\n```\n\n**Gözlənilən:** `SELECT * FROM reviews;` 2 sətir qaytarır (id 1 və 2); neqativlərdə xəta `CHECK constraint failed` olur. Neqativləri bir-bir işlət: hamısını birdən işlədəndə icra adətən ilk xətada dayanır və 6 yoxlanmadan qalır.\n\n**`NOT NULL` niyə var:** NULL ilə müqayisə “bilinmir” verir, CHECK isə yalnız “yalan”ı rədd edir. `NOT NULL` olmasa, `rating` boş qala bilərdi.",
+    "c": [
+      "`rating` üçün `CHECK (rating BETWEEN 1 AND 5)` və ya eyni mənalı şərt yazılıb",
+      "2 düzgün INSERT-də `rating` 1–5 aralığındadır və qəbul olunması gözlənilir",
+      "2 neqativ INSERT-də `rating` aralıqdan kənardır (məsələn, 0 və 6), CHECK xətası gözlənilir",
+      "Hər INSERT-in yanında gözlənilən nəticə qeyd olunub"
+    ]
+  },
+  "c16s4m": {
+    "h": "Endirimdən sonra məbləğin neçə faizi qalır? Bunu hesablanmış sütun et və `AS` ilə ad ver. `DISTINCT` üçün yalnız şəhər sütununu seç.",
+    "a": "```sql\nSELECT id, total, ROUND(total * 0.9, 2) AS discounted\nFROM orders;\n```\n\n| id | total | discounted |\n|---|---|---|\n| 101 | 45.5 | 40.95 |\n| 102 | 120.0 | 108.0 |\n| 103 | 15.0 | 13.5 |\n| 104 | 80.0 | 72.0 |\n| 105 | 30.0 | 27.0 |\n| 106 | 200.0 | 180.0 |\n| 107 | 50.0 | 45.0 |\n\n10% endirimdə məbləğin 90%-i qalır, ona görə `total * 0.9` yazılır; `total * 0.1` isə endirimin özünü verərdi.\n\n```sql\nSELECT DISTINCT city FROM customers;\n```\n\n**Nəticə:** Bakı, Gəncə, Sumqayıt, Şəki. 5 müştəri, amma 4 şəhər var, çünki `DISTINCT` Bakını bir dəfə göstərir.",
+    "c": [
+      "Birinci sorğuda `ROUND(total * 0.9, 2)` və ya eyni məbləği verən hesablama var",
+      "101 üçün 40.95, 106 üçün 180.0 alınıb",
+      "İkinci sorğuda `SELECT DISTINCT city` işlədilib",
+      "Nəticədə 4 şəhər var: Bakı, Gəncə, Sumqayıt, Şəki"
+    ]
+  },
+  "c16s5m": {
+    "h": "Email və status ayrı cədvəllərdədir. NULL hansı operatorla yoxlanır? Nəticəni əvvəlcə məntiqlə yoxla: emaili olmayan müştərinin sifarişi varmı?",
+    "a": "Email `customers`-də, status `orders`-dədir, ona görə JOIN lazımdır.\n\n```sql\nSELECT o.id, o.status, o.total, c.name\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nWHERE c.email IS NULL\n  AND o.status <> 'cancelled';\n```\n\n**Nəticə: boş.** Emaili olmayan yeganə müştəri Nigardır, onun isə sifarişi yoxdur. Boş nəticə də nəticədir.\n\n**NULL:** `c.email = NULL` heç nə qaytarmır, çünki NULL ilə müqayisə “bilinmir” (UNKNOWN) verir; ona görə `IS NULL` yazılır.\n\n**Tələ:** `orders`-dən başlayıb `LEFT JOIN` yazsan, 107 nömrəli sifariş gələr. Onun müştərisi bazada yoxdur, ona görə `c.email` NULL olur. Bu NULL “email yoxdur” yox, “müştəri yoxdur” deməkdir.",
+    "c": [
+      "`customers` və `orders` `customer_id` üzrə birləşdirilib",
+      "Email şərti `IS NULL` ilə yazılıb, `= NULL` ilə yox",
+      "Nəticənin boş olduğu və səbəbi (Nigarın sifarişi yoxdur) yazılıb",
+      "`= NULL`-un niyə işləmədiyi “bilinmir” (UNKNOWN) ilə izah olunub"
+    ]
+  },
+  "c16s6m": {
+    "h": "İkinci səviyyə sıralama vergüllə yazılır. OFFSET-i tapmaq üçün düşün: 3-cü səhifədən əvvəl neçə sətir keçilməlidir?",
+    "a": "```sql\nSELECT name, city FROM customers ORDER BY city ASC, name ASC;\n```\n\n**Nəticə:** Aysel Məmmədova (Bakı), Leyla Hüseynova (Bakı), Murad Əliyev (Gəncə), Orxan Quliyev (Sumqayıt), Nigar Kərimova (Şəki).\n\nSəhifə ölçüsü 2-dir, 3-cü səhifə üçün `OFFSET = (3 − 1) × 2 = 4`.\n\n```sql\nSELECT id, total FROM orders ORDER BY total DESC LIMIT 2 OFFSET 4;\n```\n\n**Nəticə:** 101 (45.5), 105 (30.0).\n\n**Yoxlama:** 1-ci səhifə 106, 102; 2-ci səhifə 104, 107; 4-cü səhifə 103. Cəmi 7 sifariş, təkrar yoxdur. `OFFSET` əvvəlki səhifələrin sətirlərini keçir, ona görə səhifə nömrəsindən 1 çıxılır.",
+    "c": [
+      "Müştəri sorğusunda `ORDER BY city, name` var, Aysel Leyladan əvvəl gəlir",
+      "Sifariş sorğusunda `ORDER BY total DESC LIMIT 2 OFFSET 4` var",
+      "3-cü səhifə 101 (45.5) və 105 (30.0) kimi göstərilib"
+    ]
+  },
+  "c16s7m": {
+    "h": "Şərt tək sətrə yox, bütöv qrupa aiddir: bunu hansı söz yoxlayır? Orta üçün aqreqatı `ROUND` içinə al.",
+    "a": "```sql\nSELECT status, COUNT(*) AS orders_count, ROUND(AVG(total), 2) AS avg_total\nFROM orders\nGROUP BY status\nHAVING COUNT(*) > 1\nORDER BY status;\n```\n\n| status | orders_count | avg_total |\n|---|---|---|\n| paid | 3 | 58.5 |\n| shipped | 2 | 160.0 |\n\n**Hesablama:** paid: 175,5 / 3 = 58,5; shipped: 320 / 2 = 160.\n\n`cancelled` və `new` statuslarının hərəsində 1 sifariş var, ona görə düşürlər. Şərt aqreqat üzərində olduğu üçün `HAVING` yazılır: `WHERE` qruplaşdırmadan əvvəl işləyir, o anda `COUNT(*)` hələ məlum deyil.",
+    "c": [
+      "Sorğuda `GROUP BY status` və `HAVING COUNT(*) > 1` var",
+      "Orta məbləğ `ROUND(AVG(total), 2)` ilə hesablanıb",
+      "Nəticədə yalnız paid (58.5) və shipped (160.0) var"
+    ]
+  },
+  "c16s8m": {
+    "h": "Sayı 0 olan müştərilər nəticədə necə qalır? NULL sətirlərə `WHERE`-in nə etdiyini düşün. Hansı `COUNT` NULL-u saymır?",
+    "a": "```sql\nSELECT c.name, COUNT(o.id) AS shipped_count\nFROM customers c\nLEFT JOIN orders o\n  ON o.customer_id = c.id AND o.status = 'shipped'\nGROUP BY c.id, c.name\nORDER BY shipped_count DESC, c.name;\n```\n\n| name | shipped_count |\n|---|---|\n| Aysel Məmmədova | 1 |\n| Orxan Quliyev | 1 |\n| Leyla Hüseynova | 0 |\n| Murad Əliyev | 0 |\n| Nigar Kərimova | 0 |\n\n**Niyə ON:** burada şərt yalnız hansı sifarişlərin qoşulacağını seçir, müştərilər qalır. `WHERE o.status = 'shipped'` yazsan, NULL sətirlər süzülür, LEFT JOIN faktiki olaraq INNER JOIN-ə çevrilir və yalnız Aysel ilə Orxan qalır.\n\n**Niyə `COUNT(o.id)`:** `COUNT(*)` uyğun sifarişi olmayan sətri də sayar və 0 əvəzinə 1 verər.",
+    "c": [
+      "`LEFT JOIN`-də `o.status = 'shipped'` şərti `ON`-dadır, `WHERE`-də deyil",
+      "Saymaq üçün `COUNT(o.id)` işlədilib, `COUNT(*)` yox",
+      "Nəticədə 5 müştəri var: Aysel 1, Orxan 1; Leyla, Murad, Nigar 0",
+      "Şərt `WHERE`-də olsa, sayı 0 olan müştərilərin itəcəyi izah olunub"
+    ]
+  },
+  "c16s9m": {
+    "h": "(a) qruplaşdırma iki sütun üzrədir. (b) mətn tarixini bugünkü tarixlə müqayisə et. (c) üçün bax: bazada ödənişi göstərən sütun varmı?",
+    "a": "**(a) Ad və şəhər dublikatları**\n\n```sql\nSELECT name, city, COUNT(*) AS cnt\nFROM customers\nGROUP BY name, city\nHAVING COUNT(*) > 1;\n```\n\nNəticə boşdur: dublikat yoxdur.\n\n**(b) Gələcək tarixli sifarişlər**\n\n```sql\nSELECT id, order_date FROM orders\nWHERE order_date > DATE('now');\n```\n\n`DATE('now')` bugünkü tarixi `YYYY-MM-DD` formatında verir. Ən son sifariş 2026-10-12-dir; sorğunu bu tarixdən sonra işlədirsənsə, nəticə boşdur: problem yoxdur. Gələcək tarix çıxsa, bu, etibarlılıq defektidir.\n\n**(c) Ləğv edilmiş, amma ödənişi alınmış**\n\nMəşq bazasında ödəniş datası yoxdur: `status` bir sətirdə tək dəyər saxlayır, sifariş eyni anda həm `cancelled`, həm `paid` ola bilməz. Ona görə ziddiyyəti tam yoxlamaq olmur. Əvvəl ləğv edilmişlərin siyahısını al:\n\n```sql\nSELECT id, total, order_date FROM orders WHERE status = 'cancelled';\n```\n\nNəticə: 103 (15.0). **İdeya:** bu siyahını ödəniş sistemi ilə müqayisə et. `payments` (`p`) cədvəli olan bazada `orders` (`o`) ilə `order_id` üzrə JOIN et və `o.status = 'cancelled' AND p.status = 'paid'` sətirlərini axtar. Tapılsa və pul geri qaytarılmayıbsa, bu, ardıcıllıq defektidir: pul alınıb, sifariş ləğv olunub.",
+    "c": [
+      "(a) sorğusunda `GROUP BY name, city` və `HAVING COUNT(*) > 1` var, boş nəticə şərh olunub",
+      "(b) sorğusu `order_date`-i bugünkü tarixlə (məsələn, `DATE('now')`) müqayisə edir, nəticə şərh olunub",
+      "(c)-də məşq bazasında ödəniş datasının olmadığı qeyd olunub",
+      "(c)-də ləğv edilmiş sifarişləri (103) ödəniş mənbəyi ilə müqayisə ideyası var"
+    ]
+  },
+  "c16s10m": {
+    "h": "Əvvəl bax: sətrin özü, müştərisi, əlaqəli cədvəllər. Sonra dəyişikliyi tranzaksiya içində et ki, geri qaytara biləsən. Hər addımda sayı qeyd et.",
+    "a": "1. **Sətrə bax:** `SELECT * FROM orders WHERE id = 103;` → 1 sətir: müştəri 2, 15.0, cancelled, 2026-09-20.\n2. **Təsiri yoxla:** `SELECT COUNT(*) FROM orders WHERE customer_id = 2;` → 1. Bu, Muradın yeganə sifarişidir, silinsə, o, sifarişsiz qalacaq. `reviews` cədvəlini əlavə etmisənsə, `order_id = 103` üçün oranı da yoxla, yoxsa rəy yetim qalar.\n3. **Sayı qeyd et:** `SELECT COUNT(*) FROM orders;` → 7.\n4. **Tranzaksiya başlat:** `BEGIN TRANSACTION;` → data dəyişmir; bundan sonrakı dəyişikliklər `COMMIT` olunana qədər qəti deyil.\n5. **Sil:** `DELETE FROM orders WHERE id = 103;` → “1 row affected”. Daha çox sətir dəyişibsə, dərhal `ROLLBACK`.\n6. **Yoxla:** `SELECT COUNT(*) FROM orders;` → 6; `SELECT * FROM orders WHERE id = 103;` → boş.\n7. **Geri qaytar:** `ROLLBACK;`, sonra `SELECT COUNT(*) FROM orders;` → 7, 103 yerindədir.\n\nSilmək həqiqətən lazımdırsa, 7-ci addımda `COMMIT;` yazılır: yalnız test bazasında və komandanın icazəsi ilə.",
+    "c": [
+      "`DELETE`-dən əvvəl eyni `WHERE id = 103` ilə `SELECT` işlədilib",
+      "Əlaqəli data yoxlanıb: Muradın sifarişləri və ya 103-dən asılı cədvəllər",
+      "`DELETE` `BEGIN TRANSACTION` ilə `ROLLBACK` arasındadır",
+      "`DELETE`-dən sonra say 6, `ROLLBACK`-dan sonra 7 gözlənilir"
+    ]
+  },
+  "c16t1": {
+    "h": "Sətirləri göstərmək yox, saymaq lazımdır. Hansı cədvəl, hansı sütun üzrə filtr? Mətn dəyəri necə yazılır?",
+    "a": "```sql\nSELECT COUNT(*) AS baku_count\nFROM customers\nWHERE city = 'Bakı';\n```\n\n**Nəticə: 2** (Aysel Məmmədova və Leyla Hüseynova).\n\n**Necə işləyir:** `FROM` cədvəli götürür, `WHERE` yalnız şəhəri Bakı olan sətirləri saxlayır, `COUNT(*)` isə qalan sətirləri sayır.\n\n**Rəqəmi yoxla:** `COUNT(*)` tək rəqəm verir, kimlərin sayıldığını göstərmir. Əmin olmaq üçün sətirlərin özünə bax:\n\n```sql\nSELECT name, city FROM customers WHERE city = 'Bakı';\n```\n\nİki ad gəlir, deməli, sayma düzgündür.\n\n**Tipik səhvlər:**\n\n- `WHERE city = Bakı` (dırnaqsız) `no such column` xətası verir, çünki SQL dırnaqsız sözü sütun adı kimi başa düşür.\n- `=` dəyəri hərfbəhərf müqayisə edir: `city = 'bakı'` xəta vermir, amma 0 qaytarır. Ona görə 0 alanda əvvəl bazada dəyərin necə yazıldığına bax, sonra “belə müştəri yoxdur” de.",
+    "c": [
+      "Sorğuda `COUNT(*)` və `WHERE city = 'Bakı'` var",
+      "`'Bakı'` dırnaq içində və bazadakı kimi yazılıb",
+      "Nəticə 2-dir"
+    ]
+  },
+  "c16t2": {
+    "h": "Bir rəqəm lazımdır: hansı aqreqat? Filtr sətirlər üzərindədir. Cavabı əl ilə də yoxla: bütün cəmdən ləğv edilmişi çıx.",
+    "a": "```sql\nSELECT SUM(total) AS total_sum\nFROM orders\nWHERE status <> 'cancelled';\n```\n\n**Nəticə: 525.5**\n\n**Əl ilə yoxlama:** bütün sifarişlərin cəmi 540,5-dir, yeganə ləğv edilmiş sifariş 103-ün məbləği 15,0-dır: 540,5 − 15,0 = 525,5.\n\n`WHERE` `SUM`-dan əvvəl işləyir: əvvəl sətirlər süzülür, sonra qalanı cəmlənir.\n\n**Diqqət ediləcək iki şey:**\n\n- **107 nömrəli yetim sifariş cəmə daxildir.** Onun statusu `paid`-dir, sual isə yalnız statusdan soruşur. `customers` ilə JOIN yazsan, o düşür və 475,5 alırsan. Bu sualda JOIN lazım deyil.\n- **NULL status:** `status <> 'cancelled'` statusu NULL olan sətri də atır, çünki NULL ilə müqayisə “bilinmir” verir. Məşq bazasında belə sətir yoxdur, nəticə dəyişmir. Real bazada bu sətirlər də lazımdırsa, belə yaz: `WHERE status <> 'cancelled' OR status IS NULL`.",
+    "c": [
+      "Sorğuda `SUM(total)` və `status <> 'cancelled'` (və ya `!=`) var",
+      "Nəticə 525.5-dir",
+      "107 nömrəli sifariş cəmə daxildir, sorğuda `customers` ilə JOIN yoxdur"
+    ]
+  },
+  "c16t3": {
+    "h": "Ad və məbləğ ayrı cədvəllərdədir. Bir müştəriyə bir sətir üçün nə lazımdır? “Hər müştəri” sözünə diqqət et: sifarişsiz müştəri nə olur?",
+    "a": "Ad `customers`-də, məbləğ `orders`-dədir, ona görə JOIN və `GROUP BY` lazımdır. Sualda “hər müştəri” deyilir, sifarişsiz Nigar da görünməlidir, deməli, LEFT JOIN.\n\n```sql\nSELECT c.name, COALESCE(SUM(o.total), 0) AS total_sum\nFROM customers c\nLEFT JOIN orders o ON o.customer_id = c.id\nGROUP BY c.id, c.name\nORDER BY total_sum DESC;\n```\n\n| name | total_sum |\n|---|---|\n| Orxan Quliyev | 200.0 |\n| Aysel Məmmədova | 165.5 |\n| Leyla Hüseynova | 110.0 |\n| Murad Əliyev | 15.0 |\n| Nigar Kərimova | 0 |\n\n**`COALESCE` nədir:** `COALESCE(x, 0)` x NULL-dursa, 0 qaytarır. Nigarın sifarişi yoxdur, `SUM` ona NULL verir. `COALESCE` yazmasan da, sorğu işləyir, sadəcə Nigarda 0 əvəzinə NULL görünür.\n\n**Tipik səhvlər və incəliklər:**\n\n- INNER JOIN yazsan, Nigar düşür və 4 sətir qalır.\n- `GROUP BY`-da `c.id` də var, çünki adlar təkrarlana bilər.\n- 107 nömrəli sifariş (50,0) cəmlərdə yoxdur: müştərisi `customers`-də olmadığı üçün heç kimə yazılmır.\n- Muradın 15,0-ı ləğv edilmiş sifarişdir. “Xərcləmək” dedikdə ləğv edilmişləri saymamaq istəyirsənsə, `ON`-a `AND o.status <> 'cancelled'` əlavə et; onda Murad 0 olur.",
+    "c": [
+      "`customers` və `orders` birləşdirilib, `GROUP BY` müştəri üzrədir",
+      "Sorğuda `SUM(o.total)` və azalan sıralama (`ORDER BY ... DESC`) var",
+      "Sıra belədir: Orxan 200, Aysel 165.5, Leyla 110, Murad 15",
+      "Nigar LEFT JOIN sayəsində nəticədədir (0 və ya NULL ilə)"
+    ]
+  },
+  "c16t4": {
+    "h": "Sifarişi olmayan müştəri `orders`-də yoxdur. Hansı JOIN onu yenə də saxlayır? Belə sətirdə `orders` sütunlarında nə olur?",
+    "a": "Sifarişi olmayan müştəri `orders`-də görünmür, ona görə `customers`-dən başlamaq lazımdır: LEFT JOIN və `IS NULL`.\n\n```sql\nSELECT c.id, c.name\nFROM customers c\nLEFT JOIN orders o ON o.customer_id = c.id\nWHERE o.id IS NULL;\n```\n\n**Nəticə:** 5, Nigar Kərimova.\n\n**Necə işləyir:** LEFT JOIN bütün müştəriləri saxlayır. Sifarişi olmayan müştərinin sətrində `o` sütunları NULL olur: “Nigar Kərimova | NULL | NULL”. `WHERE o.id IS NULL` yalnız belə sətirləri saxlayır. Yetim sifarişləri tapan sorğu da eyni quruluşdadır, sadəcə orada `orders` solda durur.\n\n**Tipik səhvlər:**\n\n- INNER JOIN yazmaq: o, sifarişsiz müştərini əvvəlcədən atır, nəticə həmişə boş olur.\n- `WHERE o.id = NULL` yazmaq: NULL ilə müqayisə “bilinmir” verir, nəticə yenə boşdur.\n\n**Tester üçün faydası:** sifarişsiz müştəri hazır test datasıdır. Nigarla “Sifarişlərim” ekranının boş vəziyyətini yoxlaya bilərsən.",
+    "c": [
+      "`customers` solda, `orders` sağda olmaqla `LEFT JOIN` işlədilib",
+      "Filtr `WHERE o.id IS NULL` (və ya `o.customer_id IS NULL`) kimi yazılıb",
+      "Nəticə yalnız Nigar Kərimovadır"
+    ]
+  },
+  "c16t5": {
+    "h": "Tarixlər `YYYY-MM-DD` formatında mətndir. Ayın birinci və sonuncu günü sərhəddir: sərhədləri daxil edən operator hansıdır?",
+    "a": "```sql\nSELECT id, total, status, order_date\nFROM orders\nWHERE order_date BETWEEN '2026-10-01' AND '2026-10-31'\nORDER BY order_date;\n```\n\n| id | total | status | order_date |\n|---|---|---|---|\n| 104 | 80.0 | paid | 2026-10-01 |\n| 105 | 30.0 | new | 2026-10-05 |\n| 106 | 200.0 | shipped | 2026-10-10 |\n| 107 | 50.0 | paid | 2026-10-12 |\n\n**Nəticə: 4 sifariş.** 101, 102 və 103 sentyabrdadır.\n\n`BETWEEN` sərhədləri daxil edir, ona görə ayın ilk günü verilmiş 104 nəticədədir. Tarixlər `YYYY-MM-DD` formatında saxlandığı üçün mətn kimi müqayisə də düzgün işləyir. Eyni nəticəni `WHERE order_date LIKE '2026-10-%'` də verir.\n\n**Diqqət:** sütunda vaxt da saxlanılsa (`'2026-10-31 18:30'`), `BETWEEN ... '2026-10-31'` həmin axşamın sifarişini itirir, çünki mətn kimi bu dəyər `'2026-10-31'`-dən böyükdür. Belə bazada `order_date >= '2026-10-01' AND order_date < '2026-11-01'` yaz.",
+    "c": [
+      "Filtr `order_date`-i oktyabrın 1-i ilə 31-i arasında saxlayır (`BETWEEN`, `LIKE` və ya `>=` / `<`)",
+      "Nəticədə 104, 105, 106, 107 var, cəmi 4 sifariş",
+      "Tarix dəyərləri dırnaq içində, `YYYY-MM-DD` formatındadır"
+    ]
+  },
+  "c16t6": {
+    "h": "Boş dəyər hansı operatorla tapılır? Problemlər üçün düşün: sistem emaili harada işlədir (sifariş, giriş, bildiriş, hesabat)?",
+    "a": "Sorğu dəqiqdir; problemlər siyahısı isə mümkün variantlardan biridir, səninki fərqli ola bilər.\n\n```sql\nSELECT id, name\nFROM customers\nWHERE email IS NULL;\n```\n\n**Nəticə:** 5, Nigar Kərimova. `= NULL` işləməz, çünki NULL ilə müqayisə “bilinmir” qaytarır. Boş mətn kimi yazılmış emaili də tutmaq üçün `OR TRIM(email) = ''` əlavə etmək olar; məşq bazasında nəticə dəyişmir.\n\n**Mümkün problemlər:**\n\n- **Bildirişlər:** sifariş təsdiqi və çatdırılma xəbəri müştəriyə çatmır.\n- **Giriş və bərpa:** şifrə email ilə bərpa olunursa, Nigar hesabına qayıda bilmir.\n- **Kod xətası:** “email hər kəsdə var” fikri ilə yazılmış kod NULL-da xəta verə bilər və göndərmə dayana bilər.\n- **Hesabatlar:** `COUNT(email)` 4, `COUNT(*)` 5 verir; bu fərq “müştəri sayı” rəqəmlərini qarışdıra bilər.\n- **Dublikatlar:** `UNIQUE` çox bazada bir neçə NULL-a icazə verir, ona görə emailsiz təkrar hesablar tutulmur.\n\n**Bug, yoxsa qeyd?** Tələbə görə email məcburidirsə, bu, bug report-dur: sahədə `NOT NULL` da yoxdur. Məcburi deyilsə, qeyd et və test ideyası kimi saxla: “emailsiz müştəri sifariş verəndə nə baş verir?”",
+    "c": [
+      "Sorğuda `WHERE email IS NULL` var, nəticə Nigar Kərimovadır",
+      "Ən azı 2 konkret problem yazılıb, məsələn, bildiriş çatmır, şifrə bərpa olunmur",
+      "Emailin məcburi olub-olmamasından asılı olaraq bug və ya qeyd kimi qiymətləndirilib"
+    ]
+  },
+  "c16q1": {
+    "a": "**Primary key** (əsas açar) hər sətri unikal tanıdan sütundur, məsələn, `customers.id`: iki müştərinin eyni `id`-si ola bilməz, boş da ola bilməz. **Foreign key** (xarici açar) başqa cədvələ istinad edən sütundur: `orders.customer_id` müştərinin `id`-sinə işarə edir və istinad edilən qeyd mövcud olmalıdır.",
+    "c": [
+      "Primary key-in hər sətri unikal tanıdığı yazılıb",
+      "Foreign key-in başqa cədvələ istinad etdiyi yazılıb",
+      "Nümunə var, məsələn, `customers.id` və `orders.customer_id`"
+    ]
+  },
+  "c16q2": {
+    "a": "**WHERE** sətirləri qruplaşdırmadan əvvəl süzür, **HAVING** isə `GROUP BY`-dan sonra qruplar üzərində işləyir. Ona görə `WHERE`-də aqreqat işlətmək olmaz: `COUNT(*) > 1` `HAVING`-in işidir. Nümunə: `WHERE status = 'paid'` ayrı-ayrı sifariş sətirlərini seçir, `GROUP BY customer_id HAVING COUNT(*) > 1` isə 1-dən çox sifarişi olan müştəriləri.",
+    "c": [
+      "`WHERE`-in sətirləri, `HAVING`-in qrupları süzdüyü yazılıb",
+      "`WHERE`-də aqreqat işlətmək olmadığı və ya icra sırası qeyd olunub"
+    ]
+  },
+  "c16q3": {
+    "a": "**INNER JOIN** yalnız hər iki cədvəldə uyğunluğu olan sətirləri qaytarır. **LEFT JOIN** sol cədvəlin bütün sətirlərini saxlayır; sağda uyğunluq yoxdursa, həmin sütunlar NULL olur. Məşq bazasında `customers` solda olanda INNER JOIN Nigarı atır (6 sətir), LEFT JOIN isə onu NULL-larla saxlayır (7 sətir).",
+    "c": [
+      "INNER JOIN-in yalnız uyğunluğu olan sətirləri qaytardığı yazılıb",
+      "LEFT JOIN-in sol cədvəlin bütün sətirlərini saxladığı yazılıb",
+      "Uyğunluq olmayanda sağ sütunların NULL olduğu qeyd olunub"
+    ]
+  },
+  "c16q4": {
+    "a": "NULL “dəyər yoxdur” deməkdir. NULL ilə istənilən müqayisə nə “doğru”, nə “yalan”, “bilinmir” (UNKNOWN) qaytarır, `WHERE` isə yalnız “doğru” olan sətirləri saxlayır. Ona görə `email = NULL` heç nə qaytarmır, Nigarın emaili NULL olsa da. Düzgün yazılış: `email IS NULL` və ya `email IS NOT NULL`.",
+    "c": [
+      "NULL ilə müqayisənin “bilinmir” (UNKNOWN) qaytardığı yazılıb",
+      "Düzgün yazılış kimi `IS NULL` göstərilib"
+    ]
+  },
+  "c16q5": {
+    "a": "`DELETE FROM orders;` cədvəlin **bütün** sətirlərini silir; cədvəl özü qalır, amma içi boşalır. Qorunma: əvvəl eyni `WHERE` ilə `SELECT` işlədib hansı sətirlərin gedəcəyini gör; `BEGIN TRANSACTION` içində sil, nəticəni yoxla, səhvdirsə, `ROLLBACK` et; yalnız test bazasında işlə, canlı bazada test etmə; şübhə varsa, soruş.",
+    "c": [
+      "WHERE-siz `DELETE`-in bütün sətirləri sildiyi yazılıb",
+      "Əvvəl eyni `WHERE` ilə `SELECT` işlətmək qeyd olunub",
+      "Tranzaksiya (`ROLLBACK`) və ya yalnız test bazasında işləmək qeyd olunub"
+    ]
+  }
+}

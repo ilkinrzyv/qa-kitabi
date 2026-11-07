@@ -1,0 +1,130 @@
+{
+  "c1s1m": {
+    "h": "Əvvəl tələbi proqramla tutuşdur, sonra istifadəçinin narazılığına bax. İki sual fərqli cavab verə bilər.",
+    "a": "**Verification keçir:** tələbdə “səhifə yenilənir” yazılıb və proqram belə edir.\n\n**Validation keçmir:** istifadəçilərə lazım olan səbətə əlavə edib alış-verişə rahat davam etməkdir, ekranın yuxarı qaçması isə buna mane olur.\n\n**Tester nə edə bilər:** bunu tələbə uyğun olmayan bug kimi yazmır, çünki proqram tələbə uyğundur. Tapıntını faktla (istifadəçi şikayətləri, addımlar) təklif və ya “improvement” kimi qeyd edir və məhsul sahibinə çatdırır: “Səhifə yenilənməsin, yalnız səbət nişanı dəyişsin, ya da istifadəçi olduğu yerdə qalsın.” Qərarı məhsul sahibi verir.",
+    "c": [
+      "Verification keçir, çünki proqram tələbdə yazılanı edir",
+      "Validation keçmir, çünki istifadəçi narazıdır",
+      "Tester tapıntını faktla məhsul sahibinə çatdırır və ya tələbin dəyişməsini təklif edir"
+    ]
+  },
+  "c1s2m": {
+    "h": "QA prosesi qurur, QC hazır işi yoxlayır, testing konkret hərəkətdir. Sonra soruş: bu nəticə servisin iş qaydasında nəyi dəyişə bilər?",
+    "a": "Bu, mümkün variantlardan biridir.\n\n- **QA:** servis qayda qoyur: hər maşın təhvil verilməzdən əvvəl yazılı yoxlama siyahısı doldurulur, usta təlim keçir.\n- **QC:** təmirdən sonra baş usta maşını təhvil verməzdən əvvəl yoxlayır.\n- **Testing:** konkret hərəkət: mühərriki işə salmaq, əyləci sınamaq, nəticəni siyahıya yazmaq.\n\n**Nəticə prosesi necə dəyişir:** testing göstərir ki, dəyişdirilən yağ filtrlərinin bir hissəsi sızır. Səbəb tapılır: bərkitmə gücü yoxlanmır. QA siyahıya “açarla bərkitməni yoxla” bəndini əlavə edir, bundan sonra eyni səhv təkrarlanmır.",
+    "c": [
+      "QA proses, QC hazır işin yoxlanması, testing konkret hərəkət kimi fərqləndirilib",
+      "Üç misal da avtomobil servisindəndir",
+      "Testing nəticəsinin qaydanı və ya prosesi necə dəyişdirdiyi göstərilib"
+    ]
+  },
+  "c1s3m": {
+    "h": "Ekran yenilənəndə düzəlirsə, məlumat harada köhnə qalır? False positive üçün isə əsl vəziyyəti ekrandan başqa haradan yoxlamaq olar?",
+    "a": "Bu, ehtimal olunan variantlardır, dəqiq səbəbi proqramçı tapır.\n\n- **Error:** proqramçı bloklamadan sonra ekrandakı məlumatı yeniləməyi unudub.\n- **Defect:** kartlar ekranı kodu yalnız yenidən açılanda serverdən status alır, bloklama cavabını ekrana yazmır.\n- **Failure:** kart bloklanıb, amma istifadəçi “Aktiv” görür.\n\n**False positive olmadığını necə yoxlayıram:**\n1. Addımları bir neçə dəfə təkrarlayıb tutuşdururam: eyni nəticə çıxırsa, təsadüf deyil.\n2. Tələbi oxuyuram: status dərhal dəyişməlidirmi, yoxsa gecikmə icazəlidir?\n3. Əsl vəziyyəti başqa yolla görürəm: Network-də bloklama sorğusunun cavabı, ekranı yenilədikdən sonrakı status və ya verilənlər bazası.\n\nKart həqiqətən bloklanıbsa, tələb də dərhal yenilənməni istəyirsə, bu, real defektdir.",
+    "c": [
+      "Error, defect və failure ayrı-ayrı yazılıb, failure ekranda “Aktiv” görünməsidir",
+      "Bunların ehtimal olduğu qeyd olunub",
+      "False positive üçün təkrarlama, tələbi oxumaq və əsl statusu başqa yolla görmək var"
+    ]
+  },
+  "c1s4m": {
+    "h": "Nəticələri kimin itirdiyinə görə düşün: vətəndaş, qurum, hüquq, reputasiya. Sonra soruş: bu ssenarini hansı test tutardı?",
+    "a": "**Nəticələr:**\n1. Vətəndaş ərizənin qəbul olunduğunu düşünür, amma heç nə baxılmır: müddət, hüquq və ya pul itirə bilər.\n2. Dövlət qurumuna şikayət və dəstək müraciəti axını yaranır.\n3. Hüquqi məsuliyyət: qanuni müddət pozulur, məhkəmə mübahisəsi ola bilər.\n4. Portala etibar itir, insanlar yenə növbəyə qayıdır.\n5. Hansı ərizələrin itdiyini tapıb bərpa etmək üçün əlavə xərc çıxır.\n\n**Hansının qarşısını almaq olardı:** hamısının. Çünki hamısı eyni defektdən yaranır. Test vaxtında “ərizə göndərildi” mesajından sonra ərizənin bazada olduğunu yoxlamaq kifayət idi: mesajı görmək hələ nəticə deyil. Bazaya yazma xətası simulyasiya olunsaydı, yanlış uğur mesajı da üzə çıxardı.",
+    "c": [
+      "Ən azı 4 müxtəlif nəticə yazılıb (vətəndaş, qurum, hüquq, reputasiya və ya xərc)",
+      "Testin bazada ərizənin varlığını yoxlamalı olduğu deyilib",
+      "Mesajın görünməsinin əsl nəticəni sübut etmədiyi izah olunub"
+    ]
+  },
+  "c1s5m": {
+    "h": "Hər söz üçün bir sual ver: “Vaxt sərhədi nədir?”, “Silib qaytarsam?”, “Telefon səssizdirsə?”, “Yay vaxtına keçəndə?”",
+    "a": "Nümunə ideyalar, sənin ideyaların fərqli ola bilər:\n\n1. **Sərhəd:** zəngli saatı 00:00 və 23:59-a qur; gecə yarısından sonrakı vaxt düzgün sabaha düşürmü?\n2. **Ardıcıllıq:** saatı qur, sil, geri qaytar (undo) və ya söndürüb yandır: yenə çalırmı?\n3. **Eyni vaxtda:** eyni dəqiqəyə iki zəngli saat qur; zəng gələndə saat çalsa nə olur?\n4. **Rol və ya ayar:** telefon səssiz rejimdədir, “Narahat etməyin” açıqdır, səs 0-dır: çalırmı?\n5. **Mühit:** telefonu söndürüb yandır, batareya 1%-dir, batareya qənaəti açıqdır, tətbiq bağlıdır.\n6. **Vaxt:** saat qurşağını dəyiş, yay/qış vaxtı keçidi, 29 fevral, “hər bazar ertəsi” təkrarı.",
+    "c": [
+      "Altı ideya var və hər biri bir kateqoriyaya aiddir",
+      "Hər ideya konkret yoxlamadır, sadəcə “sərhədi yoxla” deyil",
+      "Mühit və vaxt ideyaları telefona və zəngli saata uyğundur"
+    ]
+  },
+  "c1x1m": {
+    "h": "Kim tapır, kim düzəldir, sonra kim təkrar yoxlayır? Kök səbəb üçün isə şəklin özünə və tətbiqin onu necə emal etdiyinə bax.",
+    "a": "**Tester:** defekti təkrarlayır, şərtləri dəqiqləşdirir (hansı şəkil, ölçü, format, cihaz), bug report yazır, düzəlişdən sonra retest və yaxın sahələrdə regression edir.\n\n**Proqramçı:** debugging aparır: çökmə logunu oxuyur, səbəbi tapır, kodu düzəldir.\n\n**Komanda:** kök səbəbi müzakirə edir və eyni tip səhvin təkrarlanmaması üçün dəyişiklik edir, məsələn, test əlavə edir və ya şəkil yükləmə qaydalarını yazır.\n\n**Kök səbəb üçün iki ehtimal:**\n1. Tətbiq şəkli ölçüsünü yoxlamadan yaddaşa açır, böyük şəkildə yaddaş bitir.\n2. Tətbiq müəyyən formatı (məsələn, HEIC) emal edə bilmir və xətanı tutmur.",
+    "c": [
+      "Tester-in işi: təkrarlama, bug report, retest və regression",
+      "Proqramçının işi debugging və düzəlişdir, komanda isə kök səbəbi müzakirə edir",
+      "İki fərqli kök səbəb ehtimalı yazılıb"
+    ]
+  },
+  "c1x2m": {
+    "h": "“Hamı” sözü qayda olmadan işləmir. Düşün: tələb müzakirəsi, proqramçının öz testləri və “hazırdır” sayılmaq şərti nəyi dəyişə bilər?",
+    "a": "Nümunə təkliflər:\n\n1. **“Hazırdır” qaydası (Definition of Done):** tapşırıq unit testlər yazılıb keçməmiş, kod rəyi olmamış hazır sayılmır. Beləcə test tək tester-in üzərinə düşmür.\n2. **Tələbi birlikdə müzakirə etmək:** kod yazılmazdan əvvəl proqramçı, tester və məhsul sahibi qəbul meyarlarını birlikdə yazır, sualları erkən tapır.\n3. **Cütlük və növbə:** reliz öncəsi proqramçılar növbə ilə əsas ssenariləri test edir, tester isə exploratory testə vaxt qazanır.\n\nHər təklif konkretdir: kim, nə vaxt, nə edir. Tester yenə test işinə rəhbərlik edir, amma keyfiyyət hamının məsuliyyətinə çevrilir.",
+    "c": [
+      "Üç konkret təklif yazılıb, “hamı məsuliyyət daşısın” kimi ümumi cümlə deyil",
+      "Proqramçıların testə real qoşulduğu ən azı bir hərəkət göstərilib",
+      "Tester komandadan çıxmır, rolu dəyişir"
+    ]
+  },
+  "c1t1": {
+    "h": "Zənciri ardıcıllıqla qur: kim yanıldı, bu yanlışlıq harada qaldı, istifadəçi nə gördü? Düzgün nəticəni də hesabla: °F = °C × 9/5 + 32.",
+    "a": "- **Error (səhv):** insan səhvi: proqramçı çevirmə düsturunu yazanda yanılıb.\n- **Defect (defekt):** kodda qalan yanlış düstur. +36 °F çıxması göstərir ki, kod 20 × 9/5 hesablayıb, amma “+ 32” hissəsini əlavə etməyib.\n- **Failure (nasazlıq):** tətbiq işləyəndə görünən yanlış nəticə: Bakıda +20 °C olanda ekranda +36 °F görünür, düzgünü isə +68 °F-dir (20 × 9/5 + 32).\n\nZəncir belədir: error defekti yaradır, defekt işə düşəndə failure görünür. İstifadəçi yalnız failure-ı görür. Tester failure-ı tapıb bug report yazır, defekti və səhvi isə proqramçı debugging ilə tapır.",
+    "c": [
+      "Error proqramçının yanılmasıdır, defect koddakı yanlış düsturdur",
+      "Failure ekrandakı +36 °F-dir",
+      "Düzgün nəticə +68 °F kimi göstərilib"
+    ]
+  },
+  "c1t2": {
+    "h": "Üç sual ver: səhvin qarşısını alan qayda nədir, hazır işi kim yoxlayır, yoxlayanda konkret hansı hərəkəti edir?",
+    "a": "Mümkün cavablardan biridir, sənin analogiyan fərqli ola bilər. Kitab nəşri üzərindən:\n\n- **QA (proses, qarşısını almaq):** nəşriyyat qayda qoyur: hər kitab iki redaktordan keçir, orfoqrafiya lüğəti və üslub bələdçisi var, müəlliflərə əvvəlcədən təlimat verilir. Məqsəd səhvin ümumiyyətlə yaranmamasıdır.\n- **QC (məhsul, aşkar etmək):** çapdan əvvəl korrektor hazır kitabı yoxlayır, hazır nüsxədə səhifələrin sırasına baxılır.\n- **Testing (QC-nin konkret hərəkəti):** korrektor səhifəni oxuyur, sözləri lüğətlə tutuşdurur, tapdığı səhvi qeyd edir.\n\nƏlaqə: testing QC-nin içindədir, QC isə QA-nın qurduğu sistemin bir hissəsidir. Eyni səhv tez-tez çıxırsa, QA qaydanı dəyişir.",
+    "c": [
+      "QA qarşısını alan qayda və ya prosesdir, hazır işin yoxlanması deyil",
+      "QC hazır məhsulu yoxlayır, testing onun konkret hərəkətidir",
+      "Üç anlayış eyni analogiya üzərində göstərilib"
+    ]
+  },
+  "c1t3": {
+    "h": "Əvvəl gözlədiyini və gördüyünü ayrı yaz. Gördüyün failure-dur. Sonra soruş: kodda və ya mühitdə nə bunu yarada bilərdi?",
+    "a": "Bu, bir nümunədir; sənin tətbiqin və problemin fərqli olacaq.\n\n**Problem:** taksi tətbiqində ünvanı seçib “Sifariş et” basdım, 30 saniyə heç nə olmadı, sonra eyni sifariş iki dəfə göründü.\n\n**Failure idi?** Bəli. Gözlədiyim bir sifariş idi, gördüyüm iki sifariş oldu. İstifadəçi kimi gördüyüm yanlış nəticə failure-dur.\n\n**Mümkün defektlər (ehtimaldır):**\n- Düymə basılandan sonra deaktiv olmur, ikinci basış ikinci sorğu göndərir.\n- Zəif internetdə tətbiq sorğunu özü təkrarlayır, server isə təkrarı tanımır.\n\nDəqiq səbəbi proqramçı tapa bilər. Tester olaraq addımları, cihazı və interneti yazardım. Problem yalnız zəif internetdə çıxırsa, mühit də rol oynayır.",
+    "c": [
+      "Problem gözlənilən və faktiki nəticə ilə konkret təsvir olunub",
+      "Görünən nəticənin failure olduğu izah edilib",
+      "Arxadakı defekt ehtimal kimi yazılıb, dəqiq fakt kimi yox"
+    ]
+  },
+  "c1t4": {
+    "h": "İki sual tap: “Tələbdə yazılan kimidir?” və “İstifadəçiyə həqiqətən lazım olanı verirmi?” Cavabları fərqli olan bir hal axtar.",
+    "a": "Mümkün cavablardan biridir, sənin misalın fərqli ola bilər.\n\n**Misal:** bank tətbiqində tələb belədir: “Ödəniş üçün 16 rəqəmli kart nömrəsi daxil edilir.” Forma hər dəfə nömrəni əl ilə istəyir və yadda saxlamır.\n\n- **Verification (“Tələbə uyğundurmu?”):** bəli, 16 rəqəm daxil etmək olur, ödəniş keçir.\n- **Validation (“İstifadəçiyə lazımdırmı?”):** yox, müştəri hər ödənişdə nömrəni axtarıb yazmaq istəmir, bir çoxu ödənişi yarıda atır.\n\nDeməli, məhsul tələbə tam uyğundur, yenə də istifadəçiyə yaramır. Verification sənədlə, validation isə real istifadəçi ehtiyacı ilə tutuşdurmadır.",
+    "c": [
+      "Eyni misalda verification və validation ayrı-ayrı qiymətləndirilib",
+      "Verification tələblə, validation istifadəçi ehtiyacı ilə tutuşdurulub",
+      "Məhsulun tələbə uyğun olub istifadəçiyə yaramaya biləcəyi göstərilib"
+    ]
+  },
+  "c1q1": {
+    "a": "İç-içədirlər. **Testing** QC-nin konkret hərəkətidir: yoxla, müqayisə et, qeyd et. **QC** hazır məhsulda defektləri aşkar edir. **QA** isə bütün prosesi qurur ki, səhv ümumiyyətlə az yaransın. Yəni QA prosesə, QC məhsula baxır, testing isə QC-nin alətidir.",
+    "c": [
+      "QA proses və qarşısını almaqdır",
+      "QC məhsul və aşkar etməkdir",
+      "Testing QC-nin konkret hərəkəti kimi göstərilib"
+    ]
+  },
+  "c1q2": {
+    "a": "Çünki defekt yalnız həmin kod işə düşəndə və lazımi şərt yarananda nasazlığa çevrilir. Nadir istifadə olunan funksiyadakı və ya heç vaxt rast gəlinməyən dəyərdəki defekt illərlə görünməyə bilər. Əksinə, nasazlığı mühit də yarada bilər, məsələn, dolu disk.",
+    "c": [
+      "Defektli kodun işə düşməli olduğu deyilib",
+      "Lazımi şərtin yaranmalı olduğu deyilib"
+    ]
+  },
+  "c1q3": {
+    "a": "Yox. Defekt tələblərdə, dizaynda, maketdə, test case-də və istifadəçi təlimatında da ola bilər. Məsələn, tələbdə səhv yazılmış limit kod yazılmazdan əvvəl artıq defektdir. Ona görə sənədləri oxumaq da testdir və belə defekt erkən tapılanda ucuz düzəlir.",
+    "c": [
+      "Cavab “yox”dur, defekt yalnız kodda olmur",
+      "Ən azı iki başqa yer göstərilib: tələb, dizayn, test case və ya təlimat"
+    ]
+  },
+  "c1q4": {
+    "a": "Proqramçı “Bunu necə işlədim?” deyə düşünür, məqsədi məhsulu qurub işlətməkdir. Tester isə “Bu necə sına bilər?” deyə soruşur: gözlənilməz dəyər, ardıcıllıq, mühit axtarır. Bu, rəqabət deyil: iki baxış bir-birini tamamlayır, məqsəd eynidir, yaxşı məhsul.",
+    "c": [
+      "Proqramçının “necə işlədim”, tester-in “necə sına bilər” sualı fərqləndirilib",
+      "Bunun düşmənçilik yox, bir-birini tamamlamaq olduğu qeyd edilib"
+    ]
+  }
+}

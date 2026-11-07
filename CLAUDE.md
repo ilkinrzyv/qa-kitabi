@@ -10,7 +10,7 @@ Interactive Azerbaijani textbook on software QA for a beginner (no programming b
 
 ```bash
 pip install -r requirements.txt
-python3 build/parse_book.py   # → build/book.json (gitignored); expect "deep layers 170 missing 0" and "errors 0"
+python3 build/parse_book.py   # → build/book.json (gitignored); expect "deep layers 170 missing 0", "answers 359 missing 0" and "errors 0"
 python3 build/build_pwa.py    # → docs/ and dist/qa-kitabi-offline.zip; prints the new version
 python3 build/build_page.py   # → dist/qa-kitab.html and build/test.html (page used by the t*.js checks)
 python3 build/diagrams.py     # diagram self-check; must report 0 issues
@@ -86,6 +86,12 @@ Screenshots land in `build/shots/` (gitignored).
   (`gitRun` in `app.js`) plays Git's commands on that model with Git's own messages (status, LCS diffs, a diff3 merge
   with conflict markers, push / pull / rebase / revert); `reset --hard` and `push --force` are refused with a reason.
   Done marks: `P().git`. `t28.js` solves every task in the terminal and the editor.
+- `build/answers/cNN.json` — the answer key, so the book works without Claude: one entry per exercise, keyed by its id
+  (tasks `c8t1`, self-check `c8q1`, mini-tasks `<sid>m`): `a` model answer (Markdown; open tasks say it is a sample), `c` 2–5
+  self-check criteria, `h` hint (not for self-check). A new exercise needs an entry; `parse_book.py` counts a missing, unknown
+  or incomplete one as an error and attaches the rest as `ans`. `ansPanel` / `ansShow` / `ansTick` in `app.js` show them;
+  reading the answer and the ticks are saved in the answer doc (`v`, `m`). The first press on an empty answer only reminds the
+  reader to try. `t30.js`.
 - `build/quiz_*.json` — chapter quizzes. `build/diagrams.py` — SVG diagrams registered with `reg(slug, sid, anchor, cap, d)`,
   drawn with `svgkit.py` (text measured with the vendored fonts in `fonts/`, overlap and overflow checks).
 - `build/app.js` — the whole UI in one IIFE, no framework. `PWA = window.QA_PWA` exists only in the offline build:

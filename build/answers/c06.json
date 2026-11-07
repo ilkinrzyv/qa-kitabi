@@ -1,0 +1,111 @@
+{
+  "c6s1m": {
+    "h": "Tələbdə üç söz var: “23:00-dan sonra”, “20%” və “qiymət”. Sərhəd, hesab və nəticənin ekranda görünməyən yerlərini düşün.",
+    "a": "Nümunə ideyalar:\n\n1. **Pozitiv:** 23:30-da 10 AZN-lik sifariş. Gözlənilən: 12 AZN.\n2. **Sərhəd:** sifariş 22:59, 23:00 və 23:01-də. 22:59-da əlavə yoxdur, 23:01-də var. Düz 23:00-ın aid olduğu tələbdə aydın deyil (“sonra”), analitikdən soruşmaq lazımdır.\n3. **Hesablama:** 7,35 AZN-də 20%: 8,82 AZN. Yuvarlaqlaşdırma qaydası və endirim koduna görə ardıcıllıq düzgündür.\n4. **Axın:** sifariş 22:50-də yaradılır, səfər 23:10-da başlayır. Hansı vaxt əsasdır? Qiymət səfər boyu dəyişmirmi?\n5. **Görünməz nəticə:** qəbzdə, sürücü panelində və bazada eyni məbləğ yazılır, ekranda göstərilən qiymətlə tutulan pul eynidir.\n\nGecə yarısından sonra (00:30) əlavə qalırmı? Tələbdə bitmə vaxtı yoxdur, bu da sualdır.",
+    "c": [
+      "Beş ideya tələb olunan kateqoriyaları əhatə edir",
+      "Sərhəd vaxtları 23:00 ətrafındadır",
+      "Bir ideya ekrandan kənar nəticəni yoxlayır: qəbz, sürücü paneli və ya baza"
+    ]
+  },
+  "c6s2m": {
+    "h": "Əvvəl bu günün riskini düşün: hamı eyni anda gəlir. Hər tələbdə rəqəm olsun: neçə nəfər, neçə saniyə, nə qədər müddət.",
+    "a": "Nümunə tələblər (rəqəmlər fərziyyədir, keçmiş illərin statistikasından götürülməlidir):\n\n1. **20 000 istifadəçi eyni anda olanda nəticə səhifəsi 95% hallarda 3 saniyədən tez açılır, xəta faizi 1%-dən azdır.** Növ: **Load testi**: gözlənilən pik yük.\n2. **Elan anında 5 dəqiqədə istifadəçi sayı 2 000-dən 30 000-ə qalxanda sistem çökmür və 2 dəqiqəyə normal sürətə qayıdır.** Növ: **Spike testi**: qəfil sıçrayış.\n3. **Yük 50 000-ə çatanda, hədd keçiləndə sistem məlumat itirmir, istifadəçi aydın “növbə” mesajı görür.** Növ: **Stress testi**: həddi və çökmə davranışını tapmaq.\n\nEndurance burada əsas deyil, çünki yük qısa müddətlidir.",
+    "c": [
+      "Üç tələbin hər birində rəqəm var",
+      "Hər tələbə uyğun test növü seçilib: load, stress, spike və ya endurance",
+      "Tələblər elan gününün qəfil yükünə aiddir"
+    ]
+  },
+  "c6s3m": {
+    "h": "Dördünü ayır: smoke bütün sistem üzrə dayazdır, retest həmin baqdır, sanity düzəliş ətrafında dar sahədir, regression ətraf funksiyalardır.",
+    "a": "**Smoke (build test üçün yararlıdırmı?):**\n1. Sayt açılır, istifadəçi daxil olur.\n2. Məhsul səbətə əlavə olunur, ödəniş səhifəsi açılır.\n\n**Retest (baqın özü):**\n1. Səbətdə məhsul sayını 0 et: məhsul silinir.\n2. Eyni addımları baq report-dakı məhsul və brauzerdə təkrarla.\n\n**Sanity (dəyişən sahənin qısa yoxlanması):**\n1. Sayı 2-dən 3-ə qaldır: məbləğ dəyişir.\n2. Sayı 1-dən 0-a endir, sonra səbət boşdur mesajını gör.\n\n**Regression (ətraf funksiyalar):**\n1. “Remove” düyməsi və səbət nişanındakı rəqəm hələ düzgün işləyir.\n2. Səbətdə iki məhsul var, biri 0 edilir: yalnız o silinir, məbləğ və checkout düzgündür.",
+    "c": [
+      "Dörd növün hər biri üçün 2 test var",
+      "Retest baqın öz addımlarını təkrarlayır",
+      "Regression ətraf funksiyaları yoxlayır: nişan, məbləğ, “Remove” və ya checkout"
+    ]
+  },
+  "c6s4m": {
+    "h": "Üç başlığı ayrı düşün: təmiz və üstdən quraşdırma; köhnə versiyanın datası yeni versiyaya necə keçir; proqram yarıda dayansa nə olur?",
+    "a": "Nümunə ideyalar:\n\n1. **Installation:** Təmiz kompüterə quraşdır, proqram açılır, lazımi qovluqlar və qısayol yaranır; silindikdən sonra artıq fayl qalmır, sənədlər isə itmir.\n2. **Installation (yeniləmə):** köhnə versiyanın üzərindən quraşdır: ayarlar və lisenziya saxlanılır, proqram versiyası yenidir.\n3. **Data miqrasiyası:** köhnə versiyadakı 5 illik hesablar köçürülür: hesab sayı, qalıqlar və əməliyyat məbləğləri tam eynidir, Azərbaycan hərfləri pozulmayıb.\n4. **Data miqrasiyası (xəta):** köçürmə ortasında xəta çıxır: köhnə data pozulmur, proqram aydın mesaj verir, yenidən cəhd etmək olur.\n5. **Recovery:** hesabat yazılarkən elektrik kəsilir (proqramı məcburi bağla): yenidən açılanda data pozulmayıb, ehtiyat nüsxədən bərpa işləyir, bərpadan sonrakı qalıqlar düzgündür.",
+    "c": [
+      "Installation, data miqrasiyası və recovery üçün ideyalar var",
+      "Miqrasiyada data tamlığı rəqəmlə və ya məbləğlə yoxlanılır",
+      "Recovery-də nasazlıqdan sonra datanın vəziyyəti yoxlanılır"
+    ]
+  },
+  "c6x1m": {
+    "h": "Kvadrantlar: Q1 unit və komponent; Q2 funksional; Q3 exploratory, usability, UAT; Q4 qeyri-funksional. Avtomatlaşdırma ən çox Q1 və Q2-də olur.",
+    "a": "| Kvadrant | Test | Necə |\n|---|---|---|\n| **Q1** | `formatTime(125)` funksiyası “2:05” qaytarır; davam etmə vaxtını yadda saxlayan komponent düzgün dəyər yazır | **Avtomatik** |\n| **Q2** | Tələbə dərsi açır, video oynayır, səhifəni bağlayıb qayıdır, video qaldığı yerdən davam edir | **Avtomatik** (əsas yol), qalanı manual |\n| **Q3** | Exploratory: 30 dəqiqə zəif internetdə, sürətlə geri-irəli çəkməklə baxmaq; real tələbənin subtitrləri və düymələri rahat tapması | **Manual** |\n| **Q4** | 2 000 tələbə eyni anda baxanda buferləmə 2 saniyədən az olur; 1 Mbit/s-də video keyfiyyəti aşağı düşür, dayanmır | **Alətlərlə** avtomatik |\n\nQ3-ü avtomatlaşdırmaq olmur, çünki orada insanın müşahidəsi lazımdır.",
+    "c": [
+      "Dörd kvadrantın hər birindən bir test var",
+      "Testlər video dərsə aiddir",
+      "Q3 manual, Q1 isə avtomatik kimi qeyd olunub"
+    ]
+  },
+  "c6t1": {
+    "h": "Hər cümlədə soruş: “nə edir”, yoxsa “necə yaxşı edir”? “Necə”dirsə, hansı keyfiyyətdir: sürət, yük, uyğunluq, əlçatanlıq, təhlükəsizlik?",
+    "a": "1. **“Ana səhifə 3G-də 5 saniyədən tez açılmalıdır”:** performans testi (qeyri-funksional).\n2. **“Səbətə məhsul əlavə olunur”:** funksional test.\n3. **“Sayt Firefox-da düzgün görünür”:** uyğunluq testi, cross-browser (qeyri-funksional).\n4. **“Eyni anda 5000 istifadəçi daxil olanda sistem çökmür”:** load testi, performans testinin bir növü. Hədd aşılırsa və məqsəd çökmə nöqtəsini tapmaqdırsa, bu, stress testi olur.\n5. **“Ekran oxuyucu ilə qeydiyyatdan keçə bilir”:** əlçatanlıq testi, accessibility.\n6. **“Logout-dan sonra Geri düyməsi ilə profil səhifəsi açılmır”:** təhlükəsizlik testi (sessiya idarəsi).\n\nSonuncu funksional kimi də yazıla bilər, amma riski başqasının hesabına baxmaqdır, ona görə əsas növ təhlükəsizlikdir.",
+    "c": [
+      "1 performans, 2 funksional, 3 uyğunluq testidir",
+      "4 load (performans), 5 əlçatanlıq testidir",
+      "6 təhlükəsizlik testidir"
+    ]
+  },
+  "c6t2": {
+    "h": "Fərqi eyni build üzərində göstər: smoke bütün sistemə qısa baxır, sanity isə dəyişən bir yeri dərindən yoxlayır.",
+    "a": "Mümkün misallardan biridir.\n\n**Vəziyyət:** Onlayn mağazanın yeni build-i gəlib, ödəniş səhifəsindəki promo kod baqı düzəldilib.\n\n**Smoke (geniş, dayaz):** “Build-i ümumiyyətlə test etmək olarmı?” Sayt açılır, giriş işləyir, məhsul səbətə düşür, ödəniş səhifəsi açılır. Bu, 10 dəqiqə çəkir, detallara girmir. Keçməsə, build geri qaytarılır.\n\n**Sanity (dar, dərin):** “Dəyişən sahə məntiqli işləyirmi?” Yalnız promo kod: düzgün kod endirim edir, köhnəlmiş kod rədd olunur, kod silinəndə məbləğ qayıdır. Digər funksiyalara baxmıram.\n\n**Əsas fərq:** smoke bütün sistemin “nəfəs aldığını”, sanity isə konkret dəyişikliyin məntiqli olduğunu göstərir. Sanity adətən smoke-dan sonra və hər ikisi tam regression-dan əvvəl olur.",
+    "c": [
+      "Smoke geniş və dayaz, sanity dar və dərin kimi göstərilib",
+      "Hər ikisi konkret misalla izah olunub",
+      "Smoke-un build-in yararlılığını yoxladığı deyilib"
+    ]
+  },
+  "c6t3": {
+    "h": "Dəyişiklik yerindən çıx: bu funksiya e-poçt, token, şifrə qaydası, giriş və sessiyaya bağlıdır. Hər birində nə qırıla bilər?",
+    "a": "Nümunə regression testləri:\n\n1. **Köhnə şifrə ilə giriş:** şifrə dəyişmədən adi login hələ işləyir.\n2. **Yeni şifrə ilə giriş:** bərpadan sonra yeni şifrə işləyir, köhnə şifrə rədd olunur.\n3. **Şifrə qaydaları:** qeydiyyat və “şifrəni dəyiş” səhifələrində minimum uzunluq və simvol qaydaları dəyişməyib.\n4. **Sıfırlama linki:** müddəti keçmiş və ya bir dəfə işlənmiş link rədd olunur.\n5. **Sessiyalar:** şifrə dəyişəndə başqa cihazdakı açıq sessiya bitir (tələbdəsə).\n6. **Hesab bloklanması:** 3 yanlış cəhddən sonra bloklanma hələ işləyir və bloklanmış hesab bərpa ilə açılırsa, qaydaya uyğundur.\n7. **Bildirişlər:** qeydiyyat və başqa e-poçtlar hələ gedir, şablonlar pozulmayıb.\n8. **Mövcud olmayan e-poçt:** cavab eynidir, hesabın olub-olmaması sızmır.",
+    "c": [
+      "Ən azı 6 test yazılıb",
+      "Testlər yalnız düzəlişi yox, ətraf funksiyaları yoxlayır: login, qeydiyyat, sessiya",
+      "Hər test konkretdir, nəyin yoxlandığı bəllidir"
+    ]
+  },
+  "c6t4": {
+    "h": "Eyni sayt, üç yük forması: gözlənilən pik, həddi aşan artım, qəfil sıçrayış. Rəqəm verərək fərqi göstər.",
+    "a": "**Sayt:** konsert bileti satışı, normalda 2 000 istifadəçi var. Rəqəmlər nümunədir.\n\n| Növ | Yük | Sual | Bilet saytında misal |\n|---|---|---|---|\n| **Load** | Gözlənilən pik | Gözlənilən yükdə işləyirmi? | 10 000 istifadəçi bir saat alış edir, səhifə 3 saniyədən tez açılır |\n| **Stress** | Həddən artıq, tədricən artır | Harada sınır və necə sınır? | 10 000, 20 000, 50 000: 35 000-də sistem yavaşlayır, satılmış bilet itmir, “gözləyin” mesajı çıxır |\n| **Spike** | Qəfil sıçrayış | Ani artıma dözürmü, sonra bərpa olurmu? | Satış saat 12:00-da açılır: 1 dəqiqədə 500-dən 30 000-ə, sonra normala |\n\n**Fərq:** load yükün səviyyəsini gözlənilən həddə saxlayır, stress həddi tapır, spike isə artımın sürətini sınayır. Bilet saytında spike xüsusilə risklidir: bir biletin iki nəfərə satılmaması da yoxlanılır.",
+    "c": [
+      "Load gözlənilən yük kimi izah olunub",
+      "Stress həddi aşmaq, spike qəfil sıçrayış kimi izah olunub",
+      "Üçü də onlayn bilet satışı misalındadır"
+    ]
+  },
+  "c6q1": {
+    "a": "**Funksional test** “sistem nə edir?” sualına cavab verir: tələbdəki funksiyanı yoxlayır, məsələn, səbətə əlavə. **Qeyri-funksional test** “necə yaxşı işləyir?” sualına cavab verir: sürət, yük, təhlükəsizlik, rahatlıq, uyğunluq.",
+    "c": [
+      "Funksional “nə edir”, qeyri-funksional “necə yaxşı işləyir” kimi fərqləndirilib",
+      "Hər birinə bir misal var"
+    ]
+  },
+  "c6q2": {
+    "a": "**Load:** gözlənilən yük. **Stress:** həddi aşan yük və çökmə nöqtəsi. **Spike:** qəfil sıçrayış. **Endurance (soak):** uzun müddət normal yük, məsələn, 12 saatdan sonra yaddaş sızması.",
+    "c": [
+      "Dörd növ adlandırılıb: load, stress, spike, endurance",
+      "Hər növün nə yoxladığı qısa izah olunub"
+    ]
+  },
+  "c6q3": {
+    "a": "**Retest** düzəldilmiş konkret defekti eyni addımlarla yenidən yoxlayır: baq həqiqətən düzəlibmi? **Regression** isə dəyişikliyin başqa yerləri sındırmadığını yoxlayır: ətraf funksiyalar hələ işləyirmi? Retest bir baq üçün, regression geniş sahə üçündür.",
+    "c": [
+      "Retest konkret defektin özünü yoxlayır",
+      "Regression dəyişiklikdən ətraf funksiyaların zərər görmədiyini yoxlayır"
+    ]
+  },
+  "c6q4": {
+    "a": "**Regression.** Çünki eyni testlər hər dəyişiklikdə, hər relizdə təkrarlanır, ssenarilər sabitdir və əl ilə təkrarlamaq çox vaxt aparır. Avtomatlaşdırma bu təkrarı ucuzlaşdırır, tester isə exploratory test kimi daha dəyərli işlərə vaxt qazanır.",
+    "c": [
+      "Cavab regression-dur",
+      "Səbəb kimi təkrarlanma və sabit ssenari göstərilib"
+    ]
+  }
+}

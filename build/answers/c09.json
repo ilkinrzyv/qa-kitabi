@@ -1,0 +1,129 @@
+{
+  "c9s1m": {
+    "h": "Üç şərt var, deməli 2³ kombinasiya. Əvvəl əlavələri topla (+20% və +10% = +30%), sonra alınan məbləğə promokodu tətbiq et.",
+    "a": "**Şərtlər:** Gecə, Yağış, Promokod. Kombinasiya sayı: 2³ = **8**.\n\n**Hesablama:** əlavələr bazadan toplanır, promokod isə alınan məbləğdən çıxılır. Məsələn, gecə və yağış: 10 × 1,30 = 13; promokodla 13 × 0,85 = 11,05.\n\n| Şərt | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 |\n|---|---|---|---|---|---|---|---|---|\n| Gecə | B | B | B | B | X | X | X | X |\n| Yağış | B | B | X | X | B | B | X | X |\n| Promokod | B | X | B | X | B | X | B | X |\n| **Qiymət, AZN** | 11,05 | 13,00 | 10,20 | 12,00 | 9,35 | 11,00 | 8,50 | 10,00 |\n\nDiqqət: burada hər şərt qiymətə təsir edir, ona görə “—” işarəsi ilə sütunları birləşdirmək olmur. Hər sütun bir test case-dir. Tipik səhv 20% + 10% − 15% = +15% saymaqdır: bu, “sonda tətbiq olunur” qaydasını pozur.",
+    "c": [
+      "Üç şərt və 8 kombinasiya göstərilib",
+      "Bütün şərtlər olanda qiymət 11,05 AZN-dir",
+      "Promokod olan digər nəticələr 10,20, 9,35 və 8,50 AZN-dir"
+    ]
+  },
+  "c9s2m": {
+    "h": "Əvvəl beş vəziyyəti yaz. Etibarlı keçidlər qaydadakı oxlardır. Etibarsızlar: pillə atlamaq, geri getmək və qadağan olunan keçid.",
+    "a": "**Vəziyyətlər:** Qəbul edildi, Anbarda, Yolda, Çatdırıldı, Geri qaytarıldı.\n\n**Etibarlı keçidlər:**\n1. Qəbul edildi → Anbarda\n2. Anbarda → Yolda\n3. Yolda → Çatdırıldı\n4. Yolda → Geri qaytarıldı (Qəbul edildi və Anbarda vəziyyətindən də olar)\n\n**Etibarsız keçidlər:**\n1. Çatdırıldı → Geri qaytarıldı: qaydada açıq qadağandır.\n2. Qəbul edildi → Çatdırıldı: anbar və yol mərhələləri atlanır.\n3. Çatdırıldı → Yolda: bitmiş çatdırılma geri dönmür.\n\nDefektlərin çoxu etibarsız keçidlərdə tapılır. Testdə sistem belə keçidə icazə verməməli, status dəyişməməli və aydın xəta göstərməlidir.",
+    "c": [
+      "Beş vəziyyət yazılıb",
+      "Dörd etibarlı keçid qaydaya uyğundur",
+      "Üç etibarsız keçid var, biri “Çatdırıldı → Geri qaytarıldı”dır"
+    ]
+  },
+  "c9s3m": {
+    "h": "Bütün sayı: dəyərlərin hasili. Pairwise minimumu ən azı iki ən böyük parametrin hasili qədərdir. Hər cütü sətirlərdə işarələyərək yoxla.",
+    "a": "**Bütün kombinasiyalar:** 3 × 2 × 2 = **12**.\n\n**Minimum pairwise:** iki ən böyük parametr 3 × 2 = **6**. Aşağıdakı 6 test bunu verir:\n\n| # | Cihaz | Brauzer | Dil |\n|---|---|---|---|\n| 1 | Telefon | Chrome | AZ |\n| 2 | Telefon | Safari | EN |\n| 3 | Planşet | Chrome | EN |\n| 4 | Planşet | Safari | AZ |\n| 5 | Kompüter | Chrome | AZ |\n| 6 | Kompüter | Safari | EN |\n\n**Yoxlama:** Cihaz–Brauzer 6 cüt, Cihaz–Dil 6 cüt, Brauzer–Dil 4 cüt: hamısı ən azı bir dəfə var.\n\n**Mümkün olmayan cüt:** Windows kompüterlərində Safari yoxdur. Əgər kompüter dedikdə Windows nəzərdə tutulursa, “Kompüter + Safari” mümkün deyil. Onda 6-cı test “Kompüter, Chrome, EN” olur və cüt əhatəsi qalan cütlər üçün pozulmur.",
+    "c": [
+      "Bütün kombinasiyaların sayı 12, minimum pairwise 6-dır",
+      "Cədvəldə hər iki parametrin hər cütü ən azı bir dəfə var",
+      "Bir mümkün olmayan cüt göstərilib və necə həll olunduğu yazılıb"
+    ]
+  },
+  "c9s4m": {
+    "h": "Soruş: iki nəfər eyni anda eyni yeri seçsə? Ödəməzdən əvvəl çıxsa? Vaxt bitsə? Və Azərbaycanda nə fərqlidir: AZN, kart, azərbaycanca ad?",
+    "a": "Nümunə ideyalar:\n\n1. **Eyni anda seçim:** iki istifadəçi eyni oturacağı bir saniyə fərqlə seçir. Yalnız biri tuta bilir, ikincisi aydın mesaj görür, ikiqat satış yoxdur.\n2. **Yarımçıq proses:** oturacaq seçilib, ödəniş səhifəsində pəncərə bağlanıb. Oturacaq müəyyən vaxtdan sonra azad olurmu?\n3. **Sessiya:** seçim vaxtı bitəndə (məsələn, 10 dəqiqə) sessiya bitir: seçim sıfırlanır, pul tutulmur, yenidən başlamaq olur.\n4. **Ödəniş uğursuzluğu:** kart rədd olunur: oturacaq bir müddət istifadəçidə qalır, ya azad olur, heç olmasa dublikat bilet yaranmır.\n5. **Say və sərhəd:** icazə verilən sayından çox oturacaq seçmək, tək boş qalan yer qaydası.\n6. **Azərbaycan konteksti:** “Əli Şükürov” adı biletdə düzgün çap olunur; qiymət AZN ilə və vergüllə düzgün göstərilir; yerli bank kartı (BirKart və s.) keçir.",
+    "c": [
+      "Altı ideya oturacaq seçiminə aiddir",
+      "Eyni anda seçim, yarımçıq proses və sessiya ideyaları var",
+      "Azərbaycan kontekstinə aid ən azı bir ideya var"
+    ]
+  },
+  "c9s5m": {
+    "h": "Əsas axın hər şeyin yaxşı getdiyi yoldur. Alternativ fərqli, amma düzgün yoldur. İstisnada nəsə pozulur: kart, kitab, terminal.",
+    "a": "**Aktor:** kitabxana oxucusu.\n\n**İlkin şərt:** oxucunun aktiv kartı var, limiti dolmayıb, terminal işləyir.\n\n**Əsas axın:**\n1. Oxucu kartını oxudur, sistem adını göstərir.\n2. Kitabın barkodunu oxudur, sistem kitabı tapır.\n3. “Götür” basır, sistem qaytarma tarixini göstərir.\n4. Qəbz çıxır, kitab statusu “Oxucuda” olur.\n\n**Alternativ axınlar:**\n- A1: oxucu bir neçə kitabı ardıcıl oxudur, sonda hamısı üçün bir qəbz alır.\n- A2: kart əvəzinə mobil tətbiqin QR kodu ilə daxil olur.\n\n**İstisnalar:**\n- E1: kart bloklanıb və ya gecikmiş kitab var: sistem kitabı vermir, səbəbi yazır.\n- E2: barkod oxunmur və ya kitab başqası üçün rezerv olunub: xəta mesajı.\n- E3: əməliyyat vaxtı şəbəkə kəsilir: kitab yarımçıq qeyd olunmur, oxucuya kitabxanaçıya müraciət deyilir.",
+    "c": [
+      "Aktor, ilkin şərt və əsas axın yazılıb",
+      "İki alternativ axın düzgün, amma fərqli yoldur",
+      "Üç istisna xəta və ya gözlənilməz vəziyyətdir"
+    ]
+  },
+  "c9s6m": {
+    "h": "Hər hissənin “formasına” bax: rəqəm aralığı → EP/BVA; şərtlər → qərar cədvəli; statuslar → vəziyyət keçidi; addımlar → use case.",
+    "a": "| Hissə | Texnika | Səbəb |\n|---|---|---|\n| **Sərnişin sayı (1–9)** | EP və BVA | Rəqəm aralığıdır: 0, 1, 9, 10 sərhədləri ən risklidir |\n| **Endirim qaydaları** (uşaq, tələbə, promokod) | Qərar cədvəli | Bir neçə şərt birləşir, kombinasiyalar müxtəlif nəticə verir |\n| **Bilet statusları** (sifariş, ödənilib, geri qaytarılıb, uçub) | Vəziyyət keçidləri | Sistemin vəziyyəti var, etibarsız keçidlərdə defekt çox olur: uçmuş bileti geri qaytarmaq |\n| **Sifariş prosesi** | Use case testing | Addım-addım istifadəçi axını: axtarış, seçim, sərnişin məlumatı, ödəniş; alternativ və istisna axınları ilə |\n\nÜstəlik error guessing bütün hissələrə əlavə olunur: ödəniş vaxtı səhifəni yeniləmək, iki sekmədə eyni sifariş. Parametrlər çox olanda (brauzer, dil, valyuta) pairwise da kömək edir.",
+    "c": [
+      "Dörd hissənin hər biri üçün texnika seçilib",
+      "Sərhədli rəqəmə EP/BVA, statuslara vəziyyət keçidi uyğundur",
+      "Hər seçimin səbəbi yazılıb"
+    ]
+  },
+  "c9t1": {
+    "h": "İki şərt, deməli dörd kombinasiya. Endirimlər toplanmır, ona görə ikisi birdən olanda 50% deyil. Hansı şərt qalibdir?",
+    "a": "**Şərtlər:** Tələbədir? Çərşənbədir? Kombinasiya sayı: 2² = **4**.\n\nNümunə üçün bilet 10 AZN-dir.\n\n| Şərt | R1 | R2 | R3 | R4 |\n|---|---|---|---|---|\n| Tələbə | B | B | X | X |\n| Çərşənbə | B | X | B | X |\n| **Endirim** | 30% | 20% | 30% | 0% |\n| **Qiymət, AZN** | 7 | 8 | 7 | 10 |\n\n**R1 ən vacibdir:** endirimlər toplanmır, böyük olan (30%) tətbiq olunur, 50% yox. Tipik defekt də budur.\n\n**Sadələşdirmə:** R1 və R3 eyni nəticəni verir, çünki çərşənbədə tələbə olmağın təsiri yoxdur. Bunları “Çərşənbə: B, Tələbə: —” kimi birləşdirmək olar. Yenə də R1-i ayrıca test etmək faydalıdır, çünki risk orada, iki endirimin görüşməsindədir.",
+    "c": [
+      "İki şərt və dörd kombinasiya göstərilib",
+      "Nəticələr: 30%, 20%, 30%, 0%",
+      "Tələbə çərşənbədə gələndə 30% alır, 50% yox"
+    ]
+  },
+  "c9t2": {
+    "h": "Üç vəziyyət, üç oxu ver. Etibarsız keçid “sıranı poz”maqdır: qırmızıdan birbaşa sarıya, ya da sarıdan yaşıla keçmək nə ilə nəticələnərdi?",
+    "a": "**Vəziyyətlər:** Qırmızı, Yaşıl, Sarı. Hadisə: taymerin bitməsi.\n\n**Etibarlı keçidlər:**\n\n| Başlanğıc | Hadisə | Son |\n|---|---|---|\n| Qırmızı | Taymer bitdi | Yaşıl |\n| Yaşıl | Taymer bitdi | Sarı |\n| Sarı | Taymer bitdi | Qırmızı |\n\n**Etibarsız keçidlər:**\n\n| Keçid | Niyə olmamalıdır |\n|---|---|\n| Qırmızı → Sarı | Sıra pozulur |\n| Yaşıl → Qırmızı | Sarı xəbərdarlığı atlanır, sürücü dayana bilmir |\n| Sarı → Yaşıl | Qaydaya görə sarıdan sonra qırmızı gəlir |\n\nTest üçün: 0-switch keçidlərin hər birini bir dəfə işlət, sonra etibarsız keçidləri sınamağa çalış (məsələn, əllə əmr göndər) və sistem vəziyyətinin dəyişmədiyini yoxla. Bu sistem üçün etibarsız keçid təhlükəsizlik riskidir.",
+    "c": [
+      "Üç vəziyyət və üç etibarlı keçid düzgündür",
+      "Ən azı iki etibarsız keçid yazılıb",
+      "Keçid hadisə ilə göstərilib və ya niyə qadağan olduğu izah olunub"
+    ]
+  },
+  "c9t3": {
+    "h": "Bütün sayı üç dəyəri vurur. Minimum ən böyük iki parametrin hasilidir. Şəbəkənin hər dəyərini iki sətirdə, fərqli cihaz və OS ilə işlət.",
+    "a": "**Bütün kombinasiyalar:** 2 × 2 × 3 = **12**.\n\n**Minimum pairwise:** ən böyük iki parametrin hasili 3 × 2 = **6** test.\n\n| # | Cihaz | OS | Şəbəkə |\n|---|---|---|---|\n| 1 | Telefon | Android | Wi-Fi |\n| 2 | Planşet | iOS | Wi-Fi |\n| 3 | Telefon | iOS | 4G |\n| 4 | Planşet | Android | 4G |\n| 5 | Telefon | Android | Offline |\n| 6 | Planşet | iOS | Offline |\n\n**Cütlərin yoxlanması:**\n- Cihaz–OS: 4 cütün hamısı var (T-A, P-I, T-I, P-A).\n- Cihaz–Şəbəkə: 6 cütün hamısı var.\n- OS–Şəbəkə: 6 cütün hamısı var.\n\n6 test 12-nin yarısıdır. Üçlü kombinasiya (məsələn, Telefon-iOS-Offline) risklidirsə, onu ayrıca əlavə etmək lazımdır, çünki pairwise yalnız cütlərə zəmanət verir.",
+    "c": [
+      "Bütün kombinasiyalar 12, minimum 6-dır",
+      "Cədvəldə Cihaz–OS, Cihaz–Şəbəkə, OS–Şəbəkə cütlərinin hamısı var",
+      "Hər şəbəkə dəyəri ən azı iki dəfə işlənib"
+    ]
+  },
+  "c9t4": {
+    "h": "Fayl üç şeydir: ad, ölçü, məzmun. Bir də proses var: kəsilmə, ləğv, iki dəfə basmaq. Keçmişdə tez-tez çıxan səhvləri siyahıla.",
+    "a": "Nümunə ideyalar:\n\n1. **Ölçü sərhədi:** limit düz 5 MB, 5 MB + 1 bayt, 0 baytlıq boş fayl.\n2. **Format:** icazə verilməyən `.exe`, uzantısı dəyişdirilmiş (`virus.exe` adı `sekil.jpg`).\n3. **Fayl adı:** çox uzun ad, boşluqlar, xüsusi simvollar, azərbaycanca hərflər (`Şəkil_ü.png`), `../` kimi yol ifadəsi.\n4. **Eyni ad:** eyni faylı iki dəfə yükləmək: üstünə yazılır, yoxsa ikinci fayl olur?\n5. **İki dəfə basmaq:** düyməyə sürətlə iki dəfə basmaq: ikiqat yükləmə yaranır?\n6. **Kəsilmə:** yükləmə ortasında internet kəsilir, səhifə yenilənir: yarımçıq fayl qalır?\n7. **Ləğv:** yükləmə vaxtı “Ləğv et”: fayl serverdə qalmır.\n8. **Sessiya:** böyük fayl yüklənərkən sessiya bitir.\n9. **Çox fayl:** bir anda 50 fayl seçmək, sürükləyib atmaq.\n10. **Təhlükəsizlik və rol:** zərərli skript olan SVG, icazəsi olmayan istifadəçinin yükləməsi, başqasının faylının açılması.",
+    "c": [
+      "On ideya var və hamısı fayl yükləməyə aiddir",
+      "Ölçü sərhədi, format və ad ideyaları var",
+      "Proses və ya kəsilmə ideyası var: internet, ləğv, iki dəfə basmaq"
+    ]
+  },
+  "c9t5": {
+    "h": "Aktoru sərnişin götür. Əsas axın: ünvan, qiymət, təsdiq, sürücü, səfər. Alternativ: başqa ödəniş, başqası üçün. İstisna: sürücü yoxdur, kart keçmir.",
+    "a": "**Aktor:** sərnişin. **İlkin şərt:** hesabı var, GPS və internet açıqdır, ödəniş üsulu seçilib.\n\n**Əsas axın:**\n1. Sərnişin tətbiqi açır, sistem yerini tapır.\n2. Təyinat ünvanını yazır, sistem qiyməti və vaxtı göstərir.\n3. “Sifariş et” basır, sistem yaxın sürücünü axtarır.\n4. Sürücü təsdiq edir: sərnişin maşın, nömrə və xəritəni görür.\n5. Sürücü gəlir, səfər başlayır.\n6. Səfər bitir, ödəniş kartdan tutulur, qəbz gəlir, sərnişin qiymət verir.\n\n**Alternativ axınlar:**\n- A1: sərnişin ödənişi nağd seçir, sürücü ödənişi əllə təsdiq edir.\n- A2: sərnişin başlanğıc ünvanını əl ilə dəyişir və ya başqası üçün çağırır.\n\n**İstisnalar:**\n- E1: yaxınlıqda sürücü yoxdur: mesaj, yenidən cəhd və ya ləğv.\n- E2: sürücü təsdiqdən sonra sifarişi ləğv edir: sistem yeni sürücü axtarır, pul tutulmur.\n- E3: kartda vəsait çatmır: ödəniş rədd olunur, başqa üsul istənir.",
+    "c": [
+      "Əsas axın sərnişinin addımlarıdır və sona çatır",
+      "İki alternativ axın düzgün, amma fərqli yoldur",
+      "Üç istisna xəta halıdır: sürücü, ləğv, ödəniş kimi"
+    ]
+  },
+  "c9q1": {
+    "a": "Şərtlərin sayı n-dirsə və hər şərt bəli/xeyr ola bilirsə, kombinasiya sayı **2ⁿ**-dir. Məsələn, 3 şərt 8 kombinasiya verir. Hər sütun bir test case olur. Nəticəyə təsir etməyən şərtlər “—” ilə birləşdirilərək sütun sayı azaldıla bilər.",
+    "c": [
+      "Düstur 2ⁿ, n isə şərtlərin sayıdır",
+      "Misalla göstərilib və ya hər sütunun test case olduğu deyilib"
+    ]
+  },
+  "c9q2": {
+    "a": "Həmin qaydada şərtin dəyəri nəticəyə təsir etmirsə. Məsələn, “Giriş yoxdursa, səbət açılmır” qaydasında məhsulun stokda olub-olmaması fərq etmir. Bu, bir neçə sütunu birləşdirir və test sayını azaldır, amma məntiqi dəyişmir.",
+    "c": [
+      "Şərtin nəticəyə təsir etmədiyi hal kimi izah olunub",
+      "Sütunların birləşdiyi və ya misal göstərilib"
+    ]
+  },
+  "c9q3": {
+    "a": "Sistemin vəziyyəti və hadisəsi üçün olmamalı keçiddir: məsələn, ödənilməmiş sifarişi birbaşa “Çatdırıldı” etmək. Vacibdir, çünki defektlərin çoxu burada olur: tələblər icazə verilən yolları yazır, qadağanları isə çox vaxt unudur. Sistem bu keçidi rədd etməli, status dəyişməməlidir.",
+    "c": [
+      "Olmamalı keçid kimi izah olunub və misal var",
+      "Defektlərin burada çox tapıldığı və ya sistemin rədd etməli olduğu deyilib"
+    ]
+  },
+  "c9q4": {
+    "a": "Defektlərin çoxu bir parametrin dəyərindən və ya iki parametrin birləşməsindən yaranır, üç və daha çox parametrin görüşməsindən az. Ona görə hər iki parametrin hər cütünü ən azı bir dəfə yoxlamaq az testlə əksər riski əhatə edir. Kritik üçlüklər ayrıca əlavə olunur.",
+    "c": [
+      "Defektlərin çoxunun 1–2 parametrdən yarandığı deyilib",
+      "Hər cütün ən azı bir dəfə yoxlandığı izah olunub"
+    ]
+  }
+}

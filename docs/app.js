@@ -626,12 +626,47 @@ function deepHTML(s, open) {
   const k = 'd:' + s.id;
   return `<details class="deep" data-open="${k}"${open || OPEN[k] ? ' open' : ''}><summary>${icon('layers')}<span class="st">Dərindən<span class="sub">əlavə izah, incəliklər, tipik yanlışlar</span></span>${icon('chev', 'chev')}</summary><div class="dbody prose">${s.x.deep}</div></details>`;
 }
+/* answer key (build/answers/cNN.json): every exercise has a model answer and criteria the reader checks their own answer
+   against, so the book teaches without Claude. A hint first; the answer asks for an attempt once, then opens. Seen answers
+   (a.v) and ticked criteria (a.m) are saved with the reader's answers */
+const ANSV = {}; // hint open, attempt reminder shown (session only)
+const ansDone = (a, ans) => a.g === 'Əla' || a.g === 'Yaxşı' || !!(ans && a.v && (a.m || []).length >= ans.c.length);
+const ansLabel = v => `${icon('eye')}${v ? 'Cavabı gizlət' : 'Cavabı göstər'}`;
+const ansBtns = (id, cid, ans, v) => !ans ? '' : `${ans.h ? `<button class="btn sm ghost" data-act="ans-hint" data-id="${id}" data-ch="${cid}">${icon('bulb')}İpucu</button>` : ''}<button class="btn sm" data-act="ans-show" data-id="${id}" data-ch="${cid}">${ansLabel(v)}</button>`;
+function ansInner(cid, id, ans) {
+  const a = ansDoc(cid).a[id] || {}, ui = ANSV[id] || {}, m = a.m || [];
+  return `${ui.hint && ans.h ? `<div class="ans-note">${icon('bulb')}<div>${ans.h}</div></div>` : ''}${ui.nudge && !a.v ? `<div class="ans-note">${icon('pencil')}<div>Əvvəlcə özün yaz: cəhd etmədən oxuyanda yaddaşda az qalır. Yenə də görmək istəsən, “Cavabı göstər”i bir də bas.</div></div>` : ''}${a.v ? `<div class="ans">
+    <div class="ans-h">Nümunə cavab</div><div class="prose">${ans.a}</div>
+    <div class="ans-h">Öz cavabını yoxla</div><ul class="ans-crit">${ans.c.map((x, i) => `<li><label><input type="checkbox" data-crit="${id}" data-ch="${cid}" data-i="${i}"${m.includes(i) ? ' checked' : ''}><span>${x}</span></label></li>`).join('')}</ul>
+    <div class="ans-n" data-critn="${id}">${m.length}/${ans.c.length} meyar ödənilib</div></div>` : ''}`;
+}
+const ansPanel = (cid, id, ans) => !ans ? '' : `<div data-ansbox="${id}">${ansInner(cid, id, ans)}</div>`;
+const ansOf = id => { const o = MINI[id] ? MINI[id].s.x.ex : taskById[id] ? taskById[id].t : selfById[id] ? selfById[id].q : null; return o && o.ans; };
+function ansRedraw(cid, id) {
+  const box = document.querySelector(`[data-ansbox="${id}"]`), ans = ansOf(id); if (!box || !ans) return;
+  box.innerHTML = ansInner(cid, id, ans);
+  const b = document.querySelector(`[data-act="ans-show"][data-id="${id}"]`), a = ansDoc(cid).a[id] || {};
+  if (b) b.innerHTML = ansLabel(a.v);
+}
+function ansShow(cid, id) {
+  const A = ansDoc(cid).a, rec = A[id] || (A[id] = {}), ui = ANSV[id] || (ANSV[id] = {});
+  const ta = document.querySelector(`[data-ans="${id}"]`);
+  if (!rec.v && !ui.nudge && ta && !ta.value.trim()) { ui.nudge = true; ansRedraw(cid, id); ta.focus(); return; }
+  rec.v = !rec.v; Store.changed('ans-' + cid); ansRedraw(cid, id);
+}
+function ansTick(t) {
+  const id = t.dataset.crit, cid = t.dataset.ch, i = +t.dataset.i, A = ansDoc(cid).a, rec = A[id] || (A[id] = {}), ans = ansOf(id);
+  const m = new Set(rec.m || []); if (t.checked) m.add(i); else m.delete(i);
+  rec.m = [...m].sort((x, y) => x - y); Store.changed('ans-' + cid);
+  const n = document.querySelector(`[data-critn="${id}"]`); if (n) n.textContent = `${rec.m.length}/${ans.c.length} meyar ödənilib`;
+  const on = ansDone(rec, ans), host = document.getElementById(id) || document.querySelector(`[data-mini="${id}"]`); if (host) host.classList.toggle('done', on);
+}
 function miniHTML(c, s, open) {
   const ex = s.x.ex, id = ex.id, k = 'm:' + id;
   const a = ansDoc(c.id).a[id] || {};
   const n = ex.steps.length, shown = Math.min(EX[id] || 0, n);
-  const done = a.g === 'Əla' || a.g === 'Yaxşı';
-  return `<details class="mini${done ? ' done' : ''}" data-open="${k}" data-mini="${id}"${open || OPEN[k] ? ' open' : ''}><summary>${icon('target')}<span class="st">Mini-nümunə<span class="sub">həll olunmuş misal və sənin növbən</span></span>${done ? `<span class="chip pass">${icon('check')}${esc(a.g)}</span>` : ''}${icon('chev', 'chev')}</summary>
+  const done = ansDone(a, ex.ans);
+  return `<details class="mini${done ? ' done' : ''}" data-open="${k}" data-mini="${id}"${open || OPEN[k] ? ' open' : ''}><summary>${icon('target')}<span class="st">Mini-nümunə<span class="sub">həll olunmuş misal və sənin növbən</span></span>${done ? `<span class="chip pass">${icon('check')}${esc(a.g || 'Yoxlandı')}</span>` : ''}${icon('chev', 'chev')}</summary>
     <div class="dbody">
       <div class="mini-k">Həll olunmuş nümunə</div>
       <div class="ex-task prose">${ex.task}</div>
@@ -640,8 +675,10 @@ function miniHTML(c, s, open) {
       <div class="turn"><div class="mini-k">${icon('pencil')}Sənin növbən</div><div class="prose">${ex.try}</div>
         <textarea class="field" data-ans="${id}" data-ch="${c.id}" rows="4" placeholder="Cavabını bura yaz…">${esc(a.t || '')}</textarea>${swBox(id, ex.try, a.t)}
         <div class="task-ctrl"><span class="st" data-st="${id}">${a.t ? 'Saxlanıb' : ''}</span>
-          <button class="btn sm ghost ai-only" data-act="task-hint" data-task="${id}">${icon('bulb')}İpucu</button>
+          ${ansBtns(id, c.id, ex.ans, a.v)}
+          <button class="btn sm ghost ai-only" data-act="task-hint" data-task="${id}">${icon('spark')}Claude ipucu</button>
           <button class="btn sm primary ai-only" data-act="task-check" data-task="${id}">${icon('check')}Yoxla</button></div>
+        ${ansPanel(c.id, id, ex.ans)}
         <div class="fb" data-fb="${id}"${a.fb || a.h ? '' : ' hidden'}>${fbHTML(a)}</div></div>
     </div></details>`;
 }
@@ -905,16 +942,18 @@ function swUpdate(t) {
 function tasksHTML(c, s) {
   const A = ansDoc(c.id).a;
   const head = (s.intro ? `<div class="prose">${s.intro}</div>` : '') +
-    `<p class="muted" style="margin:0;font-size:14px">Cavabların avtomatik saxlanılır.<span class="ai-only"> “Yoxla” — Claude rəyi, “İpucu” — həlli açmadan istiqamət.</span></p>`;
+    `<p class="muted" style="margin:0;font-size:14px">Cavabların avtomatik saxlanılır. Əvvəl özün yaz, sonra “Cavabı göstər” ilə nümunəni aç və özünü meyarlarla yoxla.<span class="ai-only"> “Yoxla” — Claude rəyi.</span></p>`;
   return head + s.tasks.map((t, i) => {
     const a = A[t.id] || {};
-    const done = a.g === 'Əla' || a.g === 'Yaxşı';
+    const done = ansDone(a, t.ans);
     return `<div class="task${done ? ' done' : ''}" id="${t.id}">
       <div class="task-q"><span class="task-n">${i + 1}</span><div class="prose">${t.html}</div></div>
       <textarea class="field" data-ans="${t.id}" data-ch="${c.id}" rows="4" placeholder="Cavabını bura yaz…">${esc(a.t || '')}</textarea>${swBox(t.id, t.html, a.t)}
       <div class="task-ctrl"><span class="st" data-st="${t.id}">${a.t ? 'Saxlanıb' : ''}</span>
-        <button class="btn sm ghost ai-only" data-act="task-hint" data-task="${t.id}">${icon('bulb')}İpucu</button>
+        ${ansBtns(t.id, c.id, t.ans, a.v)}
+        <button class="btn sm ghost ai-only" data-act="task-hint" data-task="${t.id}">${icon('spark')}Claude ipucu</button>
         <button class="btn sm primary ai-only" data-act="task-check" data-task="${t.id}">${icon('check')}Yoxla</button></div>
+      ${ansPanel(c.id, t.id, t.ans)}
       <div class="fb" data-fb="${t.id}"${a.fb || a.h ? '' : ' hidden'}>${fbHTML(a)}</div>
     </div>`;
   }).join('');
@@ -925,7 +964,8 @@ function selfHTML(c, s) {
     const a = A[q.id] || {};
     return `<div class="selfq" id="${q.id}"><div class="q prose" style="font-family:var(--f-ui);font-size:15.5px">${q.html}</div>
       <textarea class="field" data-ans="${q.id}" data-ch="${c.id}" rows="2" placeholder="Qısa cavabın…">${esc(a.t || '')}</textarea>${swBox(q.id, q.html, a.t)}
-      <div class="task-ctrl"><span class="st" data-st="${q.id}">${a.t ? 'Saxlanıb' : ''}</span><button class="btn sm primary ai-only" data-act="self-check" data-q="${q.id}">${icon('check')}Yoxla</button></div>
+      <div class="task-ctrl"><span class="st" data-st="${q.id}">${a.t ? 'Saxlanıb' : ''}</span>${ansBtns(q.id, c.id, q.ans, a.v)}<button class="btn sm primary ai-only" data-act="self-check" data-q="${q.id}">${icon('check')}Yoxla</button></div>
+      ${ansPanel(c.id, q.id, q.ans)}
       <div class="fb" data-fb="${q.id}"${a.fb ? '' : ' hidden'}>${fbHTML(a)}</div></div>`;
   }).join('');
 }
@@ -5001,6 +5041,8 @@ document.addEventListener('click', ev => {
       break;
     }
     case 'ex-reset': { const key = d.sec; EX[key] = 0; document.querySelector(`[data-steps="${key}"]`).innerHTML = ''; document.querySelector(`[data-exctrl="${key}"]`).innerHTML = exCtrl(key, stepsFor(key).length, 0); break; }
+    case 'ans-hint': { const ui = ANSV[d.id] || (ANSV[d.id] = {}); ui.hint = !ui.hint; ansRedraw(d.ch, d.id); break; }
+    case 'ans-show': ansShow(d.ch, d.id); break;
     case 'task-check': inlineAI('check', d.task); break;
     case 'task-hint': inlineAI('hint', d.task); break;
     case 'self-check': inlineAI('self', d.q); break;
@@ -5180,6 +5222,7 @@ document.addEventListener('input', ev => {
 });
 document.addEventListener('toggle', ev => { const el = ev.target; if (el && el.dataset && el.dataset.open) OPEN[el.dataset.open] = el.open; }, true);
 document.addEventListener('change', ev => {
+  if (ev.target.dataset && ev.target.dataset.crit !== undefined) { ansTick(ev.target); return; }
   const t = ev.target;
   if (t.dataset.ixTg) { IX[t.dataset.sid][t.dataset.ixTg] = t.checked; ixRedraw(t.dataset.sid); return; }
   if (t.dataset.smSort !== undefined) {
