@@ -1,0 +1,284 @@
+{
+  "_": "Work English practice (#ingilisce), offline. Drills: pick (one option has ok), build (tap the words into the sentence a), write (need = keyword groups as regexes, model must pass them and every rule). Rules run on what the reader writes; quoted text is skipped. t35.js checks all of it.",
+  "sections": ["c21x2", "c21x3", "c12s2"],
+  "sets": [
+    { "id": "bug", "t": "Bug report", "s": "Başlıq, addımlar, gözlənilən və faktiki nəticə" },
+    { "id": "standup", "t": "Stand-up", "s": "Dünən, bu gün, maneə" },
+    { "id": "chat", "t": "Çat və tiket", "s": "Xahiş, sual, şərh, fikir ayrılığı" },
+    { "id": "mail", "t": "E-poçt və görüş", "s": "Başa düşmədim, gecikirəm, xəbər verəcəm" },
+    { "id": "iv", "t": "Müsahibə", "s": "Özünü təqdim et, anlayışı izah et" }
+  ],
+  "drills": [
+    { "id": "b1", "set": "bug", "type": "pick", "q": "Səbətdə promo kod tətbiq olunanda ümumi məbləğ yenilənmir. Ən yaxşı bug başlığı hansıdır?",
+      "o": [
+        { "t": "Promo code is not work", "why": "Qrammatika səhvdir: “does not work” olmalıdır. Harada və nə baş verdiyi də yoxdur." },
+        { "t": "Bug in the cart", "why": "Harada var, amma nə baş verdiyi və hansı şərtdə olduğu yoxdur." },
+        { "t": "Cart: total is not updated after applying a promo code", "ok": 1, "why": "Harada (Cart), nə (total is not updated), hansı şərtdə (after applying a promo code). Düstur tamdır." },
+        { "t": "Please fix the total problem", "why": "Xahişdir, başlıq deyil: problemin nə olduğunu demir." }
+      ] },
+    { "id": "b2", "set": "bug", "type": "pick", "q": "Addımlar sahəsində “Apply düyməsini bas” necə yazılır?",
+      "o": [
+        { "t": "Click “Apply”.", "ok": 1, "why": "Addımlar əmr formasında yazılır, düymənin adı dırnaqda və ekranda olduğu kimi." },
+        { "t": "I clicked on Apply.", "why": "Bu, sənin hekayəndir. Addım hər oxuyan üçün əmrdir: Click." },
+        { "t": "User must to click Apply.", "why": "“must to” səhvdir, must-dan sonra to gəlmir. Addımda must da lazım deyil." },
+        { "t": "Clicking of Apply button.", "why": "Tam cümlə deyil və “of” artıqdır." }
+      ] },
+    { "id": "b3", "set": "bug", "type": "pick", "q": "Faktiki nəticə üçün ən yaxşı yazılış hansıdır?",
+      "o": [
+        { "t": "Actual: It doesn't work.", "why": "Nə gördüyün yoxdur. Proqramçı ekranda nəyə baxacağını bilmir." },
+        { "t": "Actual: Wrong result.", "why": "Rəydir, fakt deyil. Nə yanlışdır?" },
+        { "t": "Actual: I think there was maybe an error.", "why": "Ehtimal və keçmiş zaman: faktı olduğu kimi, indiki zamanda yaz." },
+        { "t": "Actual: “Code applied” appears, but the total stays at 100 AZN.", "ok": 1, "why": "Ekrandakı mətn dırnaqda, rəqəm dəqiqdir, indiki zamandadır." }
+      ] },
+    { "id": "b4", "set": "bug", "type": "build", "q": "Yanlış şifrə ilə giriş xəta mesajı göstərmir.", "a": "Login with a wrong password does not show an error message.", "note": "Feil mübtədadan sonra gəlir: Login … does not show. “error” sait səslə başlayır, ona görə “an error”." },
+    { "id": "b5", "set": "bug", "type": "build", "q": "Ödəniş səhifəsi 500 xətası qaytarır.", "a": "The payment page returns a 500 error.", "note": "“500” “five” səsi ilə başlayır, ona görə “a 500 error”. Azərbaycancadakı sıradan fərqli olaraq feil ortadadır." },
+    { "id": "b6", "set": "bug", "type": "build", "q": "Səhifəni yenilə və yenidən cəhd et.", "a": "Refresh the page and try again.", "note": "Addımlar əmr formasındadır: mübtəda yoxdur, cümlə feillə başlayır." },
+    { "id": "b7", "set": "bug", "type": "pick", "q": "Uzun düymə yazısı düymədən kənara çıxır. Hansı düzgündür?",
+      "o": [
+        { "t": "The button text goes outside from the button.", "why": "“goes outside from” hərfi tərcümədir. Bunun öz feili var: overflows." },
+        { "t": "The button label overflows the button.", "ok": 1, "why": "UI problemləri üçün hazır feil: overflows. Oxşarları: is cut off, overlaps." },
+        { "t": "The button is write big.", "why": "Qrammatika səhvdir və problemi demir." },
+        { "t": "Button have long text problem.", "why": "“Button has” olmalıdır, nəticə də aydın deyil." }
+      ] },
+    { "id": "b8", "set": "bug", "type": "write", "q": "Bu tapıntı üçün ingiliscə başlıq yaz: Login səhifəsində kilidlənmiş istifadəçi düzgün şifrə ilə daxil ola bilir.",
+      "hint": "Düstur: Harada: nə, hansı şərtdə. “daxil olmaq” feildir: log in.",
+      "need": [
+        { "l": "Harada: Login", "re": "\\blogin\\b" },
+        { "l": "Kim: locked user", "re": "\\blocked\\b" },
+        { "l": "Nə: can log in", "re": "\\b(can|is able to)\\s+log\\s+in\\b|\\blogs\\s+in\\b" }
+      ],
+      "model": "Login: a locked user can log in with a valid password" },
+    { "id": "b9", "set": "bug", "type": "write", "q": "Bunu ingiliscə yaz (Steps, Expected, Actual). Səbətə keç. Promo kod sahəsinə TEST10 yaz. “Apply” düyməsini bas. Gözlənilən: ümumi məbləğ 90 AZN olur. Faktiki: “Code applied” yazılır, məbləğ 100 AZN qalır.",
+      "hint": "Addımlar əmr formasında: Open, Enter, Click. Nəticələr indiki zamanda.",
+      "need": [
+        { "l": "Addım: səbətə keçmək", "re": "\\b(open|go to|navigate to)\\b[^\\n]*\\bcart\\b" },
+        { "l": "Addım: TEST10 yazmaq", "re": "\\b(enter|type|input)\\b[^\\n]*TEST10" },
+        { "l": "Addım: Apply basmaq", "re": "\\b(click|press|tap)\\b[^\\n]*apply" },
+        { "l": "Expected: 90", "re": "expected[^\\n]*90" },
+        { "l": "Actual: 100", "re": "actual[^\\n]*100" }
+      ],
+      "model": "Steps:\n1. Open the cart.\n2. Enter TEST10 in the promo code field.\n3. Click “Apply”.\nExpected: The total changes to 90 AZN.\nActual: “Code applied” appears, but the total stays at 100 AZN." },
+
+    { "id": "s1", "set": "standup", "type": "pick", "q": "“Dünən login-in testini bitirdim.” Hansı düzgündür?",
+      "o": [
+        { "t": "Yesterday I finished test login.", "why": "“finish”-dən sonra -ing gəlir: finished testing." },
+        { "t": "I yesterday login test finished.", "why": "Azərbaycanca sıradır. İngiliscədə feil mübtədadan sonra gəlir." },
+        { "t": "Yesterday I finished testing login.", "ok": 1, "why": "Mübtəda, feil, qalanı. “Yesterday” ilə keçmiş zaman: finished." },
+        { "t": "Yesterday I have finished to test login.", "why": "“Yesterday” ilə “have finished” işlənmir, “finish to” da səhvdir." }
+      ] },
+    { "id": "s2", "set": "standup", "type": "build", "q": "Bu gün SHOP-214-ü test edirəm.", "a": "Today I am testing SHOP-214.", "note": "İndi gedən iş üçün am testing. Tiketin adını olduğu kimi de." },
+    { "id": "s3", "set": "standup", "type": "pick", "q": "“Mane olan yoxdur.” Stand-up-da necə deyilir?",
+      "o": [
+        { "t": "No blockers.", "ok": 1, "why": "Stand-up-da ən çox işlənən qısa ifadədir." },
+        { "t": "There is nothing blocks.", "why": "Bir cümlədə iki feil qalıb: “nothing is blocking me” olardı." },
+        { "t": "Not have problem.", "why": "Mübtəda yoxdur: “I don't have any problems” olardı." },
+        { "t": "Blockers is none.", "why": "Hərfi tərcümədir, belə deyilmir." }
+      ] },
+    { "id": "s4", "set": "standup", "type": "pick", "q": "“Bu baq relizə mane ola bilər.” Hansı düzgündür?",
+      "o": [
+        { "t": "This bug can to block the release.", "why": "can-dən sonra to gəlmir." },
+        { "t": "This bug maybe block release.", "why": "maybe feil deyil: “may block” olmalıdır, “the release” da lazımdır." },
+        { "t": "This bug will maybe blocks the release.", "why": "will-dən sonra feil dəyişmir, -s almaz." },
+        { "t": "This bug may block the release.", "ok": 1, "why": "may + feil: ehtimal bildirir. “the release”: hamının bildiyi konkret reliz." }
+      ] },
+    { "id": "s5", "set": "standup", "type": "write", "q": "Stand-up-da bunu ingiliscə de: SHOP-220-ni test edə bilmirəm, çünki test mühiti 502 qaytarır. Kimsə baxa bilərmi?",
+      "hint": "Maneə qəlibi: I can't test … because … . Xahiş: Could someone take a look?",
+      "need": [
+        { "l": "Test edə bilmirəm", "re": "\\b(can't|cannot|can not|am not able to|unable to|am blocked)\\b" },
+        { "l": "Tiket: SHOP-220", "re": "SHOP-220" },
+        { "l": "Səbəb: 502", "re": "\\b502\\b" },
+        { "l": "Xahiş: kimsə baxsın", "re": "\\b(can|could)\\s+(someone|anyone|somebody|you)\\b" }
+      ],
+      "model": "I can't test SHOP-220 because the test environment returns 502. Could someone take a look?" },
+
+    { "id": "c1", "set": "chat", "type": "pick", "q": "Proqramçı tiketə yazıb: “Cannot reproduce.” Sən isə baqı təkrarlaya bilirsən. Ən yaxşı cavab hansıdır?",
+      "o": [
+        { "t": "It is your bug, please fix it.", "why": "Şəxsə yönəlir və proqramçıya kömək edən məlumat vermir." },
+        { "t": "I can still reproduce it on build 3.2.1. Video attached.", "ok": 1, "why": "Fakt, build və sübut: proqramçının lazım olanı budur." },
+        { "t": "You are wrong, it not working.", "why": "Mübahisədir, qrammatika da səhvdir." },
+        { "t": "OK.", "why": "Baq qalır, amma heç kim bilmir." }
+      ] },
+    { "id": "c2", "set": "chat", "type": "pick", "q": "“Buna baxa bilərsən?” Çatda nəzakətli yazılış hansıdır?",
+      "o": [
+        { "t": "You must look at this now.", "why": "Əmr kimi səslənir. “must” həmkara yazanda sərtdir." },
+        { "t": "Look this.", "why": "“look at” olmalıdır və sərt səslənir." },
+        { "t": "Can you look this please?", "why": "“look at this” olmalıdır: at unudulub." },
+        { "t": "Could you please take a look at this?", "ok": 1, "why": "“Could you please” nəzakətli xahişin standart formasıdır." }
+      ] },
+    { "id": "c3", "set": "chat", "type": "build", "q": "Düzəliş hansı build-dədir?", "a": "Which build has the fix?", "note": "Hərfi “in which build” yerinə qısa forma: Which build has the fix?" },
+    { "id": "c4", "set": "chat", "type": "pick", "q": "“Fikrimcə, bu baqdır, çünki tələbdə kodun rədd olunması yazılıb.” Ən yaxşısı hansıdır?",
+      "o": [
+        { "t": "I think this is a bug because the requirement says the code must be rejected.", "ok": 1, "why": "Fikrini yumşaq deyir və arqumenti tələbə bağlayır." },
+        { "t": "According to me it is bug.", "why": "“According to me” hərfi tərcümədir: “I think”. “a bug” da lazımdır." },
+        { "t": "You are not right, it is bug.", "why": "Şəxsə yönəlir, arqument yoxdur." },
+        { "t": "It is bug, read the requirement.", "why": "Sərt səslənir və “a bug” olmalıdır." }
+      ] },
+    { "id": "c5", "set": "chat", "type": "write", "q": "Product Owner-ə ingiliscə yaz: Salam! Vaxtı keçmiş promo kodla nə baş verməlidir? Xəta mesajı göstərilməlidir?",
+      "hint": "Hi + ad. “vaxtı keçmiş”: expired. Sual: What should happen …? Should it show …?",
+      "need": [
+        { "l": "Vaxtı keçmiş: expired", "re": "\\bexpired\\b" },
+        { "l": "Promo kod", "re": "\\bpromo\\s*code\\b" },
+        { "l": "Gözlənilən davranış: should", "re": "\\b(should|supposed to|expected)\\b" },
+        { "l": "Sual kimi yazılıb", "re": "\\?" }
+      ],
+      "model": "Hi! What should happen with an expired promo code? Should it show an error message?" },
+    { "id": "c6", "set": "chat", "type": "write", "q": "Tiketə Done şərhi yaz: Build 3.2.1-də, test mühitində, Chrome-da test edildi. Bütün qəbul meyarları keçdi. Safari yoxlanmayıb.",
+      "hint": "Tested on build … . All acceptance criteria passed. … was not tested.",
+      "need": [
+        { "l": "Tested", "re": "\\btested\\b" },
+        { "l": "Build 3.2.1", "re": "3\\.2\\.1" },
+        { "l": "Chrome", "re": "\\bchrome\\b" },
+        { "l": "Meyarlar keçdi", "re": "\\bcriteria\\b[^\\n]*\\b(pass|met\\b)|\\bpass[a-z]*\\b[^\\n]*\\bcriteria\\b" },
+        { "l": "Safari yoxlanmayıb", "re": "\\bsafari\\b[^\\n]*\\b(not|wasn't|isn't)\\b" }
+      ],
+      "model": "Tested on build 3.2.1 in the test environment, Chrome. All acceptance criteria passed. Safari was not tested." },
+
+    { "id": "m1", "set": "mail", "type": "pick", "q": "Həmkara iş məktubu necə başlayır?",
+      "o": [
+        { "t": "Hello dear Anar, how are you, how is your family?", "why": "İş məktubu üçün çox uzundur: birbaşa mətləbə keç." },
+        { "t": "Anar!", "why": "Sərt səslənir." },
+        { "t": "Dear Mr. Anar sir,", "why": "“Mr.” soyadla işlənir və “sir” artıqdır." },
+        { "t": "Hi Anar,", "ok": 1, "why": "Komanda daxilində standart açılışdır. Tanımadığın adama: “Hello Anar,” və ya “Dear Mr. Aliyev,”." }
+      ] },
+    { "id": "m2", "set": "mail", "type": "build", "q": "Gecikməyə görə üzr istəyirəm.", "a": "Sorry for the delay.", "note": "Qısa və hazır ifadədir. “I am sorry for the delay” də düzgündür." },
+    { "id": "m3", "set": "mail", "type": "build", "q": "Bunu yoxlayıb sizə xəbər verəcəyəm.", "a": "I will check this and let you know.", "note": "“let you know”: xəbər vermək üçün ən çox işlənən ifadə." },
+    { "id": "m4", "set": "mail", "type": "pick", "q": "Görüşdə sözü başa düşmədin. Nə deyirsən?",
+      "o": [
+        { "t": "What? Say again.", "why": "Sərt səslənir." },
+        { "t": "Sorry, I didn't catch that. Could you repeat it, please?", "ok": 1, "why": "“didn't catch”: eşitmədim, tuta bilmədim. Nəzakətli və normaldır." },
+        { "t": "I not understand, repeat.", "why": "“I don't understand” olmalıdır və əmr kimi səslənir." },
+        { "t": "OK, thanks.", "why": "Ən bahalı səhv: başa düşməmisən, amma hamı başa düşdüyünü fikirləşir." }
+      ] },
+    { "id": "m5", "set": "mail", "type": "write", "q": "QA lead-ə yaz: SHOP-220 bu gün bitməyəcək, çünki mühit 3 saat işləmədi. Sabah günortaya qədər bitirəcəyəm.",
+      "hint": "will not be finished today; the environment was down for 3 hours; by noon tomorrow.",
+      "need": [
+        { "l": "SHOP-220", "re": "SHOP-220" },
+        { "l": "Bu gün bitmir", "re": "\\b(not|won't|can't|cannot|unable)\\b[^.\\n]*\\btoday\\b" },
+        { "l": "Səbəb: mühit işləmədi", "re": "\\b(down|unavailable|not available|did not work|didn't work)\\b" },
+        { "l": "3 saat", "re": "\\b(3|three)\\s+hours\\b" },
+        { "l": "Yeni vaxt: sabah", "re": "\\btomorrow\\b" }
+      ],
+      "model": "SHOP-220 will not be finished today because the environment was down for 3 hours. I will finish it by noon tomorrow." },
+
+    { "id": "i1", "set": "iv", "type": "pick", "q": "“What is the difference between severity and priority?” Ən yaxşı cavab hansıdır?",
+      "o": [
+        { "t": "Severity and priority is same.", "why": "Fərqlidirlər, qrammatika da səhvdir: “are the same”." },
+        { "t": "Priority is what the tester feels.", "why": "Priority biznes qərarıdır, hiss deyil." },
+        { "t": "Severity is the technical impact of a defect. Priority is how soon it should be fixed.", "ok": 1, "why": "Qısa, dəqiq və iki anlayışı da ayırır." },
+        { "t": "Severity is for developers, priority is for testers.", "why": "Yanlışdır: severity-ni adətən tester təyin edir, priority-ni Product Owner və ya menecer." }
+      ] },
+    { "id": "i2", "set": "iv", "type": "pick", "q": "Kommersiya təcrüben yoxdur. Bunu necə deyirsən?",
+      "o": [
+        { "t": "I have not experience.", "why": "“I don't have experience” olmalıdır, bir də bacarığın heç nə demir." },
+        { "t": "No experience, sorry.", "why": "Üzr istəməyə ehtiyac yoxdur, əlində olanı göstər." },
+        { "t": "I am not experience but I learn quick.", "why": "“am not experience” səhvdir, “learn quickly” olmalıdır." },
+        { "t": "I don't have commercial experience yet, but I have practiced on projects in my portfolio.", "ok": 1, "why": "Dürüst və ardınca sübut göstərir." }
+      ] },
+    { "id": "i3", "set": "iv", "type": "build", "q": "Test case-ləri tələblərdən yazıram.", "a": "I write test cases from the requirements.", "note": "Ümumi vərdiş üçün Present Simple: I write." },
+    { "id": "i4", "set": "iv", "type": "write", "q": "Özünü iki-üç cümlə ilə təqdim et: junior QA-san, test case və bug report yazmağı məşq etmisən, API-ləri Postman ilə test etmisən. Avtomatlaşdırmada inkişaf etmək istəyirsən.",
+      "hint": "I am a junior QA engineer. I have practiced … . I want to grow in … .",
+      "need": [
+        { "l": "Kimsən: junior QA", "re": "\\b(junior|qa|tester)\\b" },
+        { "l": "Test case", "re": "\\btest\\s+cases?\\b" },
+        { "l": "Bug report", "re": "\\bbug\\s+reports?\\b" },
+        { "l": "Postman", "re": "\\bpostman\\b" },
+        { "l": "Məqsəd: automation", "re": "\\bautomation\\b" }
+      ],
+      "model": "I am a junior QA engineer. I have practiced writing test cases and bug reports, and I have tested APIs with Postman. I want to grow in test automation." }
+  ],
+  "phrases": [
+    { "t": "Baq nə edir", "items": [
+      { "en": "shows, displays", "az": "göstərir" },
+      { "en": "fails with an error", "az": "xəta ilə bitir" },
+      { "en": "returns a 500 error", "az": "500 xətası qaytarır" },
+      { "en": "crashes", "az": "çökür, bağlanır" },
+      { "en": "freezes", "az": "donur" },
+      { "en": "redirects to the login page", "az": "giriş səhifəsinə yönləndirir" },
+      { "en": "disappears", "az": "yox olur" },
+      { "en": "stays at 100 AZN", "az": "100 AZN-də qalır" },
+      { "en": "overlaps the footer", "az": "aşağı hissənin üstünə düşür" },
+      { "en": "is cut off", "az": "kəsilir, sığmır" },
+      { "en": "is not updated", "az": "yenilənmir" },
+      { "en": "is not saved", "az": "yadda saxlanmır" },
+      { "en": "does not respond", "az": "cavab vermir" }
+    ] },
+    { "t": "Bug report sahələri", "items": [
+      { "en": "Steps to reproduce", "az": "Təkrarlama addımları" },
+      { "en": "Expected result", "az": "Gözlənilən nəticə" },
+      { "en": "Actual result", "az": "Faktiki nəticə" },
+      { "en": "Reproducible: 5 of 5", "az": "Təkrarlanır: 5 cəhddən 5-i" },
+      { "en": "Environment", "az": "Mühit" },
+      { "en": "Workaround", "az": "Müvəqqəti həll" },
+      { "en": "Precondition", "az": "İlkin şərt" },
+      { "en": "It happens only on Android.", "az": "Yalnız Android-də baş verir." },
+      { "en": "It worked in build 3.2.0.", "az": "Build 3.2.0-da işləyirdi." }
+    ] },
+    { "t": "Tester-in feilləri", "items": [
+      { "en": "file a bug, report a bug", "az": "baq yazmaq" },
+      { "en": "run a test", "az": "testi işlətmək" },
+      { "en": "retest, verify the fix", "az": "düzəlişi yoxlamaq" },
+      { "en": "reopen the ticket", "az": "tiketi yenidən açmaq" },
+      { "en": "assign the bug to Elvin", "az": "baqı Elvinə təyin etmək" },
+      { "en": "log in (verb), login (noun)", "az": "daxil olmaq, giriş" },
+      { "en": "set up (verb), setup (noun)", "az": "qurmaq, quraşdırma" },
+      { "en": "check out (verb), checkout (noun)", "az": "sifarişi rəsmiləşdirmək, ödəniş səhifəsi" }
+    ] },
+    { "t": "Stand-up", "items": [
+      { "en": "Yesterday I finished SHOP-210.", "az": "Dünən SHOP-210-u bitirdim." },
+      { "en": "Today I am testing SHOP-214.", "az": "Bu gün SHOP-214-ü test edirəm." },
+      { "en": "I filed two bugs.", "az": "İki baq yazdım." },
+      { "en": "I am blocked by SHOP-198.", "az": "SHOP-198 mənə mane olur." },
+      { "en": "No blockers.", "az": "Mane olan yoxdur." },
+      { "en": "I need help with the test data.", "az": "Test datası ilə köməyə ehtiyacım var." },
+      { "en": "I will finish it by noon.", "az": "Günortaya qədər bitirəcəyəm." }
+    ] },
+    { "t": "Çat və tiket", "items": [
+      { "en": "Could you please take a look?", "az": "Zəhmət olmasa, baxa bilərsən?" },
+      { "en": "What is the expected behavior here?", "az": "Burada gözlənilən davranış nədir?" },
+      { "en": "Is this a bug or expected behavior?", "az": "Bu baqdır, yoxsa gözlənilən davranış?" },
+      { "en": "Which build has the fix?", "az": "Düzəliş hansı build-dədir?" },
+      { "en": "The fix works on build 3.2.2.", "az": "Düzəliş build 3.2.2-də işləyir." },
+      { "en": "I can still reproduce it.", "az": "Hələ də təkrarlaya bilirəm." },
+      { "en": "I can't reproduce it. Could you share the steps?", "az": "Təkrarlaya bilmirəm. Addımları paylaşa bilərsən?" },
+      { "en": "It looks like login stopped working in build 3.2.1.", "az": "Görünür, login build 3.2.1-də işləməyi dayandırıb." },
+      { "en": "Thanks for the quick fix!", "az": "Tez düzəliş üçün sağ ol!" }
+    ] },
+    { "t": "Görüş", "items": [
+      { "en": "Sorry, I didn't catch that.", "az": "Bağışla, tuta bilmədim." },
+      { "en": "Could you repeat that, please?", "az": "Zəhmət olmasa, təkrar edə bilərsən?" },
+      { "en": "Just to confirm: the code works only once?", "az": "Dəqiqləşdirim: kod yalnız bir dəfə işləyir?" },
+      { "en": "Let me check and get back to you.", "az": "Yoxlayım və sənə qayıdım." },
+      { "en": "I'll create a ticket.", "az": "Tiket açaram." },
+      { "en": "Does this block the release?", "az": "Bu, relizə mane olurmu?" },
+      { "en": "From a testing point of view, the risk is high.", "az": "Test baxımından risk yüksəkdir." }
+    ] }
+  ],
+  "rules": [
+    { "kind": "err", "re": "\\b(is|are|was|were)\\s+not\\s+(work|load|show|save|display|respond|update|appear|change)\\b", "w": "is not work", "r": "does not work", "tip": "“işləmir” sözündən hərfi tərcümədir. Adi feilin inkarı do/does/did ilə olur." },
+    { "kind": "err", "re": "\\b(does|did|do)(\\s+not|n't)\\s+(works|opens|loads|shows|saves|displays|worked|opened|loaded|showed|saved|displayed|clicked|updated|updates|saw|found|went|came|checked|tested)\\b", "w": "doesn't works, didn't worked", "r": "doesn't work, didn't work", "tip": "does və did özü dəyişir, ondan sonrakı feil sadə formada qalır." },
+    { "kind": "err", "re": "\\b(can|could|must|should|will|may)\\s+to\\s+[a-z]+", "w": "can to test", "r": "can test", "tip": "can, must, should, will və may-dan sonra to gəlmir." },
+    { "kind": "err", "re": "\\b(informations|softwares|feedbacks|equipments|advices)\\b", "w": "informations", "r": "information", "tip": "Bu sözlərin cəmi yoxdur." },
+    { "kind": "err", "re": "\\ban\\s+(user|users|url|unique)\\b", "w": "an user, an URL", "r": "a user, a URL", "tip": "Hərf yox, səs həll edir: “user” və “URL” “yu” səsi ilə başlayır." },
+    { "kind": "err", "re": "\\ba\\s+(error|issue|account|email|item|order|option|attachment|api|update|input)\\b", "w": "a error", "r": "an error", "tip": "Sait səsdən əvvəl “an” gəlir." },
+    { "kind": "err", "re": "\\b(am|is|are)\\s+agree\\b", "w": "I am agree", "r": "I agree", "tip": "agree feildir, am lazım deyil." },
+    { "kind": "err", "re": "\\bmore\\s+(better|faster|easier|worse)\\b", "w": "more better", "r": "better", "tip": "-er artıq müqayisədir, more lazım deyil." },
+    { "kind": "err", "re": "\\bsince\\s+(\\d+|two|three|four|five|a few)\\s+(days?|hours?|weeks?|minutes?)\\b", "w": "since 2 days", "r": "for 2 days", "tip": "Müddət üçün for, başlanğıc üçün since: since Monday, for 2 days." },
+    { "kind": "err", "re": "\\b(want to|need to|have to|able to|unable to|trying to|try to|failed to|fails to|can|cannot|can't|could|couldn't|will|must|should)\\s+login\\b", "w": "cannot login", "r": "cannot log in", "tip": "login isimdir, feili log in-dir (iki söz)." },
+    { "kind": "err", "re": "\\b(want to|need to|have to|able to|unable to|trying to|try to|can|cannot|can't|will|must|should)\\s+(logout|setup|checkout|signup)\\b", "w": "to setup", "r": "to set up", "tip": "Feil iki sözdür: log out, set up, check out, sign up. Bir söz kimi isimdir." },
+    { "kind": "err", "re": "\\bmake\\s+(a\\s+|the\\s+)?(test|tests|regression|retest|smoke)\\b", "w": "make a test", "r": "run a test", "tip": "“test etmək” hərfi tərcümə olunmur: run a test və ya sadəcə test." },
+    { "kind": "err", "re": "\\bwr(ite|ote)\\s+(a\\s+|the\\s+|two\\s+|three\\s+)?(bug|bugs|defect|defects)\\b(?!\\s+reports?)", "w": "write a bug", "r": "file a bug, report a bug", "tip": "“baq yazmaq”ın hərfi tərcüməsidir. “write a bug” baqı kodda yaratmaq kimi başa düşülə bilər." },
+    { "kind": "err", "re": "\\bsolv(e|ed|es|ing)\\s+(a\\s+|the\\s+|this\\s+)?(bug|defect)\\b", "w": "solve the bug", "r": "fix the bug", "tip": "Baq düzəldilir: fix." },
+    { "kind": "err", "re": "\\b(click|press)\\s+to\\s+(the|a|an|this|that)\\b", "w": "click to the button", "r": "click the button", "tip": "click və press-dən sonra to gəlmir." },
+    { "kind": "err", "re": "\\benter\\s+to\\b", "w": "enter to the page", "r": "open the page, go to the page", "tip": "“daxil olmaq”ın hərfi tərcüməsidir. Sayta: open, go to. Sistemə: log in." },
+    { "kind": "err", "re": "\\bdepends?\\s+from\\b", "w": "depends from", "r": "depends on", "tip": "“-dan asılıdır” ingiliscə on ilə olur." },
+    { "kind": "err", "re": "\\baccording\\s+to\\s+me\\b", "w": "according to me", "r": "I think, in my opinion", "tip": "Hərfi tərcümədir, belə deyilmir." },
+    { "kind": "err", "re": "\\b(is|are|was|were)\\s+(appear|appears|happen|happens|occur|occurs)\\b", "w": "is appear", "r": "appears", "tip": "Bu feillər is ilə işlənmir." },
+    { "kind": "err", "re": "\\bquestion\\s+to\\s+(you|the)\\b", "w": "a question to you", "r": "a question for you", "tip": "“sənə sual” ingiliscə for ilə olur." },
+    { "kind": "err", "re": "\\b(is|are)\\s+same\\b", "w": "is same", "r": "is the same", "tip": "same the ilə işlənir." },
+    { "kind": "err", "re": "\\b(in|on)\\s+the\\s+(chrome|firefox|safari|android|ios|windows)\\b(?!\\s+(browser|app|version|application|device|phone|store|settings))", "w": "in the Chrome", "r": "in Chrome, on Android", "tip": "Məhsul adlarından əvvəl the gəlmir." },
+    { "kind": "err", "re": "\\bin\\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\\b", "w": "in Monday", "r": "on Monday", "tip": "Günlər on ilə işlənir." },
+    { "kind": "err", "re": "\\bpeoples\\b", "w": "peoples", "r": "people", "tip": "people artıq cəmdir." },
+    { "kind": "err", "re": "\\bi\\s+(am|will|have|think|tested|checked|found|need|can|want)\\b", "cs": 1, "w": "i tested", "r": "I tested", "tip": "“I” həmişə böyük hərflə yazılır." },
+    { "kind": "style", "re": "\\b(does\\s+not|doesn't)\\s+work\\b|\\bnot\\s+working\\b", "w": "does not work", "r": "dəqiq fakt: returns 500, shows “…”", "tip": "Qrammatika düzgündür, amma oxuyan nə baş verdiyini bilmir. Report-da faktı yaz." }
+  ]
+}

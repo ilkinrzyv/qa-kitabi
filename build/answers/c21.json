@@ -184,5 +184,25 @@
       "Mühit və lövhə kimi işin özünə aid şeylər var",
       "Mesaj qısadır və konkret sual verir"
     ]
+  },
+  "c21x2m": {
+    "h": "Hər cümlədə iki-üç şeyə bax: feilin inkarı, artikl, ön söz, hərfi tərcümə.",
+    "a": "**(a)** “I filed a bug about the payment page.” “write a bug” hərfi tərcümədir. “the payment page”: konkret səhifədir, the lazımdır.\n\n**(b)** “The filter does not work in Chrome.” “is not work” səhvdir: inkar does not ilə olur. Məhsul adından əvvəl the gəlmir. Report-da isə “does not work” yerinə dəqiq faktı yaz: nə baş verir?\n\n**(c)** “The page has not saved the changes for 2 days.” Və ya sadə: “The page does not save changes. It started 2 days ago.” “is not save” səhvdir, müddət üçün since yox, for işlədilir, “Page” qarşısında the lazımdır.",
+    "c": [
+      "(a)-da “filed” və ya “reported” işlədilib",
+      "(b)-də “does not work” və the-siz Chrome var",
+      "(c)-də “does not save” və ya “has not saved”, “since” yerinə “for” və ya “ago” var",
+      "Hər səhvin səbəbi azərbaycanca deyilib"
+    ]
+  },
+  "c21x3m": {
+    "h": "Mübahisə etmə, fakt ver: harada təkrarlanır, neçə dəfə, sübut. Sonda birgə baxmağı təklif et.",
+    "a": "Mümkün cavablardan biridir:\n\n“I can reproduce it on build 3.2.1 in the test environment, 3 of 3 times. Video attached. Could we take a look at it together? Maybe the difference is in the data or the environment.”\n\nBurada mübahisə yoxdur: fakt, tezlik və sübut var, “sənin kompüterində” mübahisəsi əvəzinə fərqin harada ola biləcəyi təklif olunur.",
+    "c": [
+      "Build, mühit və tezlik deyilib",
+      "Video və ya başqa sübut qeyd olunub",
+      "Ton nəzakətlidir, “you are wrong” kimi ifadə yoxdur",
+      "Növbəti addım təklif olunub"
+    ]
   }
 }

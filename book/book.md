@@ -5172,6 +5172,101 @@ Salam! Promo kod üçün 8 test case yazdım (link).
 - “Bizdə əvvəlki yerdə belə idi” deyib prosesi dərhal dəyişmək istəmə: əvvəl niyə belə olduğunu öyrən.
 - Özünü başqaları ilə müqayisə edib ruhdan düşmə: bir ayda hər şeyi bilən yoxdur.
 
+### 21.12. İş üçün ingiliscə: bug report və test sənədləri {#c21x2}
+
+Çox komandada tiketlər, bug report-lar və çat ingiliscədir, hətta komanda azərbaycanca danışanda da. Səndən ədəbi ingiliscə gözlənilmir. Aydın, qısa və səhvsiz cümlə kifayətdir: bir neçə qəlib və 30–40 feil işin çoxunu görür.
+
+**Azərbaycan dilindən gələn üç əsas fərq.**
+
+| Fərq | Azərbaycanca | İngiliscə |
+| --- | --- | --- |
+| Feil cümlənin ortasındadır | Səhifə xəta göstərir | The page **shows** an error |
+| İnkar do, does, did ilə olur | Düymə işləmir | The button **does not** work |
+| Artikl var: a, an, the | Xəta çıxır | **An** error appears |
+
+**Artikl qısaca.** `a` və `an` birinci dəfə deyilən, say bilən bir şey üçündür: “shows an error”. `the` hər iki tərəfin bildiyi konkret şey üçündür: “Click the button”. `an` hərfə yox, səsə baxır: “an error”, amma “a user”. Bug başlığında artikl çox vaxt buraxılır, cümlələrdə isə yazılır.
+
+**Bug report-un qəlibləri.**
+
+| Sahə | Qəlib | Misal |
+| --- | --- | --- |
+| Başlıq | Harada: nə, hansı şərtdə | Cart: total is not updated after applying a promo code |
+| Addımlar | Əmr forması | 1. Open the cart. 2. Enter TEST10. 3. Click “Apply”. |
+| Gözlənilən | Expected + indiki zaman | Expected: The total changes to 90 AZN. |
+| Faktiki | Actual + indiki zaman | Actual: “Code applied” appears, but the total stays at 100 AZN. |
+| Tezlik | Reproducible | Reproducible: 5 of 5 |
+| Mühit | Environment | Environment: build 3.2.1, test server, Chrome 141 |
+
+Report-da indiki sadə zaman (Present Simple) işlədilir, çünki baq hər dəfə təkrarlanır: “The page shows”, “It showed” yox. Ekrandakı mətn dırnaqda və olduğu kimi yazılır: “Apply”, tərcümə olunmur.
+
+**Baq üçün feillər.**
+
+| Azərbaycanca | İngiliscə |
+| --- | --- |
+| göstərir | shows, displays |
+| xəta ilə bitir | fails with an error |
+| qaytarır | returns |
+| çökür, donur | crashes, freezes |
+| yönləndirir | redirects to |
+| yox olur | disappears |
+| dəyişmir, qalır | stays, does not change |
+| üst-üstə düşür, sığmır | overlaps, is cut off |
+| yenilənmir, yadda saxlanmır | is not updated, is not saved |
+
+**Hərfi tərcümə tələləri.**
+
+| Hərfi | Düzgün |
+| --- | --- |
+| write a bug | file a bug, report a bug |
+| make a test | run a test |
+| solve the bug | fix the bug |
+| I cannot login | I cannot log in (login isimdir, log in feildir) |
+| The button is not work | The button does not work |
+| an user, a error | a user, an error |
+
+### 21.13. İş üçün ingiliscə: stand-up, çat və görüşlər {#c21x3}
+
+Danışıqda qısa cümlə yaxşıdır. Mürəkkəb cümlə qurmağa çalışıb dolaşmaqdansa, iki sadə cümlə de.
+
+**Stand-up.**
+
+> Yesterday I finished SHOP-210 and filed two bugs. Today I am testing SHOP-214. I am blocked on SHOP-198: the fix is not on the test environment yet. Elvin, will it be deployed today?
+
+| Məqsəd | Qəlib |
+| --- | --- |
+| Dünən | Yesterday I finished…, I tested…, I filed… |
+| Bu gün | Today I am testing…, I will retest… |
+| Maneə | I am blocked by…, I can't test … because … |
+| Maneə yoxdur | No blockers. |
+| Kömək | I need help with…, Could someone take a look? |
+
+**Çat və tiket.** “You must” və “You broke” sərt səslənir. Xahiş “Could you please…?” ilə başlayır, problem isə adamla yox, faktla: “You broke login” yerinə “Login stopped working in build 3.2.1.” Əmin deyilsənsə: “It looks like…”.
+
+| Vəziyyət | İfadə |
+| --- | --- |
+| Baxmaq xahişi | Could you please take a look at SHOP-311? |
+| Tələbi dəqiqləşdirmək | What should happen when the code has expired? |
+| Baq, yoxsa normal? | Is this a bug or expected behavior? |
+| Sən təkrarlaya bilmirsən | I can't reproduce it on build 3.2.1. Could you share the steps? |
+| Baq qalır | I can still reproduce it on build 3.2.1. Video attached. |
+| Düzəlib | The fix works on build 3.2.2. Closing the ticket. |
+| Gecikirsən | This will take longer than expected. I will finish it by noon tomorrow. |
+
+**Görüşdə.** Başa düşməmək normaldır. Başa düşmədən “OK” demək ən bahalı səhvdir, çünki sonra yanlış şeyi test edirsən.
+
+- “Sorry, I didn't catch that. Could you repeat it, please?”
+- “Just to confirm: the code works only once?”
+- “Let me check and get back to you.”
+
+**E-poçt.** “Hi Anar,”, bir qısa abzas, “Thanks,” və adın. Birinci cümlədə nə istədiyini yaz. Tanımadığın adama “Hello Anar,” kifayətdir.
+
+**Necə öyrənmək.**
+
+1. Hər bug report-unu əvvəl özün ingiliscə yaz, sonra yoxla: tərcüməçidən ilk mətn üçün yox, yoxlama üçün istifadə et.
+2. Komandanın yaxşı report-larını oxu və bəyəndiyin ifadəni öz siyahına köçür.
+3. Stand-up mətnini görüşdən əvvəl iki sətirlə yaz: ucadan oxumaq danışmağı asanlaşdırır.
+4. Şirkət datasını, müştəri məlumatını və kodu xarici tərcümə və ya AI xidmətinə yapışdırma, əvvəl qaydanı soruş.
+
 ### Diqqət: tez-tez edilən səhvlər
 
 - **Portfolio-suz müraciət etmək.** “Öyrənmişəm” sözünün sübutu olmalıdır.

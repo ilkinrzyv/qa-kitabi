@@ -10,7 +10,7 @@ Interactive Azerbaijani textbook on software QA for a beginner (no programming b
 
 ```bash
 pip install -r requirements.txt
-python3 build/parse_book.py   # → build/book.json (gitignored); expect "deep layers 199 missing 0", "answers 401 missing 0" and "errors 0"
+python3 build/parse_book.py   # → build/book.json (gitignored); expect "deep layers 201 missing 0", "answers 403 missing 0" and "errors 0"
 python3 build/build_pwa.py    # → docs/ and dist/qa-kitabi-offline.zip; prints the new version
 python3 build/build_page.py   # → dist/qa-kitab.html and build/test.html (page used by the t*.js checks)
 python3 build/diagrams.py     # diagram self-check; must report 0 issues
@@ -102,6 +102,9 @@ Screenshots land in `build/shots/` (gitignored).
   Markdown, `c` = 2–5 criteria, `sec` = target seconds, `s` = sections to review), presets (`take` = how many per category) and the
   sections that link to it. The term round takes its answers from `interview.json`. Runs, ticks and weak questions are the `iv`
   store doc. The score is the reader's own ticks and the page says so. `t32.js`.
+- `build/english.json` — the work English practice (`#ingilisce`, `vEnglish`, prefix `eng`): drills by set (`pick`: one option has `ok`; `build`: tap the words into `a`;
+  `write`: `need` = keyword regexes, `model` must pass them), a phrase book (speech only where the browser has it) and `rules` = typical mistakes as regexes (`kind` `err` blocks the
+  done mark, `style` is only a hint; quoted text is skipped). The rules are a hint, not a grammar checker, and the page says so. Done marks and text: the `en` store doc. `t35.js`.
 - `build/roleplay_script.json` — the seven role plays as choices, without Claude (`#ssenari`, `#ssenari-dev-works`, `vScript`): nodes
   with `opts` (`t` what you say, `r` the reply, `fb` the coach's note, `q` 0–2, `k` the criterion, `f` facts found, `to`, `fail` = the
   talk breaks down). The situation text and names stay in `RP` (`app.js`), which the Claude version also uses. Keep the best option's
