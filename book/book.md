@@ -4682,6 +4682,83 @@ await expect(page).toHaveScreenshot('settings.png', { maxDiffPixels: 100 });
 
 İlk icrada etalon yoxdur: şəkil yaradılır, test isə uğursuz sayılır (`A snapshot doesn't exist at …, writing actual`). Şəklə bax, düzgündürsə, növbəti icralar onunla müqayisə olunur. Dizayn dəyişəndə: `npx playwright test --update-snapshots`. Şrift və sistem fərqinə görə etalonlar brauzer və əməliyyat sisteminə görə ayrıca saxlanılır (`settings-chromium-win32.png`), ona görə Windows-da çəkilən etalon Linux CI-da işləmir. Etalonu CI ilə eyni mühitdə yarat. Bu yoxlama kitabın məşqində işləmir, real brauzer lazımdır.
 
+### 19.20. Test düşəndə: səbəbi addım-addım tapmaq {#c19x10}
+
+Düşən test hələ baq demək deyil. Dörd səbəb ola bilər: məhsulda baq, testin özündə səhv (lokator, data, köhnə gözlənti), mühit (server, şəbəkə, test datası) və qeyri-sabitlik (flaky, 19.9). Təxmin etmək əvəzinə beş addımla get.
+
+**1. Xətanı oxu.** Playwright 1.63 yoxlama düşəndə belə yazır:
+
+```text
+Error: expect(locator).toHaveText(expected) failed
+
+Locator:  locator('.title')
+Expected: "Products"
+Received: "Your Cart"
+Timeout:  5000ms
+
+Call log:
+  - Expect "toHaveText" locator('.title') with timeout 5000ms
+  - waiting for locator('.title')
+    14 × locator resolved to <span class="title" data-test="title">Your Cart</span>
+       - unexpected value "Your Cart"
+```
+
+Birinci sətir hansı yoxlamanın düşdüyünü, `Locator` hansı elementə baxıldığını, `Expected` və `Received` nə gözlənildiyini və nə gəldiyini deyir. `Call log`-da “resolved to” varsa, element tapılıb: lokator işləyir, problem dəyərdədir. Sətir nömrəsi isə xətanın aşağısında, faylın adı ilə gəlir.
+
+| Mesajda | Mənası | İlk şübhə |
+| --- | --- | --- |
+| `Error: element(s) not found` | Lokator heç nə tapmadı | Lokator köhnəlib və ya başqa səhifə açılıb |
+| `strict mode violation … resolved to 2 elements` | Lokator birdən çox element tapdı | Lokator dəqiq deyil (19.5) |
+| `Expected` ilə `Received` fərqlidir | Element var, dəyəri fərqlidir | Məhsul baqı və ya köhnə gözlənti |
+| `Test timeout of 30000ms exceeded` və `waiting for` | Hərəkət elementi gözlədi, tapmadı | Əvvəlki addım baş tutmayıb |
+| `toHaveURL` və `Received` köhnə səhifədir | Keçid olmayıb | Login və ya klik alınmayıb: ekrana bax |
+
+**2. Təkrarla.** Yalnız düşən testi, təkrar cəhd olmadan işə sal. Sətir nömrəsi bir testi seçir:
+
+```bash
+npx playwright test tests/cart.spec.js:12 --project=chromium --retries=0
+npx playwright test tests/cart.spec.js:12 --repeat-each=10
+```
+
+Bəzən keçib bəzən düşürsə, flaky-dir: səbəbi yenə də axtarılır (19.9).
+
+**3. Bax.** Xəta mesajı nə olduğunu deyir, ekran isə niyə olduğunu göstərir.
+
+```bash
+npx playwright test --ui
+npx playwright test tests/cart.spec.js:12 --debug
+npx playwright show-trace test-results/cart-chromium/trace.zip
+```
+
+- **UI mode (`--ui`)** testləri siyahı ilə göstərir və hər addımın ekranını saxlayır: addıma basıb həmin anı görürsən.
+- **`--debug`** Playwright Inspector-u açır: test addım-addım icra olunur, lokatoru səhifədə sınaya bilərsən. Testin içində `await page.pause();` yazsan, test həmin yerdə dayanır.
+- **Trace viewer** CI-da düşən test üçündür (19.16). 20.8-dəki workflow hesabatı artifact kimi saxlayır: onu endir və aç.
+- Konfiqurasiyada `screenshot: 'only-on-failure'` və `video: 'retain-on-failure'` düşən testin şəklini və videosunu saxlayır.
+
+**4. Təsnif et.**
+
+| Gördüyün | Səbəb | Nə edirsən |
+| --- | --- | --- |
+| Element ekrandadır, amma başqa class və ya adla | Test: lokator köhnəlib | Lokatoru yenilə, mümkünsə `data-test` ilə |
+| Ekrandakı nəticə tələbə uyğun deyil | Məhsul baqı | Bug report yaz, trace-i əlavə et. Testi “keçirmək” üçün yoxlamanı dəyişmə |
+| Səhifə açılmır, 502, test datası yoxdur | Mühit | Mühiti yoxla və de (4.9), testə toxunma |
+| Bəzən keçir, bəzən yox | Flaky | Gözləməyə, data asılılığına, test sırasına bax (19.9) |
+| Ekran tələbə uyğundur, testdəki gözlənti fərqlidir | Test: köhnə və ya səhv gözlənti | Tələbə baxıb testi düzəlt |
+
+**5. Düzəlt və yoxla.** Düzəlişdən sonra testi bir neçə dəfə işə sal. Məhsul baqında test qırmızı qalır və bu, düzgündür. Baqın nömrəsini testin özünə yaz, hesabatda görünür:
+
+```javascript
+test('Bolt T-Shirt səbətə əlavə olunur', {
+  annotation: { type: 'issue', description: 'SHOP-412' },
+}, async ({ page }) => {
+  // …
+});
+```
+
+Baq düzələnə qədər bəzi komandalar testi `test.fixme()` ilə keçir və ya `test.fail()` ilə “gözlənilən düşmə” kimi işarələyir. Hansı yolun seçildiyini komandanın qaydası həll edir.
+
+Ən təhlükəli “düzəliş” yoxlamanı silmək və ya gözləntini ekrana uyğunlaşdırmaqdır: test yaşıl olur, baq isə müştəriyə gedir.
+
 ### Diqqət: tez-tez edilən səhvlər
 
 - **`await`-i unutmaq.** Test gözləmədən irəli qaçır.

@@ -337,5 +337,15 @@
       "Müstəqil yoxlamalar üçün faydası deyilib",
       "Asılı addımlarda zərəri deyilib"
     ]
+  },
+  "c19x10m": {
+    "h": "Düymə basılıb, ekran isə dəyişməyib: lokator yox, məhsulun davranışı fərqlidir. Testin gözləntisi tələbə uyğundurmu?",
+    "a": "**Bu, məhsul baqıdır.** Düymə basılıb, amma səbətə heç nə əlavə olunmayıb: düymə “Add to cart” olaraq qalır, nişan yoxdur. Lokator problemi olsaydı, trace-də nişan görünərdi.\n\n**Nə edərsən:**\n1. Əllə təkrarla: `problem_user` ilə Bolt T-Shirt səbətə düşmür, Backpack isə düşür.\n2. Bug report yaz: “Products: problem_user üçün Bolt T-Shirt “Add to cart” basılanda səbətə əlavə olunmur”, trace və ekran şəkli ilə.\n3. Testdə baqın nömrəsini şərhə yaz. Komanda qaydasına görə testi `test.fixme()` və ya `test.fail()` ilə işarələmək olar.\n\n**Dəyişməməli olan:** `toHaveText('1')` yoxlamasını silmə, gözləntini dəyişmə və başqa məhsula keçmə. Test qırmızı qalmalıdır ki, baq düzələndə bunu göstərsin.",
+    "c": [
+      "Məhsul baqı kimi təsnif olunub, lokator problemi kimi yox",
+      "Səbəb trace-dən gəlir: düymə dəyişməyib, nişan yoxdur",
+      "Bug report və ya baq nömrəsi qeyd olunub",
+      "Yoxlamanın silinməməli və ya dəyişdirilməməli olduğu deyilib"
+    ]
   }
 }

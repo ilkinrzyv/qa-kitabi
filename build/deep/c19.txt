@@ -393,7 +393,7 @@ Bəzi komandalar flaky testi müvəqqəti “karantinə” köçürür (məsəl�
 ### Tipik yanlış anlama
 “Flaky test — yalnız test problemidir.” Bəzən qeyri-sabitlik məhsulun özündədir: real yarış vəziyyəti (race condition), yaddaş sızması və ya yavaş API. Bu halda istifadəçi də eyni problemi yaşayır.
 @nümunə
-**Tapşırıq.** `performance_glitch_user` ilə giriş testi CI-da 10 icradan 3-də düşür. Xəta: `expect(page).toHaveURL(/inventory/)` — “Timed out 5000ms”. Səbəbi araşdır və düzgün həll təklif et.
+**Tapşırıq.** `performance_glitch_user` ilə giriş testi CI-da 10 icradan 3-də düşür. Xəta: `expect(page).toHaveURL(expected) failed`, `Expected pattern: /inventory/`, `Timeout: 5000ms`. Səbəbi araşdır və düzgün həll təklif et.
 @addımlar
 1. **Təkrarla:** `npx playwright test login.spec.js --repeat-each=10` — öz kompüterində də arabir düşür; problem real və vaxtla bağlıdır.
 2. **Trace-ə bax:** klikdən sonra səhifə keçidi bir neçə saniyə çəkir və bəzən 5 saniyəni keçir — yoxlama default gözləmə müddətinin sərhədindədir.
@@ -787,3 +787,33 @@ Tarix, reklam və animasiya hər dəfə fərqli görünür. `mask: [lokator]` d�
 5. **Nəticə:** hər hal ayrıca testdir, biri düşəndə o birilər işləyir.
 @növbən
 Məşq səhifəsində “Sifarişləri yüklə” üçün test yaz: internet kəsiləndə `route.abort()` ilə “İnternet bağlantısı yoxdur” mesajı görünsün. Sonra üç soft yoxlama ilə səhifənin başlığını, hesab statusunu və fayl statusunu yoxlayan test yaz. Bu testlər real API haqqında nə deyir, nə demir?
+
+=== c19x10
+@qısa
+Düşən testin səbəbi dörddən biridir: məhsul baqı, testin səhvi, mühit və ya qeyri-sabitlik. Xətanı oxu, testi tək və təkrar cəhdsiz işə sal, UI mode, Inspector və ya trace ilə ekrana bax, səbəbi təsnif et, sonra düzəlt.
+@yadda
+- “resolved to” varsa, lokator işləyir: problem dəyərdədir.
+- `--retries=0` və `--repeat-each` testin həqiqətən düşüb-düşmədiyini göstərir.
+- Məhsul baqında yoxlamanı dəyişmə: test qırmızı qalmalıdır.
+@dərin
+### Expected və Received necə oxunur
+`Expected` testdə yazdığın dəyərdir, `Received` ekranda olan. İkisini yan-yana qoy və soruş: hansı düzgündür? Tələbə görə ekran düzgündürsə, test köhnəlib. Tələbə görə test düzgündürsə, bu, baqdır. Tələb aydın deyilsə, Product Owner-dən soruş (10.6), təxmin etmə.
+
+### Pattern və substring
+`Expected pattern: /Cart/` regex ilə yoxlamadır, `Expected substring:` isə `toContainText` ilə: mətnin bir hissəsi axtarılır. `toHaveText` bütün mətni tutuşdurur, böyük-kiçik hərf də fərqlidir: “products” və “Products” fərqli dəyərlərdir.
+
+### Debugging tester-in işidirmi?
+Kodda defektin yerini tapmaq proqramçının işidir (1.6). Avtomatik testin niyə düşdüyünü tapmaq isə tester-in işidir: test sənin kodundur. Baqdırsa, sənin çıxışın yaxşı bug report-dur: addımlar, trace, ekran şəkli və xəta mesajı.
+
+### Yerli kompüterdə keçir, CI-da düşür
+Fərq adətən mühitdədir: başqa brauzer versiyası, ekran ölçüsü, daha yavaş maşın, boş test bazası, mühit dəyişəni (18.13). CI-ın trace-ini aç və yerli işlə tutuşdur. `--project=chromium` ilə eyni brauzeri seç.
+@nümunə
+**Tapşırıq.** CI-da test düşür: `Error: expect(locator).toHaveText(expected) failed`, `Locator: locator('.shopping_cart_badge')`, `Expected: "1"`, `Error: element(s) not found`. Trace-də klikdən sonra səbət nişanında “1” görünür. Səbəbi tap.
+@addımlar
+1. **Mesaj:** element tapılmayıb, amma trace-də nişan var: lokator elementi tutmur.
+2. **Trace-də elementə bax:** nişanın class-ı `cart-badge`-dir, `shopping_cart_badge` yox: dizayn dəyişib.
+3. **Təsnif:** funksiya işləyir, test köhnəlib. Bu, məhsul baqı deyil.
+4. **Düzəlt:** sabit lokatora keç: `page.getByTestId('shopping-cart-badge')`.
+5. **Yoxla:** testi `--repeat-each=5` ilə işə sal, sonra komandaya təklif et: vacib elementlərə `data-test` qoyulsun.
+@növbən
+Test `problem_user` ilə Bolt T-Shirt-i səbətə əlavə edir və nişanda “1” gözləyir. Xəta: `Expected: "1"`, `Error: element(s) not found`. Trace-də düyməyə basılıb, amma düymə “Add to cart” olaraq qalıb, nişan yoxdur. Bu, nədir və nə edərsən? Testdə nəyi dəyişməməlisən?
