@@ -691,6 +691,55 @@ for k in ans_missing:
     print('ERR answer missing', k, file=sys.stderr); errors += 1
 print('answers', len(ans_used), 'missing', len(ans_missing))
 
+# ---------- interview practice (interview_sim.json) and scripted role plays (roleplay_script.json): both work without Claude;
+# t32.js plays them ----------
+ivsim = json.load(open(os.path.join(BASE, 'interview_sim.json'), encoding='utf-8'))
+for g in glossary:
+    if '`' in g.get('say', ''):
+        print('ERR interview line has a backtick', g['en'], file=sys.stderr); errors += 1
+iv_ids = set()
+def sec_exists(sid):
+    return any(s['id'] == sid for c in chapters for s in c['sections'])
+for q in ivsim['questions']:
+    ok = q.get('id') and q['id'] not in iv_ids and q.get('cat') in ivsim['cats'] and q.get('q') and q.get('a') and q.get('sec') and 2 <= len(q.get('c', [])) <= 5
+    iv_ids.add(q.get('id'))
+    if not ok or not all(sec_exists(x) for x in q.get('s', [])) or not set(q.get('d', [])) <= set(q.get('s', [])):
+        print('ERR interview question', q.get('id'), file=sys.stderr); errors += 1; continue
+    q['a'] = str(render(q['a'])); q['c'] = [md.renderInline(x) for x in q['c']]
+ivsim['termCrit'] = [md.renderInline(x) for x in ivsim['termCrit']]
+for p_ in ivsim['presets']:
+    for cat, n in p_['take'].items():
+        have = len(glossary) if cat == 'terms' else sum(1 for q in ivsim['questions'] if q['cat'] == cat)
+        if cat not in ivsim['cats'] or have < n:
+            print('ERR interview preset', p_['id'], cat, file=sys.stderr); errors += 1
+for sid in ivsim['sections']:
+    sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+    if not sec:
+        print('ERR interview section', sid, file=sys.stderr); errors += 1; continue
+    sec['ivl'] = 1
+rpscript = json.load(open(os.path.join(BASE, 'roleplay_script.json'), encoding='utf-8'))
+for rid, sc in rpscript.items():
+    nodes, seen, bad = sc['nodes'], set(), []
+    if not (sc.get('open') and sc.get('strong') and all(sc['ends'].get(k) for k in ('good', 'mid', 'bad')) and sc['start'] in nodes):
+        bad.append('head')
+    def walk_rp(nid):
+        if nid == 'end' or nid in seen:
+            return
+        seen.add(nid)
+        n = nodes.get(nid)
+        if not n or not 2 <= len(n['opts']) <= 4 or not any(o['q'] == 2 for o in n['opts']):
+            bad.append(nid); return
+        for o in n['opts']:
+            fs = o.get('f', [])
+            fs = fs if isinstance(fs, list) else [fs]
+            if not (o.get('t') and o.get('r') and o.get('fb') and o.get('q') in (0, 1, 2) and 0 <= o.get('k', -1) < len(sc['crit']) and all(0 <= f < len(sc.get('facts', [])) for f in fs)):
+                bad.append(nid)
+            walk_rp(o.get('to') or n.get('to'))
+    walk_rp(sc['start'])
+    if bad or seen != set(nodes):
+        print('ERR role play script', rid, bad, sorted(set(nodes) - seen), file=sys.stderr); errors += 1
+print('interview questions', len(ivsim['questions']), 'role play scripts', len(rpscript))
+
 import sqlite3
 sqlcfg = json.load(open(os.path.join(BASE, 'sql.json'), encoding='utf-8'))
 m = re.search(r'### 16\.3\.[\s\S]*?```sql\n([\s\S]*?)```', md_text)
@@ -879,7 +928,7 @@ for c in chapters:
             s['x']['short'], k = gl_wrap(s['x']['short'], rx, idx, 2); gl_total += k
 print('glossary links', gl_total)
 out = {'title': 'QA Kitabı: Sıfırdan Peşəkar Testerə', 'parts': parts, 'chapters': chapters,
-       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'devtools': devtools, 'playwright': playwright, 'api': api, 'sql': sqlcfg, 'git': gitcfg, 'ctfl': ctfl}
+       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'devtools': devtools, 'playwright': playwright, 'ivsim': ivsim, 'rpscript': rpscript, 'api': api, 'sql': sqlcfg, 'git': gitcfg, 'ctfl': ctfl}
 json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 # ---------- 7. report ----------

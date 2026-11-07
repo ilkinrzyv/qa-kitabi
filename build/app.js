@@ -189,6 +189,7 @@ const lsKeys = () => { const out = []; try { for (let i = 0; i < localStorage.le
 function defFor(key) {
   if (key === 'prefs') return { theme: 'system', fs: 17, dir: 'en', lvl: 'std' };
   if (key === 'roleplay') return { s: {} };
+  if (key === 'iv') return { run: null, last: null, hist: [], weak: {}, seen: {}, rp: {} };
   if (key === 'progress') return { learned: {}, last: null, quiz: {} };
   if (key === 'cards') return { c: {} };
   if (key === 'checks') return { k: {} };
@@ -451,7 +452,7 @@ function render(opts) {
   if (observer) { observer.disconnect(); observer = null; }
   hideSelPill();
   const v = $('#view');
-  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw, git: vGit };
+  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw, git: vGit, iv: vInterview, rs: vScript };
   (views[S.view] || vHome)(v);
   document.body.dataset.view = S.view; document.body.dataset.tab = S.tab; // PC layouts are keyed by these (app.css)
   sideRender();
@@ -464,6 +465,7 @@ function render(opts) {
 const WIDE = window.matchMedia('(min-width:1280px)');
 const SIDE_PR = [['cards', 'cards', 'Fleş kartlar', 'data-act="cards"'], ['glossary', 'abc', 'Lüğət', 'data-act="glossary"'],
   ['ctfl', 'layers', 'ISTQB xəritəsi', 'data-act="ctfl-open"'], ['exam', 'clock', 'Sınaq imtahanı', 'data-act="exam-open"'],
+  ['iv', 'chat', 'Müsahibə məşqi', 'data-act="iv-open"'], ['rs', 'users', 'Rol oyunları', 'data-act="rs-open"'],
   ['store', 'cart', 'Məşq mağazası', () => `data-act="sm-open" data-sc="${SM.id && SM.ver !== REL_D.ver ? SM.id : 'tc01'}"`],
   ['release', 'checklist', 'Reliz testi', 'data-act="rel-open"'], ['devtools', 'bug', 'DevTools', 'data-act="dv-open"'],
   ['sql', 'list', 'SQL', 'data-act="sql-open"'], ['lab', 'send', 'API', 'data-act="lab-open"'],
@@ -889,10 +891,10 @@ function dtHTML(sid, c) {
 function textBody(c, s) {
   const lv = lvlOf(s.id);
   if (lv === 'short') {
-    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}
+    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}
       <button class="btn sm ghost more" data-act="lvl" data-sec="${s.id}" data-v="std">${icon('book')}Tam mətni oxu</button>${miniHTML(c, s, false)}`;
   }
-  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
+  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
 }
 function fbHTML(a) {
   let h = '';
@@ -983,7 +985,7 @@ function secHTML(c, s) {
   else if (s.kind === 'selfcheck') body = selfHTML(c, s);
   else if (s.kind === 'checklist') body = checklistHTML(s);
   else if (s.x) body = textBody(c, s);
-  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}`;
+  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}`;
   return `<section class="sec${learned ? ' learned' : ''}" id="${s.id}" data-sec="${s.id}" data-kind="${s.kind}">
     <header class="sec-h"><span class="sec-num">${esc(s.num || kindTag(s).toLocaleUpperCase('az'))}</span><h2>${esc(s.title)}</h2>${s.x ? lvlCtl(s.id, lvlOf(s.id)) : ''}</header>
     ${body}${footerHTML(c, s)}</section>`;
@@ -1020,7 +1022,7 @@ function vReader(v) {
     ${q ? `<button class="quizcta" data-act="quiz" data-ch="${c.num}">${icon('target')}<div style="flex:1;min-width:0"><b>Fəsil testi</b><span>${q.length} sual · izahlı cavablar${st.q ? ' · ən yaxşı nəticə ' + st.q.best + '/' + st.q.n : ''}</span></div>${icon('arrow')}</button>` : ''}
     ${c.kind === 'chapter' ? `<button class="quizcta alt" data-act="konspekt" data-ch="${c.id}">${icon('list')}<div style="flex:1;min-width:0"><b>Fəslin konspekti</b><span>hər bölmədən 3 əsas fikir, tipik səhvlər və terminlər</span></div>${icon('arrow')}</button>
     <button class="quizcta alt" data-act="sum" data-ch="${c.id}">${icon('print')}<div style="flex:1;min-width:0"><b>Xülasə vərəqi</b><span>fəsil bir səhifədə: əsas fikirlər, sxem, terminlər · çap et və ya PDF kimi saxla</span></div>${icon('arrow')}</button>` : ''}
-    ${rp ? `<button class="quizcta alt ai-only" data-act="rp-open" data-rp="${rp.id}">${icon('users')}<div style="flex:1;min-width:0"><b>Rol oyunu: ${esc(rp.title)}</b><span>${esc(rp.who)} ilə real iş söhbətini məşq et — sonda Claude rəy verir</span></div>${icon('arrow')}</button>` : ''}
+    ${rp ? `<button class="quizcta alt" data-act="rs-open" data-rp="${rp.id}">${icon('users')}<div style="flex:1;min-width:0"><b>Rol oyunu: ${esc(rp.title)}</b><span>${esc(rp.who)} ilə real iş söhbəti: seçimlər, nəticə və daha güclü ifadələr</span></div>${icon('arrow')}</button>` : ''}
     <div class="nav2">${prev ? `<button data-act="open-ch" data-ch="${prev.id}"><div class="k">← Əvvəlki</div><div class="n">${esc(prev.title)}</div></button>` : '<span></span>'}
     ${next ? `<button class="next" data-act="open-ch" data-ch="${next.id}"><div class="k">Növbəti →</div><div class="n">${esc(next.title)}</div></button>` : '<span></span>'}</div></div>`;
   const tools = c.kind === 'chapter' ? `<div class="ch-tools">
@@ -4095,7 +4097,10 @@ function vPractice(v) {
   <section class="block"><div class="block-h"><h2>ISTQB xəritəsi</h2><span class="muted" style="font-size:13px">CTFL v4.0</span></div>
     <button class="quizcta alt" data-act="ctfl-open">${icon('layers')}<div style="flex:1;min-width:0;text-align:left"><b>Sillabus və kitab</b><span>${CTFL.length} fəsil, ${CTFL.reduce((a, c) => a + c.topics.length, 0)} mövzu — hər biri onu öyrədən bölmələrə bağlıdır</span></div>${icon('arrow')}</button></section>
   <section class="block"><div class="block-h"><h2>Sınaq imtahanı</h2><span class="muted" style="font-size:13px">${(P().exams || [])[0] ? `son: ${P().exams[0].ok}/${P().exams[0].n}` : 'ISTQB formatı'}</span></div>
-    <button class="quizcta" data-act="exam-open">${icon('target')}<div style="flex:1;min-width:0;text-align:left"><b>${examRun() && !examRun().done && examLeft(examRun()) > 0 ? 'Yarımçıq imtahanı davam et' : `${EXAM_N} sual · ${EXAM_MIN} dəqiqə`}</b><span>ISTQB CTFL formatı: keçid ${Math.round(EXAM_PASS * 100)}%, cavablar və izahlar sonda</span></div>${icon('arrow')}</button></section>
+    <button class="quizcta" data-act="exam-open">${icon('target')}<div style="flex:1;min-width:0;text-align:left"><b>${examRun() && !examRun().done && examLeft(examRun()) > 0 ? 'Yarımçıq imtahana davam et' : `${EXAM_N} sual · ${EXAM_MIN} dəqiqə`}</b><span>ISTQB CTFL formatı: keçid ${Math.round(EXAM_PASS * 100)}%, cavablar və izahlar sonda</span></div>${icon('arrow')}</button></section>
+  <section class="block"><div class="block-h"><h2>Müsahibə məşqi</h2><span class="muted" style="font-size:13px">${IVD.questions.length} sual, ${Object.keys(RPS).length} ssenari</span></div>
+    <div class="stack"><button class="quizcta" data-act="iv-open">${icon('chat')}<div style="flex:1;min-width:0;text-align:left"><b>${ivDoc().run ? 'Yarımçıq müsahibəyə davam et' : 'Müsahibə simulyatoru'}</b><span>Vaxtla suallar, nümunə cavablar, öz cavabını meyarlarla yoxlama</span></div>${icon('arrow')}</button>
+    <button class="quizcta alt" data-act="rs-open">${icon('users')}<div style="flex:1;min-width:0;text-align:left"><b>Rol oyunları</b><span>Product Owner, proqramçı və komanda rəhbəri ilə söhbət: seçimlər və nəticə</span></div>${icon('arrow')}</button></div></section>
   <section class="block"><div class="block-h"><h2>Fəsil testləri</h2><span class="muted" style="font-size:13px">${o.quizDone}/21 · orta ${o.avg}%</span></div>
     <div class="qgrid">${cells}</div></section>
   <section class="block"><div class="block-h"><h2>Məşq mağazası</h2><span class="muted" style="font-size:13px">${Object.keys(SM.passed).length}/${STORE.scenarios.length} test case</span></div>
@@ -4400,7 +4405,7 @@ function drawGlossary() {
 }
 
 /* ---------- tutor ---------- */
-const tutorOffHTML = () => `<div class="empty"><div style="font-weight:600;color:var(--ink);font-size:16px">Claude bu görünüşdə əlçatan deyil</div><p style="margin:6px 0 0">Kitabın özü, testlər və kartlar AI olmadan da tam işləyir. Claude-u açmaq üçün səhifəni claude.ai-də öz hesabınla aç və icazə ver.</p></div>`;
+const tutorOffHTML = () => `<div class="empty"><div style="font-weight:600;color:var(--ink);font-size:16px">Claude bu görünüşdə əlçatan deyil</div><p style="margin:6px 0 0">Kitabın özü, testlər və kartlar AI olmadan da tam işləyir. Claude-u açmaq üçün səhifəni claude.ai-də öz hesabınla aç və icazə ver.</p><div class="row" style="justify-content:center;margin-top:12px"><button class="btn sm" data-act="iv-open">${icon('chat')}Müsahibə məşqi</button><button class="btn sm" data-act="rs-open">${icon('users')}Rol oyunları</button></div></div>`;
 // offline app: what to do when Claude cannot answer right now
 function pwaNotice() {
   if (!PWA) return '';
@@ -4500,8 +4505,8 @@ const RP = [
   { id: 'po-promo', who: 'Product Owner', name: 'Lalə', title: 'Promo kod tələbini aydınlaşdır',
     brief: 'Sprint planlamasından əvvəl Product Owner yeni funksiyanı qısaca izah edir: “İstifadəçi səbətdə promo kod tətbiq edə bilər.” Tələb sənədi yoxdur — detallar yalnız onun başındadır.',
     goal: 'Suallarla ən azı 5 qeyri-müəyyənliyi üzə çıxar və söhbətin sonunda 3–5 qəbul meyarını PO ilə razılaşdır.',
-    crit: ['qeyri-müəyyənlikləri tapmaq', 'konkret və açıq suallar', 'sərhəd və neqativ hallar', 'nəticəni AC şəklində yekunlaşdırmaq'],
-    persona: 'Sən Lalə adlı Product Owner-sən, onlayn mağaza komandasında işləyirsən. Səmimisən, amma məşğulsan və uzun izah sevmirsən. Tələb: “İstifadəçi səbətdə promo kod tətbiq edə bilər.” Bundan artıq məlumatı yalnız konkret sual veriləndə və yalnız soruşulan hissə barədə qısa de. Gizli detallar (soruşulmasa, özün demə): endirim ya 10%, ya da sabit 5 AZN olur; bir sifarişdə yalnız bir kod işləyir; minimum səbət məbləği 30 AZN-dir; kodun bitmə tarixi var; böyük-kiçik hərf fərq etmir; hər istifadəçi eyni kodu yalnız bir dəfə işlədə bilər; kod silinəndə məbləğ əvvəlki halına qayıdır. Xəta mesajlarının mətnini hələ düşünməmisən — soruşulsa, “yaxşı sualdır, dizaynerlə dəqiqləşdirək” de. Çox ümumi sual gəlsə (“hər şeyi danış”), konkretləşdirməyi xahiş et. Söhbətin ortasında bir dəfə “bunu sabaha qədər bitirə bilərik?” deyə tələsdir.' },
+    crit: ['qeyri-müəyyənlikləri tapmaq', 'konkret və açıq suallar', 'sərhəd və neqativ hallar', 'nəticəni qəbul meyarları şəklində yekunlaşdırmaq'],
+    persona: 'Sən Lalə adlı Product Owner-sən, onlayn mağaza komandasında işləyirsən. Səmimisən, amma məşğulsan və uzun izah sevmirsən. Tələb: “İstifadəçi səbətdə promo kod tətbiq edə bilər.” Bundan artıq məlumatı yalnız konkret sual veriləndə və yalnız soruşulan hissə barədə qısa de. Gizli detallar (soruşulmasa, özün demə): endirim ya 10%, ya da sabit 5 AZN olur; bir sifarişdə yalnız bir kod işləyir; minimum səbət məbləği 30 AZN-dir; kodun bitmə tarixi var; böyük-kiçik hərf fərq etmir; hər istifadəçi eyni kodu yalnız bir dəfə işlədə bilər; kod silinəndə məbləğ əvvəlki halına qayıdır. Xəta mesajlarının mətnini hələ düşünməmisən — soruşulsa, “yaxşı sualdır, dizaynerlə dəqiqləşdirək” de. Çox ümumi sual gəlsə (“hər şeyi danış”), konkretləşdirməyi xahiş et. Söhbətin ortasında bir dəfə “test case-ləri sabaha qədər hazırlaya bilərsən?” deyə tələsdir.' },
   { id: 'po-avatar', who: 'Product Owner', name: 'Lalə', title: 'Profil şəkli yükləmə',
     brief: 'Yeni funksiya: istifadəçi profilinə şəkil yükləyə bilər. Product Owner dizayn maketini göstərib, amma texniki məhdudiyyətlər heç yerdə yazılmayıb.',
     goal: 'Format, ölçü, səhv halları, mobil ssenarilər və riskləri soruşaraq test üçün lazım olan qaydaları aydınlaşdır.',
@@ -4514,11 +4519,11 @@ const RP = [
     persona: 'Sən Lalə adlı Product Owner-sən. Gizli detallar (yalnız soruşulanda de): link email-ə göndərilir və 30 dəqiqə etibarlıdır; link yalnız bir dəfə işləyir; yeni şifrə əvvəlki ilə eyni ola bilməz; mövcud olmayan email yazılsa da eyni mesaj göstərilir (“Email mövcuddursa, link göndərildi”) — bu, təhlükəsizlik üçündür; bir email üçün saatda ən çox 3 sorğu göndərmək olar; şifrə dəyişəndə bütün cihazlardakı sessiyalar bağlanır; şifrə qaydaları qeydiyyatdakı kimidir (8–20 simvol, ən azı bir rəqəm).' },
   { id: 'dev-works', who: 'Proqramçı', name: 'Elvin', title: '“Məndə işləyir”',
     brief: 'Baq tapmısan: email böyük hərflərlə yazılanda (Aysel@Example.com) giriş alınmır və “Email və ya şifrə yanlışdır” mesajı çıxır. Proqramçı Elvin report-u “Cannot reproduce — məndə işləyir” ilə bağlamaq istəyir.',
-    goal: 'Sakit və faktlarla baqın real olduğunu göstər, təkrarlama şərtini birlikdə dəqiqləşdir və report-un yenidən açılmasına razılıq al.',
+    goal: 'Sakit və faktlarla baqın real olduğunu göstər, təkrarlama şərtini birlikdə dəqiqləşdir və report-un açıq qalmasına razılıq al.',
     crit: ['faktlar və sübut', 'təkrarlama şərtinin dəqiqliyi', 'peşəkar ton', 'razılaşdırılmış növbəti addım'],
     persona: 'Sən Elvin adlı backend proqramçısan; təcrübəlisən, yorğunsan, sprintin son günüdür. İlk reaksiyan: “Məndə işləyir, yəqin sən nəsə səhv yazmısan.” Özün testi kiçik hərfli email ilə etmisən və bunun fərqində deyilsən. Tester konkret addımları, test datasını (böyük hərfli email), mühiti və sübutu (video, Network cavabı) göstərdikcə tədricən razılaş. Tester “email-i necə yazmısan?” kimi dəqiqləşdirici sual versə, “kiçik hərflə” de və problemi anla. Tester emosional, ittihamçı və ya qeyri-dəqiq danışarsa, müdafiəyə keç və “sübut göstər” de. Razılaşanda düzəlişin harada olacağını qısa de (email-i müqayisədən əvvəl kiçik hərfə çevirmək).' },
   { id: 'dev-penny', who: 'Proqramçı', name: 'Elvin', title: '“1 qəpik nədir ki?”',
-    brief: 'Xidmət haqqı hesablananda bəzi məbləğlər 1 qəpik az çıxır: 45,50 AZN-lik sifariş üçün 47,78 əvəzinə 47,77 AZN göstərilir. Proqramçı bunu “kosmetik” sayır və Low/Low vermək istəyir.',
+    brief: 'Xidmət haqqı (5%) hesablananda bəzi məbləğlər 1 qəpik az çıxır: 45,50 AZN-lik sifariş üçün 47,78 əvəzinə 47,77 AZN göstərilir, ödəniş provayderi isə 47,78 çəkir. Proqramçı bunu “kosmetik” sayır və Minor/Low vermək istəyir.',
     goal: 'Biznes riskini (həcm, hesabatlar, ödəniş sistemi ilə uyğunsuzluq, etibar) izah et, severity və priority-ni əsaslandır, düzəliş üçün razılıq al.',
     crit: ['riskin biznes dilində izahı', 'severity və priority əsaslandırması', 'texniki səbəbə işarə', 'konstruktiv nəticə'],
     persona: 'Sən Elvin adlı proqramçısan. Fikrin: “1 qəpikdir, heç kim fərq etməz, başqa vacib işlər var.” Hesablamanı kəsr ədədlərlə (float) aparırsan. Tester konkret riskləri — gündə minlərlə sifariş, maliyyə hesabatlarında uyğunsuzluq, ödəniş provayderi ilə məbləğ fərqi, müştəri şikayəti — izah etsə, razılaş. Tester səbəbi (kəsr ədəd, yuvarlaqlaşdırma) düzgün göstərsə, düzəlişi (məbləği qəpiklə tam ədəd kimi saxlamaq və ya düzgün yuvarlaqlaşdırma) qəbul et. Sadəcə “bu, səhvdir” deyilsə, razı olma.' },
@@ -4561,7 +4566,7 @@ function vRoleplay(v) {
   if (!r) {
     const D = Store.doc('roleplay').s;
     v.innerHTML = `<div class="tutor">${modeSwitch()}${pwaNotice()}
-      <p class="muted" style="margin:0;font-size:14.5px">Claude real həmkarın rolunu oynayır: Product Owner, proqramçı və ya komanda rəhbəri. Söhbəti sən aparırsan; bitirəndə Claude rolundan çıxır və meyarlar üzrə rəy verir.</p>
+      <p class="muted" style="margin:0;font-size:14.5px">Claude real həmkarın rolunu oynayır: Product Owner, proqramçı və ya komanda rəhbəri. Söhbəti sən aparırsan; bitirəndə Claude rolundan çıxır və meyarlar üzrə rəy verir. <button class="btn sm ghost" data-act="rs-open">${icon('list')}Seçimli variant</button></p>
       ${RP_WHO.map(w => `<section><div class="block-h"><h2>${esc(w)}</h2></div><div class="rplist">${RP.filter(x => x.who === w).map(x => {
         const rec = D[x.id];
         const st = rec && rec.g ? gradeChip(rec.g) : (rec && rec.turns && rec.turns.length ? '<span class="chip acc">davam edir</span>' : '');
@@ -4624,6 +4629,186 @@ async function rpCall(kind, text) {
   }
   S.rpBusy = null;
   if (S.view === 'tutor' && S.tutorMode === 'rp' && S.rp === r.id) render({ keepScroll: true });
+}
+
+/* ---------- interview practice and scripted role plays: everything here works without Claude ---------- */
+const IVD = BOOK.ivsim, RPS = BOOK.rpscript;
+const ivDoc = () => Store.doc('iv');
+const ivLinkHTML = s => s.ivl ? `<div class="sm-link"><div class="srt-k">${icon('chat')}Müsahibə məşqi</div><p class="srt-hint">Bu sualları vaxtla, ucadan cavabla, sonra nümunə ilə tutuşdur və meyarlarla özünü yoxla.</p><div class="row"><button class="btn sm primary" data-act="iv-open">${icon('play')}Müsahibəyə başla</button><button class="btn sm" data-act="rs-open">${icon('users')}Rol oyunları</button></div></div>` : '';
+function ivQ(id) {
+  const q = IVD.questions.find(x => x.id === id);
+  if (q) return q;
+  const g = glById[id];
+  return g ? { id, cat: 'terms', sec: 40, q: `${g.en} nədir? Müsahibədə necə izah edərsən?`, a: `<p>${esc(g.say)}</p>`, c: IVD.termCrit, s: [] } : null;
+}
+// a preset takes the questions asked longest ago first, in the order of a real interview
+function ivPick(pid) {
+  const D = ivDoc();
+  if (pid === 'weak') return shuffle(Object.keys(D.weak).filter(ivQ)).slice(0, 10);
+  const p = IVD.presets.find(x => x.id === pid), out = [];
+  Object.entries(p.take).forEach(([cat, n]) => {
+    const pool = cat === 'terms' ? GLOSS.filter(g => g.say).map(g => g.id) : IVD.questions.filter(q => q.cat === cat).map(q => q.id);
+    out.push(...shuffle(pool).sort((a, b) => (D.seen[a] || 0) - (D.seen[b] || 0)).slice(0, n));
+  });
+  return out;
+}
+const ivPct = (a, q) => (a && a.m ? a.m.length : 0) / q.c.length;
+function ivStart(pid) {
+  const D = ivDoc(), ids = ivPick(pid);
+  if (!ids.length) return;
+  D.run = { p: pid, ids, i: 0, at: Date.now(), a: {} };
+  S.ivOn = null; Store.changed('iv');
+  go('iv', { go: 1 }, { push: false });
+}
+function ivSaveText() {
+  const r = ivDoc().run, el = $('#iv-t'); if (!r || !el) return;
+  const id = r.ids[r.i], a = r.a[id] || (r.a[id] = {});
+  a.t = el.value.slice(0, 4000); Store.changed('iv', 2500);
+}
+function ivShow() {
+  const r = ivDoc().run; if (!r) return;
+  ivSaveText();
+  const id = r.ids[r.i], a = r.a[id] || (r.a[id] = {});
+  a.ms = (a.ms || 0) + (S.ivOn === id && S.ivT0 ? Date.now() - S.ivT0 : 0); a.open = true; a.m = a.m || [];
+  S.ivOn = null; Store.changed('iv'); render({ keepScroll: true });
+}
+function ivTickCrit(el) {
+  const r = ivDoc().run; if (!r) return;
+  const id = r.ids[r.i], q = ivQ(id), a = r.a[id] || (r.a[id] = {}), i = +el.dataset.ivc, m = a.m || (a.m = []);
+  if (el.checked) { if (!m.includes(i)) m.push(i); } else a.m = m.filter(x => x !== i);
+  Store.changed('iv');
+  const n = $('#iv-n'); if (n) n.textContent = `${a.m.length}/${q.c.length} meyar ödənilib`;
+}
+function ivNext() {
+  const D = ivDoc(), r = D.run; if (!r) return;
+  ivSaveText();
+  if (r.i < r.ids.length - 1) { r.i++; S.ivOn = null; Store.changed('iv'); render({ top: true }); return; }
+  const qs = r.ids.map(ivQ), now = Date.now();
+  const pct = Math.round(qs.reduce((s, q) => s + ivPct(r.a[q.id], q), 0) / qs.length * 100);
+  qs.forEach(q => { D.seen[q.id] = now; if (ivPct(r.a[q.id], q) < .6) D.weak[q.id] = 1; else delete D.weak[q.id]; });
+  D.last = { p: r.p, ids: r.ids, a: r.a, at: now, pct };
+  D.hist = [{ at: now, p: r.p, pct, n: qs.length }].concat(D.hist).slice(0, 12);
+  D.run = null; Store.changed('iv');
+  go('iv', { res: 1 }, { push: false });
+}
+const ivTitle = pid => pid === 'weak' ? 'Zəif suallar' : (IVD.presets.find(p => p.id === pid) || {}).title || '';
+function ivTick() {
+  const r = ivDoc().run; if (!S.ivOn || !r) return;
+  const el = $('#iv-time'), now = Date.now();
+  if (!el || document.hidden) { S.ivT0 = now; return; } // away from the question: this time does not count
+  const q = ivQ(S.ivOn), a = r.a[S.ivOn] || (r.a[S.ivOn] = {});
+  a.ms = (a.ms || 0) + now - S.ivT0; S.ivT0 = now;
+  el.querySelector('b').textContent = mmss(a.ms);
+  el.classList.toggle('warn', a.ms > q.sec * 1000);
+  Store.changed('iv', 5000);
+}
+setInterval(ivTick, 1000);
+const ivLinks = q => q.cat === 'terms' ? `<div class="iv-links"><span class="muted">Mövzuya bax:</span><button class="chip" data-act="gt" data-g="${q.id}">Lüğətdə aç</button></div>` : q.s.length ? `<div class="iv-links"><span class="muted">Mövzuya bax:</span>${q.s.map(sid => secById[sid] ? `<button class="chip" data-act="goto-sec" data-sec="${sid}"${(q.d || []).includes(sid) ? ' data-lv="deep"' : ''}>${esc(secById[sid].num || secById[sid].title)}</button>` : '').join('')}</div>` : '';
+function ivStartHTML(D) {
+  const weak = Object.keys(D.weak).filter(ivQ).length;
+  return `<div class="card exam-rules"><div class="kicker">Claude və internet lazım deyil</div><h1 class="h1" style="font-size:24px">Müsahibə simulyatoru</h1>
+      <ul class="exam-list"><li>Sual çıxır, vaxt işləyir: real müsahibədəki kimi <b>ucadan cavab ver</b> və ya qısa yaz</li><li>“Cavabımı bitirdim” ilə nümunə cavab açılır</li><li>Cavabını meyarlarla özün qiymətləndir: dürüst işarələ, nəticə bundan çıxır</li><li>Zəif çıxan suallar yadda qalır, onları ayrıca təkrar edə bilərsən</li></ul></div>
+    ${D.run ? `<div class="block"><button class="cont" data-act="iv-go">${icon('play')}<div class="t"><div class="k">Yarımçıq müsahibə</div><div class="n">${esc(ivTitle(D.run.p))}</div><div class="s">Sual ${+D.run.i + 1}/${D.run.ids.length}</div></div>${icon('arrow')}</button></div>` : ''}
+    <section class="block"><div class="block-h"><h2>Müsahibə növü</h2></div><div class="rplist">${IVD.presets.map(p => {
+      const n = Object.values(p.take).reduce((a, b) => a + b, 0);
+      return `<button class="rpcard" data-act="iv-start" data-p="${p.id}"><span class="av">${n}</span><span class="t"><b>${esc(p.title)}</b><span>${esc(p.sub)}</span></span><span class="side">${icon('arrow')}</span></button>`;
+    }).join('')}${weak ? `<button class="rpcard" data-act="iv-start" data-p="weak"><span class="av">${Math.min(weak, 10)}</span><span class="t"><b>Zəif suallarım</b><span>Əvvəl aşağı qiymət verdiyin ${weak} sual</span></span><span class="side">${icon('arrow')}</span></button>` : ''}</div></section>
+    <section class="block"><div class="block-h"><h2>Söhbət məşqi</h2></div><button class="quizcta alt" data-act="rs-open">${icon('users')}<div style="flex:1;min-width:0;text-align:left"><b>Rol oyunları</b><span>Product Owner, proqramçı və komanda rəhbəri ilə ${Object.keys(RPS).length} iş söhbəti</span></div>${icon('arrow')}</button></section>
+    ${D.hist.length ? `<section class="block"><div class="block-h"><h2>Əvvəlki cəhdlər</h2>${D.last ? `<button class="btn sm ghost" data-act="iv-res">${icon('list')}Son nəticə</button>` : ''}</div><div class="card exam-hist">${D.hist.map(h => { const d = new Date(h.at); return `<div class="exam-h"><span class="mono">${pad2(d.getDate())}.${pad2(d.getMonth() + 1)} ${pad2(d.getHours())}:${pad2(d.getMinutes())}</span><span>${esc(ivTitle(h.p))}</span><b>${+h.pct}%</b><span class="muted">${+h.n} sual</span></div>`; }).join('')}</div></section>` : ''}`;
+}
+function ivRunHTML(r) {
+  const id = r.ids[r.i], q = ivQ(id), a = r.a[id] || {}, last = r.i === r.ids.length - 1;
+  if (!a.open && S.ivOn !== id) { S.ivOn = id; S.ivT0 = Date.now(); }
+  const ms = (a.ms || 0) + (a.open ? 0 : Date.now() - S.ivT0);
+  return `<div class="exam-top"><span class="chip exam-time${ms > q.sec * 1000 ? ' warn' : ''}" id="iv-time">${icon('clock')}<b>${mmss(ms)}</b><span>/ ${mmss(q.sec * 1000)}</span></span><span class="muted">${esc(ivTitle(r.p))} · sual ${r.i + 1}/${r.ids.length}</span></div>
+    <div class="meter" style="margin-top:10px"><i style="width:${Math.round(r.i / r.ids.length * 100)}%"></i></div>
+    <div class="kicker" style="margin-top:18px">${esc(IVD.cats[q.cat])}</div>
+    <h1 class="qz-q" id="iv-q">${esc(q.q)}</h1>
+    ${a.open ? '' : '<p class="muted" style="margin:-6px 0 10px;font-size:14px">Əvvəl ucadan cavab ver, sanki qarşında müsahibə aparan var. Qısa qeyd də yaza bilərsən.</p>'}
+    <textarea id="iv-t" class="field" rows="3" placeholder="Cavabın və ya qeydlərin (məcburi deyil)" aria-label="Cavabın">${esc(a.t || '')}</textarea>
+    ${a.open ? `<div class="ans"><div class="ans-h">Nümunə cavab</div><div class="prose">${q.a}</div>
+      <div class="ans-h">Öz cavabını yoxla</div><ul class="ans-crit">${q.c.map((x, i) => `<li><label><input type="checkbox" data-ivc="${i}"${(a.m || []).includes(i) ? ' checked' : ''}><span>${x}</span></label></li>`).join('')}</ul>
+      <div class="ans-n" id="iv-n">${(a.m || []).length}/${q.c.length} meyar ödənilib</div>${ivLinks(q)}</div>` : ''}
+    <div class="row" style="margin-top:14px">${a.open ? `<button class="btn primary" data-act="iv-next">${icon(last ? 'check' : 'arrow')}${last ? 'Nəticəyə bax' : 'Növbəti sual'}</button>` : `<button class="btn primary" data-act="iv-show">${icon('check')}Cavabımı bitirdim</button>`}<button class="btn ghost" data-act="iv-quit">Dayandır</button></div>`;
+}
+function ivResHTML(D) {
+  const L = D.last, qs = L.ids.map(ivQ).filter(Boolean), cats = {};
+  qs.forEach(q => { const c = cats[q.cat] || (cats[q.cat] = { s: 0, n: 0 }); c.s += ivPct(L.a[q.id], q); c.n++; });
+  const verdict = L.pct >= 80 ? ['pass', 'Yaxşı hazırlıq', 'Eyni nəticəni başqa suallarla da göstərsən, real müsahibəyə hazırsan.'] : L.pct >= 60 ? ['warn', 'Az qalıb', 'Əsas fikirlər var, zəif sualları təkrar et və ucadan bir də de.'] : ['fail', 'Hələ məşq lazımdır', 'Aşağıdakı mövzuları oxu, sonra zəif suallara yenidən cavab ver.'];
+  const over = qs.filter(q => ((L.a[q.id] || {}).ms || 0) > q.sec * 1000).length;
+  return `<div class="card result"><div class="kicker">${esc(ivTitle(L.p))}</div><div class="big">${+L.pct}%</div><span class="chip ${verdict[0]}">${verdict[1]}</span>
+      <p class="muted" style="margin:10px 0 0;font-size:14px">${verdict[2]} ${over ? `${over} sualda vaxtı keçdin: cavabı qısalt.` : 'Vaxta sığdın.'} Bal öz qiymətləndirməndir.</p></div>
+    <section class="block"><div class="block-h"><h2>Mövzular üzrə</h2></div><div class="card partbars">${Object.entries(cats).map(([k, c]) => { const p = Math.round(c.s / c.n * 100); return `<div class="pb"><div class="t"><span>${esc(IVD.cats[k])}</span><span>${p}%</span></div><div class="meter${p >= 60 ? ' pass' : ''}"><i style="width:${p}%"></i></div></div>`; }).join('')}</div></section>
+    <section class="block"><div class="block-h"><h2>Suallar</h2></div><div class="stack">${qs.map(q => { const a = L.a[q.id] || {}, p = Math.round(ivPct(a, q) * 100); return `<details class="iv-rev${p < 60 ? ' no' : ''}" data-open="iv:${q.id}"${OPEN['iv:' + q.id] ? ' open' : ''}><summary><span class="t">${esc(q.q)}</span><span class="chip ${p >= 60 ? 'pass' : 'fail'}">${p}%</span>${icon('chev', 'chev')}</summary>${a.t ? `<div class="iv-mine"><b>Sənin qeydin:</b> ${esc(a.t)}</div>` : ''}<div class="prose">${q.a}</div>${ivLinks(q)}</details>`; }).join('')}</div></section>
+    <div class="row" style="margin-top:16px">${Object.keys(D.weak).filter(ivQ).length ? `<button class="btn primary" data-act="iv-start" data-p="weak">${icon('refresh')}Zəif sualları təkrar et</button>` : ''}<button class="btn" data-act="iv-open">${icon('list')}Başqa müsahibə</button></div>`;
+}
+function vInterview(v) {
+  const D = ivDoc();
+  // a run from an old version or an imported file can name questions that no longer exist
+  if (D.run && !(Array.isArray(D.run.ids) && D.run.ids.length && D.run.ids.every(ivQ) && D.run.a && D.run.ids[D.run.i])) { D.run = null; Store.changed('iv'); }
+  if (D.last && !(Array.isArray(D.last.ids) && D.last.a)) { D.last = null; Store.changed('iv'); }
+  if (!Array.isArray(D.hist)) D.hist = [];
+  const mode = S.params.res && D.last ? 'res' : S.params.go && D.run ? 'run' : 'start';
+  setHeader({ back: true, kicker: 'Müsahibə məşqi', name: mode === 'res' ? 'Nəticə' : mode === 'run' ? IVD.cats[ivQ(D.run.ids[D.run.i]).cat] : 'Müsahibə simulyatoru' });
+  v.innerHTML = mode === 'res' ? ivResHTML(D) : mode === 'run' ? ivRunHTML(D.run) : ivStartHTML(D);
+}
+// scripted role plays: the same seven situations as the Claude version, as a conversation of choices
+const rsRec = id => { const d = ivDoc(); return d.rp[id] || (d.rp[id] = { path: [] }); };
+function rsState(id) {
+  const sc = RPS[id], rec = rsRec(id), steps = [], found = new Set();
+  let node = sc.start, fail = false;
+  rec.path.forEach(i => {
+    const n = sc.nodes[node], o = n && n.opts[i]; if (!o) return;
+    steps.push({ n, o });
+    [].concat(o.f === undefined ? [] : o.f).forEach(f => found.add(f));
+    if (o.fail) fail = true;
+    node = o.to || n.to;
+  });
+  const crit = sc.crit.map(() => ({ s: 0, n: 0 }));
+  steps.forEach(({ o }) => { crit[o.k].s += o.q; crit[o.k].n += 2; });
+  const total = steps.reduce((a, x) => a + x.o.q, 0), pct = steps.length ? total / (steps.length * 2) : 0;
+  // a weak closing step or a dead end cannot earn the good ending, whatever the rest of the talk scored
+  const last = steps[steps.length - 1], capped = steps.some(x => x.o.cap);
+  const end = fail || pct < .6 ? 'bad' : pct >= .85 && last && last.o.q === 2 && !capped ? 'good' : 'mid';
+  const grade = { bad: 'Yenidən cəhd et', mid: 'Yaxşı', good: 'Əla' }[end];
+  return { sc, rec, steps, node, cur: node === 'end' ? null : sc.nodes[node], crit, pct, grade, end, last, found };
+}
+const RS_RANK = { 'Yenidən cəhd et': 0, 'Yaxşı': 1, 'Əla': 2 };
+function rsPick(i) {
+  const id = S.params.rp; if (!id) return;
+  const st = rsState(id); if (!st.cur || !st.cur.opts[i]) return;
+  st.rec.path.push(i);
+  const after = rsState(id);
+  if (!after.cur) { after.rec.g = after.grade; if (!after.rec.best || RS_RANK[after.grade] > RS_RANK[after.rec.best]) after.rec.best = after.grade; }
+  Store.changed('iv');
+  render({ keepScroll: true });
+  requestAnimationFrame(() => { const el = $('#rs-last'); if (el) el.scrollIntoView({ block: 'start' }); });
+}
+function vScript(v) {
+  const id = S.params.rp, r = id && RP.find(x => x.id === id);
+  setHeader({ back: true, kicker: 'Məşq · rol oyunu', name: r ? r.title : 'Rol oyunları' });
+  if (!r) {
+    const D = ivDoc().rp;
+    v.innerHTML = `<p class="muted" style="margin:0 0 14px;font-size:14.5px">Real iş söhbətləri: hər addımda nə deyəcəyini seçirsən, həmkarın ona görə cavab verir. Əvvəl özün fikirləş: sən nə deyərdin? Sonda nəticəni, buraxdığın qaydaları və daha güclü ifadələri görürsən.</p>
+      ${RP_WHO.map(w => `<section class="block"><div class="block-h"><h2>${esc(w)}</h2></div><div class="rplist">${RP.filter(x => x.who === w && RPS[x.id]).map(x => {
+        const rec = D[x.id];
+        const st = rec && rec.best ? gradeChip(rec.best) : rec && rec.path && rec.path.length ? '<span class="chip acc">davam edir</span>' : '';
+        return `<button class="rpcard" data-act="rs-open" data-rp="${x.id}"><span class="av">${esc(x.name[0])}</span><span class="t"><b>${esc(x.title)}</b><span>${esc(x.brief.split('. ')[0].slice(0, 120))}…</span></span><span class="side">${st}${icon('arrow')}</span></button>`;
+      }).join('')}</div></section>`).join('')}`;
+    return;
+  }
+  const st = rsState(id), sc = st.sc;
+  const say = t => `<div class="msg a"><div class="kicker">${esc(r.name)}</div><div class="prose">${esc(t)}</div></div>`;
+  const bubbles = st.steps.map(({ n, o }, i) => `${n.say ? say(n.say) : ''}<div class="msg u"${i === st.steps.length - 1 ? ' id="rs-last"' : ''}>${esc(o.t)}</div>${say(o.r)}<div class="rs-fb q${o.q}">${icon(o.q === 2 ? 'check' : o.q === 1 ? 'bulb' : 'x')}<span>${esc(o.fb)}</span></div>`).join('');
+  const next = st.cur ? `${st.cur.say ? say(st.cur.say) : ''}<div class="rs-ask">Sən nə deyirsən?</div><div class="opts">${st.cur.opts.map((o, i) => `<button class="opt" data-act="rs-pick" data-i="${i}"><span class="l">${'ABCD'[i]}</span><span>${esc(o.t)}</span></button>`).join('')}</div>` : '';
+  const end = st.cur ? '' : `<div class="card rs-end"><div class="row" style="justify-content:space-between">${gradeChip(st.grade)}<span class="muted" style="font-size:13px">${Math.round(st.pct * 100)}%</span></div>
+      <p class="rs-out">${st.last && st.last.o.out ? esc(st.last.o.out) + ' ' : ''}${esc(sc.ends[st.end])}</p>
+      <h3 class="sum-l">Meyarlar</h3><div class="partbars">${sc.crit.map((c, i) => { const x = st.crit[i]; if (!x.n) return ''; const p = Math.round(x.s / x.n * 100); return `<div class="pb"><div class="t"><span>${esc(c)}</span><span>${p}%</span></div><div class="meter${p >= 60 ? ' pass' : ''}"><i style="width:${p}%"></i></div></div>`; }).join('')}</div>
+      ${sc.facts ? `<h3 class="sum-l">Üzə çıxan qaydalar: ${st.found.size}/${sc.facts.length}</h3><ul class="rs-facts">${sc.facts.map((f, i) => `<li class="${st.found.has(i) ? 'ok' : 'no'}">${icon(st.found.has(i) ? 'check' : 'help')}<span>${esc(f)}</span></li>`).join('')}</ul>${st.found.size < sc.facts.length ? '<p class="muted" style="margin:8px 0 0;font-size:13.5px">Sual işarəli qaydalar bu söhbətdə soruşulmadı: növbəti cəhddə onları da üzə çıxar.</p>' : ''}` : ''}
+      <h3 class="sum-l">Daha güclü ifadələr</h3><ul class="rs-strong">${sc.strong.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>
+    <div class="row" style="margin-top:14px"><button class="btn primary" data-act="rs-reset">${icon('refresh')}Yenidən başla</button><button class="btn" data-act="rs-open">${icon('list')}Ssenarilər</button><button class="btn ai-only" data-act="rp-open" data-rp="${r.id}">${icon('users')}Claude ilə sərbəst söhbət</button></div>`;
+  v.innerHTML = `<div class="card rpbrief"><div class="kicker">${esc(r.who)} · ${esc(r.name)}</div><p>${esc(r.brief)}</p><div class="goal"><b>Məqsədin:</b> ${esc(r.goal)}</div></div>
+    <div class="msgs rs-msgs">${say(sc.open)}${bubbles}${next}</div>${end}`;
 }
 
 /* ---------- progress ---------- */
@@ -4796,7 +4981,7 @@ async function saveKey(btn) {
   refreshPwaRow('set-claude');
   if (S.view === 'tutor' && !S.tutorBusy && !S.rpBusy) rerender();
 }
-const IMPORT_KEY = /^(progress|prefs|cards|checks|chat|roleplay|pw|notes-[a-z0-9]+|ans-[a-z0-9]+)$/;
+const IMPORT_KEY = /^(progress|prefs|cards|checks|chat|roleplay|iv|pw|notes-[a-z0-9]+|ans-[a-z0-9]+)$/;
 async function exportData() {
   const docs = {};
   lsKeys().forEach(k => { if (IMPORT_KEY.test(k)) docs[k] = Store.doc(k); });
@@ -5215,6 +5400,16 @@ document.addEventListener('click', ev => {
     case 'git-close': GIT.edit = null; gitRedraw(false); break;
     case 'ctfl-open': closeSheet(); go('ctfl', {}, { push: S.view !== 'ctfl' }); break;
     case 'exam-open': closeSheet(); go('exam', {}, { push: S.view !== 'exam' }); break;
+    case 'iv-open': closeSheet(); go('iv', {}, { push: S.view !== 'iv' }); break;
+    case 'iv-start': if (ivDoc().run) openConfirm('Yeni müsahibə?', 'Yarımçıq müsahibənin cavabları silinəcək.', 'Yenisini başla', () => ivStart(d.p)); else ivStart(d.p); break;
+    case 'iv-go': go('iv', { go: 1 }, { push: false }); break;
+    case 'iv-show': ivShow(); break;
+    case 'iv-next': ivNext(); break;
+    case 'iv-res': go('iv', { res: 1 }, { push: false }); break;
+    case 'iv-quit': openConfirm('Müsahibəni dayandıraq?', 'Bu cəhdin cavabları silinəcək.', 'Dayandır', () => { ivDoc().run = null; Store.changed('iv'); go('iv', {}, { push: false }); }); break;
+    case 'rs-open': closeSheet(); if (S.view === 'rs' && !d.rp && S.stack.length && S.stack[S.stack.length - 1].view === 'rs') S.stack.pop(); go('rs', { rp: d.rp || null }, { push: S.view !== 'rs' || !!d.rp }); break;
+    case 'rs-pick': rsPick(+d.i); break;
+    case 'rs-reset': { const dd = ivDoc(); if (dd.rp[S.params.rp]) dd.rp[S.params.rp].path = []; Store.changed('iv'); render({ top: true }); break; }
     case 'exam-mode': S.examMode = d.v; rerender(); break;
     case 'exam-start': {
       const start = () => { P().examRun = examNew(S.examMode || 'istqb'); Store.changed('progress'); S.params = { go: 1 }; render({}); };
@@ -5471,6 +5666,7 @@ function updChk(sid) {
 }
 document.addEventListener('input', ev => {
   const t = ev.target;
+  if (t.id === 'iv-t') { ivSaveText(); return; }
   if (t.dataset.note) {
     const sid = t.dataset.note, cid = t.dataset.ch;
     notesDoc(cid).n[sid] = t.value;
@@ -5518,6 +5714,7 @@ document.addEventListener('input', ev => {
 document.addEventListener('toggle', ev => { const el = ev.target; if (el && el.dataset && el.dataset.open) OPEN[el.dataset.open] = el.open; }, true);
 document.addEventListener('change', ev => {
   if (ev.target.dataset && ev.target.dataset.crit !== undefined) { ansTick(ev.target); return; }
+  if (ev.target.dataset && ev.target.dataset.ivc !== undefined) { ivTickCrit(ev.target); return; }
   const t = ev.target;
   if (t.dataset.ixTg) { IX[t.dataset.sid][t.dataset.ixTg] = t.checked; ixRedraw(t.dataset.sid); return; }
   if (t.dataset.smSort !== undefined) {
@@ -5564,7 +5761,8 @@ AI.setState('pending');
 // #c3-xulase and #xulase open the summary sheets (the claude.ai version links there when it cannot print);
 // #magaza opens the practice store, #magaza-tc04 with that test case; #reliz the release test, #reliz-tc06 that test case
 // on build 1.1; #devtools the DevTools practice, #devtools-dv3 that task; #playwright-pw3 a Playwright task, #lokator-l5
-// a locator; #git the Git practice, #git-g5 that task.
+// a locator; #git the Git practice, #git-g5 that task; #musahibe the interview practice; #ssenari the scripted role plays,
+// #ssenari-dev-works that one.
 let AUTO = null;
 const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 function routeHash() {
@@ -5597,6 +5795,8 @@ function routeHash() {
   else if (t === 'git') { S.tab = 'practice'; S.view = 'git'; S.params = {}; if (own(gitTaskById, act) && act !== GIT.task) gitLoad(act); }
   else if (h === 'istqb') { S.tab = 'practice'; S.view = 'ctfl'; S.params = {}; }
   else if (h === 'imtahan') { S.tab = 'practice'; S.view = 'exam'; S.params = {}; }
+  else if (h === 'musahibe') { S.tab = 'practice'; S.view = 'iv'; S.params = {}; }
+  else if (t === 'ssenari') { const id = h.slice(8); S.tab = 'practice'; S.view = 'rs'; S.params = { rp: own(RPS, id) ? id : null }; }
   else if (h === 'sql') { S.tab = 'practice'; S.view = 'sql'; S.params = {}; }
   else if (h === 'api') { S.tab = 'practice'; S.view = 'lab'; S.params = {}; }
   else if (h === 'muellim' || h === 'tutor') { S.tab = 'tutor'; S.view = 'tutor'; S.params = {}; S.tutorMode = 'chat'; }

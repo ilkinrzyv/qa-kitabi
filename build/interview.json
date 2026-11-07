@@ -71,7 +71,7 @@
   "Sprint": "Sprint Scrum-da 1–4 həftəlik iş dövrüdür və sonunda işləyən məhsul artımı olur. Test sprintin sonuna saxlanmır: story hazır olduqca test edilir.",
   "SQL": "SQL verilənlər bazası ilə işləmək dilidir. Tester kimi əsasən SELECT, WHERE, JOIN və GROUP BY ilə UI-da və ya API-də gördüyümü bazada təsdiqləyirəm, məsələn sifariş düzgün statusla yazılıbmı.",
   "Staging": "Staging canlı mühitə ən yaxın test mühitidir: eyni konfiqurasiya, oxşar data. Relizdən əvvəlki son yoxlamalar burada aparılır ki, canlı mühitdə sürpriz olmasın.",
-  "State transition testing": "Vəziyyət keçidləri testində obyektin vəziyyətlərini və onları dəyişən hadisələri yoxlayıram, məsələn sifariş: yaradıldı → ödənildi → göndərildi → çatdırıldı. Həm icazəli, həm də icazəsiz keçidləri test edirəm, məsələn çatdırılmış sifarişi ləğv etmək.",
+  "State transition testing": "Vəziyyət keçidləri testində obyektin vəziyyətlərini və onları dəyişən hadisələri yoxlayıram, məsələn sifariş: yaradıldı → ödənildi → göndərildi → çatdırıldı. Həm icazəli, həm də etibarsız keçidləri test edirəm, məsələn çatdırılmış sifarişi ləğv etmək.",
   "Static testing": "Statik test proqramı işə salmadan aparılır: tələblərin, dizaynın və kodun review-u. Defekti ən ucuz mərhələdə, hələ kod yazılmamış tapmağa imkan verir.",
   "STLC": "STLC test işinin mərhələləridir: tələblərin analizi, planlaşdırma, test dizaynı, mühitin hazırlanması, icra və bağlanış. Sıranı əzbərləmirəm, məntiqlə qururam: “bunun üçün əvvəl nə lazımdır?”",
   "Stress testing": "Stress test sistemi limitdən yuxarı yükləyib necə sındığını və sonra necə bərpa olunduğunu yoxlayır. Məqsəd sistemi sındırmaq deyil, sınma nöqtəsini və o andakı davranışı öyrənməkdir.",
@@ -109,7 +109,7 @@
   "Product / Project risk": "Məhsul riski keyfiyyətlə bağlıdır — məsələn, ödəniş iki dəfə çıxılır, onu testlə azaldırıq. Layihə riski idarəetmə ilə bağlıdır — məsələn, test mühiti gecikir; o, planın risklər bölməsinə yazılır.",
   "Risk level": "Risk səviyyəsi ehtimal ilə təsirin hasilidir. Yüksək səviyyəli sahələri daha erkən, daha dərin və daha çox test edirəm — vaxt çatmayanda bu, prioritetin ən güclü arqumentidir.",
   "Data-driven test": "Addımlar eyni, dəyərlər fərqli olanda bir test yazıb onu data ilə işlədirəm: hər sətir ayrıca nəticə verir. Dəyərləri EP və BVA ilə seçirəm, testin adına yazıram ki, hesabatda hansı dəyərin düşdüyü görünsün.",
-  "Fixture": "Fixture testə hazır vəziyyət verir: Playwright-da `page` də fixture-dir. Təkrarlanan hazırlığı `base.extend` ilə fixture-ə çıxarıram; `await use(x)`-dən əvvəl hazırlıq, sonra təmizlik gedir, test isə yalnız öz işini yazır.",
-  "Storage state": "Hər testdə login formasını doldurmamaq üçün bir dəfə daxil olub vəziyyəti fayla yazıram, testlər oradan başlayır. Fayl `.gitignore`-dadır, login formasının öz testləri isə boş vəziyyətdən başlayır.",
+  "Fixture": "Fixture testə hazır vəziyyət verir: Playwright-da page də fixture-dir. Təkrarlanan hazırlığı base.extend ilə fixture-ə çıxarıram; await use(x)-dən əvvəl hazırlıq, sonra təmizlik gedir, test isə yalnız öz işini yazır.",
+  "Storage state": "Hər testdə login formasını doldurmamaq üçün bir dəfə daxil olub vəziyyəti fayla yazıram, testlər oradan başlayır. Fayl .gitignore-dadır, login formasının öz testləri isə boş vəziyyətdən başlayır.",
   "Trace viewer": "Test CI-da düşəndə əvvəl trace-ə baxıram: düşən addım, həmin anın ekranı, şəbəkə sorğuları və konsol. Beləcə problemin testdə, məhsulda, yoxsa mühitdə olduğunu təxminlə yox, sübutla ayırıram."
 }

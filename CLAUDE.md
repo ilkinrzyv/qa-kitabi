@@ -94,6 +94,14 @@ Screenshots land in `build/shots/` (gitignored).
   or incomplete one as an error and attaches the rest as `ans`. `ansPanel` / `ansShow` / `ansTick` in `app.js` show them;
   reading the answer and the ticks are saved in the answer doc (`v`, `m`). The first press on an empty answer only reminds the
   reader to try. `t30.js`.
+- `build/interview_sim.json` — the interview practice (`#musahibe`, `vInterview`): questions by category (`q`, `a` = model answer in
+  Markdown, `c` = 2–5 criteria, `sec` = target seconds, `s` = sections to review), presets (`take` = how many per category) and the
+  sections that link to it. The term round takes its answers from `interview.json`. Runs, ticks and weak questions are the `iv`
+  store doc. The score is the reader's own ticks and the page says so. `t32.js`.
+- `build/roleplay_script.json` — the seven role plays as choices, without Claude (`#ssenari`, `#ssenari-dev-works`, `vScript`): nodes
+  with `opts` (`t` what you say, `r` the reply, `fb` the coach's note, `q` 0–2, `k` the criterion, `f` facts found, `to`, `fail` = the
+  talk breaks down). The situation text and names stay in `RP` (`app.js`), which the Claude version also uses. Keep the best option's
+  position varied: `t32.js` fails if pressing one letter passes a script.
 - `build/quiz_*.json` — chapter quizzes. `build/diagrams.py` — SVG diagrams registered with `reg(slug, sid, anchor, cap, d)`,
   drawn with `svgkit.py` (text measured with the vendored fonts in `fonts/`, overlap and overflow checks).
 - `build/app.js` — the whole UI in one IIFE, no framework. `PWA = window.QA_PWA` exists only in the offline build:

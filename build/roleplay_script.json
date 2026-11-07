@@ -1,0 +1,285 @@
+{
+  "po-promo": {
+    "crit": ["qeyri-müəyyənlikləri tapmaq", "konkret və açıq suallar", "sərhəd və neqativ hallar", "nəticəni qəbul meyarları şəklində yekunlaşdırmaq"],
+    "open": "Salam! Qısa deyim: istifadəçi səbətdə promo kod tətbiq edə bilməlidir. Bu sprintə götürürük. Sualın var?",
+    "facts": ["Endirim növü: 10% və ya sabit 5 AZN", "Minimum səbət məbləği: 30 AZN", "Bir sifarişdə yalnız bir kod işləyir", "Kodun bitmə tarixi var, böyük-kiçik hərf fərq etmir", "Hər istifadəçi eyni kodu bir dəfə işlədə bilər", "Kod silinəndə məbləğ əvvəlki halına qayıdır"],
+    "strong": ["“Endirim necə hesablanır: faizlə, yoxsa sabit məbləğlə?”", "“Qaydanı belə başa düşdüm: səbət 30 AZN-dən azdırsa, kod rədd olunur. Düzdür?”", "“Bu sual açıq qalır, cavabı kim verəcək və nə vaxta?”"],
+    "ends": {
+      "good": "Hamınız eyni şeyi başa düşürsünüz: qaydalar sual-cavabla üzə çıxdı, meyarlar story-yə düşür. Proqramçılar sualsız başlayır, test case-lər də bu meyarlardan çıxır.",
+      "mid": "Əsas fikir aydındır, amma bəzi suallar zəif qaldı. Soruşulmayan qayda sprintin ortasında baq kimi üzə çıxa bilər: aşağıda nəyin qaldığına bax.",
+      "bad": "Tələbin çox hissəsi qeyri-müəyyən qaldı. Proqramçı özü qərar verəcək, sən isə nəyə əsasən test edəcəyini bilməyəcəksən."
+    },
+    "start": "a",
+    "nodes": {
+      "a": { "to": "b", "opts": [
+        { "t": "Yaxşı fikirdir. Funksiyanı başdan-sona bir az ətraflı danış, hər şeyi bilmək istəyirəm.", "r": "Hər şeyi deməyə vaxtım yoxdur. Konkret nəyi bilmək istəyirsən?", "fb": "Çox ümumi sual. PO məşğuldur, cavab almaq üçün konkret soruş.", "q": 0, "k": 1 },
+        { "t": "Bu funksiya nə vaxt canlıya çıxmalıdır və reliz tarixi artıq dəqiqdir?", "r": "Sprintin sonunda, tarix dəqiqdir. Başqa?", "fb": "Faydalıdır, amma funksiyanın qaydası haqqında heç nə öyrənmədin.", "q": 1, "k": 1 },
+        { "t": "Endirim necə hesablanır: faizlə, yoxsa sabit məbləğlə?", "r": "İki növ var: ya 10%, ya da sabit 5 AZN.", "fb": "Konkret sual, konkret cavab. Birinci qayda yazıldı.", "q": 2, "k": 1, "f": 0 }
+      ] },
+      "b": { "to": "c", "opts": [
+        { "t": "Minimum səbət şərti varmı?", "r": "Var, 30 AZN. Ondan az səbətə işləmir.", "fb": "Sərhəd tapıldı: 29,99 və 30,00 yoxlanılacaq.", "q": 2, "k": 2, "f": 1 },
+        { "t": "Bunu proqramçı özü bilir, kodda nəsə yazılacaq, ona görə mən soruşmuram.", "r": "Proqramçı da nəyi yazacağını bizdən gözləyir. Nəyi nəzərdə tutursan?", "fb": "Məsuliyyəti ötürdün, sərhədi soruşmadın.", "q": 0, "k": 2 },
+        { "t": "Boş səbətdə kod sahəsi görünür, yoxsa istifadəçi sahəni yalnız məhsul olanda görür?", "r": "Boş səbətdə sahə görünmür.", "fb": "Yaxşı neqativ hal, amma əsas şərt, minimum məbləğ, soruşulmadı.", "q": 1, "k": 2 }
+      ] },
+      "c": { "to": "d", "opts": [
+        { "t": "Kodları kim yaradır: marketinq admin paneldən əlavə edir, yoxsa proqramçılar?", "r": "Marketinq. Bu sprintin işi deyil.", "fb": "Maraqlıdır, amma test qaydasına təsiri azdır.", "q": 1, "k": 0 },
+        { "t": "Bir sifarişdə iki kod olar?", "r": "Yox, bir sifarişdə yalnız bir kod.", "fb": "Bu sualı verməsəydin, ikinci kod endirimi ikiqat edə bilərdi.", "q": 2, "k": 0, "f": 2 },
+        { "t": "Yəqin bir sifarişə bir kod kifayətdir, onda test case-i də elə yazıram, düzdür?", "r": "Hə, yəqin. Yaz.", "fb": "Fərziyyəni fakt kimi yazdın. PO təsdiq etmədən bu, sənin təxminindir.", "q": 0, "k": 0 }
+      ] },
+      "d": { "to": "e", "opts": [
+        { "t": "Kod həmişə işləyəcək də, bu tərəfi üçün ayrıca test yazmağa ehtiyac olmaz, elə deyil?", "r": "Bunu mənə sən deməlisən, tester sənsən. Konkret nəyi yoxlayırsan?", "fb": "Bu, sual deyil, təsdiq axtarmaqdır. Tester fərziyyəni yoxlayır.", "q": 0, "k": 2 },
+        { "t": "Kodun vaxtı bitəndə nə olur? “summer10” və “SUMMER10” eyni sayılır?", "r": "Bitmə tarixi var, vaxtı keçən kod işləmir. Böyük-kiçik hərf fərq etmir.", "fb": "İki sərhəd sualı bir dəfəyə, misalla da: cavab dəqiq gəldi.", "q": 2, "k": 2, "f": 3 },
+        { "t": "Yanlış və ya köhnə kod yazanda istifadəçi ekranda hansı mesajı görəcək?", "r": "Yaxşı sualdır, mətni dizaynerlə dəqiqləşdirək.", "fb": "Yaxşı neqativ sual. Cavab yoxdur: bunu açıq sual kimi yaz.", "q": 1, "k": 2 }
+      ] },
+      "e": { "say": "Yeri gəlmişkən, test case-ləri sabaha qədər hazırlaya bilərsən? Tələsirəm.", "to": "f", "opts": [
+        { "t": "Komandadan soruşum, proqramçılar nə deyir, sonra sənə yazaram, bəlkə də olar.", "r": "Yaxşı, tez de.", "fb": "Pis deyil, amma öz fikrin və açıq sualların qalmadı.", "q": 1, "k": 0 },
+        { "t": "Əlbəttə, problem yoxdur, sabaha hamısı hazır olacaq, narahat olma.", "r": "Əla, deməli, sabah.", "fb": "Açıq suallar var, sən isə söz verdin. Sabah risk sənin adına yazılacaq.", "q": 0, "k": 0 },
+        { "t": "Olar, amma iki sualım var: hər istifadəçi kodu neçə dəfə işlədə bilər, kod silinəndə məbləğ necə olur?", "r": "Düzdür. Hər istifadəçi eyni kodu bir dəfə işlədir. Kod silinəndə məbləğ əvvəlki halına qayıdır.", "fb": "Təzyiqə faktla cavab verdin və əlavə iki qayda öyrəndin.", "q": 2, "k": 0, "f": [4, 5] }
+      ] },
+      "f": { "to": "end", "opts": [
+        { "t": "Aydındır, hamısını öz dəftərimə qeyd etdim, lazım olanda oradan baxaram. Təşəkkürlər.", "r": "Yaxşı, uğurlar.", "fb": "Qeyd yalnız sənin əlindədir. PO təsdiq etmədi.", "q": 1, "k": 3 },
+        { "t": "Eşitdiklərimi Given/When/Then kimi yazıb sənə oxuyum, razısansa, story-yə əlavə edim.", "r": "Bax, belə yaxşıdır. Göndər, baxım.", "fb": "Söhbəti yoxlanıla bilən meyarlara çevirdin.", "q": 2, "k": 3 },
+        { "t": "Qəbul meyarlarını sən yazarsan, mən də sonra oxuyub test case-ləri onlara görə hazırlayaram.", "r": "Vaxtım yoxdur, sən yazsan yaxşıdır.", "fb": "Yekun yoxdur. Söhbət yazılmasa, hər kəs öz başa düşdüyünü xatırlayır.", "q": 0, "k": 3 }
+      ] }
+    }
+  },
+  "po-avatar": {
+    "crit": ["fayl məhdudiyyətləri", "neqativ hallar", "mobil ssenarilər", "risklərin qeyd edilməsi"],
+    "open": "Bax, dizayn hazırdır: profildə dəyirmi şəkil, üstünə basıb yükləmək olur. Gözəl görünür, elə deyil? Testdən nə lazımdır?",
+    "facts": ["İcazəli formatlar: JPG və PNG", "Maksimum 5 MB, minimum 200×200 piksel", "Yükləmədən sonra kvadrat kəsmə pəncərəsi açılır", "Yeni şəkil köhnəni əvəz edir, köhnə saxlanmır", "Mobildə kamera ilə çəkmək olur", "Şəkil silinəndə adın baş hərfləri göstərilir"],
+    "strong": ["“Hansı formatlara və hansı ölçüyə icazə var? Limitdən böyük faylda nə görünür?”", "“Uyğunsuz şəkil yoxlaması yoxdursa, bu riski backlog-a yazaq.”", "“HEIC faylı iPhone-da tez-tez olur: bunu kim dəqiqləşdirəcək?”"],
+    "ends": {
+      "good": "Bu sualların yarısını Lalə özü də düşünməmişdi. Qaydalar və risk sənədə düşür, test case-lər hazırdır.",
+      "mid": "Əsası aydındır, amma bəzi hallar söhbətdən kənarda qaldı: onlar testdə sürprizə çevrilə bilər.",
+      "bad": "Maketdə limitlər yoxdur, soruşulmadıqca da bilinməyəcək. Testi təxminlə edəcəksən."
+    },
+    "start": "a",
+    "nodes": {
+      "a": { "to": "b", "opts": [
+        { "t": "Profildə şəkil hansı ölçüdə və hansı formada göstəriləcək: dairə, yoxsa kvadrat?", "r": "Profildə 96 piksel dairə.", "fb": "Görünüş sualıdır. Yüklənən faylın limiti hələ bilinmir.", "q": 1, "k": 0 },
+        { "t": "Hansı fayl formatlarına icazə var?", "r": "JPG və PNG.", "fb": "Maketdə görünməyən qayda. Düz yerdən başladın.", "q": 2, "k": 0, "f": 0 },
+        { "t": "Dizayn çox gözəl alınıb, təbriklər. Maketə görə test edəcəyəm, başqa sualım yoxdur.", "r": "Sağ ol! Onda davam edək.", "fb": "Tərif xoşdur, amma testə lazım olan heç nə öyrənmədin.", "q": 0, "k": 0 }
+      ] },
+      "b": { "to": "c", "opts": [
+        { "t": "Mən limiti 5 MB fərz edirəm, adətən belə olur, test case-ləri də buna görə yazaram.", "r": "Hm, yaxşı.", "fb": "Rəqəm təsadüfən düz olsa da, fərziyyəni təsdiqlətmək lazımdır.", "q": 0, "k": 0 },
+        { "t": "Çox böyük fayllarla nə edəcəyik, bu məsələni dizaynda necə düşünmüsünüz?", "r": "Nə mənada böyük? Konkret de.", "fb": "Fikir düzdür, amma rəqəm soruşmadın.", "q": 1, "k": 0 },
+        { "t": "Fayl üçün ölçü limiti var? Çox kiçik şəkil də qəbul olunur?", "r": "Maksimum 5 MB, minimum 200×200 piksel.", "fb": "İki tərəfli sərhəd: 5 MB və 5 MB + 1 bayt, 200 və 199 piksel test olunacaq.", "q": 2, "k": 0, "f": 1 }
+      ] },
+      "c": { "to": "d", "opts": [
+        { "t": "Şəkil kvadrat olmayanda nə olur? Yenidən yükləyəndə köhnəsi qalır?", "r": "Yükləmədən sonra kvadrat kəsmə pəncərəsi açılır. Yeni şəkil köhnəni əvəz edir, köhnə saxlanmır.", "fb": "Maketdə görünməyən iki qayda üzə çıxdı.", "q": 2, "k": 1, "f": [2, 3] },
+        { "t": "iPhone-dan HEIC faylı seçilsə, nə olur: çevrilir, yoxsa rədd olunur?", "r": "Bilmirəm, proqramçılardan soruşaq.", "fb": "Yaxşı sərhəd sualı, amma açıq qaldı və əsas axına keçmədin: yaz ki, unudulmasın.", "q": 1, "k": 1 },
+        { "t": "İstifadəçi yenidən şəkil yükləyəndə köhnəsi bir yerdə saxlanılır, yoxsa silinir?", "r": "Yeni şəkil köhnəni əvəz edir, köhnə saxlanmır.", "fb": "Yaxşı data sualıdır, amma qeyri-kvadrat şəkil soruşulmadı.", "q": 1, "k": 1, "f": 3 }
+      ] },
+      "d": { "to": "e", "opts": [
+        { "t": "Şəkil silinəndə profildə boş yer qalır, yoxsa nəsə göstərilir?", "r": "Adın baş hərfləri göstərilir.", "fb": "Boş vəziyyəti öyrəndin, amma mobil soruşulmadı.", "q": 1, "k": 2, "f": 5 },
+        { "t": "Veb versiyanı yoxlasam kifayətdir, mobil tətbiq də eyni serverlə işləyir axı.", "r": "Mobil də var axı, orada da istifadə edirlər.", "fb": "Əhatəni soruşmadan daraltdın.", "q": 0, "k": 2 },
+        { "t": "Mobildə axın necədir? Şəkil silinəndə nə görünür?", "r": "Mobildə kamera ilə çəkmək də olur. Silinəndə adın baş hərfləri göstərilir.", "fb": "Mobil ssenari tapıldı: kamera icazəsi rədd olunsa nə olacaq, ayrıca testdir.", "q": 2, "k": 2, "f": [4, 5] }
+      ] },
+      "e": { "to": "end", "opts": [
+        { "t": "Uyğunsuz şəkil yüklənsə, kim yoxlayır? Planda yoxdursa, riski yazaq.", "r": "Yaxşı fikirdir, backlog-a əlavə edək.", "fb": "Riski adlandırdın, qərarı PO-ya verdin və qeydə aldın.", "q": 2, "k": 3 },
+        { "t": "Sənə görə bu funksiyada hansı risklər var? Mən siyahını sonra test planına köçürərəm.", "r": "Sən de, tester sənsən.", "fb": "Riski soruşmaq yox, öz fikrini demək gözlənilir.", "q": 1, "k": 3 },
+        { "t": "Uyğunsuz şəkil yükləyən olsa da, bu, test işi deyil, kim istəyir yükləsin, bizə aid deyil.", "r": "Hə, yəqin ki.", "fb": "Məhsul riskini görməzdən gəlmək tester üçün zəif mövqedir.", "q": 0, "k": 3 }
+      ] }
+    }
+  },
+  "po-forgot": {
+    "crit": ["axının tamlığı", "təhlükəsizlik sualları", "səhv halları", "risklərin prioriteti"],
+    "open": "“Şifrəni unutdum”u yenidən yazırıq. Sadədir: email yazırsan, link gəlir, yeni şifrə qoyursan. Test üçün nəyi bilməlisən?",
+    "facts": ["Link 30 dəqiqə etibarlıdır", "Link yalnız bir dəfə işləyir", "Yeni şifrə əvvəlki ilə eyni ola bilməz", "Olmayan email-də də eyni mesaj göstərilir", "Bir email üçün saatda ən çox 3 sorğu", "Şifrə dəyişəndə bütün sessiyalar bağlanır", "Şifrə qaydaları: 8–20 simvol, ən azı bir rəqəm"],
+    "strong": ["“Link nə qədər etibarlıdır və ikinci dəfə açılanda nə olur?”", "“Olmayan email yazılanda mesaj fərqli olsa, hücumçu hesabları yoxlaya bilər. Mesaj eynidirmi?”", "“Ən böyük risk başqasının hesabını ələ keçirməkdir, ona görə əvvəl link və sessiyanı yoxlayacağam.”"],
+    "ends": {
+      "good": "Lalə: “Təhlükəsizlik tərəfini də düşünməyin yaxşı oldu.” Axın tam yazıldı, ən vacib risklər adlandırıldı.",
+      "mid": "Əsas axın aydındır, amma təhlükəsizlik qaydalarının və ya prioritetin bir hissəsi zəif qaldı.",
+      "bad": "Şifrə funksiyasında soruşulmayan hər qayda hesab oğurluğu riskidir. Bu söhbətdən sonra hələ çox şey bilinmir."
+    },
+    "start": "a",
+    "nodes": {
+      "a": { "to": "b", "opts": [
+        { "t": "Axın sadədirsə, bir test case yazım, üç addımlıq, bizə bəs edər.", "r": "Sən bilən yaxşıdır.", "fb": "“Sadədir” sözü ilə razılaşma. Şifrə axını ən riskli yerlərdəndir.", "q": 0, "k": 1 },
+        { "t": "Link nə qədər etibarlıdır?", "r": "30 dəqiqə.", "fb": "İlk təhlükəsizlik sualı. 29, 30 və 31-ci dəqiqə test olunacaq.", "q": 2, "k": 1, "f": 0 },
+        { "t": "Email gəlməsə, istifadəçi nə edir: linki yenidən istəyə bilirmi?", "r": "Yenidən göndərmək olur.", "fb": "Yaxşı hal, amma linkin özü haqqında heç nə bilmirsən.", "q": 1, "k": 1 }
+      ] },
+      "b": { "to": "c", "opts": [
+        { "t": "Linki ikinci dəfə açmaq olur? Yeni şifrənin qaydaları nədir?", "r": "Yox, link yalnız bir dəfə işləyir. Qaydalar qeydiyyatdakı kimidir: 8–20 simvol, ən azı bir rəqəm.", "fb": "Köhnə email-i tapan adam hesabı ələ keçirə bilməz. Axının qaydaları da yazıldı.", "q": 2, "k": 0, "f": [1, 6] },
+        { "t": "Yeni şifrənin qaydaları nədir: uzunluq, rəqəm, böyük hərf tələb olunurmu?", "r": "Qeydiyyatdakı kimi: 8–20 simvol, ən azı bir rəqəm.", "fb": "Lazımdır, amma linkin təkrar işlənməsi daha böyük riskdir.", "q": 1, "k": 0, "f": 6 },
+        { "t": "Link işləyirsə, işləyir də, onun üçün əlavə bir şey soruşmağa ehtiyac görmürəm.", "r": "Hə, elədir.", "fb": "Heç nə soruşmadın.", "q": 0, "k": 0 }
+      ] },
+      "c": { "to": "d", "opts": [
+        { "t": "İstifadəçi adətən düz yazır, ona görə səhv hallarına çox vaxt ayırmaq lazım olmayacaq.", "r": "Kaş ki elə olaydı.", "fb": "Neqativ hallar testin əsas işidir.", "q": 0, "k": 2 },
+        { "t": "Şifrə uğurla dəyişəndə istifadəçi hansı mesajı görür, sonra hara yönləndirilir?", "r": "“Şifrə dəyişdirildi.” Sonra giriş səhifəsi.", "fb": "Normal hal. Səhv hal soruşulmadı.", "q": 1, "k": 2 },
+        { "t": "Yeni şifrə köhnə ilə eyni ola bilər?", "r": "Yox, əvvəlki ilə eyni ola bilməz.", "fb": "Neqativ hal və mesajı üçün test tapıldı.", "q": 2, "k": 2, "f": 2 }
+      ] },
+      "d": { "to": "e", "opts": [
+        { "t": "Olmayan email yazılanda nə göstərilir? Çox sorğu göndərmək olur?", "r": "Eyni mesaj çıxır: “Email mövcuddursa, link göndərildi.” Təhlükəsizlik üçün. Bir email-ə saatda ən çox 3 sorğu.", "fb": "Hesabın varlığını gizlətmək və sorğu limiti: iki təhlükəsizlik qaydası.", "q": 2, "k": 1, "f": [3, 4] },
+        { "t": "Olmayan email yazılanda “belə hesab yoxdur” çıxmalıdır, istifadəçiyə aydın olsun, elə deyil?", "r": "Yox, eyni mesaj çıxır: “Email mövcuddursa, link göndərildi.” Təhlükəsizlik üçün.", "fb": "Belə mesaj hücumçuya hansı hesabların olduğunu göstərərdi. Soruşmağın yaxşıdır, fərziyyən isə riskli idi.", "q": 1, "k": 1, "f": 3 },
+        { "t": "Olmayan email üçün də bir test yazaram, çıxan mesaja baxıb nəticəni sonra qeyd edərəm.", "r": "Yaxşı.", "fb": "Nəyi gözləyəcəyini bilmirsən: gözlənilən nəticə yoxdursa, test də yoxdur.", "q": 0, "k": 2 }
+      ] },
+      "e": { "to": "f", "opts": [
+        { "t": "Mobil tətbiqdə də eyni axın işləyir, yoxsa orada ayrıca ekran var?", "r": "Eyni axın, eyni server.", "fb": "Əhatə üçün yaxşı, təhlükəsizlik üçün yeni heç nə yoxdur.", "q": 1, "k": 0 },
+        { "t": "Daha sualım yoxdur, qalan hissəni test edəndə özüm görərəm, narahat olma.", "r": "Yaxşı.", "fb": "Sessiya sualı qaldı.", "q": 0, "k": 1 },
+        { "t": "Şifrə dəyişəndə başqa cihazlardakı sessiyalar nə olur?", "r": "Hamısı bağlanır.", "fb": "Hesabı oğurlanan adam üçün əsas müdafiə. Yaxşı sual.", "q": 2, "k": 1, "f": 5 }
+      ] },
+      "f": { "to": "end", "opts": [
+        { "t": "Əvvəl normal axını, yəni email, link və yeni şifrəni yoxlayacağam, qalan hallara isə vaxt qalsa, sonra baxaram.", "r": "Yaxşı.", "fb": "Normal axın lazımdır, amma riskləri adlandırmadın.", "q": 1, "k": 3 },
+        { "t": "Burada hamısı vacibdir, birini o birindən ayıra bilmərəm, ona görə hamısını eyni dərəcədə dərin yoxlayacağam, vaxt çatmasa, sənə deyərəm.", "r": "Vaxt azdır. Onda özün bilərsən.", "fb": "“Hamısı vacibdir” prioritet deyil.", "q": 0, "k": 3 },
+        { "t": "Ən vacib üç risk: başqasının linki, hesabın varlığının bilinməsi, açıq qalan sessiya, çünki üçü də hesabı ələ keçirməyə aparır.", "r": "Razıyam, əvvəl onlara bax.", "fb": "Prioritet səbəblə deyildi. PO nəyin niyə birinci olduğunu bilir.", "q": 2, "k": 3 }
+      ] }
+    }
+  },
+  "dev-works": {
+    "crit": ["faktlar və sübut", "təkrarlama şərtinin dəqiqliyi", "peşəkar ton", "razılaşdırılmış növbəti addım"],
+    "open": "Bax, sənin bu report-u açdım, məndə işləyir. Yəqin nəsə səhv yazmısan. “Cannot reproduce” ilə bağlayıram.",
+    "strong": ["“Bağlamazdan əvvəl bir şeyi dəqiqləşdirək: sən email-i necə yazmısan?”", "“Addımlar və video report-dadır, Network-də 401 görünür, istəyirsən, birlikdə baxaq.”", "“Razılaşdıq: report açıq qalır, düzəlişdən sonra böyük və kiçik hərfli email-lərlə retest edəcəyəm.”"],
+    "ends": {
+      "good": "Elvin: “Hə, kiçik hərflə yoxlamışam. Açıq qalsın, düzəldirəm.” Baq itmədi, münasibət də pozulmadı.",
+      "mid": "Söhbətin bir hissəsi zəif getdi: növbəti dəfə şərti, sübutu və ya növbəti addımı daha dəqiq de.",
+      "bad": "Elvinə baqın real olduğunu göstərə bilmədin. Belə söhbətdən sonra baq asanlıqla bağlanır, istifadəçilər isə giriş edə bilmir."
+    },
+    "start": "a",
+    "nodes": {
+      "a": { "to": "b", "opts": [
+        { "t": "Yaxşı, onda bağla, bəlkə, səhv mənimdir, bir də baxaram, sonra lazım olsa, yenidən açaram.", "r": "Əminsən? Onda bağlayıram.", "fb": "Faktın var, amma geri çəkildin. Baq itmək üzrədir.", "q": 0, "k": 0, "to": "x" },
+        { "t": "Bağlamazdan əvvəl dəqiqləşdirək: sən email-i necə yazmısan?", "r": "Necə yazmışam? Test hesabı: aysel@example.com, kiçik hərflə.", "fb": "Sual etdin, ittiham yox. Fərq də elə burada üzə çıxdı.", "q": 2, "k": 2 },
+        { "t": "Sən heç yoxlamamısan! Məndə hər dəfə çıxır, report-u bağlasan, rəhbərə deyərəm, bu baq qalmalıdır.", "r": "Mənə iş öyrətmə. Sübut göstər.", "fb": "İttiham adamı müdafiəyə keçirir. Haqlı olsan belə, söhbət çətinləşir.", "q": 0, "k": 2, "to": "x" }
+      ] },
+      "x": { "say": "Bax, vaxtım azdır, sprintin son günüdür. Konkret nəyin var?", "to": "b", "opts": [
+        { "t": "Mən işimi görmüşəm, report da yazılıb, qalanı sənlikdir, istəsən bağla, istəsən baxma.", "r": "Onda report bağlıdır.", "fb": "Söhbət dalana dirəndi.", "q": 0, "k": 2, "to": "end", "fail": true, "out": "Elvin report-u bağladı. Baq canlıya gedəcək." },
+        { "t": "Anladım, vaxt azdır. İki dəqiqə: email-i necə yazmısan? Məndə fərq elə ondadır.", "r": "Kiçik hərflə. Nə olub ki?", "fb": "Söhbəti sakit saxladın və sübuta qayıtdın. Yaxşı bərpa.", "q": 2, "k": 2 }
+      ] },
+      "b": { "to": "c", "opts": [
+        { "t": "Email məndə bir az başqa cür yazılıb, mən də testdə elə istifadə edirəm, bəlkə, səbəb budur.", "r": "Necə başqa cür?", "fb": "Doğrudur, amma konkret deyil.", "q": 1, "k": 1, "to": "y" },
+        { "t": "Mən Aysel@Example.com yazıram, böyük hərflə: hər dəfə xəta çıxır. Kiçik hərflə işləyir.", "r": "Hm. Böyük hərflə yoxlamamışam.", "fb": "Dəqiq şərt: data, nəticə və müqayisə. İndi problem aydındır.", "q": 2, "k": 1 },
+        { "t": "Bəzən belə olur, dəqiq bilmirəm niyə, amma mən dəfələrlə görmüşəm, ona görə real baqdır.", "r": "“Bəzən” ilə işləyə bilmərəm.", "fb": "Qeyri-dəqiqlik. Sənin hər dəfə təkrarlanan addımın var.", "q": 0, "k": 1 }
+      ] },
+      "y": { "to": "c", "opts": [
+        { "t": "Dəqiq xatırlamıram, amma report-da hər şey yazılıb, oradan baxarsan.", "r": "Report-da böyük hərf haqqında söz yoxdur.", "fb": "Sualdan qaçdın. Şərti deməyin ən asan yeri bura idi.", "q": 0, "k": 1 },
+        { "t": "Böyük hərflə: Aysel@Example.com. Hər dəfə xəta çıxır, kiçik hərflə işləyir.", "r": "Hm. Böyük hərflə yoxlamamışam.", "fb": "Bu dəfə dəqiq dedin.", "q": 2, "k": 1 }
+      ] },
+      "c": { "say": "Yaxşı, bəlkə, test mühitində nəsə var, sənin brauzerin də ola bilər.", "to": "d", "opts": [
+        { "t": "Brauzer deyil, mən bunu bilirəm, çünki başqa yerlərdə də belə olub, mühitdə problem görmürəm.", "r": "Nədən bilirsən? Sübut?", "fb": "Fikir düzdür, sübut yoxdur.", "q": 1, "k": 0, "to": "z" },
+        { "t": "Yenə başqa bəhanə tapırsan, hər dəfə belə edirsən, baqı qəbul etmək istəmirsən.", "r": "Bəhanə? Bu söhbəti bitirək.", "fb": "Şəxsi ton. Faktın olsa da, söhbəti itirdin.", "q": 0, "k": 2, "to": "end", "fail": true, "out": "Elvin söhbəti kəsdi, report bağlandı. Haqlı olsan da, ton işi pozdu." },
+        { "t": "Chrome və Firefox-da eynidir, build 2.4.1. Video əlavədədir, Network-də login 401 qaytarır.", "r": "Hə, 401 serverdəndir, brauzer deyil.", "fb": "Hər fərziyyəni fakt və sübutla bağladın.", "q": 2, "k": 0 }
+      ] },
+      "z": { "to": "d", "opts": [
+        { "t": "Video və Network cavabı report-dadır: iki brauzerdə login 401 qaytarır.", "r": "Hə, 401 serverdəndir, brauzer deyil.", "fb": "İndi sübut var.", "q": 2, "k": 0 },
+        { "t": "Sübuta ehtiyac yoxdur, mən tester-əm, baq olduğunu görürəm.", "r": "Bu, sübut deyil. Amma yaxşı, böyük hərflə özüm baxaram.", "fb": "Vəzifə sübutu əvəz etmir.", "q": 0, "k": 0 }
+      ] },
+      "d": { "to": "end", "opts": [
+        { "t": "Gördün? Mən deyirdim axı, hər dəfə məni dinləmirsən, indi özün də gördün ki, haqlıyam.", "r": "Yaxşı, yaxşı.", "fb": "Qələbə yox, növbəti addım lazımdır.", "q": 0, "k": 2 },
+        { "t": "Onda düzəldərsən, vaxtın olanda mənə bir yazarsan, mən də baxaram, tələsik bir şey yoxdur.", "r": "Vaxt olanda baxaram.", "fb": "Razılıq zəifdir: statusu və retest şərti yoxdur.", "q": 1, "k": 3 },
+        { "t": "Razılaşaq: report açıq qalır, sən email müqayisəsinə baxırsan, sonra böyük və kiçik hərflə retest edirəm.", "r": "Razıyam. Müqayisədən əvvəl kiçiltmək kifayətdir.", "fb": "Kim, nə, nə vaxt aydındır. Söhbət nəticə ilə bitdi.", "q": 2, "k": 3 }
+      ] }
+    }
+  },
+  "dev-penny": {
+    "crit": ["riskin biznes dilində izahı", "severity və priority əsaslandırması", "texniki səbəbə işarə", "konstruktiv nəticə"],
+    "open": "Bu baqa baxdım: 47,78 yerinə 47,77. Vallah, 1 qəpikdir, heç kim fərq etməz. Minor/Low yazıb başqa işə keçək.",
+    "strong": ["“Bir sifarişdə 1 qəpikdir, amma gündə minlərlə sifarişdə hesabat ödəniş provayderi ilə uyğun gəlməyəcək.”", "“Severity Major görürəm, çünki məbləğ səhvdir. Priority-yə birlikdə PO ilə baxaq.”", "“47,775 kəsilib 47,77 olur, ona görə qəpiklə tam ədəd saxlayıb yuvarlaqlaşdırma qaydasını yazmaq olar.”"],
+    "ends": {
+      "good": "Elvin: “Hesabat tərəfini düşünməmişdim.” Baq düzəlişə düşür, məbləğ qəpiklə saxlanılır, yuvarlaqlaşdırma qaydası da yazılır.",
+      "mid": "Riskin böyüklüyü və ya növbəti addım tam çatdırılmadı: aşağıdakı ifadələrə bax.",
+      "bad": "Elvini inandıra bilmədin. Baq aşağı prioritetdə qalsa, ay sonu maliyyə hesabatı ödəniş sistemi ilə uyğun gəlməyəcək, komanda isə səbəbi uzun müddət axtaracaq."
+    },
+    "start": "a",
+    "nodes": {
+      "a": { "to": "b", "opts": [
+        { "t": "Müştəri qəbzdə məbləği görəndə narazı qala bilər, şikayət yazar, bu da bizə yaxşı təsir etməz.", "r": "1 qəpiyə görə? Ciddi deyil.", "fb": "İstiqamət düzdür, amma zəif səslənir. Həcm və hesabat güclü arqumentdir.", "q": 1, "k": 0 },
+        { "t": "Səhvdir də! Qəpik də puldur, səhv səhvdir, kiçik-böyük fərqi yoxdur, düzəltmək lazımdır.", "r": "Hər səhv eyni dərəcədə vacib deyil. Niyə vacibdir?", "fb": "Düzdür, amma arqument yoxdur. “Səhvdir” demək kifayət etmir.", "q": 0, "k": 0, "to": "x" },
+        { "t": "Bir sifarişdə 1 qəpikdir, amma gündə minlərlə sifarişdə hesabat provayderlə uyğun gəlməyəcək.", "r": "Hm, hesabat tərəfini düşünməmişdim. Bəlkə də.", "fb": "Biznes dilində danışdın: həcm və hesabat.", "q": 2, "k": 0 }
+      ] },
+      "x": { "say": "Bax, sprintdə daha vacib işlər var. Konkret ziyan nədir?", "to": "b", "opts": [
+        { "t": "Provayder 47,78 çəkir, biz 47,77 yazırıq. Hər belə sifarişdə hesab uyğun gəlmir.", "r": "Bu, başqa məsələdir.", "fb": "Faktla bərpa etdin.", "q": 2, "k": 0 },
+        { "t": "Mən tester kimi deyirəm ki, vacibdir, bu da kifayətdir, qərarı mən verirəm.", "r": "Vəzifə arqument deyil.", "fb": "Arqument yoxdur.", "q": 0, "k": 0 }
+      ] },
+      "b": { "say": "Yaxşı, nə qədər ciddi hesab edirsən?", "to": "c", "opts": [
+        { "t": "Severity Major, çünki məbləğ yanlış hesablanır. Priority-ni PO deyəcək.", "r": "Bu məntiqlidir.", "fb": "İkisini ayırdın və hər birini əsaslandırdın.", "q": 2, "k": 1 },
+        { "t": "Minor/Medium yazaq, nə sənin dediyin olsun, nə mənim, ortada razılaşaq, mübahisə etməyək.", "r": "Yaxşı, Minor/Medium.", "fb": "Bazarlıq əvəzinə qaydaya görə qiymətləndirmək lazımdır.", "q": 1, "k": 1 },
+        { "t": "Critical yazaq, pul məsələsidir, pulla bağlı hər şey Critical olmalıdır, başqa cür ola bilməz.", "r": "Sistem işləyir axı, Critical deyil.", "fb": "Şişirtmə etibarı azaldır. Sistem işləyir, sadəcə hesab səhvdir.", "q": 0, "k": 1 }
+      ] },
+      "c": { "say": "Bəs sənə görə niyə belə çıxır?", "to": "d", "opts": [
+        { "t": "Kodun səhvdir, hesablamanı düzgün yazmamısan, diqqətli olsaydın, belə şey olmazdı.", "r": "Bu tonda danışmayaq.", "fb": "Şəxsi ton. Kod haqqında danış, adam haqqında yox.", "q": 0, "k": 2 },
+        { "t": "45,50 × 1,05 = 47,775. Kəsilir, yuvarlaqlaşdırılmır, ona görə 47,77 olur.", "r": "Hə, kəsr ədəd. Yuvarlaqlaşdırma düz getmir.", "fb": "Hesabla səbəbə işarə etdin. Proqramçının işi asanlaşdı.", "q": 2, "k": 2 },
+        { "t": "Səbəbi sən daha yaxşı bilərsən, mən tester-əm, kodu görmürəm, ancaq nəticəni deyə bilərəm.", "r": "Yaxşı, baxaram.", "fb": "Səbəbi bilmək borcun deyil, amma müşahidən kömək edərdi.", "q": 1, "k": 2 }
+      ] },
+      "d": { "to": "end", "opts": [
+        { "t": "Onda PO-ya yazaram, qoy o desin, biz niyə mübahisə edək, onun qərarına hamımız baxarıq.", "r": "Yaz.", "fb": "PO-nu cəlb etmək düzgündür, amma öz təklifin yoxdur.", "q": 1, "k": 3 },
+        { "t": "Bu sprintdə düzəldək, sərhəd məbləğlərini verim, sonra hesabatla tutuşdurub retest edim.", "r": "Olar. Məbləği qəpiklə tam ədəd saxlayaq, yarım qəpiyi yuxarı yuvarlaqlaşdıraq.", "fb": "Həll, test datası və növbəti addım: konstruktiv nəticə.", "q": 2, "k": 3 },
+        { "t": "Düzəltməsən, rəhbərə deyəcəyəm, onda söhbət başqa cür olacaq, özün bilərsən necə edirsən.", "r": "Yaxşı, de.", "fb": "Hədə münasibəti pozur. Rəhbərə çatdırmaq faktla olur, hədə ilə yox.", "q": 0, "k": 3 }
+      ] }
+    }
+  },
+  "dev-call": {
+    "crit": ["şərtlərin dəqiqliyi", "tezlik və sübut", "emulyator ilə real cihaz fərqi", "birgə plan"],
+    "open": "Sənin baqı emulyatorda yoxladım: zəngi simulyasiya etdim, səbət yerindədir. Təkrarlanmır. Cannot reproduce.",
+    "strong": ["“Köhnə real cihazda, 1 dəqiqədən uzun zəngdən sonra, 10 cəhddən 3-də olur. Video əlavədədir.”", "“Emulyatorda yaddaş bol olduğu üçün sistem tətbiqi bağlamır. ‘Don't keep activities’ ilə sınayaq?”", "“Sən loga bax, mən cihazı gətirim: birlikdə bir dəfə təkrarlayaq.”"],
+    "ends": {
+      "good": "Real cihazda birlikdə baxdınız: “Don't keep activities” ilə də çıxdı, səbət yalnız yaddaşda saxlanırmış. Nihad: “Diskə yazacağam.” Kök səbəb tapıldı.",
+      "mid": "Şərtlər, sübut və ya plan tam aydın olmadı. Baq belə qalsa, düzəlişi gecikə bilər.",
+      "bad": "Nihad baqı təkrarlaya bilmədi, sən də şərtləri və sübutu çatdıra bilmədin. Belə baq asanlıqla bağlanır."
+    },
+    "start": "a",
+    "nodes": {
+      "a": { "to": "b", "opts": [
+        { "t": "10 cəhddən 3-də olur, köhnə real cihazda. Video əlavədədir.", "r": "3/10? Maraqlıdır. Hansı cihaz?", "fb": "Tezlik və sübut: söhbət ciddiləşdi.", "q": 2, "k": 1 },
+        { "t": "Məndə çıxır, sənin emulyatorunda yox, düzü, niyə belə olduğunu özüm də başa düşmürəm, nə edək?", "r": "Bilmirəm. Bəlkə, cihazındadır.", "fb": "Doğrudur, amma şərt və sübut vermədin.", "q": 1, "k": 1 },
+        { "t": "Bəzən olur, hər dəfə yox, bir də yoxla, bəlkə, bu dəfə sənin emulyatorunda da çıxacaq.", "r": "“Bəzən” nə deməkdir? Mən 5 dəfə yoxladım.", "fb": "Ümumi söz. Rəqəmin var: işlət.", "q": 0, "k": 1 }
+      ] },
+      "b": { "say": "Hansı şərtlərdə baş verir?", "to": "c", "opts": [
+        { "t": "Fərqi yoxdur, hansı şərtdə olursa olsun, zəngdən sonra səbət boşdur, əsas odur.", "r": "Fərqi var, mən emulyatorda görmürəm.", "fb": "Şərtləri ayırmaq tester-in işidir.", "q": 0, "k": 0 },
+        { "t": "Samsung A10, Android 11. Zəng 1 dəqiqədən uzun olanda. Qısa zəngdə çıxmır.", "r": "Uzun zəng... yəni tətbiq uzun müddət fonda qalır.", "fb": "Model, sistem və müddət: nümunə üzə çıxdı.", "q": 2, "k": 0 },
+        { "t": "Zəng gələndə olur, adi telefonda, xüsusi bir şey etmirəm, sadəcə zəngə cavab verirəm.", "r": "“Adi telefon” mənə heç nə demir, model lazımdır.", "fb": "Şərtlər çox ümumidir.", "q": 1, "k": 0 }
+      ] },
+      "c": { "say": "Bəs niyə emulyatorda çıxmır?", "to": "d", "opts": [
+        { "t": "Emulyator real cihaz deyil axı, onlar eyni işləmir, ona görə emulyatorda çıxmaması heç nəyi göstərmir.", "r": "Bilirəm. Nə dəyişir?", "fb": "Düzdür, amma nə fərq etdiyini demədin.", "q": 1, "k": 2, "to": "cx" },
+        { "t": "Emulyatorda test etmək düzgün deyil, real cihazda yoxlamalısan, belə işləmək olmaz.", "r": "Mənə necə test edəcəyimi deyirsən?", "fb": "Ton dərs keçir, səbəb izah olunmur.", "q": 0, "k": 2, "to": "cx" },
+        { "t": "Emulyatorda yaddaş boldur, köhnə cihazda sistem tətbiqi bağlayır. “Don't keep activities” ilə sınayaq?", "r": "Doğrudan? Bunu sınamamışam, sınayım.", "fb": "Fərqi izah etdin, üstəlik onu təkrarlamaq yolu verdin.", "q": 2, "k": 2 }
+      ] },
+      "cx": { "to": "d", "opts": [
+        { "t": "Nə bilim, real cihaz başqa cür işləyir, mənim işim deyil bunu izah etmək, özün oxuyub öyrənərsən.", "r": "Onda mən də bilmirəm. Cihazı gətir, baxarıq.", "fb": "Səbəb olmadan arqument zəif qalır.", "q": 0, "k": 2 },
+        { "t": "Məsələ yaddaşdır: köhnə cihazda sistem fondakı tətbiqi bağlayır. “Don't keep activities” ilə sınayaq?", "r": "Doğrudan? Bunu sınamamışam, sınayım.", "fb": "İndi fərqin nə olduğunu dedin.", "q": 2, "k": 2 }
+      ] },
+      "d": { "to": "end", "opts": [
+        { "t": "Əgər indi də inanmırsansa, bağla, mən də yorulmuşam, istifadəçi şikayət edəndə görərsən.", "r": "Yaxşı, bağlayıram.", "fb": "Baq itdi. Emosiya işə mane oldu.", "q": 0, "k": 3, "fail": true, "out": "Nihad report-u bağladı. İstifadəçilər ödəniş ekranında zəngdən sonra səbəti itirməyə davam edəcək." },
+        { "t": "Mən report-u yenilədim, bütün məlumat oradadır, qalanı sənlikdir, vaxtın olanda baxarsan.", "r": "Yaxşı, baxaram.", "fb": "Məlumat verildi, plan yoxdur.", "q": 1, "k": 3 },
+        { "t": "Cihazı gətirirəm, birlikdə logcat ilə təkrarlayaq, sonra uzun zənglə retest edirəm.", "r": "Əla, gətir, birlikdə baxaq.", "fb": "Birgə plan: kim, nə, necə retest.", "q": 2, "k": 3 }
+      ] }
+    }
+  },
+  "lead-release": {
+    "crit": ["risklərin qısa və aydın izahı", "variantlar təklif etmək", "prioritetləşdirmə", "qərarın sənədləşdirilməsi"],
+    "open": "Sabah reliz var, marketinq kampaniyası başlayır. 3 Major açıqdır, bilirəm. Major-dur, Critical deyil. Buraxırıq, elə deyil?",
+    "strong": ["“Filtr Safari-də işləmir: payı X% olan istifadəçilər kataloqda axtara bilmir. Qalan ikisinin workaround-u var.”", "“Üç variant: filtr üçün hotfix planı, qəbzi email ilə göndərmək, release notes-da email gecikməsi.”", "“Qərarı və riski Jira-da yazaq: kim qəbul etdi, nə vaxt hotfix.”"],
+    "ends": {
+      "good": "Rəşad: “Razıyam: reliz gedir, filtr üçün hotfix, qalan ikisi workaround və release notes-la. Jira-ya yaz.” Qərar faktla verildi, risk də yazılı qaldı.",
+      "mid": "Riskləri dedin, amma variantlar və ya yazılı qeyd tam alınmadı: problem çıxsa, kimin nəyi qəbul etdiyi aydın olmayacaq.",
+      "bad": "Rəşad: “Tester həmişə qorxur.” Reliz plansız gedir. Safari istifadəçiləri şikayət edəndə isə hamı səndən soruşacaq."
+    },
+    "start": "a",
+    "nodes": {
+      "a": { "to": "b", "opts": [
+        { "t": "Major-lar da ciddidir, gərək bir də oturub baxaq, bəlkə, biri Critical olar, mən narahatam.", "r": "Baxdım. Nə dəyişir?", "fb": "Ümumi söz. Rəhbərə təsir lazımdır.", "q": 1, "k": 0 },
+        { "t": "Üçünün təsiri fərqlidir: Safari-də filtr işləmir, PDF qəbz bəzən boşdur, email 10 dəqiqə gecikir.", "r": "Yaxşı, bu daha aydındır.", "fb": "Qısa və ayrıca: hər baqın təsiri deyildi, rəhbər qərar verə bilər.", "q": 2, "k": 0 },
+        { "t": "Mən relizə qarşıyam. Baq varsa, reliz olmaz, saxlayaq, sonra kampaniyanı yenidən planlaşdırarsınız.", "r": "Hər relizdə baq var. Biznes gözləyir. Niyə saxlayaq?", "fb": "Qərar sənin tək qərarın deyil, arqument də vermədin.", "q": 0, "k": 0, "to": "x" }
+      ] },
+      "x": { "say": "Kampaniyanın pulu verilib. Konkret nə itiririk?", "to": "b", "opts": [
+        { "t": "Mən demişəm, məsuliyyət sənindir, sonra problem çıxsa, mənim adım qarışmasın, qərar tamamilə səninkidir.", "r": "Bu, kömək deyil.", "fb": "Məsuliyyəti atmaq komanda işi deyil.", "q": 0, "k": 1 },
+        { "t": "Saxlamaq yeganə yol deyil. Əsas risk Safari filtridir: payına baxaq, qalan ikisinin workaround-u var.", "r": "Yaxşı. Davam et.", "fb": "“Yox”dan “variant”a keçdin. Yaxşı bərpa.", "q": 2, "k": 1 }
+      ] },
+      "b": { "say": "Üçündən ən pisi hansıdır?", "to": "c", "opts": [
+        { "t": "Mənə görə PDF ən pisidir, bu baq xoşuma gəlmir, çünki qəbz boş görünəndə çox pis təsir bağışlayır.", "r": "Xoşa gəlmək arqument deyil.", "fb": "Sıra var, səbəb yoxdur.", "q": 1, "k": 2 },
+        { "t": "Üçü də eyni dərəcədə pisdir, birini seçmək olmaz, hər biri istifadəçini narahat edəcək.", "r": "Onda heç biri vacib deyil, buraxırıq.", "fb": "Prioritetsiz siyahı qərara kömək etmir.", "q": 0, "k": 2 },
+        { "t": "Birinci Safari filtri: pay yüksəkdirsə, satış itkisidir. Sonra PDF qəbz, sonra email gecikməsi.", "r": "Məntiqlidir. Safari payına baxım.", "fb": "Sıranı səbəbi ilə qurdun.", "q": 2, "k": 2 }
+      ] },
+      "c": { "say": "Yaxşı, nə təklif edirsən?", "to": "d", "opts": [
+        { "t": "Reliz getsin: filtrə 24 saatda hotfix, PDF-i email ilə göndərək, gecikməni release notes-a yazaq.", "r": "Bunu edə bilərik. Hotfix-i komanda ilə danışım.", "fb": "Hər baqa ayrı real variant. Rəhbərin dili budur.", "q": 2, "k": 1 },
+        { "t": "Safari-ni kampaniyadan çıxaraq, Safari istifadəçilərinə reklam getməsin, onda problem xeyli azalar.", "r": "Mümkün deyil, kampaniya hamıya gedir.", "fb": "Variant təklif etdin, amma real deyil, qalan ikisi də kənarda qaldı.", "q": 1, "k": 1, "cap": true },
+        { "t": "Bilmirəm, sən qərar ver, mən öz işimi gördüm, baqları yazdım, qalanı rəhbərlərin işidir.", "r": "Onda buraxırıq.", "fb": "Qərar onundur, amma variant vermək sənin işindir.", "q": 0, "k": 1, "cap": true }
+      ] },
+      "d": { "to": "end", "opts": [
+        { "t": "Yaxşı, amma sonra problem çıxsa, məni günahlandırma, mən əvvəlcədən demişdim, yadında saxla.", "r": "Bu nə tondur?", "fb": "Özünü qorumaq üçün yazılı qeyd lazımdır, hədə yox.", "q": 0, "k": 3 },
+        { "t": "Qərarı Jira-da və release notes-da yazaq: hansı risk qəbul olundu, kim qəbul etdi, nə vaxt düzəlir.", "r": "Razıyam. Yaz, adımı da qoy.", "fb": "Qərar sənədləşdi: sonra heç kim “bilmirdik” deməyəcək.", "q": 2, "k": 3 },
+        { "t": "Yaxşı, onda belə qaldı, hamımız eşitdik, sabah da kimsə soruşsa, deyərik ki, birlikdə belə qərar verdik.", "r": "Yaxşı.", "fb": "Yazılı qeyd yoxdur. Sabah hər kəs fərqli xatırlayacaq.", "q": 1, "k": 3 }
+      ] }
+    }
+  }
+}
