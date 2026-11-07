@@ -1,0 +1,120 @@
+{
+  "c4s1m": {
+    "h": "Əvvəl əsas vaxtı dəqiqə ilə tap, saata çevir. Sonra 30% əlavə et, ən axırda mühit saatını. İş gününü 8 saat say.",
+    "a": "**Fərziyyələr:** bir tester işləyir, iş günü 8 saatdır, test case-lər arasında əlavə gözləmə yoxdur.\n\n1. İcra: 45 × 12 = 540 dəqiqə = **9 saat**.\n2. Retest üçün 30% ehtiyat: 9 × 0,3 = **2,7 saat**.\n3. Mühit: **4 saat**.\n4. Cəmi: 9 + 2,7 + 4 = **15,7 saat**.\n5. İş günü ilə: 15,7 / 8 ≈ **2 iş günü**.\n\nDiqqət: 30% yalnız icra vaxtına gəlir, mühitə yox. Tester tək deyilsə, müddət azalır, amma ümumi əmək eyni qalır. Bu rəqəmi “ən azı” kimi demək yaxşıdır: bug report yazmaq və mühit problemləri əlavə vaxt apara bilər.",
+    "c": [
+      "İcra vaxtı 9 saat, retest ehtiyatı 2,7 saatdır",
+      "Ümumi vaxt 15,7 saat, təxminən 2 iş günüdür",
+      "Fərziyyələr yazılıb: tester sayı, iş gününün uzunluğu"
+    ]
+  },
+  "c4s2m": {
+    "h": "“Ölçülə bilən” o deməkdir ki, rəqəm və ya bəli/xeyr ilə yoxlanılır. Giriş: başlamaq üçün nə hazır olmalıdır? Çıxış: bitirmək üçün nə?",
+    "a": "**Giriş meyarları:**\n1. Build test mühitində açılır və smoke testlərin 100%-i keçir.\n2. Test case-lərin 100%-i hazır və review olunub.\n3. Test hesabları və datası hazırdır, Critical blokerlər yoxdur.\n\n**Çıxış meyarları:**\n1. Planlanan test case-lərin ən azı 95%-i icra olunub.\n2. Açıq Blocker və Critical defekt yoxdur.\n3. Pass rate ən azı 90%-dir.\n\n**Ödənməyən vəziyyət:** İcra 96%, pass rate 93%, amma ödəniş səhifəsində bir açıq Critical defekt var. **Tövsiyə:** “Çıxış meyarı ödənmir: bir Critical açıqdır, ödənişi bloklaya bilər. Tövsiyəm: defekt düzələnə qədər relizi saxlamaq, sonra retest. Müvəqqəti həll varsa və riski qəbul edirsinizsə, qərarı PO versin.” Tester faktı və tövsiyəni verir, qərarı isə məsul şəxs.",
+    "c": [
+      "Üç giriş və üç çıxış meyarı var, hamısı rəqəm və ya bəli/xeyr ilə yoxlanılır",
+      "Ödənməyən meyar konkret vəziyyətlə göstərilib",
+      "Tövsiyədə fakt və risk var, qərarın kimdə olduğu aydındır"
+    ]
+  },
+  "c4s3m": {
+    "h": "Soruş: yoxlanan funksiyanın özündə problem var (Failed), yoxsa başqa nəsə testə mane olur (Blocked)? Bəzən nəticə hələ yoxdur.",
+    "a": "**(a) iOS 17: Failed (açılma testi); Android testləri: Not Run.** Android-də hələ icra başlamayıb. Qeyd: iOS versiyası, cihaz, bug report linki. Android testlərinin səbəbi: “gözləyir”. iOS-un digər testləri isə tətbiq açılmadığı üçün Blocked olur və eyni baqa bağlanır.\n\n**(b) Failed.** Yoxlanan funksiyanın özündə defekt var. Qeyd: gözlənilən və faktiki mesaj, dil ayarı, bug report linki.\n\n**(c) Blocked.** Testə başqa problem mane olur, funksiya haqqında heç nə bilmirik. Qeyd: səbəb (“test serveri söndürülüb”), vaxt, kimə xəbər verildiyi və ya ticket nömrəsi. Passed və Failed yazmıram.\n\n**(d) Failed, “flaky” qeydi ilə.** Nəticə qeyri-sabitdir, “Passed” demək olmaz. Qeyd: 5 cəhddən 2-də düşür, şərait, log. Səbəb tapılana qədər araşdırılır: kod, mühit, yoxsa testin özü.",
+    "c": [
+      "(c) Blocked, (b) Failed kimi qiymətləndirilib",
+      "Hər halın yanında qeyd olunacaq məlumat var",
+      "(d) Passed sayılmayıb, qeyri-sabitlik qeyd olunub"
+    ]
+  },
+  "c4s4m": {
+    "h": "Üç düstur: icra faizi = icra olunan / planlanan; pass rate = keçən / icra olunan; leakage = canlıdakı / bütün defektlər.",
+    "a": "**Metriklər:**\n- **İcra faizi:** 76 / 80 × 100 = **95%**.\n- **Pass rate:** 70 / 76 × 100 ≈ **92,1%**.\n- **Defect leakage:** 2 / (18 + 2) × 100 = **10%**.\n\n**Rəhbərə izah:** Planlanan 80 testin 95%-i icra olunub, 4 test isə icra edilməyib. İcra olunanların 92%-i keçib, 6 test düşüb. 20 defektin 18-i testdə tutulub, 2-si (10%) canlıya keçib, ona görə növbəti relizdə bu iki defektin niyə buraxıldığını araşdırıb testlərə əlavə edəcəyik.\n\nDiqqət: pass rate-də məxrəc planlanan yox, icra olunan testlərdir. Rəqəmin özü qərar deyil, yanında izah lazımdır.",
+    "c": [
+      "İcra faizi 95%, pass rate təxminən 92%-dir",
+      "Defect leakage 10% kimi hesablanıb",
+      "İzah 3 cümlədir və rəqəmləri nəticə ilə bağlayır"
+    ]
+  },
+  "c4s5m": {
+    "h": "Altı mərhələni bu story-yə tətbiq et: analiz, plan, dizayn, mühit, icra, bağlanış. Hər birinin bir sprint içində qısa olduğunu unutma.",
+    "a": "Nümunə işlər:\n\n1. **Analiz:** refinement-də soruşuram: hansı format və maksimum ölçü? Şəkli silmək olurmu? Başqa istifadəçilər yeni şəkli nə vaxt görür?\n2. **Plan:** sprint planning-də test işini qiymətləndirirəm, nə əhatə olunacağını deyirəm: 3 brauzer, mobil, API; performans bu sprintdə yoxdur.\n3. **Dizayn:** qəbul meyarlarından checklist yazıram: 5 MB-a qədər JPG, PNG; 6 MB; PDF; 0 baytlıq fayl; kəsilən yükləmə.\n4. **Mühit:** build-i test mühitində yoxlayıram, müxtəlif ölçüdə test şəkillərini hazırlayıram.\n5. **İcra:** checklist-i keçirəm, baq yazıram, düzəlişdən sonra retest və profil səhifəsində qısa regression edirəm.\n6. **Bağlanış:** nəticəni story-yə yazıram, DoD-u yoxlayıram, sınanan datanı saxlayıram və lazım gələrsə, avtomatik test əlavə edirəm.",
+    "c": [
+      "Altı mərhələnin hər birində profil şəkli üçün konkret iş var",
+      "İşlər sprint ölçüsündədir, ağır sənəd deyil",
+      "Bağlanış mərhələsində nəticə qeyd olunur və DoD yoxlanılır"
+    ]
+  },
+  "c4x1m": {
+    "h": "Sual budur: bu nəticə hansı versiyaya aiddir? Düşün: nəticə ilə birlikdə nə yazılmalıdır və testləri kod kimi necə saxlamaq olar?",
+    "a": "Nümunə qaydalar:\n\n1. **Hər test nəticəsi build nömrəsi və mühitlə qeyd olunur.** Test hesabatında və bug report-da: “build 1.4.2 (commit a1b2c3), staging, 12.11”. Beləcə “testlər keçdi” dəqiq nəyə aid olduğu görünür.\n2. **Canlıya yalnız test olunmuş build çıxır.** Reliz qeydi test hesabatındakı build nömrəsinə istinad edir. Yeni build gəlirsə, heç olmasa smoke test və riskə görə regression təkrarlanır.\n3. **Testware versiyalanır.** Test case-lər və avtomatik testlər Git-də saxlanılır, relizə tag qoyulur. Canlıdakı baq üçün həmin versiyanın testlərinə baxmaq olur.\n\nNəticədə baq tapılanda ilk sual cavablanır: bu versiyanı biz test etmişdik, yoxsa etməmişdik?",
+    "c": [
+      "Test nəticəsinin build və mühitlə qeyd olunması var",
+      "Test olunan build ilə canlıya çıxan build-in eyniliyi nəzərə alınıb",
+      "Test sənədləri və ya kodun versiyalanması göstərilib"
+    ]
+  },
+  "c4t1": {
+    "h": "Altı mərhələ: analiz, plan, dizayn, mühit, icra, bağlanış. İstək siyahısı üçün soruş: siyahı kimə aiddir, kitab bitəndə nə olur?",
+    "a": "Nümunə işlər:\n\n1. **Tələblərin analizi:** soruşuram: giriş etməmiş istifadəçi siyahıya əlavə edə bilərmi? Maksimum kitab sayı var? Kitab satışdan çıxanda nə olur? Telefon və kompüterdə eyni siyahı görünürmü?\n2. **Test planı:** əhatə: veb və mobil brauzer, əlavə, silmə, səbətə keçirmə; ödəniş əhatə xaricindədir; müddət: 3 gün; çıxış meyarı: açıq Critical yoxdur.\n3. **Test dizaynı:** test case-lər: əlavə et, eyni kitabı ikinci dəfə əlavə et, sil, boş siyahı, limit üçün BVA, siyahıdan səbətə.\n4. **Mühit:** test mühitində giriş edən və etməyən hesablar, stokda olan, bitmiş və endirimdə olan kitablar hazırlanır, smoke test edilir.\n5. **İcra:** test case-lər keçirilir, statuslar yazılır, baqlar bug report ilə açılır, düzəlişlər retest olunur, regression aparılır.\n6. **Bağlanış:** yekun hesabat yazılır (icra faizi, pass rate, açıq defektlər, tövsiyə), testware saxlanılır, retrospektivdə dərslər müzakirə olunur.",
+    "c": [
+      "Altı mərhələ düzgün sıradadır və hər birində bir iş var",
+      "İşlər istək siyahısına aiddir, ümumi cümlə deyil",
+      "İcra və bağlanış işləri (status, bug report, hesabat) fərqləndirilib"
+    ]
+  },
+  "c4t2": {
+    "h": "Rəqəm və ya bəli/xeyr ilə yoxlanmayan cümləni at. “Yaxşı test olunub” yoxlanılmır, “ən azı 95%-i icra olunub” yoxlanılır.",
+    "a": "Nümunə çıxış meyarları:\n\n1. **İcra:** planlanan test case-lərin ən azı 95%-i icra olunub, Critical prioritetli olanların isə 100%-i.\n2. **Keçmə:** icra olunan testlərin ən azı 90%-i keçib.\n3. **Defektlər:** açıq Blocker və Critical defekt yoxdur; Major defektlər 3-dən çox deyil və hər birinin müvəqqəti həlli var.\n\nHər biri yoxlanılır: rəqəmə baxıb “bəli” və ya “xeyr” demək olur. “Bütün baqlar düzəlib” meyarı isə real deyil, çünki heç vaxt bitməyə bilər. Rəqəmlər layihənin riskinə görə dəyişir: bank üçün daha sərt ola bilər. Meyarlar test başlamazdan əvvəl planda razılaşdırılır, sonda yox.",
+    "c": [
+      "Üç meyar var və hər biri rəqəm və ya bəli/xeyr ilə yoxlanılır",
+      "İcra və ya pass rate faizi var",
+      "Açıq defektlər barədə meyar var, “bütün baqlar düzəlib” yazılmayıb"
+    ]
+  },
+  "c4t3": {
+    "h": "Bir ekran seç. Soruş: test işləyib səhv nəticə verdi, yoxsa funksiyaya heç çata bilmədin? Birincisi Failed, ikincisi Blocked.",
+    "a": "Mümkün misallardan biridir.\n\n**Vəziyyət:** “Səbətdən məhsul silmək” testi.\n\n- **Failed:** səbətə daxil oldum, “Remove” basdım, məhsul silinmədi. Test icra olundu, yoxlanan funksiyanın özündə defekt tapıldı. Yanına bug report linki qoyuram.\n- **Blocked:** login işləmir, ona görə səbətə çata bilmirəm. “Silmə” barədə heç nə bilmirəm: işləyir də, işləmir də ola bilər. Test Blocked-dur, yanında mane olan baq (login defekti) göstərilir. Login düzələndə test icra olunur.\n\n**Fərq:** Failed bir nəticədir: funksiya işləmir. Blocked isə nəticənin olmamasıdır: mane olan problem var. Fərq vacibdir, çünki 40 Blocked testi Failed yazsan, hesabat 40 defekt olduğunu göstərər, əslində isə defekt birdir.",
+    "c": [
+      "Failed yoxlanan funksiyanın özündə defekt kimi izah olunub",
+      "Blocked testə mane olan başqa problem kimi izah olunub, nəticə bilinmir",
+      "Fərq eyni və ya öz misalınla göstərilib"
+    ]
+  },
+  "c4t4": {
+    "h": "Pass rate-də məxrəc planlanan yox, icra olunan testlərdir. İki bölməni ayrı apar.",
+    "a": "**İcra faizi:** icra olunan / planlaşdırılan × 100 = 72 / 80 × 100 = **90%**.\n\n**Pass rate:** keçən / icra olunan × 100 = 63 / 72 × 100 = **87,5%**.\n\n**Oxunuşu:** 8 test hələ icra olunmayıb, 9 test (72 − 63) düşüb və ya başqa status alıb. Tipik səhv pass rate-i 63 / 80 kimi hesablamaqdır: bu, 78,75% verir və icra olunmamış testləri də “keçməyən” kimi göstərir. Hesabatda iki rəqəmi birlikdə yazıram, tək pass rate yanıldıcı ola bilər: 10 testdən 10-u keçib, amma 70 test icra olunmayıbsa, pass rate 100%-dir.",
+    "c": [
+      "İcra faizi 90%-dir",
+      "Pass rate 87,5%-dir",
+      "Pass rate-də məxrəc 72-dir, 80 yox"
+    ]
+  },
+  "c4q1": {
+    "a": "1. Tələblərin analizi.\n2. Test planı.\n3. Test dizaynı.\n4. Test mühitinin hazırlanması.\n5. Test icrası.\n6. Testin bağlanışı.\n\nHər mərhələnin nəticəsi növbətinin girişidir.",
+    "c": [
+      "Altı mərhələ sadalanıb",
+      "Sıra düzgündür: analiz, plan, dizayn, mühit, icra, bağlanış"
+    ]
+  },
+  "c4q2": {
+    "a": "**Giriş meyarı** “başlaya bilərikmi?” sualının cavabıdır: işə başlamaq üçün şərtlər. Misal: build test mühitində açılır, smoke testlər keçir. **Çıxış meyarı** “bitirə bilərikmi?” sualıdır: işi bitirmək üçün şərtlər. Misal: testlərin 95%-i icra olunub, açıq Critical defekt yoxdur.",
+    "c": [
+      "Giriş başlamaq, çıxış bitirmək şərti kimi izah olunub",
+      "Hər birinə ölçülə bilən bir misal verilib"
+    ]
+  },
+  "c4q3": {
+    "a": "Build və ya mühit qırıqdırsa, bütün testlər boş yerə düşür və saatlar itir. Smoke test bir neçə dəqiqəyə göstərir ki, sistem işləyir, əsas yollar açılır. Ona görə smoke keçmədən icraya başlanmır, build geri qaytarılır.",
+    "c": [
+      "Qırıq mühitdə vaxtın boşa getməsi deyilib",
+      "Smoke test-in əsas yolları tez yoxladığı izah olunub"
+    ]
+  },
+  "c4q4": {
+    "a": "Altı mərhələ qalır, amma hər story üçün qısa və kiçik dövrdə, sprint içində gedir. Test planı ağır sənəd yox, sprint səviyyəsində qısa razılaşmadır. Mərhələlər bir-birinin üstünə düşür, tester başdan komanda ilə işləyir və regression-un avtomatlaşdırılması xüsusilə vacib olur.",
+    "c": [
+      "Hər story-nin öz mini-STLC-si olduğu deyilib",
+      "Planın yüngülləşdiyi və ya regression-un avtomatlaşdırılması qeyd olunub"
+    ]
+  }
+}

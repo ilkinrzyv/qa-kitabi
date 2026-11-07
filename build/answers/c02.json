@@ -1,0 +1,136 @@
+{
+  "c2s1m": {
+    "h": "“Crash qeydə alınmadı” ilə “crash yoxdur” eyni cümlə deyil. Beta testin nəyi əhatə etmədiyini düşün.",
+    "a": "**Marketinqə cavab:** “‘Tam sabitdir’ yaza bilmərik. Test defektlərin varlığını göstərir, yoxluğunu sübut etmir. Düzgün cümlə belədir: ‘2 həftəlik beta testdə crash qeydə alınmadı.’”\n\n**Risk olaraq qalan sahələr:**\n- Testdə olmayan köhnə və zəif telefonlar, başqa əməliyyat sistemi versiyaları.\n- Minlərlə oyunçunun eyni anda qoşulması.\n- Zəif internet, kəsilən bağlantı, zəng gələndə oyunun fona keçməsi.\n- Uzun sessiyalar, yaddaş sızması.\n- Ödəniş və sonrakı yeniləmələr.\n\nBeta risk azaldıb, amma sıfıra endirməyib.",
+    "c": [
+      "“Tam sabitdir” iddiası rədd edilib və daha dəqiq cümlə təklif olunub",
+      "Testin defektin yoxluğunu sübut etmədiyi deyilib",
+      "Ən azı iki qalan risk sahəsi yazılıb"
+    ]
+  },
+  "c2s2m": {
+    "h": "Sayı tapmaq üçün variantları vur: 30 × 365 × 9 × 2. Sonra soruş: burada ən çox istifadə olunan və ən bahalı səhv hansıdır?",
+    "a": "**Kombinasiya sayı:** 30 × 365 × 9 × 2 = **197 100**. Bir testə 1 dəqiqə versək, fasiləsiz 136 günə yaxın vaxt lazımdır. Hamısını yoxlamaq olmaz.\n\n**Ən vacib 5 test (bir variant):**\n1. Ən populyar şəhər, yaxın tarix, 1 sərnişin, ekonom: əsas yol, istifadəçilərin çoxu buradan keçir.\n2. Bugünkü tarix və 365-ci gün: tarixin sərhədləri, səhv çox olur.\n3. 1 və 9 sərnişin: sərhəd dəyərləri, 9 nəfərdə qiymət hesabı riskli olur.\n4. Biznes sinfi, bir neçə sərnişin: gəliri ən yüksək olan yol.\n5. Bilet olmayan axtarış: boş nəticə mesajı düzgün görünürmü?\n\nSeçimi istifadə tezliyi və səhvin qiyməti müəyyən edir.",
+    "c": [
+      "Sayı 197 100 kimi hesablanıb",
+      "Beş test seçilib və hər birinin səbəbi yazılıb",
+      "Seçim riskə, tezliyə və ya sərhədlərə əsaslanır"
+    ]
+  },
+  "c2s3m": {
+    "h": "Tələbdəki hər sözü sına: “1 saat” nədən sayılır? “ləğv” nəyi əhatə edir? “sifariş” hər vəziyyətdə eynidirmi? Pul nə olur?",
+    "a": "Nümunə suallar:\n\n1. **1 saat nədən hesablanır: sifarişin yaradılmasından, yoxsa ödənişdən?** Qarşısını aldığı defekt: müxtəlif başlanğıc vaxtı ilə ləğvin yanlış icazə verilməsi və ya rədd olunması.\n2. **Düz 60-cı dəqiqədə ləğv etmək olurmu? Saat kimin saatıdır?** Sərhəd defekti (`<` və `<=`) və vaxt qurşağı səhvi.\n3. **Sifariş artıq göndərilibsə, yenə ləğv olunurmu?** Göndərilmiş malın pulunun qaytarılması, anbar qarışıqlığı.\n4. **Pul necə və nə vaxt qaytarılır? Bildiriş gedirmi?** Ləğv olunub, amma pulun qaytarılmaması və müştəri şikayəti.\n\nBu sualların hər biri kodla yox, bir cümlə ilə həll olunur. Prinsip 3-ün mənası budur.",
+    "c": [
+      "Dörd sual yazılıb, hamısı bu tələbə aiddir",
+      "Hər sualın yanında qarşısını aldığı defekt var",
+      "1 saatın başlanğıcı və ya sərhədi soruşulub"
+    ]
+  },
+  "c2s4m": {
+    "h": "Baqların ümumi sayını tap və payları hesabla. Sonra heç nəyi 0-a endirmədən vaxtın kiçik hissəsini “sakit” modullara saxla.",
+    "a": "Cəmi 36 baq var: Köçürmələr 50%, Kartlar 33%, Kommunal 8%, Bildirişlər 6%, Ayarlar 3%.\n\n**Vaxt bölgüsü (bir variant):**\n\n| Modul | Baq payı | Test vaxtı |\n|---|---|---|\n| Köçürmələr | 50% | 45% |\n| Kartlar | 33% | 30% |\n| Kommunal ödənişlər | 8% | 10% |\n| Bildirişlər | 6% | 5% |\n| Ayarlar | 3% | 5% |\n| Exploratory (hamısı) | | 5% |\n\n**Kor nöqtə riskini necə azaldıram:** az baq “az yoxlanılıb” mənasını da verə bilər. Ona görə sakit modullara az da olsa vaxt qoyuram, onlarda exploratory test edirəm və statistikanı hər relizdə yeniləyirəm. Kommunal ödənişdə baq az olsa da, pulla bağlıdır, riski yüksəkdir, ona görə payından çox vaxt alır.",
+    "c": [
+      "Vaxtın çoxu Köçürmələr və Kartlara verilib",
+      "Heç bir modula 0% verilməyib",
+      "Az baqın az yoxlanmaq demək ola biləcəyi nəzərə alınıb, exploratory test və ya yenilənən statistika var"
+    ]
+  },
+  "c2s5m": {
+    "h": "Köhnə testlər hansı dəyəri heç vaxt sınamayıb? Yeni data, yeni ssenari, başqa texnika və bir exploratory məqsəd axtar.",
+    "a": "Nümunə dəyişikliklər:\n\n1. **Yeni data:** səhv yazılmış söz (“ayaqqabi”), kiril hərfləri, 200 simvolluq mətn, emoji, yalnız boşluq.\n2. **Yeni ssenari:** axtarış nəticəsində filtr və sıralama seçib geri qayıtmaq: filtrlər qalırmı?\n3. **Yeni texnika:** axtarış sətrinin uzunluğu üçün BVA və kateqoriya, qiymət, stok filtrlərinin birləşməsi üçün pairwise.\n4. **Exploratory charter:** “Yeni əlavə olunan məhsulları axtarışla tapmağı 30 dəqiqə araşdır, indeksləmə gecikməsi var?”\n5. **Mühit və yük:** mobil brauzer, zəif internet, sürətlə yazılan sorğu: köhnə cavab yenisinin üstünə yazılırmı?\n\nKöhnə 8 testi atmıram, onlar regression üçün qalır, sadəcə yeniləri əlavə olunur.",
+    "c": [
+      "Beş dəyişiklik var, hər biri axtarışa aiddir",
+      "Yeni data, yeni ssenari, yeni texnika və exploratory charter ayrıca göstərilib",
+      "Köhnə testlərin regression üçün qalmasının mümkünlüyü pozulmayıb"
+    ]
+  },
+  "c2s6m": {
+    "h": "Hər məhsul üçün soruş: burada səhvin qiyməti nədir, kim istifadə edir, hansı qanun var, texnologiya nəyi çətinləşdirir?",
+    "a": "**Universitet imtahan portalı:**\n1. **Nəticənin dəqiqliyi:** səhv qiymət tələbənin taleyinə təsir edir (domen).\n2. **Giriş hüquqları və məxfilik:** tələbə başqasının nəticəsini görməməlidir, şəxsi məlumatlar qanunla qorunur (qanun).\n3. **Nəticə günü yük:** minlərlə tələbə eyni anda girir (istifadəçi).\n\n**Musiqi tətbiqi:**\n1. **Fasiləsiz səslənmə:** zəif internetdə, fonda, qulaqlıqla (texnologiya).\n2. **Axtarış və tövsiyə:** istifadəçi musiqini tez tapmaq istəyir (istifadəçi).\n3. **Abunəlik və müəllif hüququ:** ödəniş və ölkəyə görə mahnı məhdudiyyəti (qanun, domen).\n\nFərq kontekstdəndir: portalda səhv məlumatın qiyməti yüksəkdir, musiqidə isə təcrübənin axıcılığı.",
+    "c": [
+      "Hər məhsul üçün 3 sahə yazılıb",
+      "Hər sahə kontekst elementi ilə əsaslandırılıb",
+      "İki məhsulun prioritetləri fərqlidir"
+    ]
+  },
+  "c2s7m": {
+    "h": "Əvvəl faktı dəqiqləşdir: istifadəçilər funksiyanı tapırmı? Sonra soruş: açanlar yarıda atırmı? Bunlara kimlə və nə ilə baxmaq olar?",
+    "a": "Bu, səhv axtarışı deyil, “düzgün məhsul edilibmi?” sualıdır (validation).\n\n**4 addımlıq plan:**\n1. **Məlumata bax:** analitikada neçə nəfər ekrana çatır, neçəsi planı başa çatdırır, harada çıxır?\n2. **Tapılmağı yoxla:** funksiya menyuda haradadır? Yeni istifadəçi kimi 5 dəqiqəyə onu tapa bilirəmmi?\n3. **İstifadəçilərlə danış:** 5–10 nəfərdən soruş: bu funksiya lazımdırmı, nə çatışmır, yoxsa onlara hazır plan daha rahatdır? Dəstəyə gələn rəylərə bax.\n4. **Komandaya hesabat ver:** tapıntıları məhsul sahibinə təqdim et, kiçik dəyişikliyi (məsələn, görünən düymə) təklif et və nəticəni yenidən ölç.\n\nQərarı məhsul sahibi verir, tester faktları gətirir.",
+    "c": [
+      "Dörd addım var, hamısı istifadə səbəbini araşdırır, kod səhvini yox",
+      "İstifadə məlumatı və istifadəçi rəyi plana daxildir",
+      "Nəticə məhsul sahibinə və ya komandaya çatdırılır"
+    ]
+  },
+  "c2t1": {
+    "h": "Hər sahənin variant sayını düşün. Yaş 120, şəhər 20 variantdır. Ad sahəsində isə hər simvol üçün neçə hərf ola bilər?",
+    "a": "**Yaş × şəhər:** 120 × 20 = **2 400** kombinasiya. Bir testə 1 dəqiqə ayırsaq, bu, 40 saatdır, yəni bir tester-in tam iş həftəsi. Üstəlik bu, yalnız iki sahədir.\n\n**Ad sahəsi işi tamamilə qeyri-mümkün edir:** 1–50 hərf aralığında neçə uzunluq, hər yerdə neçə hərf: variantların sayı praktik olaraq sonsuzdur. Üçünü birləşdirəndə rəqəm hesablanmağa dəyməz.\n\nBuna görə Prinsip 2 deyir: tam test mümkün deyil. Çıxış yolu ekvivalent siniflər və sərhəd dəyərləridir: yaş üçün 0, 1, 120, 121 və bir orta dəyər, ad üçün 0, 1, 50, 51 simvol, şəhər üçün bir neçə riskli variant. Beləcə bir neçə onlarla testlə əsas risklər əhatə olunur.",
+    "c": [
+      "Yaş × şəhər 2 400 kimi hesablanıb",
+      "Ad sahəsinin kombinasiyanı praktik olaraq sonsuz etdiyi deyilib",
+      "Çıxış yolu kimi risk və ya test dizayn texnikaları göstərilib"
+    ]
+  },
+  "c2t2": {
+    "h": "Cümlədə əsas söz “nə vaxt”dır: tester işə kod yazılandan əvvəl başlayır. Hansı prinsip vaxtdan danışır?",
+    "a": "**Prinsip 3: Erkən test vaxt və pula qənaət edir** (shift left). Tester tələblər müzakirə olunanda qoşulur, yəni testi prosesin əvvəlinə çəkir. Tələbdəki səhv və ya qeyri-müəyyənlik bir sualla düzəlir, kod yazılandan sonra isə kod, test və reliz də təkrarlanır. Tələbi oxumaq da testdir, buna statik test deyilir.",
+    "c": [
+      "Prinsip 3 (erkən test) göstərilib",
+      "Tələb mərhələsində tapılan problemin daha ucuz düzəldiyi izah olunub"
+    ]
+  },
+  "c2t3": {
+    "h": "40 defektin 30-u bir yerdədir. Hesabla: bu neçə faizdir? Hansı prinsip defektlərin bərabər paylanmadığını deyir?",
+    "a": "**Prinsip 4: Defektlər qruplaşır** (defect clustering). 40 defektin 30-u, yəni **75%-i**, bir moduldadır. Defektlər bərabər paylanmır: mürəkkəb, yeni və tez-tez dəyişən modullar daha risklidir.\n\nPraktik nəticə: növbəti relizdə Səbət moduluna daha çox test vaxtı ayrılır, kök səbəbi də araşdırılır. Amma digər modulları büsbütün buraxmaq olmaz, orada kor nöqtə qala bilər.",
+    "c": [
+      "Prinsip 4 (defektlər qruplaşır) göstərilib",
+      "Test vaxtının Səbət moduluna yönəldilməsi nəticəsi çıxarılıb"
+    ]
+  },
+  "c2t4": {
+    "h": "Hər məhsul üçün soruş: burada səhv nəyə başa gəlir? Oyunda və bankda bu cavab eyni deyil.",
+    "a": "Bu, bir variantdır, sənin seçimin fərqli ola bilər.\n\n**Mobil oyun:**\n1. Performans: kadr sürəti, zəif telefonda donmamaq.\n2. Oyun gedişi və balans: səviyyələr, qaydalar, proqresin itməməsi.\n3. Tətbiqdaxili satış: alınan əşyanın hesaba düşməsi.\n\n**Onlayn bank:**\n1. Pul köçürmələrinin dəqiqliyi: məbləğ, hesab, ikiqat əməliyyatın olmaması.\n2. Təhlükəsizlik: giriş, sessiya, başqasının hesabına çıxmamaq.\n3. Qanunlara uyğunluq və əməliyyat tarixçəsi.\n\n**Fərqi izah edən:** Prinsip 6: test kontekstdən asılıdır. Oyunda əsas risk oyunçunun oyundan getməsidir, bankda isə pul və qanun. Eyni yanaşmanı ikisinə tətbiq etmək olmaz.",
+    "c": [
+      "Hər məhsul üçün 3 sahə yazılıb",
+      "Bank sahələrində pul və ya təhlükəsizlik var",
+      "Fərq Prinsip 6 (kontekst) ilə izah olunub"
+    ]
+  },
+  "c2t5": {
+    "h": "Xarab olmayan, amma istifadə etmədiyin bir məhsul düşün. Niyə istifadə etmirsən? Problem səhv deyil, ehtiyacdır.",
+    "a": "Mümkün cavablardan biridir, sənin misalın öz həyatından olmalıdır.\n\n**Misal:** evdəki ağıllı soyuducunun ekranında və tətbiqində resept funksiyası var. Düymələr işləyir, reseptlər açılır, heç nə xarab deyil, yəni testdə defekt yoxdur. Amma mən yeməyə baxarkən telefonumdan istifadə edirəm, soyuducu ekranı yavaşdır və əlim yaş olanda toxunmaq narahatdır. Nəticədə bir dəfə də istifadə etməmişəm.\n\n**Niyə Prinsip 7-dir:** məhsul tələbə uyğundur, defektləri yoxdur, amma istifadəçinin real ehtiyacını ödəmir. Tester olsaydım “İnsan bunu hansı vəziyyətdə işlədir?” sualını verərdim.",
+    "c": [
+      "Məhsulun işlədiyi, amma lazımsız və ya narahat olduğu göstərilib",
+      "Problem defekt kimi yox, istifadəçi ehtiyacı kimi izah olunub",
+      "Misal konkret məhsul və istifadə vəziyyəti ilə yazılıb"
+    ]
+  },
+  "c2q1": {
+    "a": "1. Test defektlərin varlığını göstərir, yoxluğunu yox.\n2. Tam test mümkün deyil.\n3. Erkən test vaxt və pula qənaət edir.\n4. Defektlər qruplaşır.\n5. Testlər köhnəlir (pestisid paradoksu).\n6. Test kontekstdən asılıdır.\n7. Defektsizlik yanılması.",
+    "c": [
+      "Yeddi prinsipin hamısı sadalanıb",
+      "Hər prinsipin mənası düzgün verilib, sıra fərqli olsa da"
+    ]
+  },
+  "c2q2": {
+    "a": "Testləri mütəmadi yeniləmək: yeni ssenari, yeni data, başqa texnika və exploratory test əlavə etmək. Köhnə testlər artıq tapa biləcəklərini tapıb. Onları büsbütün atmaq lazım deyil: regression üçün qalır, çünki məqsədləri yeni defekt tapmaq yox, köhnənin qayıtmadığını görməkdir.",
+    "c": [
+      "Testlərin yenilənməsi və yeni ssenari və ya data göstərilib",
+      "Köhnə testlərin regression üçün faydalı qaldığı deyilib"
+    ]
+  },
+  "c2q3": {
+    "a": "Prinsip 1 **testin imkanından** danışır: keçən testlər defektin yoxluğunu sübut etmir, defekt yenə də qala bilər. Prinsip 7 isə **məhsulun dəyərindən** danışır: defekt həqiqətən olmasa belə, məhsul istifadəçiyə lazım olmaya bilər. Biri “defekt qalıb?”, digəri “düzgün məhsuldur?” sualıdır.",
+    "c": [
+      "Prinsip 1 defektin yoxluğunun sübut olunmamasıdır",
+      "Prinsip 7 defektsiz məhsulun yenə də lazımsız ola bilməsidir"
+    ]
+  },
+  "c2q4": {
+    "a": "Tələbdəki səhvi bir cümlə ilə düzəltmək olar. Eyni səhv kodda tapılanda artıq kod, testlər, sənəd dəyişir, canlıda tapılanda isə buna hotfix, müştəri itkisi və reputasiya xərci də əlavə olunur. Yəni defekt nə qədər gec tapılsa, onun üzərinə qurulan iş bir o qədər çoxdur.",
+    "c": [
+      "Defektin gec tapıldıqca bahalaşdığı deyilib",
+      "Səbəb kimi üzərinə gələn iş və ya canlıdakı zərər göstərilib"
+    ]
+  }
+}
