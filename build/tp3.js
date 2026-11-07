@@ -12,12 +12,14 @@ const ver = fs.readFileSync(path.join(V1, 'pwa.js'), 'utf8').match(/const VERSIO
 for (const f of ['pwa.js', 'sw.js']) fs.writeFileSync(path.join(V2, f), fs.readFileSync(path.join(V2, f), 'utf8').split(ver).join(ver + '-next'));
 fs.appendFileSync(path.join(V2, 'app.css'), '\n/* next */\n');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
-let ROOT = V1; const PREFIX = '/sub/qa-kitabi';
+let ROOT = V1, cutOff = null, cutLeft = 0, hits = {}; const PREFIX = '/sub/qa-kitabi';
 const srv = http.createServer((req, res) => {
   let p = decodeURIComponent(req.url.split('?')[0]);
   if (!p.startsWith(PREFIX + '/')) { res.writeHead(404); res.end(); return; }
   p = p.slice(PREFIX.length); if (p.endsWith('/')) p += 'index.html';
   const f = path.join(ROOT, p);
+  hits[p] = (hits[p] || 0) + 1;
+  if (p === cutOff && cutLeft-- > 0) { res.writeHead(500); res.end(); return; } // the first update attempt is cut off at the last asset
   if (!fs.existsSync(f)) { res.writeHead(404); res.end(); return; }
   res.writeHead(200, { 'content-type': TYPES[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res);
 });
@@ -34,12 +36,16 @@ const srv = http.createServer((req, res) => {
   out.scope = await page.evaluate(async () => (await navigator.serviceWorker.getRegistration()).scope);
   out.openedChapter = await page.$eval('.tb-kicker', el => el.textContent);
   // new version deployed
-  ROOT = V2;
+  const assets = JSON.parse(fs.readFileSync(path.join(V2, 'sw.js'), 'utf8').match(/const ASSETS = (\[[\s\S]*?\]);/)[1]);
+  ROOT = V2; hits = {}; cutOff = '/' + assets[assets.length - 1]; cutLeft = 3; // all three tries of the first install fail
   await page.reload();
   await page.waitForSelector('.chrow, .sec');
-  out.check = await page.evaluate(() => QA_PWA.checkUpdate());
   await page.waitForSelector('#pwa-bar', { timeout: 20000 });
+  out.barLoading = await page.$eval('#pwa-bar', el => el.innerText.replace(/\s+/g, ' '));
+  await page.waitForSelector('#pwa-bar button', { timeout: 60000 }); // cut off once, the next install continues after 5 s
   out.bar = await page.$eval('#pwa-bar', el => el.innerText.replace(/\s+/g, ' '));
+  out.resumed = { app: hits['/app.js'], book: hits['/book.js'], last: hits['/' + assets[assets.length - 1]] };
+  if (!out.barLoading.includes('yüklənir') || !out.bar.includes('yükləndi') || out.resumed.app !== 1 || out.resumed.book !== 1 || out.resumed.last !== 4) errors.push('resume after a cut-off update');
   await page.screenshot({ path: path.join(__dirname, 'shots', 'pwa-update-bar.png') });
   await Promise.all([page.waitForNavigation(), page.click('#pwa-bar button')]);
   await page.waitForFunction(() => window.QA_PWA && QA_PWA.sw.ready, null, { timeout: 30000 });

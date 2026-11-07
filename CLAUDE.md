@@ -107,7 +107,9 @@ Screenshots land in `build/shots/` (gitignored).
   `output_config.effort`), progress export/import. Its `sample()` keeps the artifact runtime's contract
   (`{text, truncated}` or a rejected `{code, message, text?}`), so app.js calls Claude the same way in both builds.
 - `build/sw.template.js` — cache-first service worker; the build injects VERSION (content hash) and the precache list.
-  Navigations are answered with the cached `./`.
+  Navigations are answered with the cached `./`. Each file is tried three times, and an install that was cut off continues where
+  it stopped, because the cache belongs to one version. `pwa.js` shows «yüklənir» while a new version downloads, retries a failed
+  install and checks for a new version when a tab comes back after an hour.
 
 ## Rules
 

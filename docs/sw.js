@@ -1,5 +1,5 @@
 /* QA Kitabı — service worker: keeps the whole book on the device so it opens without internet. */
-const VERSION = '2026.11.06-c04620b';
+const VERSION = '2026.11.07-610b137';
 const CACHE = 'qa-kitab-' + VERSION;
 const ASSETS = [
  "./",
@@ -51,9 +51,21 @@ const ASSETS = [
  "icons/maskable-512.png"
 ];
 
+// a weak connection drops single requests: try each file three times before giving up on this install
+async function fetchRetry(url) {
+  for (let i = 0; ; i++) {
+    try {
+      const res = await fetch(new Request(url, { cache: 'reload' }));
+      if (res.ok) return res;
+      if (i >= 2) throw new Error('precache failed: ' + url + ' ' + res.status);
+    } catch (err) { if (i >= 2) throw err; }
+    await new Promise(r => setTimeout(r, 2000));
+  }
+}
+
 async function putClean(cache, url) {
-  const res = await fetch(new Request(url, { cache: 'reload' }));
-  if (!res.ok) throw new Error('precache failed: ' + url + ' ' + res.status);
+  if (await cache.match(url)) return; // this cache belongs to this version alone: an install that was cut off continues where it stopped
+  const res = await fetchRetry(url);
   // some hosts redirect ./index.html -> ./ ; a redirected response cannot answer a navigation, so store a clean copy
   const clean = res.redirected ? new Response(await res.blob(), { status: res.status, statusText: res.statusText, headers: res.headers }) : res;
   await cache.put(url, clean);
