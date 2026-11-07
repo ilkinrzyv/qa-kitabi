@@ -743,6 +743,35 @@ for rid, sc in rpscript.items():
     if bad or seen != set(nodes):
         print('ERR role play script', rid, bad, sorted(set(nodes) - seen), file=sys.stderr); errors += 1
 print('interview questions', len(ivsim['questions']), 'role play scripts', len(rpscript))
+# ---------- work English practice (english.json): drills, phrases and the mistake rules; t35.js runs every model answer ----------
+english = json.load(open(os.path.join(BASE, 'english.json'), encoding='utf-8'))
+en_ids, en_sets = set(), {x['id'] for x in english['sets']}
+for d in english['drills']:
+    t_ = d.get('type')
+    ok = d.get('id') and d['id'] not in en_ids and d.get('set') in en_sets and d.get('q')
+    if t_ == 'pick':
+        ok = ok and len(d.get('o', [])) == 4 and sum(1 for o in d['o'] if o.get('ok')) == 1 and all(o.get('t') and o.get('why') for o in d['o'])
+    elif t_ == 'build':
+        ok = ok and len(d.get('a', '').split()) >= 3 and d.get('note')
+    elif t_ == 'write':
+        ok = ok and d.get('model') and d.get('hint') and len(d.get('need', [])) >= 2 and all(n.get('l') and n.get('re') for n in d['need'])
+    else:
+        ok = False
+    if not ok:
+        print('ERR english drill', d.get('id'), file=sys.stderr); errors += 1
+    en_ids.add(d.get('id'))
+for g in english['phrases']:
+    if not g.get('t') or not g.get('items') or not all(i.get('en') and i.get('az') for i in g['items']):
+        print('ERR english phrases', g.get('t'), file=sys.stderr); errors += 1
+for r in english['rules']:
+    if r.get('kind') not in ('err', 'style') or not all(r.get(k) for k in ('re', 'w', 'r', 'tip')):
+        print('ERR english rule', r.get('w'), file=sys.stderr); errors += 1
+for sid in english.pop('sections'):
+    sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+    if not sec:
+        print('ERR english section', sid, file=sys.stderr); errors += 1; continue
+    sec['enl'] = 1
+print('english drills', len(english['drills']), 'phrases', sum(len(g['items']) for g in english['phrases']), 'rules', len(english['rules']))
 
 import sqlite3
 sqlcfg = json.load(open(os.path.join(BASE, 'sql.json'), encoding='utf-8'))
@@ -944,7 +973,7 @@ for c in chapters:
             s['x']['short'], k = gl_wrap(s['x']['short'], rx, idx, 2); gl_total += k
 print('glossary links', gl_total)
 out = {'title': 'QA Kitabı: Sıfırdan Peşəkar Testerə', 'parts': parts, 'chapters': chapters,
-       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'devtools': devtools, 'playwright': playwright, 'ivsim': ivsim, 'rpscript': rpscript, 'api': api, 'sql': sqlcfg, 'git': gitcfg, 'ctfl': ctfl}
+       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'devtools': devtools, 'playwright': playwright, 'ivsim': ivsim, 'rpscript': rpscript, 'english': english, 'api': api, 'sql': sqlcfg, 'git': gitcfg, 'ctfl': ctfl}
 json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 # ---------- 7. report ----------

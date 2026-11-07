@@ -195,6 +195,7 @@ function defFor(key) {
   if (key === 'checks') return { k: {} };
   if (key === 'chat') return { ctx: 'c1', turns: [] };
   if (key === 'pw') return { code: {}, done: {}, loc: {} };
+  if (key === 'en') return { done: {}, txt: {} };
   if (key.startsWith('notes-')) return { n: {} };
   if (key.startsWith('ans-')) return { a: {} };
   return {};
@@ -452,7 +453,7 @@ function render(opts) {
   if (observer) { observer.disconnect(); observer = null; }
   hideSelPill();
   const v = $('#view');
-  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw, git: vGit, iv: vInterview, rs: vScript };
+  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw, git: vGit, iv: vInterview, rs: vScript, en: vEnglish };
   (views[S.view] || vHome)(v);
   document.body.dataset.view = S.view; document.body.dataset.tab = S.tab; // PC layouts are keyed by these (app.css)
   sideRender();
@@ -466,6 +467,7 @@ const WIDE = window.matchMedia('(min-width:1280px)');
 const SIDE_PR = [['cards', 'cards', 'Fleş kartlar', 'data-act="cards"'], ['glossary', 'abc', 'Lüğət', 'data-act="glossary"'],
   ['ctfl', 'layers', 'ISTQB xəritəsi', 'data-act="ctfl-open"'], ['exam', 'clock', 'Sınaq imtahanı', 'data-act="exam-open"'],
   ['iv', 'chat', 'Müsahibə məşqi', 'data-act="iv-open"'], ['rs', 'users', 'Rol oyunları', 'data-act="rs-open"'],
+  ['en', 'pencil', 'İş üçün ingiliscə', 'data-act="en-open"'],
   ['store', 'cart', 'Məşq mağazası', () => `data-act="sm-open" data-sc="${SM.id && SM.ver !== REL_D.ver ? SM.id : 'tc01'}"`],
   ['release', 'checklist', 'Reliz testi', 'data-act="rel-open"'], ['devtools', 'bug', 'DevTools', 'data-act="dv-open"'],
   ['sql', 'list', 'SQL', 'data-act="sql-open"'], ['lab', 'send', 'API', 'data-act="lab-open"'],
@@ -911,10 +913,10 @@ function dtHTML(sid, c) {
 function textBody(c, s) {
   const lv = lvlOf(s.id);
   if (lv === 'short') {
-    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}
+    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${engLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}
       <button class="btn sm ghost more" data-act="lvl" data-sec="${s.id}" data-v="std">${icon('book')}Tam mətni oxu</button>${miniHTML(c, s, false)}`;
   }
-  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
+  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${engLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
 }
 function fbHTML(a) {
   let h = '';
@@ -1005,7 +1007,7 @@ function secHTML(c, s) {
   else if (s.kind === 'selfcheck') body = selfHTML(c, s);
   else if (s.kind === 'checklist') body = checklistHTML(s);
   else if (s.x) body = textBody(c, s);
-  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}`;
+  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${engLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}`;
   return `<section class="sec${learned ? ' learned' : ''}" id="${s.id}" data-sec="${s.id}" data-kind="${s.kind}">
     <header class="sec-h"><span class="sec-num">${esc(s.num || kindTag(s).toLocaleUpperCase('az'))}</span><h2>${esc(s.title)}</h2>${s.x ? lvlCtl(s.id, lvlOf(s.id)) : ''}</header>
     ${body}${footerHTML(c, s)}</section>`;
@@ -4400,6 +4402,8 @@ function vPractice(v) {
   <section class="block"><div class="block-h"><h2>Müsahibə məşqi</h2><span class="muted" style="font-size:13px">${IVD.questions.length} sual, ${Object.keys(RPS).length} ssenari</span></div>
     <div class="stack"><button class="quizcta" data-act="iv-open">${icon('chat')}<div style="flex:1;min-width:0;text-align:left"><b>${ivDoc().run ? 'Yarımçıq müsahibəyə davam et' : 'Müsahibə simulyatoru'}</b><span>Vaxtla suallar, nümunə cavablar, öz cavabını meyarlarla yoxlama</span></div>${icon('arrow')}</button>
     <button class="quizcta alt" data-act="rs-open">${icon('users')}<div style="flex:1;min-width:0;text-align:left"><b>Rol oyunları</b><span>Product Owner, proqramçı və komanda rəhbəri ilə söhbət: seçimlər və nəticə</span></div>${icon('arrow')}</button></div></section>
+  <section class="block"><div class="block-h"><h2>İş üçün ingiliscə</h2><span class="muted" style="font-size:13px">${Object.keys(engDoc().done).filter(k => engById[k]).length}/${ENG.drills.length} məşq</span></div>
+    <button class="quizcta alt" data-act="en-open">${icon('pencil')}<div style="flex:1;min-width:0;text-align:left"><b>Bug report, stand-up, çat</b><span>Cümlə qurmaq, seçmək, yazmaq; hazır ifadələr və tipik səhvlərin yoxlanması</span></div>${icon('arrow')}</button></section>
   <section class="block"><div class="block-h"><h2>Fəsil testləri</h2><span class="muted" style="font-size:13px">${o.quizDone}/21 · orta ${o.avg}%</span></div>
     <div class="qgrid">${cells}</div></section>
   <section class="block"><div class="block-h"><h2>Məşq mağazası</h2><span class="muted" style="font-size:13px">${Object.keys(SM.passed).length}/${STORE.scenarios.length} test case</span></div>
@@ -5059,6 +5063,115 @@ function vInterview(v) {
   setHeader({ back: true, kicker: 'Müsahibə məşqi', name: mode === 'res' ? 'Nəticə' : mode === 'run' ? IVD.cats[ivQ(D.run.ids[D.run.i]).cat] : 'Müsahibə simulyatoru' });
   v.innerHTML = mode === 'res' ? ivResHTML(D) : mode === 'run' ? ivRunHTML(D.run) : ivStartHTML(D);
 }
+/* ---------- work English (#ingilisce): drills (pick, build, write), a phrase book and offline mistake rules; no Claude needed.
+   The rules are a hint for typical mistakes of Azerbaijani speakers, not a grammar checker, and the page says so. t35.js ---------- */
+const ENG = BOOK.english, engById = Object.fromEntries(ENG.drills.map(d => [d.id, d]));
+const ENG_RULES = ENG.rules.map(r => ({ ...r, rx: new RegExp(r.re, r.cs ? 'g' : 'gi') }));
+const ENGS = { tab: 'drills', set: null, i: 0, st: {}, hide: false, own: '', ownOn: false };
+const engDoc = () => { const d = Store.doc('en'); ['done', 'txt'].forEach(k => { if (!ivObj(d[k])) d[k] = {}; }); return d; };
+const engLinkHTML = s => s.enl ? `<div class="sm-link"><div class="srt-k">${icon('pencil')}İş üçün ingiliscə</div><p class="srt-hint">Bunu ingiliscə məşq et: cümlə qur, düzgün variantı seç, özün yaz. Tipik səhvləri kitab özü göstərir.</p><div class="row"><button class="btn sm primary" data-act="en-open">${icon('play')}Məşqi aç</button></div></div>` : '';
+// text in quotes is copied from the screen, so the rules skip it
+function engHits(text) {
+  const clean = String(text || '').replace(/“[^”]*”|"[^"]*"/g, m => ' '.repeat(m.length));
+  const out = [];
+  ENG_RULES.forEach(r => { const m = clean.match(r.rx); if (m) out.push({ r, m: m[0] }); });
+  return out;
+}
+const engHitsHTML = hits => hits.length ? `<div class="swc"><div class="swc-h">${icon('bulb')}Yoxla</div><ul>${hits.map(h => `<li><mark>${esc(h.m)}</mark><span>→ ${esc(h.r.r)}</span><span class="tip">${esc(h.r.tip)}</span></li>`).join('')}</ul></div>` : '';
+// the words of a build drill in a stable mixed order, never already solved
+function engMix(d) {
+  const words = d.a.split(' ');
+  const h = w => { let x = 7; for (const ch of d.id + w) x = (x * 31 + ch.codePointAt(0)) % 9973; return x; };
+  const mixed = words.map((w, i) => ({ w, i })).sort((a, b) => h(a.w + a.i) - h(b.w + b.i));
+  return mixed.map(x => x.w).join(' ') === d.a ? mixed.reverse() : mixed;
+}
+const engState = id => ENGS.st[id] || (ENGS.st[id] = {});
+function engMark(id) { const D = engDoc(); if (!D.done[id]) { D.done[id] = 1; Store.changed('en'); } }
+function engPickHTML(d, st) {
+  const opts = d.o.map((o, i) => {
+    const on = st.pick !== undefined, cls = on ? (o.ok ? ' right' : st.pick === i ? ' wrong' : '') : '';
+    return `<button class="opt${cls}" data-act="en-pick" data-i="${i}"${on ? ' disabled' : ''}><span class="l">${'ABCD'[i]}</span><span>${esc(o.t)}</span></button>`;
+  }).join('');
+  if (st.pick === undefined) return `<div class="opts">${opts}</div>`;
+  const c = d.o[st.pick], right = d.o.find(o => o.ok);
+  return `<div class="opts">${opts}</div><div class="qz-ex"><div class="verdict ${c.ok ? 'ok' : 'no'}">${icon(c.ok ? 'check' : 'x')}${c.ok ? 'Düzgün' : 'Bu yox'}</div><p>${esc(c.why)}</p>${c.ok ? '' : `<p style="margin-top:6px"><b>${esc(right.t)}</b> — ${esc(right.why)}</p>`}</div>`;
+}
+function engBuildHTML(d, st) {
+  const pool = engMix(d), line = st.line || (st.line = []), used = new Set(line);
+  const line_ = line.map((k, n) => `<button class="srt-chip" data-act="en-word" data-k="${k}" data-from="line"${st.ok ? ' disabled' : ''} aria-label="Sil: ${esc(pool[k].w)}">${esc(pool[k].w)}</button>`).join('');
+  const rest = pool.map((p, k) => used.has(k) ? '' : `<button class="srt-chip" data-act="en-word" data-k="${k}" data-from="pool">${esc(p.w)}</button>`).join('');
+  const verdict = st.ok ? `<div class="qz-ex"><div class="verdict ok">${icon('check')}Düzgün</div><p>${esc(d.note)}</p></div>`
+    : st.bad ? `<div class="qz-ex"><div class="verdict no">${icon('x')}Hələ düz deyil</div><p>${esc(d.note)}</p>${st.show ? `<p style="margin-top:6px"><b>${esc(d.a)}</b></p>` : ''}</div>` : '';
+  const ctl = st.ok ? '' : `<div class="row" style="margin-top:10px"><button class="btn primary" data-act="en-check"${line.length === pool.length ? '' : ' disabled'}>${icon('check')}Yoxla</button><button class="btn ghost" data-act="en-clear"${line.length ? '' : ' disabled'}>${icon('refresh')}Təmizlə</button>${st.bad && !st.show ? `<button class="btn ghost" data-act="en-show">${icon('eye')}Cavabı göstər</button>` : ''}</div>`;
+  return `<div class="en-line" aria-label="Cümlən">${line_ || '<span class="muted">Sözlərə sıra ilə bas</span>'}</div><div class="srt-pool en-pool">${rest || '<span class="muted">Söz qalmadı</span>'}</div>${ctl}${verdict}`;
+}
+function engWriteResult(d, text) {
+  const need = d.need.map(n => ({ l: n.l, ok: new RegExp(n.re, 'i').test(text) })), hits = engHits(text);
+  return { need, hits, ok: need.every(n => n.ok) && !hits.some(h => h.r.kind === 'err') };
+}
+function engWriteHTML(d, st) {
+  const text = engDoc().txt[d.id] || '', res = st.checked ? engWriteResult(d, text) : null;
+  const needs = res ? `<ul class="cov-br en-need">${res.need.map(n => `<li class="${n.ok ? 'hit' : 'miss'}"><span aria-hidden="true">${n.ok ? '✓' : '·'}</span> ${esc(n.l)}${n.ok ? '' : ' — tapılmadı'}</li>`).join('')}</ul>` : '';
+  const model = st.model || (res && res.ok) ? `<div class="qz-ex"><div class="verdict ok">${icon('check')}${res && res.ok ? 'Yaxşı. Nümunə ilə tutuşdur' : 'Nümunə'}</div><pre class="en-model">${esc(d.model)}</pre><p class="muted" style="font-size:13px">Sənin mətnin fərqli ola bilər. Yoxlama yalnız açar sözlərə və tipik səhvlərə baxır, tam qrammatikaya yox.</p></div>` : '';
+  return `<p class="ix-hint">${esc(d.hint)}</p><textarea class="field en-t" id="en-t" dir="ltr" spellcheck="false" lang="en" placeholder="İngiliscə yaz">${esc(text)}</textarea>
+    <div class="row" style="margin-top:10px"><button class="btn primary" data-act="en-write">${icon('check')}Yoxla</button>${st.model ? '' : `<button class="btn ghost" data-act="en-show">${icon('eye')}Nümunəni göstər</button>`}</div>
+    ${needs}${res ? engHitsHTML(res.hits) : ''}${model}`;
+}
+function engRunHTML() {
+  const list = ENG.drills.filter(d => d.set === ENGS.set), i = Math.min(ENGS.i, list.length - 1), d = list[i], st = engState(d.id), D = engDoc();
+  const body = d.type === 'pick' ? engPickHTML(d, st) : d.type === 'build' ? engBuildHTML(d, st) : engWriteHTML(d, st);
+  const k = { pick: 'Düzgününü seç', build: 'Cümləni qur', write: 'Özün yaz' }[d.type];
+  return `<div class="row" style="justify-content:space-between"><button class="btn sm ghost" data-act="en-sets">${icon('back')}Mövzular</button><span class="muted mono" style="font-size:12.5px">${i + 1} / ${list.length}${D.done[d.id] ? ' · edilib' : ''}</span></div>
+    <div class="qz-dots" style="margin:10px 0 14px">${list.map((x, n) => `<i class="${n === i ? 'cur' : D.done[x.id] ? 'ok' : ''}"></i>`).join('')}</div>
+    <div class="kicker">${k}</div><div class="qz-q" style="margin-top:6px">${esc(d.q)}</div>${body}
+    <div class="qz-act" style="margin-top:16px">${i ? `<button class="btn" data-act="en-move" data-d="-1">${icon('back')}Əvvəlki</button>` : ''}${i < list.length - 1 ? `<button class="btn primary" data-act="en-move" data-d="1">Növbəti${icon('arrow')}</button>` : `<button class="btn primary" data-act="en-sets">${icon('check')}Mövzulara qayıt</button>`}</div>`;
+}
+function engSetsHTML() {
+  const D = engDoc();
+  return `<div class="muted" style="font-size:14px;margin-bottom:12px">Bug report, stand-up və çat üçün lazım olan ingiliscə. Səhv etmək normaldır: hər cavabın səbəbi izah olunur.</div>
+    <div class="stack">${ENG.sets.map(s => { const l = ENG.drills.filter(d => d.set === s.id), n = l.filter(d => D.done[d.id]).length;
+      return `<button class="quizcta alt" data-act="en-set" data-s="${s.id}">${icon(n === l.length ? 'check' : 'play')}<div style="flex:1;min-width:0;text-align:left"><b>${esc(s.t)}</b><span>${esc(s.s)} · ${n}/${l.length}</span></div>${icon('arrow')}</button>`; }).join('')}</div>`;
+}
+const engSpeech = () => { try { return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window; } catch (e) { return false; } };
+function engSay(text) { try { const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = 0.92; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) { /* no speech here */ } }
+function engPhrasesHTML() {
+  const say = engSpeech();
+  const rows = ENG.phrases.map((g, gi) => `<section class="block"><div class="block-h"><h2>${esc(g.t)}</h2></div><div class="card en-ph">${g.items.map((it, ii) => { const k = gi + ':' + ii, hid = ENGS.hide && !(ENGS.open || {})[k];
+    return `<div class="en-ph-r"><div class="en-ph-t"><div class="en-az">${esc(it.az)}</div>${hid ? `<button class="btn sm" data-act="en-reveal" data-k="${k}">${icon('eye')}Göstər</button>` : `<div class="en-en" lang="en">${esc(it.en)}</div>`}</div>${say && !hid ? `<button class="ibtn" data-act="en-say" data-t="${esc(it.en)}" aria-label="Dinlə: ${esc(it.en)}">${icon('play')}</button>` : ''}</div>`; }).join('')}</div></section>`).join('');
+  return `<label class="en-hide"><input type="checkbox" id="en-hide"${ENGS.hide ? ' checked' : ''}> İngiliscəni gizlət, özümü yoxlayım</label>${rows}`;
+}
+function engMistakesHTML() {
+  const hits = ENGS.ownOn ? engHits(ENGS.own) : null;
+  return `<div class="card"><div class="lb" style="font-weight:600">Öz mətnini yoxla</div><p class="muted" style="font-size:13.5px;margin:4px 0 10px">Tipik səhvləri tapır. Bu, tam qrammatika yoxlaması deyil: burada çıxmayan səhv də ola bilər. Dırnaqdakı mətnə baxmır, çünki o, ekrandan köçürülür.</p>
+      <textarea class="field en-t" id="en-own" dir="ltr" spellcheck="false" lang="en" placeholder="Məsələn: The login is not work since 2 days.">${esc(ENGS.own)}</textarea>
+      <div class="row" style="margin-top:10px"><button class="btn primary" data-act="en-own">${icon('check')}Yoxla</button></div>
+      ${hits ? (hits.length ? engHitsHTML(hits) : `<div class="qz-ex"><div class="verdict ok">${icon('check')}Tipik səhv tapılmadı</div></div>`) : ''}</div>
+    <section class="block"><div class="block-h"><h2>Tipik səhvlər</h2><span class="muted" style="font-size:13px">${ENG.rules.length}</span></div>
+      <div class="card en-ph">${ENG.rules.map(r => `<div class="en-ph-r"><div class="en-ph-t"><div><span class="en-bad">${esc(r.w)}</span> → <b>${esc(r.r)}</b></div><div class="en-az">${esc(r.tip)}</div></div></div>`).join('')}</div></section>`;
+}
+function vEnglish(v) {
+  const run = ENGS.tab === 'drills' && ENGS.set && ENG.sets.some(s => s.id === ENGS.set);
+  setHeader({ back: true, kicker: 'İş üçün ingiliscə', name: run ? ENG.sets.find(s => s.id === ENGS.set).t : 'Məşq, ifadələr, səhvlər' });
+  const tabs = [['drills', 'Məşq'], ['phrases', 'İfadələr'], ['rules', 'Səhvlər']].map(([k, l]) => `<button data-act="en-tab" data-t="${k}" aria-pressed="${ENGS.tab === k}">${l}</button>`).join('');
+  v.innerHTML = `<div class="seg" style="margin-bottom:16px">${tabs}</div>${ENGS.tab === 'phrases' ? engPhrasesHTML() : ENGS.tab === 'rules' ? engMistakesHTML() : run ? engRunHTML() : engSetsHTML()}`;
+}
+function engAction(act, d) {
+  const list = ENG.drills.filter(x => x.set === ENGS.set), cur = list[Math.min(ENGS.i, list.length - 1)], st = cur ? engState(cur.id) : {};
+  const again = top => render(top ? { top: true } : { keepScroll: true });
+  if (act === 'en-tab') { ENGS.tab = d.t; return again(true); }
+  if (act === 'en-set') { ENGS.set = d.s; const l = ENG.drills.filter(x => x.set === d.s), n = l.findIndex(x => !engDoc().done[x.id]); ENGS.i = n < 0 ? 0 : n; return again(true); }
+  if (act === 'en-sets') { ENGS.set = null; return again(true); }
+  if (act === 'en-move') { ENGS.i = Math.max(0, Math.min(list.length - 1, ENGS.i + +d.d)); return again(true); }
+  if (act === 'en-pick') { st.pick = +d.i; if (cur.o[st.pick].ok) engMark(cur.id); return again(); }
+  if (act === 'en-word') { st.bad = false; const k = +d.k; st.line = d.from === 'pool' ? [...(st.line || []), k] : (st.line || []).filter(x => x !== k); return again(); }
+  if (act === 'en-clear') { st.line = []; st.bad = false; return again(); }
+  if (act === 'en-check') { const p = engMix(cur), said = (st.line || []).map(k => p[k].w).join(' '); if (said === cur.a) { st.ok = true; st.bad = false; engMark(cur.id); } else st.bad = true; return again(); }
+  if (act === 'en-show') { if (cur.type === 'write') st.model = true; else st.show = true; return again(); }
+  if (act === 'en-write') { st.checked = true; if (engWriteResult(cur, engDoc().txt[cur.id] || '').ok) engMark(cur.id); return again(); }
+  if (act === 'en-own') { ENGS.ownOn = true; return again(); }
+  if (act === 'en-reveal') { (ENGS.open || (ENGS.open = {}))[d.k] = 1; return again(); }
+  if (act === 'en-say') engSay(d.t);
+}
 // scripted role plays: the same seven situations as the Claude version, as a conversation of choices
 const rsRec = id => { const d = ivDoc(); let r = d.rp[id]; if (!ivObj(r) || !Array.isArray(r.path)) r = d.rp[id] = { path: [] }; return r; };
 function rsState(id) {
@@ -5709,6 +5822,8 @@ document.addEventListener('click', ev => {
     case 'ctfl-open': closeSheet(); go('ctfl', {}, { push: S.view !== 'ctfl' }); break;
     case 'exam-open': closeSheet(); go('exam', {}, { push: S.view !== 'exam' }); break;
     case 'iv-open': closeSheet(); go('iv', {}, { push: S.view !== 'iv' }); break;
+    case 'en-open': closeSheet(); S.tab = 'practice'; go('en', {}, { push: S.view !== 'en' }); break;
+    case 'en-tab': case 'en-set': case 'en-sets': case 'en-move': case 'en-pick': case 'en-word': case 'en-clear': case 'en-check': case 'en-show': case 'en-write': case 'en-own': case 'en-reveal': case 'en-say': engAction(act, d); break;
     case 'iv-start': if (ivDoc().run) openConfirm('Yeni müsahibə?', 'Yarımçıq müsahibənin cavabları silinəcək.', 'Yenisini başla', () => ivStart(d.p)); else ivStart(d.p); break;
     case 'iv-go': go('iv', { go: 1 }, { push: false }); break;
     case 'iv-show': ivShow(); break;
@@ -5975,6 +6090,8 @@ function updChk(sid) {
 document.addEventListener('input', ev => {
   const t = ev.target;
   if (t.id === 'iv-t') { ivSaveText(); return; }
+  if (t.id === 'en-t') { const D = engDoc(), l = ENG.drills.filter(x => x.set === ENGS.set), cur = l[Math.min(ENGS.i, l.length - 1)]; if (cur) { D.txt[cur.id] = t.value.slice(0, 2000); Store.changed('en', 2500); } return; }
+  if (t.id === 'en-own') { ENGS.own = t.value.slice(0, 4000); return; }
   if (t.dataset.note) {
     const sid = t.dataset.note, cid = t.dataset.ch;
     notesDoc(cid).n[sid] = t.value;
@@ -6023,6 +6140,7 @@ document.addEventListener('toggle', ev => { const el = ev.target; if (el && el.d
 document.addEventListener('change', ev => {
   if (ev.target.dataset && ev.target.dataset.crit !== undefined) { ansTick(ev.target); return; }
   if (ev.target.dataset && ev.target.dataset.ivc !== undefined) { ivTickCrit(ev.target); return; }
+  if (ev.target.id === 'en-hide') { ENGS.hide = ev.target.checked; ENGS.open = {}; rerender(); return; }
   const t = ev.target;
   if (t.dataset.ixTg) { IX[t.dataset.sid][t.dataset.ixTg] = t.checked; ixRedraw(t.dataset.sid); return; }
   if (t.dataset.smSort !== undefined) {
@@ -6070,7 +6188,7 @@ AI.setState('pending');
 // #magaza opens the practice store, #magaza-tc04 with that test case; #reliz the release test, #reliz-tc06 that test case
 // on build 1.1; #devtools the DevTools practice, #devtools-dv3 that task; #playwright-pw3 a Playwright task, #lokator-l5
 // a locator; #git the Git practice, #git-g5 that task; #musahibe the interview practice; #ssenari the scripted role plays,
-// #ssenari-dev-works that one.
+// #ssenari-dev-works that one; #ingilisce the work English practice.
 let AUTO = null;
 const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 function routeHash() {
@@ -6104,6 +6222,7 @@ function routeHash() {
   else if (h === 'istqb') { S.tab = 'practice'; S.view = 'ctfl'; S.params = {}; }
   else if (h === 'imtahan') { S.tab = 'practice'; S.view = 'exam'; S.params = {}; }
   else if (h === 'musahibe') { S.tab = 'practice'; S.view = 'iv'; S.params = {}; }
+  else if (h === 'ingilisce') { S.tab = 'practice'; S.view = 'en'; S.params = {}; }
   else if (t === 'ssenari') { const id = h.slice(8); S.tab = 'practice'; S.view = 'rs'; S.params = { rp: own(RPS, id) ? id : null }; }
   else if (h === 'sql') { S.tab = 'practice'; S.view = 'sql'; S.params = {}; }
   else if (h === 'api') { S.tab = 'practice'; S.view = 'lab'; S.params = {}; }

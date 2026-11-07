@@ -1417,3 +1417,19 @@ pre.code .err{color:inherit;background:none}
   body[data-view="devtools"] #sm-dev{grid-column:3}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* work English practice */
+.en-line{display:flex;flex-wrap:wrap;gap:6px;min-height:52px;padding:8px;border-radius:12px;border:1px solid var(--accent-line);background:var(--accent-soft);align-items:center}
+.en-pool{margin-top:8px}
+.en-t{min-height:112px;font-family:var(--f-mono);font-size:14.5px}
+.en-need{margin-top:10px}
+.en-model{margin:6px 0 8px;white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--f-mono);font-size:13.5px;line-height:1.5;color:var(--ink)}
+.en-ph{padding:4px 14px}
+.en-ph-r{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)}
+.en-ph-r:first-child{border-top:0}
+.en-ph-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;align-items:flex-start;font-size:14.5px;line-height:1.4}
+.en-az{font-size:13.5px;color:var(--ink-2)}
+.en-en{font-weight:600}
+.en-bad{color:var(--fail);text-decoration:line-through}
+.en-hide{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.en-hide input{width:18px;height:18px;accent-color:var(--accent)}

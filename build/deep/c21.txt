@@ -399,3 +399,63 @@ Baq buraxacaqsan, hansısa tapşırıq gecikəcək, kimsə report-unu rədd edə
 5. **Bildir:** “Regression 30/40 bitdi, 10 yeniləndi, sabah bitəcək.”
 @növbən
 İlk həftən üçün öz planını yaz: girişlər, öyrənəcəyin 5 şey, kimlə tanış olacaqsan. Sonra rəhbərinə göndərəcəyin bir mesaj yaz: “Bu plan düzgündürmü?”
+
+=== c21x2
+@qısa
+İş ingiliscəsi üçün bir neçə qəlib kifayətdir: başlıq “Harada: nə, hansı şərtdə”, addımlar əmr formasında, nəticələr indiki zamanda. Azərbaycan dilindən gələn əsas səhvlər: feilin yeri, “is not work” kimi inkar, artikllar və hərfi tərcümə.
+@yadda
+- Addımlar əmr formasındadır: Open, Enter, Click.
+- İnkar: does not work, did not work; “is not work” yox.
+- Baq yazılmır, “file” olunur: file a bug, report a bug.
+@dərin
+### Feil harada?
+Azərbaycanca cümlə feillə bitir: “Səhifə xəta mesajını göstərir.” İngiliscədə sıra belədir: kim, nə edir, nəyi: “The page shows an error message.” Tərcümə edəndə əvvəl “kim nə edir?” sualını ver, qalanı sonra gəlir.
+
+### Is, yoxsa does?
+`is` sifət və hal üçündür: “The button is disabled.” Hərəkət üçün adi feil işlənir: “The button works.” İnkarı da fərqlidir: “is not disabled”, amma “does not work”. Yenilənmə kimi məchul hallar `is` ilə gedir: “The total is not updated.”
+
+### Keçmiş zaman nə vaxt lazımdır
+Baq report-u indiki zamanda yazılır. Keçmiş zaman yalnız konkret hadisə üçündür: “It worked in build 3.2.0.” Bu cümlə regression olduğunu göstərir və çox faydalıdır.
+
+### Yaxşı başlığın oxunması
+Başlığı bir nəfəslə oxumaq olmalıdır. “Cart: total is not updated after applying a promo code” oxuyan harada və nə vaxt baş verdiyini bilir. Başlıqda “Bug”, “Problem” və “please” sözləri lazım deyil.
+@nümunə
+**Tapşırıq.** Bu başlığı düzəlt: “Login is not work when user write big letter in email.”
+@addımlar
+1. **Harada:** “Login:” başlığın əvvəlinə keçir.
+2. **Nə baş verir:** “is not work” səhvdir və dəqiq deyil. Fakt: giriş rədd olunur: “login fails”.
+3. **Hansı şərtdə:** “write big letter” hərfi tərcümədir: “the email contains uppercase letters”.
+4. **Yekun:** “Login: login fails when the email contains uppercase letters”.
+5. **Qısalt:** təkrarı çıxar: “Login fails when the email contains uppercase letters”.
+@növbən
+Bu üç cümləni düzəlt və hər birində nəyin səhv olduğunu azərbaycanca yaz: (a) “I wrote a bug about payment page.” (b) “The filter is not work in the Chrome.” (c) “Page is not save the changes since 2 days.”
+
+=== c21x3
+@qısa
+Stand-up-da qısa de: dünən, bu gün, maneə. Çatda “Could you please…?” ilə xahiş et və adamla yox, faktla danış. Görüşdə başa düşmürsənsə, “OK” demə: “Sorry, I didn't catch that.”
+@yadda
+- Stand-up: Yesterday I…, Today I am…, I am blocked by… / No blockers.
+- “You broke” yox: “It stopped working in build 3.2.1.”
+- Şirkət datasını xarici tərcümə xidmətinə yapışdırma.
+@dərin
+### Could, can, must
+`Could you…?` nəzakətli xahişdir, həmkara yazmaq üçün standartdır. `Can you…?` daha sadədir, tanıdığın komandada normaldır. `You must…` əmrdir: qayda deyərkən işlənir, xahiş üçün yox.
+
+### Fikir bildirmək
+“I think…”, “It looks like…”, “In my opinion…” fikrini yumşaldır. Ardınca fakt gəlsin: “I think this is a bug because the requirement says the code must be rejected.” Fakt olmadan yumşaq cümlə də zəif qalır.
+
+### Zəng və görüşdə ingiliscə
+Söhbətdən əvvəl deyəcəyin 2–3 cümləni yaz. Ad, rəqəm və tiket nömrəsini çatda da yaz: səsdə ən çox bunlar itir. Sonda qısa yekun göndər: “To summarize: …”.
+
+### Tərcüməçidən necə istifadə etmək
+Əvvəl özün yaz, sonra yoxlat: fərqi görəndə öyrənirsən. Hazır tərcüməni oxumadan göndərmə: termini səhv çevirə bilər (“baq”, “reliz”, “build”). Şirkət datası və müştəri məlumatı üçün şirkətin qaydasına bax.
+@nümunə
+**Tapşırıq.** Bu stand-up sözünü ingiliscə de: “Dünən SHOP-301-i bitirdim, bir baq yazdım. Bu gün SHOP-302-ni test edirəm. Onun üçün test hesabı yoxdur, Elvin aça bilər?”
+@addımlar
+1. **Dünən:** “Yesterday I finished SHOP-301 and filed one bug.” “write” yox, “filed”.
+2. **Bu gün:** “Today I am testing SHOP-302.”
+3. **Maneə:** “I don't have a test account for it.”
+4. **Xahiş:** “Elvin, could you create one?”
+5. **Yoxla:** dörd qısa cümlə: oxumaq təxminən 15 saniyə çəkir.
+@növbən
+Proqramçı tiketdə yazıb: “Works on my machine.” Sən baqı build 3.2.1-də, test mühitində, 3 cəhddən 3-ündə təkrarlayırsan, videon da var. İki-üç cümləlik nəzakətli ingiliscə cavab yaz.
