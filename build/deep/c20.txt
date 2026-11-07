@@ -372,3 +372,42 @@ Received: <element(s) not found>
 5. **Komandaya təklif:** proqramçılarla razılaş ki, vacib UI elementlərinə `data-test` atributları qoyulsun — dizayn dəyişikliyi testləri sındırmasın.
 @növbən
 Gecə icrasında 120 E2E testdən 47-si eyni anda düşüb, hamısında xəta `page.goto: net::ERR_CONNECTION_REFUSED`-dur. Səhər yenidən işə salanda hamısı keçir. Səbəbi təsnif et, nəyi yoxlayacağını və komandaya hansı mesajı yazacağını göstər.
+
+=== c20x1
+@qısa
+Real pipeline üç sualı həll edir: şifrə secrets-dən gəlir, PR-da yalnız `@smoke` işləyir, gecə tam dəst shard-lara bölünür. Məcburi status yoxlaması isə qırmızı PR-ın birləşməsinin qarşısını alır.
+@yadda
+- `${{ secrets.AD }}` şifrəni repo-ya yazmadan testə verir.
+- `--shard=1/3` dəsti maşınlara bölür, `fail-fast: false` hamısını sona çatdırır.
+- “Require status checks” olmasa, CI sadəcə tövsiyədir.
+@dərin
+### Secret-lər nəyi qoruyur
+Dəyər loglarda `***` kimi görünür. Fork-dan gələn PR-larda secret-lər verilmir. Secret-i `echo` ilə çap etmə, log artifact-ına yazma. Sızsa, dəyişdir: repo-dan silmək kifayət deyil.
+
+### Hesabatları birləşdirmək
+Shard-lar ayrı hesabat verir. Config-də CI üçün `reporter: 'blob'` yazılır, hər shard `blob-report/` qovluğunu artifact kimi yükləyir. Ayrıca job hamısını yükləyib `npx playwright merge-reports --reporter html ./all-blob-reports` əmrini işlədir: bir HTML hesabat alınır.
+
+### Hansı dəst nə vaxt
+| Hadisə | Dəst | Vaxt hədəfi |
+| --- | --- | --- |
+| Hər PR | Unit, API, `@smoke` | 10–15 dəq |
+| `main`-ə birləşmə | Tam dəst, bir brauzer | 20–30 dəq |
+| Gecə | Tam dəst, bütün brauzerlər | Limitsiz |
+| Relizdən əvvəl | Tam dəst + manual smoke | Plana görə |
+
+### Keş
+`actions/setup-node` üçün `cache: npm` yazılanda paketlər hər dəfə sıfırdan yüklənmir. Brauzer keşi də mümkündür, amma versiyalar dəyişəndə diqqətli olmaq lazımdır.
+
+### Tipik yanlış anlama
+“Testlər CI-da yavaşdırsa, sayını azaltmaq lazımdır.” Əvvəl ölç: quraşdırma, paralellik, təkrar, ən yavaş 10 test. Bir test azaltmaqdan çox, səhv yerdəki yoxlamanı API-yə köçürmək kömək edir.
+@nümunə
+**Tapşırıq.** Layihədə 60 Playwright testi var, CI-da 24 dəqiqə çəkir, şifrə `login.spec.js`-də açıq yazılıb. Düzəlt.
+@addımlar
+1. **Şifrə:** koddan sil, `process.env.SAUCE_PASSWORD` yaz, GitHub Secrets-ə əlavə et. Şifrə artıq tarixçədədir: real sistemdə onu dəyişdirirsən.
+2. **Env:** workflow-da `env: SAUCE_PASSWORD: ${{ secrets.SAUCE_PASSWORD }}`.
+3. **Smoke:** ən vacib 10 testə `@smoke` qoy; PR-da `--grep @smoke --project=chromium`.
+4. **Gecə:** `schedule` ilə tam dəst, `matrix.shard: [1, 2, 3]`, `--shard=${{ matrix.shard }}/3`.
+5. **Qayda:** `main` üçün “Require status checks” aç, `smoke`-u seç.
+6. **Yoxla:** qəsdən sınmış PR birləşmir; gecə icrası səhər hesabatla görünür.
+@növbən
+Bazar ertəsindən cümə gününə hər səhər 07:00-da (Bakı vaxtı) tam dəsti 4 shard-da işlədən workflow hissəsini yaz. Secret kimi `API_TOKEN` ver. Hesabatlar hər shard üçün ayrıca adla saxlansın. Cron dəyərini necə hesabladığını izah et. Pipeline-ı məcburi etmək üçün GitHub-da nə edərsən və bunun riski nədir?

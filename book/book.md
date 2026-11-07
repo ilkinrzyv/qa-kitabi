@@ -3159,9 +3159,9 @@ FAIL: Kəsr: 0.1 × 3 = 0.3 | gözlənilən: 0.3 | faktiki: 0.30000000000000004
 - await nə üçün lazımdır?
 - Niyə 0.1 + 0.2 !== 0.3?
 
-## Fəsil 19. Avtomatlaşdırma: test piramidası, Playwright ilə ilk test, Cypress və Selenium
+## Fəsil 19. Avtomatlaşdırma: test piramidası, Playwright framework-ü, Cypress və Selenium
 
-Avtomatlaşdırma təkrarlanan yoxlamaları koda tapşırmaqdır: regression testləri hər dəyişiklikdən sonra dəqiqələr ərzində, insansız işləyir. Bu fəsildə nəyi avtomatlaşdırmaq lazım olduğunu, test piramidasını və Playwright ilə ilk real testi yazmağı öyrənəcəksən.
+Avtomatlaşdırma təkrarlanan yoxlamaları koda tapşırmaqdır: regression testləri hər dəyişiklikdən sonra dəqiqələr ərzində, insansız işləyir. Bu fəsildə nəyi avtomatlaşdırmaq lazım olduğunu, test piramidasını və Playwright ilə ilk real testi öyrənəcəksən, sonra onun üstündə tam framework quracaqsan: Page Object, fixture, data-driven test, API testi, login vəziyyəti, trace və hesabat. Fəslin sonunda eyni fikirləri Cypress və Selenium-da da görəcəksən.
 
 ### 19.1. Nəyi avtomatlaşdırmalı, nəyi yox
 
@@ -3370,12 +3370,409 @@ describe('Login', () => {
 
 Cypress-də `await` yoxdur: o, əmrləri öz növbəsinə qoyur və ardıcıl icra edir. Selenium isə WebDriver protokolu ilə brauzeri idarə edir; çox dili dəstəklədiyi üçün böyük şirkətlərdə hələ də geniş yayılıb. Bir aləti yaxşı öyrənsən, digərinə keçmək asan olacaq: lokator, hərəkət və yoxlama məntiqi eynidir.
 
+### 19.11. Test framework-ünün quruluşu {#c19x1}
+
+Üç test bir faylda rahatdır. 300 test isə qaydasız oxunmaz olur: hər testdə eyni giriş kodu, hər yerdə açıq URL, kodun içində şifrə. **Test framework-ü** (test framework) testlərin hansı qovluqda durduğunu, ümumi kodun harada yazıldığını və ayarların haradan gəldiyini müəyyən edən quruluşdur. Playwright Test hazır alətdir (test runner); framework isə onun üstündə komandanın qurduğu nizamdır.
+
+```text
+qa-playwright/
+├── tests/
+│   ├── ui/
+│   │   ├── login.spec.js
+│   │   └── cart.spec.js
+│   ├── api/
+│   │   └── products.spec.js
+│   └── auth.setup.js
+├── pages/
+│   ├── LoginPage.js
+│   └── InventoryPage.js
+├── fixtures/
+│   └── pages.js
+├── data/
+│   └── login-errors.json
+├── playwright.config.js
+├── package.json
+├── .env
+└── .gitignore
+```
+
+| Yer | Nə saxlayır |
+| --- | --- |
+| tests/ | Yalnız testlər: nə edilir və nə gözlənilir |
+| pages/ | Page Object class-ları: lokatorlar və hərəkətlər |
+| fixtures/ | Testlərə hazır obyekt verən kod (19.12) |
+| data/ | Test datası (19.13) |
+| playwright.config.js | Bütün ayarlar: ünvan, brauzerlər, təkrar cəhd, hesabat |
+| .env | Şifrələr və mühit ünvanları; Git-ə düşmür |
+
+Bütün ayarlar bir yerdədir:
+
+```javascript
+import { defineConfig, devices } from '@playwright/test';
+import 'dotenv/config';
+
+export default defineConfig({
+  testDir: './tests',
+  fullyParallel: true,
+  retries: process.env.CI ? 2 : 0,
+  reporter: [['list'], ['html', { open: 'never' }]],
+  use: {
+    baseURL: process.env.BASE_URL || 'https://www.saucedemo.com',
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+  },
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+  ],
+});
+```
+
+`baseURL` yazılanda testlərdə qısa yol işlənir: `await page.goto('/')`. Mühit dəyişəndə (test → staging) testlərin heç biri dəyişmir, yalnız `BASE_URL` dəyişir. Şifrə `.env` faylındadır (`SAUCE_PASSWORD=...`), kodda isə `process.env.SAUCE_PASSWORD` kimi oxunur. Bunun üçün paket lazımdır: `npm install -D dotenv`. `.env` mütləq `.gitignore`-a yazılır.
+
+### 19.12. Fixture-lər {#c19x2}
+
+Testin başlığındakı `{ page }` artıq **fixture**-dir: Playwright testdən əvvəl brauzer tabını hazırlayır, testə verir, test bitəndə bağlayır. Fixture testə hazır obyekt verən hazırlıq koddur. Eyni üsulla öz fixture-ini yaza bilərsən.
+
+```javascript
+// fixtures/pages.js
+import { test as base, expect } from '@playwright/test';
+import { LoginPage } from '../pages/LoginPage';
+import { InventoryPage } from '../pages/InventoryPage';
+
+export const test = base.extend({
+  loginPage: async ({ page }, use) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.open();
+    await use(loginPage);
+  },
+
+  inventoryPage: async ({ page }, use) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.open();
+    await loginPage.login('standard_user', process.env.SAUCE_PASSWORD);
+    await use(new InventoryPage(page));
+  },
+});
+
+export { expect };
+```
+
+Test indi yalnız öz işini yazır:
+
+```javascript
+import { test, expect } from '../../fixtures/pages';
+
+test('məhsul səbətə əlavə olunur', async ({ inventoryPage }) => {
+  await inventoryPage.addToCart('Sauce Labs Backpack');
+  await expect(inventoryPage.cartBadge).toHaveText('1');
+});
+```
+
+- `base.extend({ … })` — öz fixture-lərimizlə yeni `test` yaradır.
+- `async ({ page }, use) => { … }` — fixture başqa fixture-dən (`page`) istifadə edə bilər.
+- `await use(x)` — `x`-i testə verir və test bitənə qədər burada gözləyir. `use`-dan əvvəlki kod hazırlıq, sonrakı kod təmizlikdir (teardown).
+- Fixture yalnız onu istəyən testdə işləyir: testin başlığında adı yoxdursa, hazırlıq vaxt aparmır.
+
+| | test.beforeEach | Fixture |
+| --- | --- | --- |
+| Harada | Bir faylın içində | İstənilən faylda, bir yerdə yazılır |
+| Nə vaxt işləyir | Fayldakı hər testdən əvvəl | Yalnız onu istəyən testdə |
+| Təmizlik | Ayrıca test.afterEach | Eyni yerdə, use-dan sonra |
+| Nə vaxt seç | Kiçik, bir fayllıq hazırlıq | Bir neçə faylda təkrarlanan hazırlıq |
+
+### 19.13. Data-driven testlər {#c19x3}
+
+Testin addımları eyni, yalnız dəyərlər fərqlidirsə, onu dəfələrlə köçürmə. **Data-driven test** eyni addımları bir data siyahısı ilə işlədir. EP və BVA ilə seçdiyin dəyərlər (Fəsil 5) burada birbaşa cədvələ çevrilir.
+
+```javascript
+import { test, expect } from '@playwright/test';
+
+const cases = [
+  { user: 'locked_out_user', pass: 'secret_sauce', error: 'locked out' },
+  { user: 'standard_user', pass: 'yanlis_sifre', error: 'do not match' },
+  { user: '', pass: 'secret_sauce', error: 'Username is required' },
+  { user: 'standard_user', pass: '', error: 'Password is required' },
+];
+
+for (const { user, pass, error } of cases) {
+  test(`giriş xətası: "${user}" / "${pass}"`, async ({ page }) => {
+    await page.goto('https://www.saucedemo.com/');
+    await page.getByPlaceholder('Username').fill(user);
+    await page.getByPlaceholder('Password').fill(pass);
+    await page.getByRole('button', { name: 'Login' }).click();
+    await expect(page.locator('[data-test="error"]')).toContainText(error);
+  });
+}
+```
+
+Dörd ayrı test yaranır: biri düşəndə o birilər işləməyə davam edir, hesabatda hansı dəyərin düşdüyü adından görünür. **Testin adı unikal olmalıdır:** adda dəyər olmasa, Playwright “duplicate test title” xətası verir.
+
+Data çoxalanda onu ayrıca fayla çıxar, testçi kod yazmadan yeni sətir əlavə edə bilər:
+
+```javascript
+import cases from '../../data/login-errors.json' with { type: 'json' };
+```
+
+**Nə vaxt işlətmə:** sətirlərdə addımlar fərqlidirsə. Dövrün içində `if` yaranırsa, bu, ayrı test olmalıdır, çünki test oxunmur və səhv hesabatı başa düşülmür.
+
+### 19.14. Playwright ilə API testləri {#c19x4}
+
+Postman (Fəsil 15) API-ni öyrənmək və əl ilə yoxlamaq üçün rahatdır. Eyni yoxlamalar UI testləri ilə bir layihədə, bir hesabatda olsun deyə Playwright-ın `request` fixture-i işlənir. Brauzer açılmır, ona görə testlər saniyənin bir hissəsinə gedir.
+
+```javascript
+import { test, expect } from '@playwright/test';
+
+const API = 'https://jsonplaceholder.typicode.com';
+
+test('GET /users/1 düzgün istifadəçini qaytarır', async ({ request }) => {
+  const response = await request.get(`${API}/users/1`);
+
+  expect(response.status()).toBe(200);
+  const user = await response.json();
+  expect(user.name).toBe('Leanne Graham');
+});
+
+test('POST /posts yeni yazı yaradır', async ({ request }) => {
+  const response = await request.post(`${API}/posts`, {
+    data: { title: 'Test post', body: 'Mətn', userId: 1 },
+  });
+
+  expect(response.status()).toBe(201);
+  const post = await response.json();
+  expect(post.title).toBe('Test post');
+});
+
+test('olmayan yazı 404 qaytarır', async ({ request }) => {
+  const response = await request.get(`${API}/posts/9999`);
+  expect(response.status()).toBe(404);
+});
+```
+
+| Postman | Playwright | Nə edir |
+| --- | --- | --- |
+| Sorğu pəncərəsi | request.get(url) | Sorğu göndərir |
+| Body → raw JSON | { data: { … } } | Gövdə göndərir |
+| Headers | { headers: { … } } | Başlıq göndərir |
+| pm.response.code | response.status() | Status kodu |
+| pm.response.json() | await response.json() | Gövdəni oxuyur; await lazımdır |
+
+**API ilə hazırlıq, UI ilə yoxlama.** Ən faydalı üsul budur: test datasını API ilə yaradırsan (sürətli, sabit), yalnız yoxlanan hissəni UI ilə edirsən. Məsələn, sifariş tarixçəsi ekranını yoxlamaq üçün 8 ekranlıq checkout-dan keçmək lazım deyil: `request.post('/api/orders', …)` ilə sifariş yarat, sonra `page.goto('/orders')`. Piramidanın (19.2) kodda görünüşü belədir.
+
+**Token ilə sorğu:**
+
+```javascript
+const login = await request.post(`${API}/login`, {
+  data: { username: 'standard_user', password: process.env.SAUCE_PASSWORD },
+});
+const { token } = await login.json();
+
+const cart = await request.get(`${API}/cart`, {
+  headers: { Authorization: `Bearer ${token}` },
+});
+```
+
+### 19.15. Login vəziyyətini saxlamaq {#c19x5}
+
+100 testin hər biri giriş formasını doldursa, 100 dəfə eyni ekran yoxlanır və vaxt itir. Playwright bir dəfə daxil olub **vəziyyəti** (cookie və localStorage) fayla yaza, sonrakı testlərdə bu fayldan başlaya bilər. Buna `storageState` deyilir.
+
+```javascript
+// tests/auth.setup.js
+import { test as setup, expect } from '@playwright/test';
+
+setup('giriş vəziyyətini saxla', async ({ page }) => {
+  await page.goto('https://www.saucedemo.com/');
+  await page.getByPlaceholder('Username').fill('standard_user');
+  await page.getByPlaceholder('Password').fill(process.env.SAUCE_PASSWORD);
+  await page.getByRole('button', { name: 'Login' }).click();
+  await expect(page).toHaveURL(/inventory/);
+
+  await page.context().storageState({ path: 'playwright/.auth/user.json' });
+});
+```
+
+Konfiqurasiyada ayrıca `setup` layihəsi yazılır, testlər ondan asılı olur:
+
+```javascript
+projects: [
+  { name: 'setup', testMatch: /.*\.setup\.js/ },
+  {
+    name: 'chromium',
+    testIgnore: /.*\.setup\.js/,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: 'playwright/.auth/user.json',
+    },
+    dependencies: ['setup'],
+  },
+],
+```
+
+İndi testlər daxil olmuş halda başlayır:
+
+```javascript
+test('məhsullar səhifəsi açılır', async ({ page }) => {
+  await page.goto('/inventory.html');
+  await expect(page.getByText('Products')).toBeVisible();
+});
+```
+
+- **Giriş testi ayrıca qalır.** Login forması özü də funksiyadır, onun testləri vəziyyətsiz başlamalıdır: `test.use({ storageState: { cookies: [], origins: [] } });`.
+- **Fayl gizlidir.** İçində işləyən sessiya var: `playwright/.auth` `.gitignore`-a yazılır.
+- **Hər rol üçün ayrıca fayl:** `admin.json`, `user.json`.
+- **Vəziyyət paylaşılır.** Paralel testlər eyni hesabda səbəti dəyişirsə, bir-birinə mane olur (19.9). Hesabı dəyişən testlər ayrıca hesab işlətsin.
+
+### 19.16. Trace, hesabat və teqlər {#c19x6}
+
+Framework-ün dəyəri test düşəndə görünür: harada, niyə, nə baş verdi?
+
+**Trace viewer.** Testin hər addımını, ekranını, şəbəkə sorğularını və konsolunu yazır. Konfiqurasiyada `trace: 'on-first-retry'` yazılanda trace yalnız düşən testin təkrarında yaranır, ona görə CI-ı ləngitmir.
+
+```bash
+npx playwright test --trace on
+npx playwright show-trace test-results/login-chromium/trace.zip
+npx playwright show-report
+```
+
+Trace-də addıma basanda həmin anın ekranı açılır: “Before” və “After”, sorğular, konsol xətaları. Flaky testin (19.9) səbəbi çox vaxt burada görünür.
+
+**Hesabatlar.** Bir neçə hesabat birlikdə işləyə bilər:
+
+```javascript
+reporter: [
+  ['list'],
+  ['html', { open: 'never' }],
+  ['junit', { outputFile: 'results/junit.xml' }],
+],
+```
+
+`list` terminal üçündür, `html` insan üçündür, `junit` isə CI və test idarəetmə alətləri üçün.
+
+**Teqlər.** Dəstin bir hissəsini işlətmək üçün:
+
+```javascript
+test('uğurlu giriş', { tag: '@smoke' }, async ({ page }) => {
+  // …
+});
+```
+
+```bash
+npx playwright test --grep @smoke
+npx playwright test --grep-invert @slow
+npx playwright test --last-failed
+```
+
+Bu teq CI planını qurur: PR-da `@smoke`, gecə isə tam dəst (20.10).
+
+**Addımlar.** `test.step` uzun testi hesabatda oxunan hissələrə bölür:
+
+```javascript
+await test.step('Məhsulu səbətə at', async () => {
+  await inventoryPage.addToCart('Sauce Labs Backpack');
+  await expect(inventoryPage.cartBadge).toHaveText('1');
+});
+```
+
+### 19.17. Eyni framework Cypress və Selenium-da {#c19x7}
+
+19.10 üç aləti bir testlə müqayisə etdi. Framework səviyyəsində fərqlər daha aydındır, çünki hər alət hazırlığı və datanı öz yolu ilə həll edir. Eyni ssenari: daxil ol, məhsulu səbətə at, nişanı yoxla.
+
+**Cypress.** Ortaq kod “əmr” (custom command) olur, vəziyyəti `cy.session` saxlayır.
+
+```javascript
+// cypress/support/commands.js
+Cypress.Commands.add('login', (user, pass) => {
+  cy.session(user, () => {
+    cy.visit('https://www.saucedemo.com/');
+    cy.get('[data-test="username"]').type(user);
+    cy.get('[data-test="password"]').type(pass);
+    cy.get('[data-test="login-button"]').click();
+    cy.url().should('include', '/inventory');
+  });
+});
+
+// cypress/e2e/cart.cy.js
+describe('Səbət', () => {
+  it('məhsul səbətə əlavə olunur', () => {
+    cy.login('standard_user', Cypress.env('SAUCE_PASSWORD'));
+    cy.visit('https://www.saucedemo.com/inventory.html');
+    cy.get('[data-test="add-to-cart-sauce-labs-backpack"]').click();
+    cy.get('.shopping_cart_badge').should('have.text', '1');
+  });
+});
+```
+
+**Selenium.** Selenium yalnız brauzeri idarə edir, test runner deyil: testi işə salan, yoxlayan və hesabat verən hissəni ayrıca seçirsən (burada Node-un `node:test` və `node:assert`-i; Java-da JUnit və ya TestNG, Python-da pytest). Gözləmələri özün yazırsan.
+
+```javascript
+import { test, before, after } from 'node:test';
+import assert from 'node:assert';
+import { Builder, By, until } from 'selenium-webdriver';
+
+class LoginPage {
+  constructor(driver) {
+    this.driver = driver;
+  }
+
+  async open() {
+    await this.driver.get('https://www.saucedemo.com/');
+  }
+
+  async login(user, pass) {
+    await this.driver.findElement(By.css('[data-test="username"]')).sendKeys(user);
+    await this.driver.findElement(By.css('[data-test="password"]')).sendKeys(pass);
+    await this.driver.findElement(By.css('[data-test="login-button"]')).click();
+  }
+}
+
+let driver;
+before(async () => {
+  driver = await new Builder().forBrowser('chrome').build();
+});
+after(async () => {
+  await driver.quit();
+});
+
+test('məhsul səbətə əlavə olunur', async () => {
+  const loginPage = new LoginPage(driver);
+  await loginPage.open();
+  await loginPage.login('standard_user', process.env.SAUCE_PASSWORD);
+
+  const add = await driver.wait(
+    until.elementLocated(By.css('[data-test="add-to-cart-sauce-labs-backpack"]')),
+    5000
+  );
+  await add.click();
+
+  const badge = await driver.wait(until.elementLocated(By.css('.shopping_cart_badge')), 5000);
+  assert.strictEqual(await badge.getText(), '1');
+});
+```
+
+| Mövzu | Playwright | Cypress | Selenium |
+| --- | --- | --- | --- |
+| Dil | JS/TS, Python, Java, C# | JS/TS | Java, Python, C#, JS, Ruby və s. |
+| Test runner | Daxildir | Daxildir | Ayrıca seçilir (JUnit, pytest, node:test) |
+| Gözləmə | Avtomatik | Avtomatik (retry-ability) | Əsasən açıq (explicit wait) |
+| Ortaq hazırlıq | Fixture | beforeEach, custom command | Runner-in imkanları |
+| API testi | request | cy.request | Ayrıca kitabxana (REST Assured, axios) |
+| Login vəziyyəti | storageState | cy.session | Cookie-ni özün yazırsan |
+| Paralel icra | Daxildir (workers, shard) | Cloud və ya əlavə alətlər | Selenium Grid |
+| Brauzerlər | Chromium, Firefox, WebKit | Chromium ailəsi, Firefox, WebKit (eksperimental) | Bütün əsas brauzerlər, real Safari da |
+| Köməkçi alət | Trace viewer, codegen, UI mode | Time travel, Cypress App | Grid, IDE, ekosistem |
+
+**Necə seçməli:** yeni JavaScript layihəsi üçün Playwright, komanda brauzerdə debug rahatlığını üstün tutursa Cypress, Java və ya C# komandası, köhnə infrastruktur və ya geniş brauzer şəbəkəsi varsa Selenium (bəzən Playwright-ın həmin dil versiyası). Əsas fikirlər (Page Object, müstəqil test, test datasının ayrılması, CI) üçündə eynidir: bir aləti dərindən bilən adam o birisini həftələrlə öyrənir, aylarla yox.
+
 ### Diqqət: tez-tez edilən səhvlər
 
 - **`await`-i unutmaq.** Test gözləmədən irəli qaçır.
 - **Sabit gözləmələr (`waitForTimeout`).** Testi yavaşladır və yenə də flaky edir.
 - **Hər şeyi UI ilə test etmək.** API ilə yoxlana bilən şeyi API ilə yoxla — piramidanı xatırla.
 - **Testləri bir-birinə bağlamaq.** Birinci test istifadəçi yaradır, ikincisi onu işlədirsə, birinci düşəndə hamısı düşür.
+- **Fixture-də `await use(…)` yazmamaq.** Test heç başlamır, timeout olur.
+- **Data-driven testdə dövrü `test`-in içinə qoymaq.** Birinci səhv dəyərdə dayanır, qalanlar yoxlanmır.
+- **`await response.json()` yazmamaq.** Dəyər Promise olur, `user.name` isə `undefined`.
+- **Şifrəni və `playwright/.auth`-u repo-ya atmaq.** `.env` və `.auth` `.gitignore`-a yazılır.
 
 ### Həll olunmuş nümunə
 
@@ -3419,6 +3816,7 @@ test('məhsul səbətə əlavə olunur', async ({ page }) => {
 3. codegen ilə checkout prosesini (səbət → Checkout → məlumatlar → Finish) yaz. Yaranan kodu oxu və hər sətrini öz sözlərinlə izah et.
 4. LoginPage POM-unu yarat və yazdığın bütün login testlərini ona keçir.
 5. Testlərdən birini qəsdən sındır (gözlənilən mətni dəyiş) və HTML hesabatda xətanın necə göstərildiyinə bax.
+6. Öz framework-ünü qur: Swag Labs üçün qovluq quruluşu, 2 page class, 1 fixture, 1 data-driven test, 2 API testi, login vəziyyəti və GitHub Actions. README yaz və GitHub-a yüklə: bu, portfolio-nun əsas layihəsi olacaq.
 
 ### Özünü yoxla
 
@@ -3427,6 +3825,9 @@ test('məhsul səbətə əlavə olunur', async ({ page }) => {
 - Tövsiyə olunan lokator sırası necədir və niyə?
 - Auto-waiting nədir?
 - Flaky test nədir və səbəbləri hansılardır?
+- Fixture nədir və `test.beforeEach`-dən nə ilə fərqlənir?
+- Data-driven test nə vaxt lazımdır, nə vaxt lazım deyil?
+- `storageState` hansı problemi həll edir və fayl niyə repo-ya düşməməlidir?
 
 ## Fəsil 20. Git, GitHub və CI/CD
 
@@ -3568,6 +3969,86 @@ jobs:
 - **Defekt, yoxsa test problemi?** Məhsul sınıbsa — bug report; test köhnəlibsə — testi yenilə.
 - **Flaky testləri izləmək və düzəltmək.**
 - **Deploy-dan sonra smoke testlərin avtomatik işə düşməsini təmin etmək.**
+
+### 20.10. Framework-ü CI-a bağlamaq {#c20x1}
+
+20.8-dəki fayl başlanğıcdır. Testlər çoxalanda üç sual yaranır: şifrə haradan gəlir, hər PR-da nə işləyir, 30 dəqiqəlik dəsti necə qısaltmaq olar?
+
+**Secrets.** Şifrə repo-ya yazılmır. GitHub-da: repo → Settings → Secrets and variables → Actions → New repository secret. Ad: `SAUCE_PASSWORD`. Workflow-da belə oxunur:
+
+```yaml
+env:
+  SAUCE_PASSWORD: ${{ secrets.SAUCE_PASSWORD }}
+```
+
+Testlərdə o, `process.env.SAUCE_PASSWORD` kimi görünür: kompüterdə `.env`-dən, CI-da secrets-dən gəlir, test kodu dəyişmir.
+
+**PR-da az, gecə çox.** Teqlərlə (19.16) iki rejim qurulur: PR-da yalnız `@smoke`, gecə tam dəst.
+
+**Shard.** Dəsti bir neçə maşına bölür: `--shard=1/3` dəstin birinci üçdə birini işlədir. `strategy.matrix` isə üç paralel job yaradır.
+
+```yaml
+name: E2E
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 20 * * *'
+jobs:
+  smoke:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      SAUCE_PASSWORD: ${{ secrets.SAUCE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --project=chromium --grep @smoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-report
+          path: playwright-report/
+  full:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    env:
+      SAUCE_PASSWORD: ${{ secrets.SAUCE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - run: npx playwright test --shard=${{ matrix.shard }}/3
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-report-${{ matrix.shard }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+```
+
+- `cron: '0 20 * * *'` — GitHub UTC vaxtı ilə işləyir: 20:00 UTC = 00:00 Bakı.
+- `if: github.event_name == …` — job-u yalnız uyğun hadisədə işə salır.
+- `fail-fast: false` — bir shard düşəndə o birilər dayanmır.
+- `test-results/` — trace və ekran şəkillərini də saxlayır: düşən testin diaqnozu üçün.
+- Hər shard ayrıca hesabat verir. Onları bir hesabatda birləşdirmək üçün Playwright-ın `blob` hesabatı və `merge-reports` əmri var.
+
+**PR-ı qoruyan qayda.** Pipeline-ın nəticəsi məcburi olmayanda proqramçılar gözləmir. GitHub-da: Settings → Branches → main üçün qayda → “Require status checks to pass”. İndi `smoke` qırmızıdırsa, PR birləşmir. Bu qaydanın düzgün işləməsi üçün flaky testlər tez düzəldilməlidir, yoxsa komanda onu söndürməyi istəyəcək.
+
+**Portfolio üçün.** README-yə workflow-un nişanını (badge) və son hesabatın linkini əlavə et: işəgötürən testlərin həqiqətən işlədiyini bir baxışda görür.
 
 ### Diqqət: tez-tez edilən səhvlər
 
@@ -3792,6 +4273,7 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | Cookie | Cookie | Serverin brauzerdə saxladığı kiçik məlumat | 13 |
 | Coverage | Əhatə | Testlərin kodu və ya tələbləri nə qədər əhatə etməsi | 7 |
 | CRUD | CRUD | Create, Read, Update, Delete — data ilə 4 əsas əməliyyat | 13 |
+| Data-driven test | Dataya əsaslanan test | Eyni addımların data siyahısı ilə işlədildiyi test | 19 |
 | Debugging | Debugging (sazlama) | Defektin kodda yerini tapıb düzəltmək; adətən proqramçının işi | 1 |
 | Decision table | Qərar cədvəli | Şərt kombinasiyalarını və nəticələri göstərən cədvəl | 9 |
 | Defect clustering | Defektlərin qruplaşması | Defektlərin az sayıda modulda toplanması | 2 |
@@ -3810,6 +4292,7 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | Expected / Actual result | Gözlənilən / faktiki nəticə | Olmalı olan və əslində olan davranış | 11 |
 | Exploratory testing | Kəşfiyyat testi | Öyrənmə, dizayn və icranın eyni vaxtda getməsi | 7 |
 | Failure | Nasazlıq | İstifadəçinin gördüyü yanlış davranış | 1 |
+| Fixture | Test hazırlığı | Testə hazır obyekt verən və sonda təmizlik edən kod | 19 |
 | Flaky test | Qeyri-sabit test | Kod dəyişmədən bəzən keçən, bəzən düşən test | 19 |
 | Functional testing | Funksional test | Sistemin nə etdiyinin yoxlanması | 6 |
 | Gherkin | Gherkin | Given–When–Then formatlı ssenari dili | 10 |
@@ -3857,6 +4340,7 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | State transition testing | Vəziyyət keçidləri testi | Vəziyyətlərin və onlar arası keçidlərin yoxlanması | 9 |
 | Static testing | Statik test | Proqramı işə salmadan yoxlama (review) | 7 |
 | STLC | Testin həyat dövrü | Test işinin mərhələləri | 4 |
+| Storage state | Giriş vəziyyəti | Fayla yazılan cookie və localStorage: testlər daxil olmuş halda başlayır | 19 |
 | Stress testing | Stress testi | Limitdən yuxarı yükdə davranışın yoxlanması | 6 |
 | System testing | Sistem testi | Bütöv sistemin yoxlanması | 5 |
 | TDD | Testlə idarə olunan inkişaf | Əvvəl unit test, sonra onu keçirən kod: qırmızı → yaşıl → refaktor | 3 |
@@ -3869,6 +4353,7 @@ Bu lüğət kitabdakı əsas terminləri ingiliscə əlifba sırası ilə toplay
 | Testing quadrants | Test kvadrantları | Test növlərini biznes/texnologiya və kömək/tənqid oxları ilə qruplaşdırmaq | 6 |
 | Testware | Test materialları | Testin bütün iş məhsulları: plan, case, data, skript, hesabat | 1 |
 | Three-point estimation | Üç nöqtəli qiymətləndirmə | Optimist, ən ehtimallı və pessimist qiymətdən: E = (a + 4m + b) / 6 | 11 |
+| Trace viewer | Trace baxıcısı | Düşən testin hər addımını, ekranını və sorğularını göstərən alət | 19 |
 | UAT | İstifadəçi qəbul testi | Real istifadəçilərin apardığı qəbul testi | 5 |
 | Unit testing | Unit (modul) testi | Ən kiçik kod hissəsinin yoxlanması | 5 |
 | Usability testing | İstifadə rahatlığı testi | Məhsulun nə qədər asan işlədildiyinin yoxlanması | 6 |

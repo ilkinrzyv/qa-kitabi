@@ -107,5 +107,9 @@
 "Shift left": "g106",
 "Three-point estimation": "g107",
 "Product / Project risk": "g108",
-"Risk level": "g109"
+"Risk level": "g109",
+"Data-driven test": "g110",
+"Fixture": "g111",
+"Storage state": "g112",
+"Trace viewer": "g113"
 }

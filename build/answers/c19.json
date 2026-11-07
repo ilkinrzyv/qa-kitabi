@@ -178,5 +178,112 @@
       "Flaky-nin dəyişiklik olmadan fərqli nəticə verməsi deyilib",
       "Ən azı iki səbəb sadalanıb"
     ]
+  },
+  "c19x1m": {
+    "h": "Üç sual: test harada, ortaq kod harada, data və ayar harada? `.gitignore`-a yenidən yaranan və gizli olan hər şey düşür.",
+    "a": "Bu, mümkün quruluşdur; adlar komandaya görə dəyişə bilər.\n\n```text\nswag-labs-tests/\n├── tests/\n│   ├── ui/\n│   │   ├── login.spec.js\n│   │   ├── cart.spec.js\n│   │   └── checkout.spec.js\n│   └── api/\n│       └── products.spec.js\n├── pages/\n│   ├── LoginPage.js\n│   └── CartPage.js\n├── data/\n│   └── login-errors.json\n├── playwright.config.js\n├── .env\n└── .gitignore\n```\n\n- **`tests/ui/`:** ekran testləri, hər mövzuya bir fayl.\n- **`tests/api/`:** brauzersiz API testləri.\n- **`pages/`:** lokatorlar və hərəkətlər.\n- **`data/`:** test datası, addımlardan ayrı.\n- **`playwright.config.js`:** bütün ayarlar.\n- **`.env`:** şifrə, repo-ya düşmür.\n\n```javascript\nexport default defineConfig({\n  retries: process.env.CI ? 2 : 0,\n  use: {\n    baseURL: 'https://www.saucedemo.com',\n    trace: 'on-first-retry',\n  },\n});\n```\n\n**`.gitignore`:**\n\n```text\nnode_modules/\ntest-results/\nplaywright-report/\nplaywright/.auth/\n.env\n```",
+    "c": [
+      "UI testləri, API testləri, page class-lar və data ayrı yerdədir",
+      "Hər qovluğun nə saxladığı izah olunub",
+      "Config-də `baseURL`, `retries` və `trace` var, retries CI-dan asılıdır",
+      "`.gitignore`-da `node_modules`, hesabatlar və `.env` var"
+    ]
+  },
+  "c19x2m": {
+    "h": "`use(page)`-dən əvvəl giriş, sonra Logout. Menyu düyməsini, sonra “Logout” linkini bas. `base.extend`-i unutma: fixture testin başlığında adı ilə çağırılır.",
+    "a": "```javascript\nimport { test as base, expect } from '@playwright/test';\n\nconst test = base.extend({\n  loggedInPage: async ({ page }, use) => {\n    // Hazırlıq\n    await page.goto('https://www.saucedemo.com/');\n    await page.getByPlaceholder('Username').fill('standard_user');\n    await page.getByPlaceholder('Password').fill('secret_sauce');\n    await page.getByRole('button', { name: 'Login' }).click();\n\n    await use(page);\n\n    // Təmizlik\n    await page.getByRole('button', { name: 'Open Menu' }).click();\n    await page.getByText('Logout').click();\n  },\n});\n\ntest('məhsullar səhifəsi açılır', async ({ loggedInPage }) => {\n  await expect(loggedInPage.getByText('Products')).toBeVisible();\n});\n\ntest('məhsul səbətə əlavə olunur', async ({ loggedInPage }) => {\n  await loggedInPage.locator('[data-test=\"add-to-cart-sauce-labs-backpack\"]').click();\n  await expect(loggedInPage.locator('.shopping_cart_badge')).toHaveText('1');\n});\n```\n\n**Nə vaxt işləyir:** `use`-dan əvvəlki kod testdən əvvəl, `use`-dan sonrakı kod test bitəndən sonra işləyir, test düşsə də.\n\n**`beforeEach` / `afterEach` ilə fərq:** onlar faylın hər testində işləyir və adətən bir faylda yazılır. Fixture-i istənilən fayl götürür, yalnız onu istəyən testdə işləyir, hazırlıq və təmizlik bir yerdədir. Bir fayllıq sadə hazırlıq üçün `beforeEach` də yaxşı seçimdir. Çox vaxt “Logout” ayrıca lazım deyil, çünki hər test yeni kontekstdə başlayır; burada `use`-dan sonrakı hissəni göstərmək üçün yazılıb.",
+    "c": [
+      "Fixture `base.extend` ilə yaradılıb, `await use(page)` var",
+      "Giriş `use`-dan əvvəl, Logout `use`-dan sonradır",
+      "İki test `loggedInPage`-i başlığında istəyir",
+      "`use`-dan əvvəl və sonrakı kodun vaxtı izah olunub",
+      "`beforeEach` və `afterEach` ilə müqayisə var"
+    ]
+  },
+  "c19x3m": {
+    "h": "Dörd sətir: 0, 1, 10, 11. Hər sətirdə gözlənilən nəticə də olsun. Dövr `test`-in xaricində, dəyər testin adındadır.",
+    "a": "Sayt və lokatorlar uydurmadır, sənin təsəvvür etdiyin lokatorlar fərqli ola bilər.\n\n```javascript\nimport { test, expect } from '@playwright/test';\n\nconst cases = [\n  { qty: '0', ok: false },\n  { qty: '1', ok: true },\n  { qty: '10', ok: true },\n  { qty: '11', ok: false },\n];\n\nfor (const { qty, ok } of cases) {\n  test(`səbətdə miqdar: ${qty}`, async ({ page }) => {\n    await page.goto('https://shop.example.com/cart');\n    await page.getByLabel('Miqdar').fill(qty);\n    await page.getByRole('button', { name: 'Yenilə' }).click();\n\n    const error = page.getByText('Miqdar 1–10 arasında olmalıdır');\n    if (ok) {\n      await expect(error).toBeHidden();\n    } else {\n      await expect(error).toBeVisible();\n    }\n  });\n}\n```\n\nHesabatda dörd ayrı test görünür: `səbətdə miqdar: 0`, `səbətdə miqdar: 1`, və s.\n\n**Dövr `test`-in içində olsa:** cəmi bir test olur. 0-da düşəndə qalan üç dəyər heç yoxlanmır, hesabatda hansı dəyərin düşdüyü adından görünmür. Bir baq digərlərini gizlədir.\n\nBurada `if` qəbul oluna bilər, çünki addımlar eynidir, yalnız nəticə fərqlidir. Addımlar da fərqlənsəydi, ayrı testlər yazardım.",
+    "c": [
+      "Cədvəl BVA dəyərləridir: 0, 1, 10, 11",
+      "Hər sətirdə gözlənilən nəticə var",
+      "Dövr `test`-in xaricindədir, hər sətir ayrı test olur",
+      "Testin adında dəyər var, adlar təkrarlanmır",
+      "Dövrün içəri alınmasının zərəri izah olunub"
+    ]
+  },
+  "c19x4m": {
+    "h": "`request.get` və `request.post` Promise qaytarır. `response.json()` də. `response.status()` isə dərhal cavab verir. `id`-nin tipi üçün `typeof` işlət.",
+    "a": "```javascript\nimport { test, expect } from '@playwright/test';\n\nconst API = 'https://jsonplaceholder.typicode.com';\n\ntest('GET /users/5: şəhər Roscoeview-dur', async ({ request }) => {\n  const response = await request.get(`${API}/users/5`);\n  expect(response.status()).toBe(200);\n  const user = await response.json();\n  expect(user.address.city).toBe('Roscoeview');\n});\n\ntest('POST /posts: yazı yaradılır', async ({ request }) => {\n  const response = await request.post(`${API}/posts`, {\n    data: { title: 'Test post', body: 'Mətn', userId: 1 },\n  });\n  expect(response.status()).toBe(201);\n  const post = await response.json();\n  expect(post.title).toBe('Test post');\n  expect(typeof post.id).toBe('number');\n});\n\ntest('GET /posts/9999: tapılmır', async ({ request }) => {\n  const response = await request.get(`${API}/posts/9999`);\n  expect(response.status()).toBe(404);\n});\n```\n\n**`await` lazımdır:** `request.get`, `request.post`, `response.json()` şəbəkə və ya gövdə gözləyir, Promise qaytarır. `await`-siz `user.address` `undefined` olar.\n\n**`await` lazım deyil:** `response.status()` cavab artıq gəldiyi üçün dərhal rəqəm verir. `expect(dəyər).toBe(...)` də dəyəri bir dəfə tutuşdurur. `await expect(lokator).toHaveText(...)` isə gözlədiyi üçün `await` istəyir.",
+    "c": [
+      "Üç test yazılıb və `request` fixture-i işlədilir",
+      "GET /users/5-də `address.city` yoxlanılır",
+      "POST-da 201, `title` və `id`-nin ədəd olması yoxlanılır",
+      "GET /posts/9999-da 404 gözlənilir",
+      "`await`-in lazım olduğu və olmadığı yerlər izah olunub"
+    ]
+  },
+  "c19x5m": {
+    "h": "Dörd hissə: setup testi, `projects`, `.gitignore`, testlər. Paralel sual üçün 19.9-a bax: eyni hesabda eyni səbət. Hər worker öz hesabını işlətsə, nə olar?",
+    "a": "**`tests/auth.setup.js`:**\n\n```javascript\nimport { test as setup, expect } from '@playwright/test';\n\nsetup('giriş vəziyyətini saxla', async ({ page }) => {\n  await page.goto('https://www.saucedemo.com/');\n  await page.getByPlaceholder('Username').fill('standard_user');\n  await page.getByPlaceholder('Password').fill(process.env.SAUCE_PASSWORD);\n  await page.getByRole('button', { name: 'Login' }).click();\n  await expect(page).toHaveURL(/inventory/);\n  await page.context().storageState({ path: 'playwright/.auth/user.json' });\n});\n```\n\n**`playwright.config.js`:**\n\n```javascript\nprojects: [\n  { name: 'setup', testMatch: /.*\\.setup\\.js/ },\n  {\n    name: 'chromium',\n    testIgnore: /.*\\.setup\\.js/,\n    use: { ...devices['Desktop Chrome'], storageState: 'playwright/.auth/user.json' },\n    dependencies: ['setup'],\n  },\n],\n```\n\n**`.gitignore`:** `playwright/.auth`\n\n**Test:**\n\n```javascript\nimport { test, expect } from '@playwright/test';\n\ntest('məhsullar açılır', async ({ page }) => {\n  await page.goto('/inventory.html');\n  await expect(page.getByText('Products')).toBeVisible();\n});\n\ntest('səbət açılır', async ({ page }) => {\n  await page.goto('/cart.html');\n  await expect(page.getByText('Your Cart')).toBeVisible();\n});\n```\n\n**Login testləri:** forma özü funksiyadır. Vəziyyət hazır olanda test giriş ekranını heç görmür, ona görə boş başlayır: `test.use({ storageState: { cookies: [], origins: [] } });`.\n\n**Paralel testlər:** eyni hesabda bir test məhsul əlavə edir, o biri səbətdə 2 görür və düşür. **Həll:** səbəti dəyişən testlər üçün hər worker-ə ayrı hesab (`testInfo.parallelIndex`) və ya hər test üçün API ilə yeni istifadəçi.",
+    "c": [
+      "Setup testi vəziyyəti `storageState({ path })` ilə saxlayır",
+      "Config-də `setup` layihəsi, `storageState` və `dependencies` var",
+      "`.gitignore`-da `playwright/.auth` var",
+      "İki test girişsiz başlayır, birbaşa səhifəni açır",
+      "Paralel problem və ayrı hesab həlli izah olunub"
+    ]
+  },
+  "c19x6m": {
+    "h": "Teq `{ tag: '@smoke' }` ilə qoyulur. `--grep`, `--grep-invert`, `--last-failed`. `test.step` ad və asinxron funksiya alır.",
+    "a": "**Teqlər:**\n\n```javascript\ntest('uğurlu giriş', { tag: '@smoke' }, async ({ page }) => {\n  // …\n});\n\ntest('tam checkout, 3 məhsul', { tag: '@slow' }, async ({ page }) => {\n  // …\n});\n```\n\n**Əmrlər:**\n\n```text\nnpx playwright test --grep @smoke\nnpx playwright test --grep-invert @slow\nnpx playwright test --last-failed\n```\n\n**Config:**\n\n```javascript\nexport default defineConfig({\n  reporter: [\n    ['list'],\n    ['html', { open: 'never' }],\n    ['junit', { outputFile: 'results/junit.xml' }],\n  ],\n  use: {\n    trace: 'on-first-retry',\n  },\n});\n```\n\n**Addımlar:**\n\n```javascript\ntest('tam checkout', { tag: '@slow' }, async ({ page }) => {\n  await test.step('Səbəti hazırla', async () => {\n    await page.goto('https://www.saucedemo.com/');\n    await page.getByPlaceholder('Username').fill('standard_user');\n    await page.getByPlaceholder('Password').fill('secret_sauce');\n    await page.getByRole('button', { name: 'Login' }).click();\n    await page.locator('[data-test=\"add-to-cart-sauce-labs-backpack\"]').click();\n  });\n\n  await test.step('Sifarişi tamamla', async () => {\n    await page.locator('.shopping_cart_link').click();\n    await page.locator('[data-test=\"checkout\"]').click();\n    await page.locator('[data-test=\"firstName\"]').fill('Aysel');\n    await page.locator('[data-test=\"lastName\"]').fill('Əliyeva');\n    await page.locator('[data-test=\"postalCode\"]').fill('1000');\n    await page.locator('[data-test=\"continue\"]').click();\n    await page.locator('[data-test=\"finish\"]').click();\n    await expect(page.locator('.complete-header')).toHaveText('Thank you for your order!');\n  });\n});\n```\n\n**Hesabatda dəyişən:** 13 ayrı sətir əvəzinə iki adlı addım görünür, hər birinin vaxtı və içi var. Test düşəndə kodu açmadan “Sifarişi tamamla” mərhələsində düşdüyünü görürsən.",
+    "c": [
+      "`@smoke` və `@slow` teqləri `tag` seçimi ilə qoyulub",
+      "`--grep`, `--grep-invert`, `--last-failed` əmrləri düzgündür",
+      "Config-də `trace` və üç hesabat var",
+      "Test iki `test.step`-ə bölünüb, hesabata təsiri izah olunub"
+    ]
+  },
+  "c19x7m": {
+    "h": "Üç seçimi eyni meyarlarla tutuşdur: köhnə testlər, dil, Safari, yeni testin vaxtı. Bir qərar ver. Keçid birdən olmaz: pilotla başla.",
+    "a": "Bu, mümkün qərardır; əsas odur ki, meyarlarla əsaslandırılsın.\n\n| Seçim | Üstünlük | Risk |\n|---|---|---|\n| Selenium-da qalmaq | 800 test işləyir, komanda bilir, real Safari | Gözləmələr və flaky testlər qalır, yeni testlər yavaş yazılır |\n| Playwright Java | Komandanın dili, auto-waiting, trace | 800 test yenidən yazılır, Safari yalnız WebKit mühərriki ilədir |\n| Playwright JavaScript | Yeni testlər sürətli, ən geniş ekosistem | 10 nəfər yeni dil öyrənməli olur, iki dəst iki dildə qalır |\n\n**Qərar:** köhnə 800 testi qoruyub, yeni testləri **Playwright Java** ilə yazmağı pilot edərdim. Komandanın 12 nəfəri Java bilir, iki JavaScript bilən də keçə bilər. Safari tələbi real cihaz tələb edirsə, bu hissə üçün Selenium Grid qalır: WebKit real Safari deyil, kritik axınları real Safaridə yoxlamaq lazımdır.\n\n**Keçid planı:**\n1. **Pilot (4 həftə):** 20 yeni test Playwright Java-da; yazılma vaxtı, flaky faizi, CI vaxtını ölç.\n2. **Qərar nöqtəsi:** rəqəmlər yaxşı deyilsə, Selenium-da qalıb flaky-ni düzəlt.\n3. **Tədricən:** yeni testlər yeni alətdə, Selenium testləri yalnız düşəndə və ya funksiya dəyişəndə köçürülür.\n\n**Risklər:** iki aləti eyni anda saxlamaq, komanda təlimi, keçidin yarımçıq qalması. Hamısını birdən yenidən yazmaq isə aylarla test yazılmaması deməkdir.",
+    "c": [
+      "Üç seçim üstünlük və riskləri ilə müqayisə olunub",
+      "Köhnə 800 test, Java və Safari tələbi nəzərə alınıb",
+      "Bir qərar seçilib və əsaslandırılıb",
+      "Keçid planı pilotla başlayır, bir anda yenidən yazmır",
+      "Risklər yazılıb"
+    ]
+  },
+  "c19t6": {
+    "h": "Kiçikdən başla: login testi, sonra POM. Hər addımı ayrıca commit et. Yaşıl CI-dan sonra README yaz. Şifrələr `.env`-də və secrets-də qalsın.",
+    "a": "Bu, işin formasıdır; layihə sənin olacaq.\n\n**Addımlar:**\n1. **Quruluş:** `tests/ui`, `tests/api`, `pages`, `fixtures`, `data`; `.env` və `.gitignore`.\n2. **Config:** `baseURL`, `retries`, `trace`, iki brauzer, `setup` layihəsi.\n3. **Page Object:** `LoginPage`, `InventoryPage`.\n4. **Fixture:** `inventoryPage` hazır giriş verir.\n5. **Data-driven:** 4 sətirlik giriş xətaları `data/login-errors.json`-dan.\n6. **API:** JSONPlaceholder üçün GET və POST testi.\n7. **Login vəziyyəti:** `auth.setup.js`, `playwright/.auth` `.gitignore`-da.\n8. **CI:** PR-da `@smoke`, gecə tam dəst, hesabat artifact-ı.\n9. **README:** məqsəd, alətlər, işə salma əmrləri, nəticə, Actions nişanı.\n\n**Nümunə README nəticəsi (rəqəmlər səninki olacaq):**\n\n```text\nTestlər: 24 (UI 18, API 6), 2 brauzer\nPR yoxlaması: 3 dəqiqə (@smoke)\nTam dəst: 7 dəqiqə (3 shard)\nHesabat: Actions → son icra → Artifacts\n```\n\n**Tipik səhv:** hər şeyi bir commit-də yazmaq. Hər addım ayrıca commit olsun: işəgötürən tarixçədə düşüncə tərzini görür. Git tarixçəsində şifrə qalmadığını da yoxla.",
+    "c": [
+      "Repo public-dir, açıq şifrə və `.auth` faylı yoxdur",
+      "Page class, fixture, data-driven və API testləri var",
+      "Login vəziyyəti setup ilə saxlanılır",
+      "GitHub Actions yaşıldır, hesabat artifact-ı var",
+      "README-də məqsəd, əmrlər və nəticə var"
+    ]
+  },
+  "c19q6": {
+    "a": "**Fixture** testə hazır obyekt verən hazırlıq koddur: `await use(x)`-dən əvvəl hazırlıq, sonra təmizlik. **`beforeEach`** faylın hər testində işləyir. Fixture istənilən faylda işlənir, yalnız onu istəyən testdə işləyir, təmizliyi də eyni yerdədir.",
+    "c": [
+      "Fixture-in hazır obyekt verdiyi deyilib",
+      "Fixture-in yalnız istəyən testdə işlədiyi deyilib"
+    ]
+  },
+  "c19q7": {
+    "a": "**Lazımdır:** addımlar eyni, dəyərlər fərqli olanda: giriş xətaları, sərhəd dəyərləri. **Lazım deyil:** sətirlərdə addımlar fərqlidirsə: dövrün içində `if` artır, test oxunmur. Dəyərləri EP və BVA ilə seç: eyni sinifdən 500 sətir yeni heç nə tapmır.",
+    "c": [
+      "Eyni addım, fərqli dəyər halı göstərilib",
+      "Addımlar fərqli olanda ayrı test yazıldığı deyilib"
+    ]
+  },
+  "c19q8": {
+    "a": "**`storageState`** hər testdə giriş formasını doldurmaq problemini həll edir: bir dəfə daxil olub cookie və localStorage-i fayla yazırsan, testlər oradan başlayır. Faylda işləyən sessiya var, ona görə `.gitignore`-a yazılır.",
+    "c": [
+      "Təkrar girişin aradan qalxdığı deyilib",
+      "Faylda sessiya olduğu üçün repo-ya düşməməsi deyilib"
+    ]
   }
 }

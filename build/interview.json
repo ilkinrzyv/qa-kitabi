@@ -107,5 +107,9 @@
   "Shift left": "Shift-left testi mümkün qədər erkən başlatmaqdır: tələblərin review-u, koddan əvvəl test case, hər commit-də CI testləri, statik analiz. Prinsip 3-ə görə defekt nə qədər erkən tapılsa, bir o qədər ucuz olur.",
   "Three-point estimation": "Üç nöqtəli qiymətləndirmədə optimist, ən ehtimallı və pessimist qiymət verirəm və E = (a + 4m + b) / 6 düsturu ilə hesablayıram. Məsələn, 6, 9 və 18 saat — 10 ± 2 saat. Böyük pessimist qiymətin səbəbini risk kimi yazıram.",
   "Product / Project risk": "Məhsul riski keyfiyyətlə bağlıdır — məsələn, ödəniş iki dəfə çıxılır, onu testlə azaldırıq. Layihə riski idarəetmə ilə bağlıdır — məsələn, test mühiti gecikir; o, planın risklər bölməsinə yazılır.",
-  "Risk level": "Risk səviyyəsi ehtimal ilə təsirin hasilidir. Yüksək səviyyəli sahələri daha erkən, daha dərin və daha çox test edirəm — vaxt çatmayanda bu, prioritetin ən güclü arqumentidir."
+  "Risk level": "Risk səviyyəsi ehtimal ilə təsirin hasilidir. Yüksək səviyyəli sahələri daha erkən, daha dərin və daha çox test edirəm — vaxt çatmayanda bu, prioritetin ən güclü arqumentidir.",
+  "Data-driven test": "Addımlar eyni, dəyərlər fərqli olanda bir test yazıb onu data ilə işlədirəm: hər sətir ayrıca nəticə verir. Dəyərləri EP və BVA ilə seçirəm, testin adına yazıram ki, hesabatda hansı dəyərin düşdüyü görünsün.",
+  "Fixture": "Fixture testə hazır vəziyyət verir: Playwright-da `page` də fixture-dir. Təkrarlanan hazırlığı `base.extend` ilə fixture-ə çıxarıram; `await use(x)`-dən əvvəl hazırlıq, sonra təmizlik gedir, test isə yalnız öz işini yazır.",
+  "Storage state": "Hər testdə login formasını doldurmamaq üçün bir dəfə daxil olub vəziyyəti fayla yazıram, testlər oradan başlayır. Fayl `.gitignore`-dadır, login formasının öz testləri isə boş vəziyyətdən başlayır.",
+  "Trace viewer": "Test CI-da düşəndə əvvəl trace-ə baxıram: düşən addım, həmin anın ekranı, şəbəkə sorğuları və konsol. Beləcə problemin testdə, məhsulda, yoxsa mühitdə olduğunu təxminlə yox, sübutla ayırıram."
 }

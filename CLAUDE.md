@@ -10,7 +10,7 @@ Interactive Azerbaijani textbook on software QA for a beginner (no programming b
 
 ```bash
 pip install -r requirements.txt
-python3 build/parse_book.py   # → build/book.json (gitignored); expect "deep layers 170 missing 0", "answers 359 missing 0" and "errors 0"
+python3 build/parse_book.py   # → build/book.json (gitignored); expect "deep layers 178 missing 0", "answers 371 missing 0" and "errors 0"
 python3 build/build_pwa.py    # → docs/ and dist/qa-kitabi-offline.zip; prints the new version
 python3 build/build_page.py   # → dist/qa-kitab.html and build/test.html (page used by the t*.js checks)
 python3 build/diagrams.py     # diagram self-check; must report 0 issues
@@ -73,11 +73,13 @@ Screenshots land in `build/shots/` (gitignored).
 - `build/playwright.json` — the Playwright practice (`#lokator-l5`, `#playwright-pw3`): locator exercises (`start`
   state, `target` = the model locator, `why`) and test tasks (`code` = starter, `model`, `hints`, `reqs`: pass / fail
   (`m` = the matcher it must fail on) / has / no (regex on the code) / state (page, cart)). The reader's code is parsed,
-  never eval'd (`pwLex` / `pwParser` / `pwEval` in `app.js`): page, locators (role + accessible name, text, placeholder,
+  never eval'd (`pwLex` / `pwParser` / `pwEval` / `pwStmt` in `app.js`; it reaches only `PW_VAL_M` and `PW_GLOBALS`): page, locators (role + accessible name, text, placeholder,
   label, test id = `data-test`, CSS, XPath, filter / first / last / nth), actions and web-first assertions with
-  Playwright's strict mode, timeouts and error texts; missing `await` is a lint error. `pwDecorate` gives the shop's DOM
+  Playwright's strict mode, timeouts and error texts; missing `await` is a lint error. The framework part runs too: classes
+  (`new`, `this`, methods), `for … of` and template strings for data-driven tests, `base.extend` fixtures (`use`, clean-up), the
+  `request` fixture on the practice API's `apiServe`, `storageState` (kept for one run) and `test.step`; operators are not modelled. `pwDecorate` gives the shop's DOM
   saucedemo's data-test ids, so the book's code runs as written. Code and done marks are the `pw` store doc (exported).
-  `t27.js` runs every model answer and the book's own Playwright programs from trace.json.
+  `t27.js` runs every model answer and the book's own Playwright programs from trace.json; `t31.js` the framework features and what the reader's code cannot reach.
 - `build/git.json` — the Git practice (`#git`, `#git-g5`): file templates (`files`, arrays of lines), tasks with a start
   repository (`commits` with `parents` / `set` / `br` / `mate`, `branches`, `head`, `work` / `index` overrides,
   `remote.branches`, `tracking`, `upstream`, `init: false` and `cfg: false` for an empty folder without an identity) and
