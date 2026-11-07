@@ -454,3 +454,262 @@ Selenium özü test runner deyil: yoxlama və hesabat üçün Mocha, Jest, JUnit
 5. **Yoxlama:** `await expect(page.locator('[data-test="error"]')).toContainText('locked out')` → `cy.get('[data-test="error"]').should('contain', 'locked out')`. Cypress-də `await` yoxdur — `should` şərt ödənənə qədər yenidən yoxlayır.
 @növbən
 Kitabdakı “məhsul səbətə əlavə olunur” Playwright testini Selenium (JavaScript) ilə yaz: `By.css('[data-test="add-to-cart-sauce-labs-backpack"]')` lokatorundan, `until.elementLocated` ilə açıq gözləmədən və səbət nişanının mətnini `getText()` ilə yoxlamaqdan istifadə et.
+
+=== c19x1
+@qısa
+Test framework-ü testlərin, page class-larının, datanın və ayarların harada durduğunu müəyyən edir. Hər şeyin öz yeri olanda 300 testlik layihə də oxunur, mühit dəyişəndə isə testlərə toxunmaq lazım gəlmir.
+@yadda
+- Test “nə”ni, page class “necə”ni, data faylı “hansı dəyərlərlə”ni deyir.
+- Ünvan, brauzerlər, retry və trace bir yerdədir: `playwright.config.js`.
+- Şifrə `.env`-dədir, `.env` isə `.gitignore`-dadır.
+@dərin
+### Playwright, yoxsa framework?
+Playwright Test hazır alətdir: testləri tapır, işə salır, hesabat verir. Framework isə onun üstündə komandanın qurduğu qaydalardır: qovluqlar, adlandırma, ortaq kod, data. Müsahibədə “framework qurmuşam” deyəndə məhz bunu izah edə bilməlisən.
+
+### Konfiqurasiyanın ən vacib sahələri
+| Sahə | Nə edir | Tipik dəyər |
+| --- | --- | --- |
+| `testDir` | Testlərin qovluğu | `'./tests'` |
+| `fullyParallel` | Fayl daxilində də paralel | `true` |
+| `retries` | Düşən testin təkrarı | CI-da 2, kompüterdə 0 |
+| `workers` | Eyni anda neçə proses | CI-da 1–4 |
+| `use.baseURL` | Əsas ünvan | Mühitə görə |
+| `use.trace` | Trace yazmaq | `'on-first-retry'` |
+| `projects` | Brauzer və rejimlər | chromium, firefox |
+
+### Mühitlər
+Ünvan `process.env.BASE_URL`-dən gəlirsə, eyni testlər istənilən mühitdə işləyir. PowerShell-də: `$env:BASE_URL = "https://staging.example.com"`, sonra `npx playwright test`. CI-da isə dəyişən workflow-da verilir.
+
+### Adlandırma
+Fayl adı funksiyanı, testin adı isə davranışı deyir: `cart.spec.js` və `'məhsul səbətdən silinir'`. Hesabat oxuyan adam kodu açmadan problemi anlamalıdır.
+
+### Tipik yanlış anlama
+“Framework böyük olmalıdır.” Əksinə: 10 testlik layihədə beş qat köməkçi kod vaxt itkisidir. Quruluşu təkrar yarananda böyüt: eyni kod üçüncü dəfə yazılırsa, ortaq yerə çıxar.
+@nümunə
+**Tapşırıq.** Bir faylda 5 test var: hər testdə giriş kodu təkrarlanır, URL hər yerdə açıq yazılıb, şifrə kodun içindədir. Layihəni quruluşa sal.
+@addımlar
+1. **Qovluqlar:** `tests/ui/`, `pages/`, `data/` yarat; testləri mövzuya görə `login.spec.js` və `cart.spec.js` fayllarına böl.
+2. **Ünvan:** config-də `baseURL: 'https://www.saucedemo.com'` yaz, testlərdə `page.goto('/')` et.
+3. **Şifrə:** `.env` yarat: `SAUCE_PASSWORD=secret_sauce`; config-ə `import 'dotenv/config';` əlavə et; kodda `process.env.SAUCE_PASSWORD` işlət; `.gitignore`-a `.env` yaz.
+4. **Təkrar kod:** giriş addımlarını `LoginPage`-ə köçür (19.7), testlər `login()` çağırsın.
+5. **Yoxla:** `npx playwright test` — eyni testlər keçməlidir; `git status`-da `.env` görünməməlidir. Refactoring zamanı testin davranışı dəyişmir.
+@növbən
+Swag Labs üçün login, səbət, checkout və API testləri olan layihənin qovluq ağacını çək. Hər qovluq və faylın nə saxladığını bir cümlə ilə izah et. `playwright.config.js`-də `baseURL`, `retries` (CI-da 2, kompüterdə 0) və `trace` sahələrini yaz, `.gitignore`-a nələrin düşdüyünü göstər.
+
+=== c19x2
+@qısa
+Fixture testə hazır obyekt verən hazırlıq koddur. `page` da fixture-dir. `base.extend` ilə öz fixture-ini yazırsan: `await use(x)`-dən əvvəlki kod hazırlıq, sonrakı kod təmizlikdir, test isə yalnız öz işini yazır.
+@yadda
+- `await use(x)` obyekti testə verir və test bitənə qədər gözləyir.
+- Fixture yalnız onu istəyən testdə işləyir.
+- Eyni hazırlıq bir neçə faylda təkrarlanırsa, fixture-ə çıxar.
+@dərin
+### Təmizlik (teardown) necə yazılır
+```javascript
+tempUser: async ({ request }, use) => {
+  const res = await request.post('/api/users', { data: { name: 'test_user' } });
+  const user = await res.json();
+  await use(user);
+  await request.delete(`/api/users/${user.id}`);
+},
+```
+`use`-dan sonrakı sətir test düşsə belə işləyir. `afterEach`-də “dəyişəni yaddan çıxarmaq” problemi burada yoxdur.
+
+### Fixture-ləri birləşdirmək
+Fixture başqa fixture-i başlığında istəyə bilər: `inventoryPage: async ({ page, tempUser }, use) => { … }`. Playwright lazım olan sıranı özü qurur.
+
+### Avtomatik və “worker” fixture-lər
+`{ auto: true }` fixture-i istəməyən testdə də işlədir, məsələn hər testin əvvəlində konsol xətalarını izləmək üçün. `{ scope: 'worker' }` isə fixture-i bir worker üçün bir dəfə yaradır: bahalı hazırlıq üçündür. Yeni başlayanda ikisinə də ehtiyac yoxdur.
+
+### Tipik yanlış anlama
+“Fixture-in içində yoxlama yazmaq lazımdır.” Hazırlığın uğurlu olduğunu yoxlamaq olar, amma testin əsas yoxlamaları testdə qalmalıdır, yoxsa testi oxuyan nəyin yoxlandığını görmür. Fixture-də `use`-u unutmaq da tipik səhvdir: test heç başlamır, timeout olur.
+@nümunə
+**Tapşırıq.** Beş testin hər biri giriş edib səbətə “Sauce Labs Backpack” atır, sonra checkout-u yoxlayır. Bu hazırlığı `cartPage` fixture-inə çıxar.
+@addımlar
+1. **Fayl:** `fixtures/pages.js` yarat, `import { test as base, expect } from '@playwright/test';` yaz.
+2. **Fixture:** `base.extend({ cartPage: async ({ page }, use) => { … } })`.
+3. **Hazırlıq:** `LoginPage` ilə giriş et, məhsulu əlavə et, səbəti aç.
+4. **Vermək:** `await use(new CartPage(page));`
+5. **Test:** `import { test, expect } from '../../fixtures/pages';` və `test('…', async ({ cartPage }) => { … })`. Hazırlıq sətirləri testdən silinir, yalnız yoxlanan hissə qalır.
+@növbən
+`loggedInPage` fixture-i yaz: `standard_user` ilə daxil olub `page`-i testə versin, test bitəndə sol menyudan “Logout” bassın. Bu fixture ilə iki test yaz. `use`-dan əvvəlki və sonrakı kodun nə vaxt işlədiyini izah et və `beforeEach`/`afterEach` ilə müqayisə et.
+
+=== c19x3
+@qısa
+Data-driven test eyni addımları data siyahısı ilə işlədir: hər sətir ayrıca test olur. EP və BVA cədvəlin birbaşa koda çevrilir. Testin adında dəyər olmalıdır, çünki ad unikal olmalıdır.
+@yadda
+- `for … of` ilə hər sətir üçün ayrıca `test` yaranır.
+- Testin adı unikal olmalıdır: dəyəri ada yaz.
+- Sətirlərdə addımlar fərqlidirsə, data-driven yox, ayrı testlər yaz.
+@dərin
+### Niyə dövr testin içində deyil?
+Dövr `test`-in içində olsa, bir test olur: birinci səhv dəyərdə dayanır, qalanları yoxlanmır, hesabatda hansı dəyərin düşdüyü görünmür. Dövr `test`-in xaricində olanda hər sətir öz nəticəsini alır.
+
+### Data haradan gəlir
+| Mənbə | Nə vaxt |
+| --- | --- |
+| Faylın içində massiv | 3–10 sətir, kod yazan oxuyur |
+| JSON faylı | Data çoxdur, başqa testlər də işlədir |
+| CSV faylı | Analitik və ya manual tester Excel-də hazırlayır; `csv-parse` paketi lazımdır |
+| Random generator (Faker) | Unikal ad və email lazımdır; seed yaz, yoxsa nəticə təkrarlanmır |
+
+### Sütunları necə seçməli
+Girişlərdən başqa gözlənilən nəticə də sətirdə olur: `{ qty: 11, error: 'Maksimum 10' }`. Sətirə qısa `name` əlavə etsən, adı oxunaqlı olur: `test(name, …)`.
+
+### Tipik yanlış anlama
+“Nə qədər çox data, o qədər yaxşı.” 500 sətir eyni ekvivalentlik sinfindən olsa, yeni heç nə tapmır, sadəcə vaxt yeyir. Dəyərləri EP və BVA ilə seç, sonra cədvələ yaz.
+@nümunə
+**Tapşırıq.** Checkout formasında üç məcburi sahə var. Boş sahə xətalarını data-driven test kimi yaz.
+@addımlar
+1. **Cədvəl:** `{ first: '', last: 'Əliyeva', zip: '1000', error: 'First Name is required' }`, `{ first: 'Aysel', last: '', zip: '1000', error: 'Last Name is required' }`, `{ first: 'Aysel', last: 'Əliyeva', zip: '', error: 'Postal Code is required' }`.
+2. **Dövr:** `for (const { first, last, zip, error } of cases) { test(\`checkout xətası: ${error}\`, async ({ page }) => { … }); }`
+3. **Hazırlıq:** giriş, məhsul, səbət, Checkout; sahələri cədvəldən doldur.
+4. **Yoxlama:** `await expect(page.locator('[data-test="error"]')).toContainText(error);`
+5. **Nəticə:** hesabatda 3 ayrı test görünür; birini sındır, qalanları yenə işləyir.
+@növbən
+Səbətdə miqdar 1–10 arasında olmalıdır: 1 və 10 qəbul olunur, 0 və 11 üçün “Miqdar 1–10 arasında olmalıdır” mesajı çıxır. BVA ilə dörd sətirlik cədvəl qur, data-driven Playwright testini yaz (saytı və lokatorları özün təsəvvür et). Testin adını elə qur ki, hesabatdan dəyər görünsün. Dövrü `test`-in içinə qoysaq, nə pozulur?
+
+=== c19x4
+@qısa
+`request` fixture-i Playwright-da brauzersiz API sorğusu göndərir: `request.get`, `request.post`, `response.status()`, `await response.json()`. Ən güclü üsul: datanı API ilə yaradıb, yalnız yoxlanan hissəni UI ilə etmək.
+@yadda
+- `response.status()` dərhal, `await response.json()` isə await ilə.
+- Statusla kifayətlənmə: gövdəni və tipləri də yoxla.
+- UI testinin hazırlığını API ilə et: daha sürətli və sabit.
+@dərin
+### Postman, yoxsa Playwright?
+Postman API-ni tanımaq, əl ilə yoxlamaq və sənəd üçün rahatdır. Playwright API testləri kodla UI testlərinin yanında durur: eyni hesabat, eyni CI, eyni test datası. Çox komanda hər ikisini işlədir.
+
+### Ümumi ünvan və başlıq
+Config-də `baseURL` və `extraHTTPHeaders` yazmaq olar. Onda sorğu qısa görünür: `request.get('/users/1')`.
+
+### page.request
+`request` fixture-i təmiz başlayır. `page.request` isə brauzer səhifəsinin cookie-lərini paylaşır: UI ilə daxil olub API ilə yoxlamaq üçün rahatdır. Məsələn, UI-də profil dəyişəndən sonra `page.request.get('/api/me')` ilə serverdə dəyişikliyi görmək.
+
+### Sxem yoxlaması
+Bir neçə sahəni yoxlamaq əvəzinə cavabın quruluşunu yoxlamaq olar: `expect(user).toEqual(expect.objectContaining({ id: 1, name: expect.any(String) }));`. Tiplərin dəyişməsi belə tutulur.
+
+### Tipik yanlış anlama
+“API testi keçdisə, UI-yə ehtiyac yoxdur.” API server məntiqini yoxlayır, UI isə həmin datanın düzgün göstərilməsini. Ən kritik axınlar üçün az sayda E2E qalmalıdır.
+@nümunə
+**Tapşırıq.** JSONPlaceholder-də `GET /posts?userId=3` üçün Playwright API testi yaz: status 200, düz 10 yazı, hamısı `userId` 3.
+@addımlar
+1. **Sorğu:** `const response = await request.get('https://jsonplaceholder.typicode.com/posts', { params: { userId: 3 } });`
+2. **Status:** `expect(response.status()).toBe(200);`
+3. **Gövdə:** `const posts = await response.json();`
+4. **Say:** `expect(posts).toHaveLength(10);`
+5. **Filtr:** `for (const p of posts) { expect(p.userId).toBe(3); }` — say düz ola bilər, amma filtr işləməyə də bilər.
+6. **İşə sal:** `npx playwright test tests/api` — brauzer açılmır, test bir neçə yüz millisaniyəyə bitir (şəbəkədən asılı).
+@növbən
+JSONPlaceholder üçün üç Playwright API testi yaz: (1) `GET /users/5`: status 200, `address.city` “Roscoeview”; (2) `POST /posts`: status 201, göndərilən `title` qayıdır, `id` ədəddir; (3) `GET /posts/9999`: status 404. Hər testdə `await`-in harada lazım olduğunu, harada lazım olmadığını izah et.
+
+=== c19x5
+@qısa
+`storageState` girişdən sonrakı cookie və localStorage-i fayla yazır, testlər həmin fayldan daxil olmuş halda başlayır. Giriş forması yalnız öz testlərində yoxlanır, qalan testlər vaxt itirmir. Fayl gizlidir: `.gitignore`-a yazılır.
+@yadda
+- `page.context().storageState({ path })` vəziyyəti saxlayır.
+- `setup` layihəsi və `dependencies` girişin testlərdən əvvəl işləməsini təmin edir.
+- `playwright/.auth` heç vaxt repo-ya düşməməlidir.
+@dərin
+### Nə saxlanılır
+Cookie-lər və localStorage: sessiya tokeni çox vaxt bunlardadır. sessionStorage saxlanılmır. Tətbiq sessiyanı yalnız yaddaşda saxlayırsa, bu üsul işləməyəcək.
+
+### Vaxtı keçən sessiya
+Saxlanmış sessiyanın müddəti bitə bilər. Setup layihəsi hər icrada girişi təkrar etdiyi üçün problem olmur. Faylı əl ilə saxlayıb aylarla işlətmək yanlışdır.
+
+### Bir neçə rol
+Hər rol üçün ayrıca setup və fayl: `admin.json`, `user.json`. Test faylında: `test.use({ storageState: 'playwright/.auth/admin.json' });`. Bir testdə iki istifadəçi lazımdırsa, iki ayrı `browser.newContext({ storageState })` yaradılır: məsələn, admin sifarişi təsdiqləyir, müştəri nəticəni görür.
+
+### API ilə daha sürətli giriş
+Setup-da UI əvəzinə API ilə daxil olub cookie-ni yazmaq olar: `request.post('/login', …)` və `request.storageState({ path })`. Daha sürətlidir.
+
+### Tipik yanlış anlama
+“Vəziyyəti saxladıqsa, login testləri lazım deyil.” Login özü kritik funksiyadır: onun testləri `storageState`-siz, boş vəziyyətdən başlayır.
+@nümunə
+**Tapşırıq.** Layihədəki 40 UI testinin hər biri `LoginPage.login()` çağırır. Girişi bir dəfəyə endir.
+@addımlar
+1. **Setup faylı:** `tests/auth.setup.js`-də giriş et, URL-i yoxla, `await page.context().storageState({ path: 'playwright/.auth/user.json' });`
+2. **Config:** `{ name: 'setup', testMatch: /.*\.setup\.js/ }` layihəsi; əsas layihəyə `storageState` və `dependencies: ['setup']`.
+3. **`.gitignore`:** `playwright/.auth` əlavə et.
+4. **Testlər:** `login()` çağırışlarını sil, `page.goto('/inventory.html')` ilə başla.
+5. **Login testləri:** faylın başına `test.use({ storageState: { cookies: [], origins: [] } });`
+6. **Ölç:** dəstin vaxtını əvvəl və sonra müqayisə et: bu, CV üçün rəqəmli nəticədir.
+@növbən
+Setup testi və daxil olmuş haldan başlayan iki test yaz: `tests/auth.setup.js`, config-in `projects` hissəsi, `.gitignore` sətri və test faylı. Login testləri niyə boş vəziyyətdən başlamalıdır? Paralel testlər eyni hesabda səbəti dəyişəndə nə olur və bunu necə həll edərdin?
+
+=== c19x6
+@qısa
+Test düşəndə cavab trace və hesabatdadır: hər addımın ekranı, sorğular, konsol. `trace: 'on-first-retry'` yalnız lazım olanda yazır. Teqlər (`@smoke`) dəstin bir hissəsini seçir, `test.step` testi oxunan hissələrə bölür.
+@yadda
+- `trace: 'on-first-retry'` — yalnız təkrarda yazır, CI-ı ləngitmir.
+- `html` insan üçün, `junit` CI və alətlər üçün.
+- `--grep @smoke` — PR-da az, gecə çox.
+@dərin
+### Trace viewer-də nəyə baxılır
+| Hissə | Nə göstərir |
+| --- | --- |
+| Actions | Hər hərəkət, vaxtı, lokatoru |
+| Before / After | Həmin anın ekranı |
+| Network | Sorğular və statuslar |
+| Console | JavaScript xətaları |
+| Source | Testin hansı sətri işləyirdi |
+
+### Diaqnoz addımları
+1. Düşən addımı tap. 2. “Before” ekranına bax: element həqiqətən var idi? 3. Network-də həmin anda sorğu bitmişdi? 4. Console-da xəta var? Cavab çox vaxt “element hələ yüklənməmişdi” və ya “server 500 qaytardı” olur: birincisi test problemidir, ikincisi məhsul.
+
+### Trace rejimləri
+| Rejim | Nə edir |
+| --- | --- |
+| `off` | Yazmır |
+| `on` | Həmişə yazır, ağırdır |
+| `retain-on-failure` | Hamısını yazır, keçəni silir |
+| `on-first-retry` | Yalnız ilk təkrarda yazır |
+
+### Təkrar cəhd və flaky
+Retry ilə keçən test hesabatda `flaky` kimi görünür. Bu, “keçdi” demək deyil: siyahını izlə, səbəbi düzəlt (19.9). `--fail-on-flaky-tests` belə testləri uğursuz sayır.
+
+### Tipik yanlış anlama
+“Hesabat yaşıldır, deməli hər şey qaydasındadır.” Skip olunmuş testlərin sayına və flaky siyahısına da bax: yaşıl rəng işləməyən testləri gizlədə bilər.
+@nümunə
+**Tapşırıq.** Login testi CI-da düşüb, öz kompüterində isə keçir. Trace ilə səbəbi tap.
+@addımlar
+1. **Hesabat:** Actions → icra → Artifacts-dan `playwright-report` və `test-results`-u yüklə.
+2. **Trace:** `npx playwright show-trace trace.zip` və ya `trace.playwright.dev`-də aç (fayl brauzerdə qalır).
+3. **Düşən addım:** `toBeVisible` qırmızıdır, “Before” ekranında spinner görünür.
+4. **Network:** `/api/login` 8 saniyə çəkib, sonra 200 qayıdıb.
+5. **Nəticə:** expect 5 saniyə gözləyir, CI serveri yavaşdır. Seçimlər: serverin ləngiməsini məhsul problemi kimi bildir, ya da bu addım üçün `{ timeout: 10000 }` qoy; sabit gözləmə yox.
+@növbən
+Testlərinin bir hissəsinə `@smoke`, bir hissəsinə `@slow` teqi əlavə et. Üç əmr yaz: yalnız smoke, slow-dan başqa hamısı, yalnız son dəfə düşənlər. Config-də `trace` və üç hesabatı (`list`, `html`, `junit`) qur. Uzun checkout testini iki `test.step`-ə böl və bunun hesabatda nəyi dəyişdiyini izah et.
+
+=== c19x7
+@qısa
+Üç alətin fikri eynidir, framework həlləri fərqlidir: Playwright-da fixture və storageState, Cypress-də custom command və cy.session, Selenium-da isə test runner-i və gözləmələri özün seçirsən. Seçimi komanda dili, brauzer ehtiyacı və mövcud infrastruktur müəyyən edir.
+@yadda
+- Selenium test runner deyil: JUnit, pytest və ya node:test lazımdır.
+- Cypress-də `await` yoxdur: əmrlər növbəyə düşür.
+- POM, müstəqil test və data ayrılığı hər alətdə eyni işləyir.
+@dərin
+### Cypress-in fərqi
+Testlər brauzerin içində işləyir: DOM-a birbaşa çıxış, vaxt səyahəti, rahat debug. Əvəzində bir testdə iki tab açmaq çətindir, başqa domenə keçid `cy.origin` tələb edir. `cy.intercept` şəbəkə cavablarını dəyişməyi asanlaşdırır: Playwright-da bunun qarşılığı `page.route`-dur.
+
+### Selenium-un fərqi
+WebDriver W3C standartıdır, brauzer istehsalçıları dəstəkləyir. Real Safari və köhnə brauzerlər də olur. Selenium Grid testləri çox maşın və brauzerə paylayır. Gözləmə, hesabat və retry alətləri ayrıca qurulur, ona görə ilk quraşdırma daha çox vaxt aparır.
+
+### Selenium-da Page Object
+Bir çox Java layihəsində `PageFactory` və `@FindBy` görəcəksən. Fikir eynidir: lokator və hərəkət class-da, yoxlama testdə.
+
+### Keçid necə olur
+Lokatorlar (CSS, data-test), ssenarilər və data köçür. Yenidən yazılan hissə: hərəkət çağırışları, gözləmələr, hazırlıq. Bir testi yeni alətə köçürüb komandaya göstərmək (proof of concept) ən yaxşı başlanğıcdır.
+
+### Tipik yanlış anlama
+“Bu alət ən yaxşısıdır.” Müsahibədə “layihədən asılıdır” deyib meyar sadalamaq güclü cavabdır: dil, brauzerlər, komanda təcrübəsi, CI, köhnə testlər.
+@nümunə
+**Tapşırıq.** 19.14-dəki “olmayan yazı 404 qaytarır” testini Cypress-də yaz.
+@addımlar
+1. **Fayl:** `cypress/e2e/posts.cy.js`.
+2. **Quruluş:** `describe('Yazılar', () => { it('olmayan yazı 404 qaytarır', () => { … }); });`
+3. **Sorğu:** `cy.request({ url: 'https://jsonplaceholder.typicode.com/posts/9999', failOnStatusCode: false })`. Cypress adətən 4xx-də testi dayandırır, ona görə bu seçim lazımdır.
+4. **Yoxlama:** `.then((res) => { expect(res.status).to.eq(404); });`
+5. **Fərq:** Playwright-da `request.get` 404-də xəta atmır, burada isə atır: alət dəyişəndə belə kiçik fərqlər vacibdir.
+@növbən
+Şirkət üçün alət seç və iki səhifəlik yox, 6–8 cümləlik əsaslandırma yaz: 12 nəfərlik Java komandası, 800 köhnə Selenium testi, Safari tələbi, yeni test yazan iki nəfər JavaScript bilir. Üç seçim müqayisə et: Selenium-da qalmaq, Playwright Java, Playwright JavaScript. Keçid planı və riskləri də yaz.

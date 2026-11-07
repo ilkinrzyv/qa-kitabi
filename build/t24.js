@@ -34,12 +34,12 @@ const go = (page, h) => page.evaluate(h => { location.hash = h; }, h).then(() =>
   await go(page, '#c3');
   out.order = await page.$$eval('#view .sec', els => els.slice(7, 11).map(e => e.id).join(','));
   if (out.order !== 'c3s8,c3x1,c3x2,c3s9') bad.push('order ' + out.order);
-  // glossary: 109 terms, a new one with its interview line
+  // glossary: 113 terms, a new one with its interview line
   await go(page, '#luget');
   out.glossary = await page.$eval('#glcount', el => el.textContent);
   await page.fill('#glq', 'shift left'); await page.waitForTimeout(200);
   out.term = await page.$eval('#gllist .gl-item', el => ({ en: el.querySelector('.en').textContent, say: !!el.querySelector('.say-d') }));
-  if (!out.glossary.startsWith('109 termin') || out.term.en !== 'Shift left' || !out.term.say) bad.push('glossary');
+  if (!out.glossary.startsWith('113 termin') || out.term.en !== 'Shift left' || !out.term.say) bad.push('glossary');
   // quiz: chapter 11 has the new questions
   await go(page, '#mesq');
   out.quiz11 = await page.$eval('[data-act="quiz"][data-ch="11"] .muted', el => el.textContent);

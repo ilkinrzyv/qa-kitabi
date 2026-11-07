@@ -169,5 +169,16 @@
       "Nəticəyə dərhal baxılır, sübut oxunur",
       "Məhsul, test, mühit, flaky ehtimalları ayrılır"
     ]
+  },
+  "c20x1m": {
+    "h": "Cron-un beş sahəsi: dəqiqə, saat, ay günü, ay, həftə günü. UTC-yə çevir: Bakı UTC+4-dür. Bazar ertəsi 1, cümə 5-dir. Matrix: [1, 2, 3, 4].",
+    "a": "```yaml\non:\n  schedule:\n    - cron: '0 3 * * 1-5'\njobs:\n  full:\n    runs-on: ubuntu-latest\n    strategy:\n      fail-fast: false\n      matrix:\n        shard: [1, 2, 3, 4]\n    env:\n      API_TOKEN: ${{ secrets.API_TOKEN }}\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: lts/*\n      - run: npm ci\n      - run: npx playwright install --with-deps\n      - run: npx playwright test --shard=${{ matrix.shard }}/4\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: report-${{ matrix.shard }}\n          path: playwright-report/\n```\n\n**Cron:** GitHub UTC işlədir. 07:00 Bakı (UTC+4) = 03:00 UTC. `0 3` saat 03:00, `* *` hər gün və hər ay, `1-5` bazar ertəsindən cüməyə. Cədvəl bir az gecikə bilər.\n\n**Hesabat adları:** eyni adlı artifact yüklənə bilməz, ona görə ada shard nömrəsi əlavə olunub.\n\n**Məcburi etmək:** Settings → Branches → `main` üçün qayda → “Require status checks to pass” → job-u seç. Gecə cədvəli PR-a bağlı olmadığı üçün bu qayda ona yox, PR-da işləyən job-a (məsələn, `smoke`) qoyulur.\n\n**Risk:** flaky test və ya mühit nasazlığı bütün PR-ları dayandırır. Komanda qaydanı söndürməyə başlaya bilər. Ona görə məcburi dəst qısa və sabit olmalıdır, flaky testlər dərhal düzəldilməlidir.",
+    "c": [
+      "Cron `0 3 * * 1-5`-dir, UTC çevrilməsi izah olunub",
+      "Matrix dörd shard işlədir, `--shard=${{ matrix.shard }}/4`",
+      "`API_TOKEN` secrets-dən gəlir",
+      "Artifact adı shard-a görə fərqlidir",
+      "“Require status checks” və flaky riski qeyd olunub"
+    ]
   }
 }

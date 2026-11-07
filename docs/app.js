@@ -1085,9 +1085,11 @@ function chDiagram(c) { // the chapter's first diagram, as rendered in the reade
   return dgCache[c.id];
 }
 const unP = h => String(h || '').replace(/<\/?p>/g, ' ').trim();
+// a long chapter's sheet keeps one sentence per idea, so it still fits one page at a readable size
+const sumFirst = h => { const m = /^[\s\S]*?[.!?…](?=\s+[A-ZƏÇŞĞÖÜİ“<`])/.exec(h); return m && (m[0].match(/<code/g) || []).length === (m[0].match(/<\/code/g) || []).length ? m[0] : h; };
 function sumHTML(c, hl) {
   const L = P().learned, st = chStats(c);
-  const secs = c.sections.filter(s => s.x);
+  const secs = c.sections.filter(s => s.x), brief = secs.length > 12;
   const pit = c.sections.find(s => s.kind === 'pitfalls');
   const self = c.sections.find(s => s.kind === 'selfcheck');
   const terms = GLOSS.filter(g => g.ch.includes(c.num));
@@ -1098,10 +1100,10 @@ function sumHTML(c, hl) {
       <div class="sum-meta"><span class="chip">${secs.length} əsas fikir</span>${terms.length ? `<span class="chip">${terms.length} termin</span>` : ''}
         <span class="chip${st.done === st.total ? ' pass' : ''}">${icon('check')}${st.done}/${st.total} öyrənildi</span>
         ${q ? `<span class="chip${st.q ? (st.q.best / st.q.n >= .7 ? ' pass' : ' warn') : ''}">${st.q ? `Test ${st.q.best}/${st.q.n}` : `Test: ${q.length} sual`}</span>` : ''}</div></header>
-    <section class="sum-ideas"><h3 class="sum-l">${icon('bulb')}Əsas fikirlər</h3><ol>${secs.map(s => `<li${L[s.id] ? ' class="ok"' : ''}><span class="n">${esc(s.num)}</span><div><b>${esc(s.title)}.</b> ${unP(s.x.short)}</div></li>`).join('')}</ol></section>
+    <section class="sum-ideas"><h3 class="sum-l">${icon('bulb')}Əsas fikirlər</h3><ol>${secs.map(s => `<li${L[s.id] ? ' class="ok"' : ''}><span class="n">${esc(s.num)}</span><div><b>${esc(s.title)}.</b> ${brief ? sumFirst(unP(s.x.short)) : unP(s.x.short)}</div></li>`).join('')}</ol></section>
     ${dg ? `<section class="sum-dg"><h3 class="sum-l">${icon('layers')}Sxem</h3>${dg}</section>` : ''}
     ${pit ? `<section class="sum-pit"><h3 class="sum-l">${icon('x')}Tez-tez edilən səhvlər</h3><div class="sum-pit-b">${pit.html}</div></section>` : ''}
-    ${self ? `<section class="sum-self"><h3 class="sum-l">${icon('help')}Özünü yoxla</h3><ul>${self.items.map(i => `<li>${unP(i.html)}</li>`).join('')}</ul></section>` : ''}
+    ${self ? `<section class="sum-self"><h3 class="sum-l">${icon('help')}Özünü yoxla</h3><ul>${(brief ? self.items.slice(0, 5) : self.items).map(i => `<li>${unP(i.html)}</li>`).join('')}</ul></section>` : ''}
     ${terms.length ? `<section class="sum-terms"><h3 class="sum-l">${icon('abc')}Terminlər</h3><ul>${terms.map(g => `<li><button class="gt" data-act="gt" data-g="${g.id}">${esc(g.en)}</button> — ${esc(g.az)}</li>`).join('')}</ul></section>` : ''}
     <footer class="sum-f"><span>${esc(SITE.replace(/^https:\/\//, ''))}#${c.id}</span>${q ? `<span>Fəsil testi: ${q.length} sual</span>` : ''}</footer>
   </article>`;
@@ -2028,15 +2030,22 @@ function pwLex(src) {
     if (src.startsWith('//', i)) { while (i < n && src[i] !== '\n') i++; continue; }
     if (src.startsWith('/*', i)) { const j = src.indexOf('*/', i + 2); if (j < 0) throw PwErr('SyntaxError: şərh bağlanmayıb — */ yoxdur', '', line); line += src.slice(i, j).split('\n').length - 1; i = j + 2; continue; }
     if (c === "'" || c === '"' || c === '`') {
-      const l0 = line; let j = i + 1, s = '';
+      const l0 = line; let j = i + 1, s = '', parts = null;
       for (; j < n && src[j] !== c; j++) {
         if (src[j] === '\\') { const x = src[++j]; s += { n: '\n', t: '\t' }[x] || x || ''; continue; }
         if (src[j] === '\n') { if (c !== '`') throw PwErr('SyntaxError: mətn (string) bağlanmayıb', `Mətn ${c} ilə açılıb: eyni sətirdə ${c} ilə bağla.`, l0); line++; }
-        if (c === '`' && src[j] === '$' && src[j + 1] === '{') throw PwErr('SyntaxError: ${…} bu məşqdə dəstəklənmir', 'Mətni dırnaq içində olduğu kimi yaz.', line);
+        if (c === '`' && src[j] === '$' && src[j + 1] === '{') { // ${…}: its own tokens, parsed with the rest
+          let d = 1, k = j + 2;
+          for (; k < n && d; k++) { if (src[k] === '{') d++; else if (src[k] === '}') d--; }
+          if (d) throw PwErr('SyntaxError: ${ bağlanmayıb', 'Hər ${ üçün bir } olmalıdır.', line);
+          const l1 = line;
+          (parts = parts || []).push(s, pwLex(src.slice(j + 2, k - 1)).map(t => Object.assign(t, { line: t.line + l1 - 1 })));
+          s = ''; j = k - 1; continue;
+        }
         s += src[j];
       }
       if (j >= n) throw PwErr('SyntaxError: mətn (string) bağlanmayıb', `${c} ilə açılan mətnin sonunda ${c} yoxdur.`, l0);
-      T.push({ t: 'str', v: s, line: l0 }); i = j + 1; continue;
+      T.push(parts ? { t: 'tpl', parts: parts.concat(s), line: l0 } : { t: 'str', v: s, line: l0 }); i = j + 1; continue;
     }
     if (c === '/' && reOk()) {
       let j = i + 1, cls = false;
@@ -2049,8 +2058,9 @@ function pwLex(src) {
     if (/[0-9]/.test(c) || (c === '-' && /[0-9]/.test(src[i + 1] || '') && reOk())) { const m = /^-?\d+(\.\d+)?/.exec(src.slice(i)); T.push({ t: 'num', v: +m[0], line }); i += m[0].length; continue; }
     if (/[A-Za-z_$]/.test(c)) { const m = /^[\w$]+/.exec(src.slice(i)); T.push({ t: 'id', v: m[0], line }); i += m[0].length; continue; }
     if (src.startsWith('=>', i)) { T.push({ t: 'p', v: '=>', line }); i += 2; continue; }
+    if (src.startsWith('...', i)) { T.push({ t: 'p', v: '...', line }); i += 3; continue; }
     if ('(){}[],;.:='.includes(c)) { T.push({ t: 'p', v: c, line }); i++; continue; }
-    throw PwErr(`SyntaxError: gözlənilməz simvol «${c}»`, '', line);
+    throw PwErr(`SyntaxError: gözlənilməz simvol «${c}»`, '+-*<>!&|?%'.includes(c) ? 'Hesablama və müqayisə operatorları bu məşqin modelində yoxdur (real Playwright-da işləyir). Mətni `…${x}…` ilə birləşdir, yoxlamanı expect(…) ilə yaz.' : '', line);
   }
   return T;
 }
@@ -2065,25 +2075,58 @@ function pwParser(T) {
       v === ')' || v === '}' ? 'Mötərizələri say: hər açılan mötərizənin bağlanan cütü olmalıdır.' : '', k.line);
     i++; return k;
   };
+  // { a, b }: the opening brace is already behind us
+  function namesIn() { const names = []; while (!is('p', '}')) { names.push(eat('id', undefined, 'dəyişənin adı').v); if (!opt('p', ',')) break; } eat('p', '}'); return names; }
+  // ( a, { b, c } ): names and destructured objects
+  function paramList() {
+    const ps = []; eat('p', '(');
+    while (!is('p', ')')) {
+      ps.push(opt('p', '{') ? { names: namesIn() } : { name: eat('id', undefined, 'parametrin adı').v });
+      if (!opt('p', ',')) break;
+    }
+    eat('p', ')'); return ps;
+  }
+  const arrowAhead = () => {
+    if (is('id') && is('p', '=>', 1)) return true;
+    if (!is('p', '(')) return false;
+    let d = 0, j = i;
+    for (; j < T.length; j++) { const t = T[j]; if (t.t === 'p' && t.v === '(') d++; else if (t.t === 'p' && t.v === ')' && !--d) break; }
+    return !!T[j + 1] && T[j + 1].t === 'p' && T[j + 1].v === '=>';
+  };
+  function arrow(line) {
+    const params = is('id') ? [{ name: T[i++].v }] : paramList();
+    eat('p', '=>');
+    return is('p', '{') ? { t: 'fn', params, body: block(), line } : { t: 'fn', params, expr: expr(), line };
+  }
   function primary() {
     const k = peek();
     if (k.t === 'str' || k.t === 'num' || k.t === 're') { i++; return { t: 'lit', v: k.v, line: k.line }; }
+    if (k.t === 'tpl') { i++; return { t: 'tpl', parts: k.parts.map(p => typeof p === 'string' ? p : pwParser(p).expr()), line: k.line }; }
+    if (arrowAhead()) return arrow(k.line);
     if (k.t === 'id') {
       i++;
       if (k.v === 'true' || k.v === 'false') return { t: 'lit', v: k.v === 'true', line: k.line };
       if (k.v === 'null' || k.v === 'undefined') return { t: 'lit', v: k.v === 'null' ? null : undefined, line: k.line };
-      if (k.v === 'new') throw PwErr('SyntaxError: «new» bu məşqdə dəstəklənmir', 'Page Object class-ları (19.7) burada yoxdur: lokatorları birbaşa testdə yaz.', k.line);
-      if (k.v === 'await') throw PwErr('SyntaxError: await sətrin əvvəlində olmalıdır', 'Məsələn: await page.getByRole(…).click(); və ya const n = await lokator.count();', k.line);
-      if (k.v === 'async' || k.v === 'function') throw PwErr('SyntaxError: funksiya bu məşqdə yalnız test(…) daxilində ola bilər', '', k.line);
+      if (k.v === 'new') { const c = eat('id', undefined, 'class-ın adı'); const args = []; if (opt('p', '(')) { while (!is('p', ')')) { args.push(expr()); if (!opt('p', ',')) break; } eat('p', ')'); } return { t: 'new', name: c.v, args, line: k.line }; }
+      if (k.v === 'await') return { t: 'await', e: expr(), line: k.line };
+      if (k.v === 'this') return { t: 'this', line: k.line };
+      if (k.v === 'async') return arrow(k.line);
+      if (k.v === 'function') throw PwErr('SyntaxError: function bu məşqin modelində yoxdur', 'Ox funksiyası yaz: async () => { … }', k.line);
       return { t: 'id', name: k.v, line: k.line };
     }
     if (opt('p', '(')) { const e = expr(); eat('p', ')'); return e; }
     if (opt('p', '{')) {
       const props = [];
-      while (!is('p', '}')) { const key = peek(); if (key.t !== 'id' && key.t !== 'str') throw PwErr(`SyntaxError: obyektdə açar (məsələn, name) gözlənilirdi, «${key.v}» gəldi`, '', key.line); i++; eat('p', ':'); props.push([key.v, expr()]); if (!opt('p', ',')) break; }
+      while (!is('p', '}')) {
+        const key = peek(); if (key.t !== 'id' && key.t !== 'str') throw PwErr(`SyntaxError: obyektdə açar (məsələn, name) gözlənilirdi, «${key.v}» gəldi`, '', key.line);
+        i++;
+        if (key.t === 'id' && (is('p', ',') || is('p', '}'))) props.push([key.v, { t: 'id', name: key.v, line: key.line }]); // { token }
+        else { eat('p', ':'); props.push([key.v, expr()]); }
+        if (!opt('p', ',')) break;
+      }
       eat('p', '}'); return { t: 'obj', props, line: k.line };
     }
-    if (opt('p', '[')) { const items = []; while (!is('p', ']')) { items.push(expr()); if (!opt('p', ',')) break; } eat('p', ']'); return { t: 'arr', items, line: k.line }; }
+    if (opt('p', '[')) { const items = []; while (!is('p', ']')) { items.push(opt('p', '...') ? { t: 'spread', e: expr() } : expr()); if (!opt('p', ',')) break; } eat('p', ']'); return { t: 'arr', items, line: k.line }; }
     throw PwErr(`SyntaxError: gözlənilməz «${k.v || 'son'}»`, '', k.line);
   }
   function expr() {
@@ -2099,29 +2142,105 @@ function pwParser(T) {
     const k = peek();
     if (opt('p', ';')) return null;
     let s;
-    if (is('id', 'const') || is('id', 'let') || is('id', 'var')) { i++; const name = eat('id', undefined, 'dəyişənin adı'); eat('p', '='); const aw = opt('id', 'await'); s = { k: 'let', name: name.v, aw, e: expr() }; }
-    else { const aw = opt('id', 'await'); s = { k: 'do', aw, e: expr() }; }
+    if (is('id', 'const') || is('id', 'let') || is('id', 'var')) {
+      i++;
+      if (opt('p', '{')) { const names = namesIn(); eat('p', '='); const aw = opt('id', 'await'); s = { k: 'let', names, aw, e: expr() }; }
+      else { const name = eat('id', undefined, 'dəyişənin adı'); if (opt('p', '=')) { const aw = opt('id', 'await'); s = { k: 'let', name: name.v, aw, e: expr() }; } else s = { k: 'let', name: name.v, e: { t: 'lit', v: undefined, line: name.line } }; }
+    } else if (opt('id', 'return')) { const aw = opt('id', 'await'); s = { k: 'ret', aw, e: is('p', ';') || is('p', '}') ? { t: 'lit', v: undefined, line: k.line } : expr() }; }
+    else if (opt('id', 'for')) {
+      eat('p', '('); if (!opt('id', 'const') && !opt('id', 'let')) opt('id', 'var');
+      const v = opt('p', '{') ? { names: namesIn() } : { name: eat('id', undefined, 'dəyişənin adı').v };
+      eat('id', 'of', '«of»'); const e = expr(); eat('p', ')');
+      s = Object.assign({ k: 'for', e, body: block() }, v);
+    } else if (opt('id', 'if')) {
+      eat('p', '('); const e = expr(); eat('p', ')');
+      s = { k: 'if', e, then: block() };
+      if (opt('id', 'else')) s.els = is('id', 'if') ? [stmt()] : block();
+    } else {
+      const aw = opt('id', 'await'), e = expr();
+      if (opt('p', '=')) { const aw2 = opt('id', 'await'); s = { k: 'set', to: e, aw: aw2, e: expr() }; } // this.x = …
+      else s = { k: 'do', aw, e };
+    }
     s.line = k.line; s.end = T[i - 1].line; opt('p', ';');
     return s;
   }
   function block() { eat('p', '{'); const body = []; while (!is('p', '}')) { if (is('eof')) throw PwErr('SyntaxError: «}» gözlənilirdi, amma kod bitdi', 'Mötərizələri say: hər { üçün bir } olmalıdır.', peek().line); const s = stmt(); if (s) body.push(s); } eat('p', '}'); return body; }
-  function pageFn() { eat('id', 'async', '«async»'); eat('p', '('); eat('p', '{'); eat('id', 'page', '«page»'); eat('p', '}'); eat('p', ')'); eat('p', '=>'); return block(); }
-  const prog = { tests: [], before: [] };
+  // test('ad', async ({ page, request, mənimFixture }, testInfo) => { … })
+  function testFn() {
+    eat('id', 'async', '«async»');
+    const line = peek().line, ps = paramList();
+    if (ps[0] && ps[0].name) throw PwErr(`Error: First argument must use the object destructuring pattern: ${ps[0].name}`, `Fixture-lər fiqurlu mötərizədə yazılır: async ({ ${ps[0].name} }) => { … }`, line);
+    eat('p', '=>');
+    return { fix: ps[0] ? ps[0].names : [], info: ps[1] && ps[1].name, body: block() };
+  }
+  // class LoginPage { constructor(page) { … } async login(user, pass) { … } }
+  function classDecl() {
+    const nm = eat('id', undefined, 'class-ın adı');
+    if (is('id', 'extends')) throw PwErr('SyntaxError: extends bu məşqin modelində yoxdur', 'Hər page class-ını ayrıca yaz.', peek().line);
+    eat('p', '{');
+    const cls = { name: nm.v, ctor: null, m: {} };
+    while (!is('p', '}')) {
+      if (is('eof')) throw PwErr('SyntaxError: «}» gözlənilirdi, amma kod bitdi', 'Mötərizələri say: hər { üçün bir } olmalıdır.', peek().line);
+      const isAsync = opt('id', 'async'), mn = eat('id', undefined, 'metodun adı');
+      if (!is('p', '(')) throw PwErr(`SyntaxError: «(» gözlənilirdi, «${peek().v}» gəldi`, 'Sahələri constructor-da yaz: this.ad = …;', mn.line);
+      const f = { t: 'fn', params: paramList(), line: mn.line }; f.body = block();
+      if (mn.v === 'constructor') cls.ctor = f; else { cls.m[mn.v] = f; if (isAsync) prog.asyncM.add(mn.v); }
+      opt('p', ';');
+    }
+    eat('p', '}'); prog.classes[nm.v] = cls;
+  }
+  const prog = { tests: [], before: [], after: [], hookFix: [], classes: {}, fixtures: {}, asyncM: new Set() };
+  const testNames = new Set(['test']), topVars = {};
+  const topEnv = () => ({ vars: topVars, locOnly: true, classes: prog.classes });
+  let use = {};
   function top(inGroup) {
     while (!is('eof') && !(inGroup && is('p', '}'))) {
       if (opt('p', ';')) continue;
+      if (opt('id', 'export')) { if (opt('p', '{')) { while (!opt('p', '}')) { if (is('eof')) throw PwErr('SyntaxError: export sətri natamamdır', '', peek().line); i++; } opt('p', ';'); continue; } opt('id', 'default'); }
       const k = peek();
-      if (opt('id', 'import')) { while (!is('str')) { if (is('eof')) throw PwErr('SyntaxError: import sətri natamamdır', "import { test, expect } from '@playwright/test';", k.line); i++; } i++; opt('p', ';'); continue; }
+      if (opt('id', 'import')) {
+        while (!is('str')) { if (is('eof')) throw PwErr('SyntaxError: import sətri natamamdır', "import { test, expect } from '@playwright/test';", k.line); if (is('id', 'test') && is('id', 'as', 1)) testNames.add(peek(2).v); i++; }
+        i++; opt('p', ';'); continue;
+      }
       if (is('id', 'const') && is('p', '{', 1)) { while (!is('p', ')')) { if (is('eof')) throw PwErr('SyntaxError: require sətri natamamdır', '', k.line); i++; } i++; opt('p', ';'); continue; }
-      if (opt('id', 'test')) {
+      if (opt('id', 'class')) { classDecl(); continue; }
+      if ((is('id', 'const') || is('id', 'let') || is('id', 'var')) && is('id', undefined, 1)) { // test data, or test.extend({ … })
+        i++; const nm = eat('id');
+        if (!opt('p', '=')) { topVars[nm.v] = undefined; opt('p', ';'); continue; } // let username;
+        const e = expr(); opt('p', ';');
+        if (e.t === 'call' && e.fn.t === 'mem' && e.fn.name === 'extend' && e.fn.obj.t === 'id' && testNames.has(e.fn.obj.name)) {
+          if (!e.args[0] || e.args[0].t !== 'obj') throw PwErr('Error: extend: fixture-lər obyekt kimi verilir', 'Yaz: base.extend({ ad: async ({ page }, use) => { …; await use(x); } })', k.line);
+          e.args[0].props.forEach(([key, v]) => {
+            if (v.t !== 'fn' || !v.body) throw PwErr(`Error: fixture «${key}» funksiya olmalıdır`, 'Yaz: ad: async ({ page }, use) => { …; await use(x); }', k.line);
+            prog.fixtures[key] = { deps: v.params[0] && v.params[0].names || [], use: v.params[1] && v.params[1].name || 'use', body: v.body, line: v.line };
+          });
+          testNames.add(nm.v);
+        } else topVars[nm.v] = pwEval(e, topEnv());
+        continue;
+      }
+      if (opt('id', 'for')) { // one test per row: the loop's body is parsed once for every row
+        eat('p', '('); if (!opt('id', 'const') && !opt('id', 'let')) opt('id', 'var');
+        const names = opt('p', '{') ? namesIn() : null, name = names ? null : eat('id', undefined, 'dəyişənin adı').v;
+        eat('id', 'of', '«of»'); const eList = expr(), rows = pwEval(eList, topEnv()); eat('p', ')');
+        if (!Array.isArray(rows)) throw PwErr(`TypeError: ${pwSrc(eList)} is not iterable`, 'for … of massiv üzərində işləyir.', k.line);
+        eat('p', '{');
+        const start = i;
+        rows.forEach(r => { i = start; if (names) names.forEach(n => { topVars[n] = r == null ? undefined : r[n]; }); else topVars[name] = r; top(true); });
+        if (!rows.length) { let d = 0; while (!(d === 0 && is('p', '}'))) { if (is('eof')) break; if (is('p', '{')) d++; else if (is('p', '}')) d--; i++; } }
+        eat('p', '}'); opt('p', ';'); continue;
+      }
+      if (is('id') && testNames.has(k.v)) {
+        i++;
         const mod = opt('p', '.') ? eat('id', undefined, 'test-in metodu').v : '';
         eat('p', '(');
-        if (mod === 'beforeEach') { prog.before.push(...pageFn()); eat('p', ')'); opt('p', ';'); continue; }
-        if (mod === 'describe') { eat('str', undefined, 'qrupun adı'); eat('p', ','); opt('id', 'async'); eat('p', '('); eat('p', ')'); eat('p', '=>'); eat('p', '{'); top(true); eat('p', '}'); eat('p', ')'); opt('p', ';'); continue; }
-        if (mod && mod !== 'only' && mod !== 'skip') throw PwErr(`SyntaxError: test.${mod} bu məşqdə dəstəklənmir`, 'Dəstəklənir: test, test.describe, test.beforeEach, test.only, test.skip.', k.line);
-        const name = eat('str', undefined, 'testin adı (mətn)'); eat('p', ',');
-        const body = pageFn(); eat('p', ')'); opt('p', ';');
-        prog.tests.push({ name: name.v, line: k.line, body, only: mod === 'only', skip: mod === 'skip' });
+        if (mod === 'use') { use = Object.assign({}, use, pwEval(expr(), topEnv())); eat('p', ')'); opt('p', ';'); continue; }
+        if (mod === 'beforeEach' || mod === 'afterEach') { const f = testFn(); (mod === 'beforeEach' ? prog.before : prog.after).push(...f.body); prog.hookFix.push(...f.fix); eat('p', ')'); opt('p', ';'); continue; }
+        if (mod === 'describe') { if (is('tpl')) i++; else eat('str', undefined, 'qrupun adı'); eat('p', ','); opt('id', 'async'); eat('p', '('); eat('p', ')'); eat('p', '=>'); eat('p', '{'); const use0 = use; top(true); use = use0; eat('p', '}'); eat('p', ')'); opt('p', ';'); continue; }
+        if (mod && mod !== 'only' && mod !== 'skip') throw PwErr(`SyntaxError: test.${mod} bu məşqdə dəstəklənmir`, 'Dəstəklənir: test, test.describe, test.beforeEach, test.afterEach, test.use, test.step, test.extend, test.only, test.skip.', k.line);
+        const name = pwEval(is('tpl') ? primary() : { t: 'lit', v: eat('str', undefined, 'testin adı (mətn)').v }, topEnv()); eat('p', ',');
+        let tag; if (is('p', '{')) { const o = pwEval(expr(), topEnv()); tag = o && o.tag; eat('p', ','); } // test('ad', { tag: '@smoke' }, async …)
+        const f = testFn(); eat('p', ')'); opt('p', ';');
+        prog.tests.push({ name, line: k.line, body: f.body, fix: f.fix, info: f.info, tag, vars: Object.assign({}, topVars), use: Object.assign({}, use), only: mod === 'only', skip: mod === 'skip' });
         continue;
       }
       throw PwErr(`SyntaxError: gözlənilməz «${k.v}»`, "Kod test('ad', async ({ page }) => { … }); içində olmalıdır.", k.line);
@@ -2140,24 +2259,40 @@ function pwParseLoc(src) {
   if (!v || !v.$loc) throw PwErr('Bu, lokator deyil', "Lokator page.getBy… və ya page.locator(…) ilə başlayır: page.getByRole('button', { name: 'Login' })", 1);
   return v;
 }
-const PW_PAGE = { $page: 1 }, PW_EXPECT = { $fn: 'expect' }, PW_CONSOLE = { $console: 1 }, PW_KEYS = { $keys: 1 };
+const PW_PAGE = { $page: 1 }, PW_EXPECT = { $fn: 'expect' }, PW_CONSOLE = { $console: 1 }, PW_KEYS = { $keys: 1 }, PW_REQ = { $req: 1 }, PW_CTX = { $ctx: 1 }, PW_TEST = { $test: 1 };
 const PW_Q = ['getByRole', 'getByText', 'getByLabel', 'getByPlaceholder', 'getByTestId', 'locator'];
-const PW_PAGE_M = PW_Q.concat(['goto', 'url', 'title', 'reload', 'waitForTimeout', 'waitForURL', 'waitForLoadState', 'click', 'fill', 'screenshot', 'pause']);
+const PW_PAGE_M = PW_Q.concat(['goto', 'url', 'title', 'reload', 'waitForTimeout', 'waitForURL', 'waitForLoadState', 'click', 'fill', 'screenshot', 'pause', 'context']);
 const PW_LOC_M = PW_Q.concat(['filter', 'first', 'last', 'nth', 'click', 'dblclick', 'fill', 'clear', 'press', 'pressSequentially', 'type', 'selectOption', 'check', 'uncheck', 'hover', 'focus',
-  'textContent', 'innerText', 'inputValue', 'getAttribute', 'count', 'isVisible', 'isHidden', 'waitFor']);
+  'textContent', 'innerText', 'inputValue', 'getAttribute', 'count', 'isVisible', 'isHidden', 'waitFor', 'allTextContents', 'allInnerTexts']);
 const PW_MATCH_L = ['toBeVisible', 'toBeHidden', 'toHaveText', 'toContainText', 'toHaveCount', 'toHaveValue', 'toBeEnabled', 'toBeDisabled', 'toHaveAttribute', 'toBeEmpty'];
 const PW_MATCH_P = ['toHaveURL', 'toHaveTitle'];
-const PW_MATCH_V = ['toBe', 'toEqual', 'toContain', 'toBeTruthy', 'toBeFalsy', 'toBeGreaterThan', 'toBeLessThan', 'toHaveLength', 'toMatch'];
+const PW_MATCH_V = ['toBe', 'toEqual', 'toContain', 'toBeTruthy', 'toBeFalsy', 'toBeGreaterThan', 'toBeLessThan', 'toHaveLength', 'toMatch', 'toBeNull', 'toBeUndefined', 'toBeDefined', 'toHaveProperty', 'toBeGreaterThanOrEqual', 'toBeLessThanOrEqual'];
+const PW_REQ_M = ['get', 'post', 'put', 'patch', 'delete'], PW_RES_M = ['ok', 'status', 'statusText', 'url', 'headers', 'json', 'text'];
 const PW_ASYNC = new Set(['goto', 'reload', 'waitForTimeout', 'waitForURL', 'waitForLoadState', 'title', 'screenshot', 'pause', 'click', 'dblclick', 'fill', 'clear', 'press', 'pressSequentially', 'type',
-  'selectOption', 'check', 'uncheck', 'hover', 'focus', 'textContent', 'innerText', 'inputValue', 'getAttribute', 'count', 'isVisible', 'isHidden', 'waitFor'].concat(PW_MATCH_L, PW_MATCH_P));
-const PW_NOPE = ['getByAltText', 'getByTitle', 'frameLocator', '$', '$$', 'evaluate', 'waitForSelector', 'setViewportSize', 'route', 'mouse', 'context', 'and', 'or', 'all'];
+  'selectOption', 'check', 'uncheck', 'hover', 'focus', 'textContent', 'innerText', 'inputValue', 'getAttribute', 'count', 'isVisible', 'isHidden', 'waitFor', 'allTextContents', 'allInnerTexts',
+  'step', 'storageState', 'json', 'text', 'toBeOK'].concat(PW_MATCH_L, PW_MATCH_P, PW_REQ_M));
+const PW_NOPE = ['getByAltText', 'getByTitle', 'frameLocator', '$', '$$', 'evaluate', 'evaluateAll', 'waitForSelector', 'setViewportSize', 'route', 'mouse', 'and', 'or', 'all'];
+// plain values: the methods a test needs on text and lists, and a few globals. Nothing else of JavaScript is reachable from the reader's code.
+const PW_VAL_M = ['map', 'filter', 'find', 'some', 'every', 'forEach', 'includes', 'join', 'slice', 'sort', 'reverse', 'indexOf', 'concat', 'trim', 'toLowerCase', 'toUpperCase', 'replace', 'startsWith', 'endsWith', 'split', 'localeCompare', 'toFixed'];
+const PW_GLOBALS = { Number, String, Boolean, process: { env: { SAUCE_PASSWORD: 'secret_sauce', BASE_URL: 'https://www.saucedemo.com' } }, Date: { now: Date.now }, Math: { random: Math.random, round: Math.round, floor: Math.floor, ceil: Math.ceil, abs: Math.abs, max: Math.max, min: Math.min }, JSON: { stringify: JSON.stringify, parse: JSON.parse } };
+const PW_NATIVE = new Set([Number, String, Boolean, Date.now, Math.random, Math.round, Math.floor, Math.ceil, Math.abs, Math.max, Math.min, JSON.stringify, JSON.parse]);
+const pwOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+// which scope holds a variable: a function's variables sit on top of the ones it closes over
+const pwVar = (vars, name) => { for (let v = vars; v && v !== Object.prototype; v = Object.getPrototypeOf(v)) if (pwOwn(v, name)) return v; return null; };
 function pwLev(a, b) { const d = Array.from({ length: a.length + 1 }, (_, i) => [i]); for (let j = 1; j <= b.length; j++) d[0][j] = j; for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[a.length][b.length]; }
 function pwNear(w, list) { let best = null, bd = 3; list.forEach(x => { const d = pwLev(w.toLowerCase(), x.toLowerCase()); if (d < bd) { bd = d; best = x; } }); return best; }
-const pwSrc = n => n.t === 'id' ? n.name : n.t === 'mem' ? `${pwSrc(n.obj)}.${n.name}` : n.t === 'call' ? `${pwSrc(n.fn)}(…)` : '…';
+const pwSrc = n => n.t === 'id' ? n.name : n.t === 'this' ? 'this' : n.t === 'mem' ? `${pwSrc(n.obj)}.${n.name}` : n.t === 'call' ? `${pwSrc(n.fn)}(…)` : '…';
 function pwMember(o, name, n) {
-  const list = o === PW_PAGE ? PW_PAGE_M : o && o.$loc ? PW_LOC_M : o && o.$expect ? PW_MATCH_L.concat(PW_MATCH_P, PW_MATCH_V) : o === PW_CONSOLE ? ['log', 'info', 'error'] : o === PW_KEYS ? ['press', 'type'] : null;
+  const list = o === PW_PAGE ? PW_PAGE_M : o && o.$loc ? PW_LOC_M : o && o.$expect ? PW_MATCH_L.concat(PW_MATCH_P, PW_MATCH_V, ['toBeOK']) : o === PW_CONSOLE ? ['log', 'info', 'error'] : o === PW_KEYS ? ['press', 'type']
+    : o === PW_REQ ? PW_REQ_M : o && o.$res ? PW_RES_M : o === PW_CTX ? ['storageState'] : o === PW_TEST ? ['step'] : null;
   if (o === PW_PAGE && name === 'keyboard') return PW_KEYS;
+  if (o === PW_PAGE && name === 'request') return PW_REQ;
   if (o && o.$expect && name === 'not') return Object.assign({}, o, { not: !o.not });
+  if (o && o.$inst) { // a Page Object: its fields, then its methods
+    if (pwOwn(o.f, name)) return o.f[name];
+    if (pwOwn(o.cls.m, name)) return { $f: o.cls.m[name], self: o };
+    return undefined;
+  }
   if (list) {
     if (list.includes(name)) return { $m: name, self: o };
     if (PW_NOPE.includes(name)) throw PwErr(`Error: ${name} bu kitabın modelində yoxdur`, 'Dəstəklənən lokatorlar: getByRole, getByText, getByLabel, getByPlaceholder, getByTestId, locator; filter, first, last, nth.', n.line);
@@ -2166,29 +2301,122 @@ function pwMember(o, name, n) {
   }
   if (o == null) throw PwErr(`TypeError: Cannot read properties of ${o} (reading '${name}')`, '', n.line);
   if (name === 'length' && (typeof o === 'string' || Array.isArray(o))) return o.length;
+  if (typeof o === 'string' || typeof o === 'number' || Array.isArray(o)) {
+    if (PW_VAL_M.includes(name)) return { $v: name, self: o };
+    throw PwErr(`TypeError: ${pwSrc(n.obj)}.${name} — bu modeldə yoxdur`, (h => h ? `Bəlkə ${h}?` : '')(pwNear(name, PW_VAL_M)), n.line);
+  }
+  if (typeof o === 'object' && !(o instanceof RegExp) && !o.$f && !o.$m && !o.$v) return pwOwn(o, name) ? o[name] : undefined; // JSON from an API, a row of test data
   throw PwErr(`TypeError: ${pwSrc(n.obj)}.${name} — bu modeldə yoxdur`, '', n.line);
 }
+// a class method or an arrow function: its own variables, the file's variables under them
+function pwInvoke(f, args, env, line) {
+  env.depth = (env.depth || 0) + 1;
+  if (env.depth > 40) { env.depth = 0; throw PwErr('RangeError: Maximum call stack size exceeded', 'Metod özü-özünü dayanmadan çağırır.', line); }
+  const n = f.$f, vars0 = env.vars, self0 = env.self, ret0 = env.ret;
+  env.vars = Object.create(f.vars || env.top || null); if (f.self !== undefined) env.self = f.self; env.ret = undefined;
+  n.params.forEach((p, i) => { if (p.names) p.names.forEach(k => { env.vars[k] = args[i] == null ? undefined : args[i][k]; }); else env.vars[p.name] = args[i]; });
+  try {
+    if (n.expr) return pwEval(n.expr, env);
+    pwExec(n.body, env);
+    return env.ret;
+  } finally { env.vars = vars0; env.self = self0; env.ret = ret0; if (env.depth) env.depth--; }
+}
+// one statement; true means `return` ran and the caller stops
+function pwStmt(s, env) {
+  switch (s.k) {
+    case 'do': pwEval(s.e, env); return false;
+    case 'let': { const v = pwEval(s.e, env); if (s.names) s.names.forEach(k => { if (v == null) throw PwErr(`TypeError: Cannot destructure property '${k}' of ${v}`, '', s.line); env.vars[k] = pwMember(v, k, { obj: s.e, line: s.line }); }); else env.vars[s.name] = v; return false; }
+    case 'set': {
+      const v = pwEval(s.e, env);
+      if (s.to.t === 'id') { (pwVar(env.vars, s.to.name) || env.vars)[s.to.name] = v; return false; }
+      if (s.to.t !== 'mem') throw PwErr('SyntaxError: bu dəyərə yazmaq olmur', '', s.line);
+      const o = pwEval(s.to.obj, env);
+      if (o == null) throw PwErr(`TypeError: Cannot set properties of ${o} (setting '${s.to.name}')`, '', s.line);
+      if (o.$inst) o.f[s.to.name] = v; else if (typeof o === 'object' && !Array.isArray(o) && !o.$loc && o !== PW_PAGE) o[s.to.name] = v; else throw PwErr(`TypeError: ${pwSrc(s.to)} yazıla bilməz`, '', s.line);
+      return false;
+    }
+    case 'ret': env.ret = pwEval(s.e, env); return true;
+    case 'if': return pwExec(pwEval(s.e, env) ? s.then : s.els || [], env);
+    case 'for': {
+      const xs = pwEval(s.e, env);
+      if (!Array.isArray(xs)) throw PwErr(`TypeError: ${pwSrc(s.e)} is not iterable`, 'for … of massiv üzərində işləyir.', s.line);
+      for (const x of xs) {
+        if (s.names) s.names.forEach(k => { env.vars[k] = x == null ? undefined : x[k]; }); else env.vars[s.name] = x;
+        if (pwExec(s.body, env)) return true;
+      }
+      return false;
+    }
+  }
+  return false;
+}
+function pwExec(list, env) { for (const s of list) if (pwStmt(s, env)) return true; return false; }
 function pwEval(n, env) {
   switch (n.t) {
     case 'lit': return n.v;
-    case 'arr': return n.items.map(x => pwEval(x, env));
+    case 'tpl': return n.parts.map(p => typeof p === 'string' ? p : String(pwEval(p, env))).join('');
+    case 'arr': { const out = []; n.items.forEach(x => { if (x.t === 'spread') { const v = pwEval(x.e, env); if (!Array.isArray(v)) throw PwErr(`TypeError: ${pwSrc(x.e)} is not iterable`, '', n.line); out.push(...v); } else out.push(pwEval(x, env)); }); return out; }
     case 'obj': { const o = {}; n.props.forEach(([k, v]) => { o[k] = pwEval(v, env); }); return o; }
-    case 'id':
-      if (Object.prototype.hasOwnProperty.call(env.vars, n.name)) return env.vars[n.name];
-      if (n.name === 'page') return PW_PAGE;
+    case 'await': return pwEval(n.e, env);
+    case 'this': if (env.self) return env.self; throw PwErr("TypeError: Cannot read properties of undefined (reading 'this')", 'this yalnız class-ın içində işləyir.', n.line);
+    case 'fn': return { $f: n, vars: env.vars, self: env.self };
+    case 'new': {
+      const cls = env.classes && pwOwn(env.classes, n.name) ? env.classes[n.name] : null;
+      if (!cls) throw PwErr(`ReferenceError: ${n.name} is not defined`, 'Bu məşqdə bir fayl var: class-ı eyni redaktorda, testdən yuxarıda yaz.', n.line);
+      const inst = { $inst: 1, cls, f: {} };
+      if (cls.ctor) pwInvoke({ $f: cls.ctor, self: inst }, n.args.map(a => pwEval(a, env)), env, n.line);
+      return inst;
+    }
+    case 'id': {
+      const holder = pwVar(env.vars, n.name);
+      if (holder) return holder[n.name];
+      if (n.name === 'page' && env.locOnly) return PW_PAGE;
       if (n.name === 'expect') return PW_EXPECT;
       if (n.name === 'console') return PW_CONSOLE;
-      throw PwErr(`ReferenceError: ${n.name} is not defined`, (h => h ? `Bəlkə ${h}?` : 'Dəyişəni əvvəlcə const ilə yarat.')(pwNear(n.name, ['page', 'expect', 'console'].concat(Object.keys(env.vars)))), n.line);
+      if (n.name === 'test' && !env.locOnly) return PW_TEST;
+      if (pwOwn(PW_GLOBALS, n.name)) return PW_GLOBALS[n.name];
+      throw PwErr(`ReferenceError: ${n.name} is not defined`, (h => h ? `Bəlkə ${h}?` : 'Dəyişəni əvvəlcə const ilə yarat.')(pwNear(n.name, ['page', 'request', 'expect', 'console'].concat(Object.keys(env.vars)))) + (n.name === 'page' || n.name === 'request' ? ` ${n.name} fixture-dir: testin başlığında istə: async ({ ${n.name} }) => { … }` : ''), n.line);
+    }
     case 'mem': return pwMember(pwEval(n.obj, env), n.name, n);
-    case 'idx': { const o = pwEval(n.obj, env), k = pwEval(n.ix, env); return o == null ? undefined : o[k]; }
+    case 'idx': { const o = pwEval(n.obj, env), k = pwEval(n.ix, env); if (o == null) return undefined; return (Array.isArray(o) || typeof o === 'string') && typeof k === 'number' ? o[k] : typeof o === 'object' && pwOwn(o, k) ? o[k] : undefined; }
     case 'call': {
       const f = pwEval(n.fn, env), args = n.args.map(a => pwEval(a, env));
       if (f === PW_EXPECT) return { $expect: 1, v: args[0], not: false };
       if (f && f.$m) return pwCall(f.self, f.$m, args, n, env);
-      throw PwErr(`TypeError: ${pwSrc(n.fn)} is not a function`, '', n.line);
+      if (f && f.$f) return pwInvoke(f, args, env, n.line);
+      if (f && f.$v) {
+        if (typeof f.self[f.$v] !== 'function') throw PwErr(`TypeError: ${pwSrc(n.fn)} is not a function`, Array.isArray(f.self) ? 'Bu metod mətn üçündür.' : 'Bu metod massiv üçündür.', n.line);
+        return f.self[f.$v](...args.map(a => a && a.$f ? (...x) => pwInvoke(a, x, env, n.line) : a));
+      }
+      if (typeof f === 'function' && PW_NATIVE.has(f)) return f(...args);
+      throw PwErr(`TypeError: ${pwSrc(n.fn)} is not a function`, (o => o && o.$inst ? (h => h ? `Bəlkə ${h}?` : `Bu class-da belə metod yoxdur: ${Object.keys(o.cls.m).join(', ') || 'metod yazılmayıb'}.`)(pwNear(n.fn.name, Object.keys(o.cls.m).concat(Object.keys(o.f)))) : '')(n.fn.t === 'mem' ? pwEval(n.fn.obj, env) : null), n.line);
     }
   }
   return undefined;
+}
+// the request fixture: the practice API's own model, one server for one run of the editor
+function pwApi(env, m, url, o, line) {
+  const base = new URL(API.baseUrl); let u;
+  try { u = new URL(String(url), env.baseURL || undefined); } catch (e) { throw PwErr(`Error: apiRequestContext.${m}: Invalid URL`, `URL tam yazılmalıdır: ${API.baseUrl}/products`, line); }
+  if (u.origin !== base.origin) throw PwErr(`Error: apiRequestContext.${m}: getaddrinfo ENOTFOUND ${u.hostname}`, `Bu məşqdə yalnız Mini Store API-si açılır: ${API.baseUrl}. JSONPlaceholder-i öz kompüterində sına (19.14).`, line);
+  const h = {}; Object.entries((o && o.headers) || {}).forEach(([k, v]) => { h[k.toLowerCase()] = String(v); });
+  Object.entries((o && o.params) || {}).forEach(([k, v]) => u.searchParams.set(k, v));
+  const keep = { srv: LAB.srv, found: LAB.found, newBug: LAB.newBug }, path = u.pathname.replace(/\/+$/, '') || '/';
+  LAB.srv = env.shared.api; LAB.found = {};
+  try {
+    labInit(); env.shared.api = LAB.srv;
+    return Object.assign({ $res: 1, url: u.href }, apiServe(m.toUpperCase(), path, u.searchParams, h, (o && o.data) === undefined ? null : o.data, false));
+  } finally { Object.assign(LAB, keep); }
+}
+function pwResp(r, m, line) {
+  switch (m) {
+    case 'ok': return r.st >= 200 && r.st < 300;
+    case 'status': return r.st;
+    case 'statusText': return { 200: 'OK', 201: 'Created', 400: 'Bad Request', 401: 'Unauthorized', 403: 'Forbidden', 404: 'Not Found', 405: 'Method Not Allowed', 409: 'Conflict' }[r.st] || '';
+    case 'url': return r.url;
+    case 'headers': { const o = {}; Object.entries(r.hdrs || {}).forEach(([k, v]) => { o[k.toLowerCase()] = v; }); return o; }
+    case 'text': return JSON.stringify(r.body);
+    default: if (r.body === undefined) throw PwErr('SyntaxError: Unexpected end of JSON input', 'Cavabın gövdəsi yoxdur: əvvəl statusu yoxla.', line); return JSON.parse(JSON.stringify(r.body));
+  }
 }
 const PW_OPT = { getByRole: ['name', 'exact', 'level'], getByText: ['exact'], getByLabel: ['exact'], getByPlaceholder: ['exact'], locator: ['hasText', 'hasNotText'], filter: ['hasText', 'hasNotText', 'has'] };
 function pwCheckOpts(m, o, line) {
@@ -2225,6 +2453,15 @@ function pwChild(base, m, a, line) {
 function pwCall(self, m, a, n, env) {
   const line = n.line;
   if (self === PW_CONSOLE) { if (!env.locOnly) env.out.push(a.map(x => typeof x === 'string' ? x : x && x.$loc ? `locator('${x.desc}')` : JSON.stringify(x)).join(' ')); return undefined; }
+  if (self === PW_REQ) return pwApi(env, m, a[0], a[1], line);
+  if (self && self.$res) return pwResp(self, m, line);
+  if (self === PW_TEST) { if (!a[1] || !a[1].$f) throw PwErr('Error: test.step: ikinci arqument funksiya olmalıdır', "Yaz: await test.step('ad', async () => { … });", line); return pwInvoke(a[1], [], env, line); }
+  if (self === PW_CTX) { // the reader's saved login: kept for the rest of this run, under the file's name
+    if (!a[0] || !a[0].path) throw PwErr('Error: storageState: path lazımdır', "Yaz: await page.context().storageState({ path: 'playwright/.auth/user.json' });", line);
+    env.shared.states[a[0].path] = { user: env.st ? env.st.user : null, cart: env.st ? env.st.cart.slice() : [] };
+    return undefined;
+  }
+  if (self === PW_PAGE && m === 'context') return PW_CTX;
   const isQ = PW_Q.includes(m) || ((m === 'filter' || m === 'first' || m === 'last' || m === 'nth') && self.$loc);
   if (isQ) return pwChild(self === PW_PAGE ? null : self, m, a, line);
   if (env.locOnly) throw PwErr(`Burada yalnız lokator yaz: ${m}() hərəkət və ya yoxlamadır`, 'Hərəkəti (click, fill) və yoxlamanı «Test yaz» bölməsində et.', line);
@@ -2248,18 +2485,18 @@ function pwCall(self, m, a, n, env) {
   }
   // a locator: an action or a read
   if (!env.st) throw PwErr(`Error: locator.${m}: Test timeout of 30000ms exceeded.\nCall log:\n  - waiting for ${self.desc}`, 'Səhifə hələ açılmayıb: əvvəlcə await page.goto(…) yaz.', line);
-  if (['textContent', 'innerText', 'inputValue', 'getAttribute', 'count', 'isVisible', 'isHidden'].includes(m)) return pwRead(env, self, m, a, line);
+  if (['textContent', 'innerText', 'inputValue', 'getAttribute', 'count', 'isVisible', 'isHidden', 'allTextContents', 'allInnerTexts'].includes(m)) return pwRead(env, self, m, a, line);
   if (m === 'waitFor') { const st = (a[0] && a[0].state) || 'visible', k = pwResolve(self, pwDom(env.st)).length; if ((st === 'visible' || st === 'attached') !== (k > 0)) throw Object.assign(PwErr(`Error: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n  - waiting for ${self.desc} to be ${st}`, '', line), { ms: 30000 }); return undefined; }
   return pwAct(env, self, m, a, line);
 }
 const pwUrl = env => env.st ? env.origin + TR_URL[env.st.page] : 'about:blank';
 function pwGoto(env, url, line) {
-  let u; try { u = new URL(String(url)); } catch (e) { throw PwErr('Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL', 'URL tam yazılmalıdır, protokolla birlikdə: https://www.saucedemo.com/', line); }
+  let u; try { u = new URL(String(url), env.baseURL || undefined); } catch (e) { throw PwErr('Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL', 'URL tam yazılmalıdır, protokolla birlikdə: https://www.saucedemo.com/ (qısa yol üçün config-də və ya test.use-da baseURL lazımdır, 19.11)', line); }
   if (!PW_HOSTS.includes(u.hostname)) throw PwErr(`Error: page.goto: net::ERR_NAME_NOT_RESOLVED at ${url}`, 'Bu məşqdə yalnız Mini Store (saucedemo.com-un modeli) açılır: https://www.saucedemo.com/', line);
   const page = Object.keys(TR_URL).find(k => TR_URL[k] === u.pathname);
   if (!page) throw PwErr(`Error: page.goto: 404 Not Found — ${u.pathname}`, `Modeldə belə səhifə yoxdur. Səhifələr: ${Object.values(TR_URL).join(', ')}`, line);
   env.origin = u.origin;
-  if (!env.st) env.st = smFresh({ page: 'login' });
+  if (!env.st) { env.st = smFresh({ page: 'login' }); if (env.auth) { env.st.user = env.auth.user; env.st.cart = env.auth.cart.slice(); } } // test.use({ storageState })
   if (page === 'login') { Object.assign(env.st, { page: 'login', err: '', menu: false }); Object.assign(env.st.f, { user: '', pass: '' }); }
   else if (!env.st.user) Object.assign(env.st, { page: 'login', err: `Epic sadface: You can only access '${u.pathname}' when you are logged in.` }); // as on saucedemo
   else Object.assign(env.st, { page, err: '', menu: false });
@@ -2304,6 +2541,8 @@ function pwRead(env, loc, m, a, line) {
   const root = pwDom(env.st), els = pwResolve(loc, root);
   els.forEach(e => e.classList.add('pw-hl')); env.snap = root.innerHTML;
   if (m === 'count') return els.length;
+  if (m === 'allTextContents') return els.map(e => e.textContent);
+  if (m === 'allInnerTexts') return els.map(e => pwNorm(e.textContent));
   if (m === 'isVisible' || m === 'isHidden') { if (els.length > 1) throw pwStrict('locator.' + m, loc, els, root, line); return m === 'isVisible' ? els.length === 1 : !els.length; }
   const el = pwOne(loc, root, 'locator.' + m, line, els);
   if (m === 'textContent') return el.textContent;
@@ -2319,6 +2558,11 @@ function pwAssert(x, m, a, line, env) {
   const t = x.v, neg = x.not, mm = (neg ? 'not.' : '') + m, exp = a[0];
   const full = (v, s) => v instanceof RegExp ? v.test(s) : pwNorm(s) === pwNorm(v);
   const fail = (head, body, hint) => { throw Object.assign(PwErr(`Error: ${head}\n\n${body}`, hint, line), { ms: 5000, matcher: m }); };
+  if (m === 'toBeOK') {
+    if (!t || !t.$res) throw PwErr('Error: expect(value).toBeOK — bu yoxlama API cavabı üçündür', 'Yaz: await expect(response).toBeOK();', line);
+    if ((t.st >= 200 && t.st < 300) === neg) throw Object.assign(PwErr(`Error: expect(response).${mm}()\n\nExpected: ${neg ? 'not ' : ''}OK (200–299)\nReceived: ${t.st}\nResponse: ${JSON.stringify(t.body)}`, 'Cavabın gövdəsi səbəbi deyir: token, data və ya URL səhvdir.', line), { matcher: m });
+    return undefined;
+  }
   if (t === PW_PAGE) {
     if (!PW_MATCH_P.includes(m)) throw PwErr(`Error: expect(page).${m} — page üçün bu yoxlama yoxdur`, 'page üçün: toHaveURL, toHaveTitle. Element üçün expect(lokator) yaz.', line);
     const got = m === 'toHaveURL' ? pwUrl(env) : env.st ? 'Mini Store' : '';
@@ -2358,7 +2602,9 @@ function pwAssert(x, m, a, line, env) {
   if (!PW_MATCH_V.includes(m)) throw PwErr(`Error: expect(value).${m} — bu yoxlama dəyər üçün deyil`, PW_MATCH_L.includes(m) ? `${m} lokator üçündür: expect(page.getBy…(…)).${m}(…) yaz.` : '', line);
   const eq = (p, q) => JSON.stringify(p) === JSON.stringify(q);
   const pass = { toBe: () => Object.is(t, exp), toEqual: () => eq(t, exp), toContain: () => t != null && t.includes && t.includes(exp), toBeTruthy: () => !!t, toBeFalsy: () => !t,
-    toBeGreaterThan: () => t > exp, toBeLessThan: () => t < exp, toHaveLength: () => t != null && t.length === exp, toMatch: () => exp instanceof RegExp ? exp.test(t) : String(t).includes(exp) }[m]();
+    toBeGreaterThan: () => t > exp, toBeLessThan: () => t < exp, toHaveLength: () => t != null && t.length === exp, toMatch: () => exp instanceof RegExp ? exp.test(t) : String(t).includes(exp),
+    toBeNull: () => t === null, toBeUndefined: () => t === undefined, toBeDefined: () => t !== undefined, toHaveProperty: () => t != null && typeof t === 'object' && pwOwn(t, exp) && (a.length < 2 || eq(t[exp], a[1])),
+    toBeGreaterThanOrEqual: () => t >= exp, toBeLessThanOrEqual: () => t <= exp }[m]();
   if (pass === neg) throw Object.assign(PwErr(`Error: expect(received).${mm}(expected)${m === 'toBe' ? ' // Object.is equality' : ''}\n\nExpected: ${neg ? 'not ' : ''}${JSON.stringify(exp)}\nReceived: ${JSON.stringify(t)}`,
     'Bu yoxlama dəyəri bir dəfə tutuşdurur, gözləmir. Element üçün web-first yoxlama daha etibarlıdır: await expect(lokator).toHaveText(…).', line), { matcher: m });
   return undefined;
@@ -2366,43 +2612,91 @@ function pwAssert(x, m, a, line, env) {
 // ---- running: lint first (as eslint-plugin-playwright would), then each test in a fresh page; every statement is a trace step
 const pwRoot = e => e.t === 'call' ? pwRoot(e.fn) : e.t === 'mem' ? pwRoot(e.obj) : e.t === 'id' ? e.name : '';
 const pwLast = e => e.t === 'call' && e.fn.t === 'mem' ? e.fn.name : '';
+const pwFns = e => e && e.t === 'call' ? e.args.filter(a => a.t === 'fn' && a.body).map(a => a.body) : [];
+const pwKids = s => pwFns(s.e).concat(s.body ? [s.body] : [], s.then ? [s.then] : [], s.els ? [s.els] : []);
+const pwHasExpect = list => list.some(s => pwRoot(s.e) === 'expect' || pwKids(s).some(pwHasExpect));
+const pwIsUse = (s, name) => s.e && s.e.t === 'call' && s.e.fn.t === 'id' && s.e.fn.name === name;
 function pwLint(prog, src) {
   const L = [];
-  const walk = body => body.forEach(s => {
+  const walk = (body, useName) => body.forEach(s => {
     const m = pwLast(s.e), r = pwRoot(s.e);
-    if (m && PW_ASYNC.has(m) && !s.aw && !(r === 'expect' && PW_MATCH_V.includes(m)))
+    // a method of the reader's own class counts too; `return x()` hands the promise to the caller, which is fine
+    if (s.k !== 'ret' && m && (PW_ASYNC.has(m) || prog.asyncM.has(m)) && !s.aw && !(r === 'expect' && PW_MATCH_V.includes(m)))
       L.push({ err: 1, line: s.line, msg: `await yoxdur (playwright/missing-playwright-await)`, hint: `${m}() Promise qaytarır: await olmadan Playwright onu gözləmir və növbəti sətir hərəkət bitməmiş işləyir — test bəzən keçir, bəzən düşür (flaky, 19.9).` });
+    if (useName && pwIsUse(s, useName) && !s.aw) L.push({ err: 1, line: s.line, msg: 'await yoxdur: use(…)', hint: 'await use(x) testin bitməsini gözləyir. await olmasa, təmizlik testdən əvvəl işləyər (19.12).' });
     if (m === 'waitForTimeout') L.push({ line: s.line, msg: 'Sabit gözləmə: waitForTimeout (19.8)', hint: 'Playwright elementi özü gözləyir (auto-waiting). Şərti gözləmək lazımdırsa, expect(…) işlət.' });
+    pwKids(s).forEach(k => walk(k, useName));
   });
-  walk(prog.before);
-  prog.tests.forEach(t => { walk(t.body); if (!t.body.concat(prog.before).some(s => pwRoot(s.e) === 'expect')) L.push({ line: t.line, msg: 'Testdə yoxlama (expect) yoxdur', hint: 'expect olmayan test heç nəyi yoxlamır: xəta olsa da keçəcək (19.8).' }); });
+  walk(prog.before); walk(prog.after);
+  Object.values(prog.classes).forEach(c => { if (c.ctor) walk(c.ctor.body); Object.values(c.m).forEach(f => walk(f.body)); });
+  Object.values(prog.fixtures).forEach(f => walk(f.body, f.use));
+  const seen = new Set();
+  prog.tests.forEach(t => {
+    walk(t.body);
+    if (seen.has(t.name)) L.push({ err: 1, line: t.line, msg: `duplicate test title "${t.name}"`, hint: 'Bir faylda iki testin adı eyni ola bilməz. Data-driven testdə dəyəri ada yaz: `giriş: ${user}` (19.13).' });
+    seen.add(t.name);
+    if (!pwHasExpect(t.body.concat(prog.before, prog.after))) L.push({ line: t.line, msg: 'Testdə yoxlama (expect) yoxdur', hint: 'expect olmayan test heç nəyi yoxlamır: xəta olsa da keçəcək (19.8).' });
+  });
   if (!prog.tests.length) L.push({ err: 1, line: 1, msg: 'test(…) tapılmadı', hint: "Kodu test('ad', async ({ page }) => { … }); içində yaz." });
   const smart = src.split('\n').findIndex(l => PW_SMART.test(l));
   if (smart >= 0) L.push({ line: smart + 1, msg: 'Ağıllı dırnaqlar adi dırnağa çevrildi', hint: '“ ” və ‘ ’ real faylda SyntaxError verir: kodda \' və ya " işlət.' });
   return L.sort((p, q) => p.line - q.line);
 }
-function pwRunTest(t, before, lines) {
-  const env = { st: null, origin: '', vars: {}, out: [], found: {}, focus: null, snap: null, wait: 0 }, steps = [];
+function pwRunTest(t, prog, lines, shared) {
+  const use = t.use || {};
+  const env = { st: null, origin: '', vars: Object.assign({}, t.vars), top: t.vars || {}, out: [], found: {}, focus: null, snap: null, wait: 0, classes: prog.classes, shared, baseURL: use.baseURL, auth: null }, steps = [];
   let err = null, ms = 0;
-  for (const s of before.concat(t.body)) {
+  const step = s => {
     const code = lines.slice(s.line - 1, s.end).map(x => x.trim()).join(' ');
-    if (err) { steps.push({ line: s.line, src: code, skip: true }); continue; }
+    if (err) { steps.push({ line: s.line, src: code, skip: true }); return undefined; }
     env.snap = null; env.wait = 0; const urlB = pwUrl(env);
-    try { const v = pwEval(s.e, env); if (s.k === 'let') env.vars[s.name] = v; }
+    let v;
+    try { if (s.useOf) v = pwEval(s.e.args[0], env); else pwStmt(s, env); }
     catch (e) { if (!e.pw) { console.error(e); e.pw = 1; e.hint = 'Kitabın modelində daxili xəta: bu sətri sadələşdir.'; } err = e; if (!e.line) e.line = s.line; }
-    const m = pwLast(s.e), dur = err ? err.ms || 0 : m === 'goto' ? 240 : PW_MATCH_L.concat(PW_MATCH_P).includes(m) ? 6 + s.line % 9 : m && PW_ASYNC.has(m) ? 30 + s.line * 7 % 50 : 0;
+    const m = pwLast(s.e), dur = err ? err.ms || 0 : m === 'goto' ? 240 : PW_MATCH_L.concat(PW_MATCH_P).includes(m) ? 6 + s.line % 9 : m && (PW_ASYNC.has(m) || prog.asyncM.has(m)) ? 30 + s.line * 7 % 50 : 0;
     steps.push({ line: s.line, src: code, ok: !err, ms: dur + env.wait, before: env.snap, urlB, after: env.st ? pwDom(env.st).innerHTML : null, url: pwUrl(env) });
     ms += dur + env.wait;
+    return v;
+  };
+  // fixtures: everything up to `await use(x)` runs before the test, the rest after it
+  const got = { page: PW_PAGE, request: PW_REQ }, tear = [];
+  const fixture = name => {
+    if (pwOwn(got, name)) return got[name];
+    if (!pwOwn(prog.fixtures, name)) throw PwErr(`Error: Test has unknown parameter "${name}".`, 'Dəstəklənir: page, request və base.extend({ … }) ilə yazdığın fixture-lər (19.12).', t.line);
+    const fx = prog.fixtures[name], own = {};
+    fx.deps.forEach(d => { own[d] = fixture(d); });
+    const vars0 = env.vars; env.vars = Object.assign({}, env.top, own);
+    let used = false;
+    for (let i = 0; i < fx.body.length && !err; i++) {
+      const s = fx.body[i];
+      if (pwIsUse(s, fx.use)) { got[name] = step(Object.assign({}, s, { useOf: name })); tear.unshift({ body: fx.body.slice(i + 1), vars: env.vars }); used = true; break; }
+      step(s);
+    }
+    env.vars = vars0;
+    if (!used && !err) err = Object.assign(PwErr(`Error: Test timeout of 30000ms exceeded while setting up "${name}".`, 'Fixture-də await use(…) yoxdur: test heç başlamır (19.12).', fx.line), { ms: 30000 });
+    return got[name];
+  };
+  if (typeof use.storageState === 'string') {
+    if (pwOwn(shared.states, use.storageState)) env.auth = shared.states[use.storageState];
+    else err = PwErr(`Error: ENOENT: no such file or directory, open '${use.storageState}'`, 'Vəziyyət faylı hələ yoxdur: əvvəlcə onu saxlayan test işləməlidir (page.context().storageState). Layihədə bunu setup layihəsi və dependencies edir (19.15).', t.line);
   }
-  return { name: t.name, line: t.line, ok: !err, err, steps, ms, out: env.out, st: env.st };
+  if (!err) { try { t.fix.concat(prog.hookFix).forEach(name => { const v = fixture(name); env.vars[name] = v; }); } catch (e) { if (!e.pw) throw e; err = e; } }
+  if (t.info) env.vars[t.info] = { title: t.name, retry: 0, parallelIndex: 0, workerIndex: 0 };
+  prog.before.concat(t.body).forEach(step);
+  // the clean-up runs even when the test has failed
+  const testErr = err; err = null;
+  prog.after.forEach(step);
+  tear.forEach(x => { const v0 = env.vars; env.vars = x.vars; x.body.forEach(step); env.vars = v0; });
+  err = testErr || err;
+  return { name: t.name, line: t.line, ok: !err, err, steps, ms, out: env.out, st: env.st, fixes: t.fix };
 }
 function pwRun(src) {
   const res = { lint: [], tests: [] };
   let prog; try { prog = pwParse(src); } catch (e) { if (!e.pw) throw e; res.syntax = e; return res; }
   res.lint = pwLint(prog, src);
   if (res.lint.some(l => l.err)) return res;
-  const only = prog.tests.some(t => t.only), lines = pwPlain(src).split('\n');
-  prog.tests.forEach(t => res.tests.push(t.skip || (only && !t.only) ? { name: t.name, line: t.line, skip: true, steps: [] } : pwRunTest(t, prog.before, lines)));
+  const only = prog.tests.some(t => t.only), lines = pwPlain(src).split('\n'), shared = { states: {}, api: null };
+  prog.tests.forEach(t => res.tests.push(t.skip || (only && !t.only) ? { name: t.name, line: t.line, skip: true, steps: [] } : pwRunTest(t, prog, lines, shared)));
   return res;
 }
 function pwReqs(task, res, src) {
@@ -2414,8 +2708,9 @@ function pwReqs(task, res, src) {
     else if (r.t === 'no') ok = !new RegExp(r.re).test(code);
     else if (!t0) ok = false;
     else if (r.t === 'pass') ok = ran.every(t => t.ok);
+    else if (r.t === 'count') ok = ran.length >= r.n;
     else if (r.t === 'fail') ok = !t0.ok && new RegExp(`^(${r.m})$`).test(t0.err.matcher || '');
-    else ok = !!t0.st && (r.page === undefined || t0.st.page === r.page) && (r.cart === undefined || t0.st.cart.slice().sort().join() === r.cart.slice().sort().join());
+    else { const x = r.last ? ran[ran.length - 1] : t0; ok = !!x.st && (r.page === undefined || x.st.page === r.page) && (r.cart === undefined || x.st.cart.slice().sort().join() === r.cart.slice().sort().join()); }
     return { l: r.l, ok };
   });
 }

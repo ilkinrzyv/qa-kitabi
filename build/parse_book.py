@@ -602,7 +602,7 @@ for l in playwright['locators']:
     if not ok:
         print('ERR playwright locator', l.get('id'), file=sys.stderr); errors += 1
     pw_ids.add(l.get('id'))
-REQS = {'pass': (), 'fail': ('m',), 'has': ('re',), 'no': ('re',), 'state': ()}
+REQS = {'pass': (), 'fail': ('m',), 'has': ('re',), 'no': ('re',), 'state': (), 'count': ('n',)}
 for t in playwright['tasks']:
     ok = t.get('id') and t['id'] not in pw_ids and all(t.get(k) for k in ('title', 'goal', 'code', 'model', 'hints', 'reqs')) \
         and all(r.get('t') in REQS and r.get('l') and all(r.get(k) for k in REQS[r['t']]) for r in t['reqs'])
@@ -832,6 +832,7 @@ _al('g101', 'configuration management', 'konfiqurasiya idarəetmə~'); _al('g102
 _al('g103', 'testing quadrants', 'test kvadrant~'); _al('g104', 'review', chs=[7]); _al('g105', 'retrospektiv~', chs=[3])
 _al('g106', 'shift-left', 'shift left', 'sola sürüşdürmə'); _al('g107', 'three-point estimation', 'üç nöqtəli qiymətləndirmə')
 _al('g108', 'product risk~', 'project risk~', 'məhsul risk~', 'layihə risk~'); _al('g109', 'risk level', 'risk səviyyə~')
+_al('g110', 'data-driven'); _al('g111', 'fixture~'); _al('g112', 'storageState', 'storage state', cs=True); _al('g113', 'trace viewer')
 GL_TAIL = '[a-zəğıöüşçA-ZƏĞIİÖÜŞÇ]*'
 def _gl_regex(chnum):
     alts, idx = [], {}
