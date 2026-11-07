@@ -90,7 +90,8 @@
   "c6q2": {
     "a": "**Load:** gözlənilən yük. **Stress:** həddi aşan yük və çökmə nöqtəsi. **Spike:** qəfil sıçrayış. **Endurance (soak):** uzun müddət normal yük, məsələn, 12 saatdan sonra yaddaş sızması.",
     "c": [
-      "Dörd növ düzgün adlandırılıb: load, stress, spike, endurance"
+      "Dörd növ adlandırılıb: load, stress, spike, endurance",
+      "Hər növün nə yoxladığı qısa izah olunub"
     ]
   },
   "c6q3": {

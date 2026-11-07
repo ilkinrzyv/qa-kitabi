@@ -1,0 +1,129 @@
+{
+  "c10s1m": {
+    "h": "Ümumidən konkretə get: şirkət nə istəyir → istifadəçi nə edir → sistem nə edir → necə yaxşı edir. Gizli tələb heç kimin yazmadığı, amma gözlənilən şeydir.",
+    "a": "Nümunə tələblər:\n\n- **Biznes:** gələn il taksi sifarişlərinin 30%-i tətbiq üzərindən olsun.\n- **İstifadəçi:** sərnişin kimi xəritədə sürücünün gəlişini izləmək istəyirəm ki, nə vaxt çıxacağımı bilim.\n- **Funksional:** sürücü sifarişi qəbul edəndə sistem sərnişinə maşının markasını, nömrəsini və gəliş vaxtını göstərir.\n- **Qeyri-funksional:** sürücü axtarışı nəticəsi 95% hallarda 5 saniyədən tez göstərilir.\n- **Gizli:** səfər zamanı sərnişinin telefon nömrəsi sürücünün ekranında açıq görünmür; ad və ünvanda azərbaycan hərfləri düzgün göstərilir.\n\n**Funksional tələb üçün test ideyası:** sürücü qəbul edəndən sonra sərnişin ekranında marka, nömrə və vaxt görünür; bu məlumatlar həmin sürücünün profili ilə eynidir.",
+    "c": [
+      "Biznes, istifadəçi, funksional, qeyri-funksional və gizli tələb yazılıb",
+      "Qeyri-funksional tələb ölçülə biləndir",
+      "Funksional tələb üçün bir test ideyası əlavə olunub"
+    ]
+  },
+  "c10s2m": {
+    "h": "Qeyri-müəyyən sözləri işarələ: vacib, vaxtında, gözəl. Hər birinə sual ver və cavabı rəqəmlə yaz. “Və” varsa, tələb bölünməlidir.",
+    "a": "**Qeyri-müəyyən sözlər:** “vacib” (hansı bildirişlər?), “vaxtında” (neçə dəqiqə?), “gözəl” (kim qiymətləndirir?).\n\n**Çatışmayan hallar:** bildiriş kanalı (push, SMS, e-poçt), bildirişi bağlamış istifadəçi, göndərmə uğursuz olanda nə edilir, dil.\n\n**Atomar, testlənə bilən tələblər (rəqəmlər təklifdir, PO ilə təsdiqlənməlidir):**\n\n1. Sifarişin statusu dəyişəndə sistem istifadəçiyə push bildiriş göndərir.\n2. Bildiriş status dəyişdikdən sonra 60 saniyə ərzində çatdırılır.\n3. Bildirişi söndürmüş istifadəçiyə push göndərilmir, status yalnız tətbiqin içində görünür.\n4. Bildiriş mətni təsdiqlənmiş dizayn şablonuna uyğundur: 100 simvoldan çox deyil, azərbaycan dilindədir.\n\nHər tələb bir şey deyir və testdə “keçdi” və ya “keçmədi” demək olur.",
+    "c": [
+      "“Vacib”, “vaxtında” və “gözəl” qeyri-müəyyən söz kimi göstərilib",
+      "Yenidən yazılan 3–4 tələb atomardır, hər biri bir şey deyir",
+      "Ən azı biri rəqəmlə ölçülür, çatışmayan hal da nəzərə alınıb"
+    ]
+  },
+  "c10s3m": {
+    "h": "“İdarə etmək” çox işi gizlədir. Şəkli dəyişmək, ad və ya ünvan yeniləmək, şifrə kimi ayrı işlərə böl. Hər birinin “ki”si olsun.",
+    "a": "Nümunə bölgü:\n\n1. **Bir istifadəçi kimi, profil şəklimi dəyişmək istəyirəm ki, başqaları məni tanısın.**\n   Test ideyası: 5 MB-a qədər JPG yüklə, şəkil profildə və başlıqda dərhal yeni görünür.\n\n2. **Bir istifadəçi kimi, telefon nömrəmi dəyişmək istəyirəm ki, bildirişləri yeni nömrəyə alım.**\n   Test ideyası: yeni nömrəyə SMS kodu gəlir, kod daxil edilməmiş nömrə dəyişmir, köhnə nömrə ilə giriş dayanır.\n\n3. **Bir istifadəçi kimi, hesabımı silmək istəyirəm ki, məlumatlarım sistemdə qalmasın.**\n   Test ideyası: təsdiqdən sonra giriş işləmir, məlumatlar profil axtarışında görünmür.\n\nHər story müstəqildir, bir sprintə sığır və test olunur (INVEST, xüsusilə T).",
+    "c": [
+      "Üç kiçik story var və hər biri rol, istək və fayda hissəsindən ibarətdir",
+      "Hər story bir işdir, “idarə etmək” qədər geniş deyil",
+      "Hər story üçün bir test ideyası yazılıb"
+    ]
+  },
+  "c10s4m": {
+    "h": "Bir ssenari, bir davranış. Pozitivdə düzgün köhnə və qaydaya uyğun yeni şifrə. Neqativlərdə yalnız bir qaydanı poz və nəticəni konkret yaz.",
+    "a": "```gherkin\nScenario: Pozitiv: şifrə uğurla dəyişdirilir\n  Given istifadəçi hesabına daxil olub\n  When o, düzgün köhnə şifrəni və 10 simvolluq yeni şifrəni yazıb “Dəyiş” basır\n  Then “Şifrə dəyişdirildi” mesajı görünür\n  And növbəti girişdə yalnız yeni şifrə işləyir\n\nScenario: Neqativ: köhnə şifrə yanlışdır\n  Given istifadəçi hesabına daxil olub\n  When o, yanlış köhnə şifrəni və qaydaya uyğun yeni şifrəni yazır\n  Then “Köhnə şifrə yanlışdır” mesajı görünür\n  And şifrə dəyişmir\n\nScenario: Neqativ: yeni şifrə köhnə ilə eynidir\n  Given istifadəçi hesabına daxil olub\n  When o, yeni şifrə kimi köhnə şifrəni yazır\n  Then “Yeni şifrə köhnə ilə eyni ola bilməz” mesajı görünür\n  And şifrə dəyişmir\n```\n\n7 və 21 simvol da yaxşı neqativ testlərdir, hər biri ayrı ssenari kimi yazılır.",
+    "c": [
+      "Bir pozitiv və iki neqativ ssenari Given, When, Then ilə yazılıb",
+      "Hər neqativdə yalnız bir qayda pozulub",
+      "Nəticə konkret mesaj və ya şifrənin dəyişməməsidir"
+    ]
+  },
+  "c10s5m": {
+    "h": "Çərçivə: kim, nə, harada, nə vaxt, limit, default, xəta, əlaqə, data, mətn. “Nə olmasın” sualı üçün düşün: başqasının ünvanı, dublikat, qadağan simvollar.",
+    "a": "Ən vacib 6 sual (mənim seçimim):\n\n1. **Limit:** bir istifadəçi neçə ünvan saxlaya bilər? Sahələrin uzunluğu nə qədərdir?\n2. **Data:** hansı sahələr məcburidir: şəhər, küçə, mənzil, poçt indeksi? Azərbaycan hərfləri və rəqəmlər qəbul olunurmu?\n3. **Default:** birdən çox ünvan olanda hansı əsas sayılır, sifarişdə avtomatik hansı seçilir?\n4. **Xəta:** yadda saxlananda şəbəkə kəsilsə, istifadəçi nə görür? Yarımçıq ünvan qalırmı?\n5. **Əlaqə:** ünvan dəyişəndə artıq verilmiş sifarişin ünvanı dəyişir, yoxsa yalnız yenilərə təsir edir?\n6. **Nə olmasın:** istifadəçi başqasının ünvanını görə və ya redaktə edə bilməməlidir: bu necə təmin olunur? Eyni ünvanın ikinci dəfə əlavə olunması qadağandırmı?\n\nHər cavab bir test olur, cavabsız sual isə risk kimi qeyd olunur.",
+    "c": [
+      "Altı sual var və hamısı bu tələbə aiddir",
+      "Limit, default və ya xəta kimi unudulan sahələr var",
+      "Ən azı biri “nə olmasın?” tiplidir"
+    ]
+  },
+  "c10s6m": {
+    "h": "Formul: harada + nə aydın deyil + nümunə və ya təklif. Şikayəti çıxar. Kimin cavab verəcəyini və nəyin dayandığını da yaz.",
+    "a": "Nümunə yazılış:\n\n> Salam, Nigar. “Sifariş bildirişləri” story-si (MS-42), qəbul meyarı 2. “Bildiriş göndərilir” yazılıb, amma nə vaxt göndəriləcəyi aydın deyil.\n>\n> Bir sualım var: bildiriş status dəyişən kimi dərhal gedir, yoxsa müəyyən gecikmə ilə?\n>\n> Təklifim: “Status dəyişdikdən sonra 60 saniyə ərzində”. Uyğundursa, meyara yazaq.\n>\n> Bu story üçün test case-ləri cavabdan sonra tamamlayacağam.\n\n**Nə dəyişdi:** “Heç nə başa düşmədim” şikayəti getdi, sual konkret yerə bağlandı, cavabı asanlaşdıran təklif verildi. Cavab yazılı qalır və tələbə əlavə olunur. Ad və story nömrəsi nümunədir.",
+    "c": [
+      "Hansı story və ya meyar olduğu konkret göstərilib",
+      "Nəyin aydın olmadığı bir sualla yazılıb",
+      "Təklif və ya nümunə var, “heç nə başa düşmədim” yoxdur"
+    ]
+  },
+  "c10s7m": {
+    "h": "Cədvəl qur: tələb sətirlərdə, test case-lər yanda. Boş sətir testsiz tələbdir. Natamam əhatəni göstərmək üçün yalnız pozitiv testi olan tələb seç.",
+    "a": "**Tələblər:** T1: düzgün məlumatla giriş; T2: yanlış şifrə xətası; T3: 5 yanlış cəhddən sonra 15 dəqiqə bloklanma; T4: “Məni xatırla”.\n\n**Test case-lər:** TC-1: düzgün giriş; TC-2: yanlış şifrə; TC-3: boş şifrə; TC-4: 5 yanlış cəhd bloklayır; TC-5: bloklanmış hesab düzgün şifrəni də rədd edir; TC-6: e-poçt registri (böyük hərf).\n\n| Tələb | Test case | Nəticə | Əhatə |\n|---|---|---|---|\n| T1 | TC-1, TC-6 | Passed | Tam |\n| T2 | TC-2, TC-3 | 1 Failed | Tam |\n| T3 | TC-4, TC-5 | Passed | **Natamam:** 15 dəqiqədən sonra açılma yoxlanmayıb |\n| T4 | — | — | **Testsiz** |\n\n**RTM-də necə görünür:** T4-ün “Test case” xanası boşdur, baxan kimi görünür. T3-də isə sütun dolu olsa da, tələbin bir hissəsi (açılma) test olunmur: bunu test case-ləri tələblə tutuşduranda görürsən.",
+    "c": [
+      "Dörd tələb və altı test case RTM-də bağlanıb",
+      "Testsiz tələb boş xana ilə görünür",
+      "Natamam əhatəli tələbin hansı hissəsinin yoxlanmadığı izah olunub"
+    ]
+  },
+  "c10t1": {
+    "h": "“Tez” və “düzgün” sözlərinə “nə qədər?” və “nəyə görə?” sualını ver. Bir cümlədə iki tələb var, onları ayır.",
+    "a": "**Qeyri-müəyyən sözlər:**\n- **“Tez”:** neçə saniyə, hansı yükdə, hansı internetdə?\n- **“Düzgün”:** hansı məhsullar, hansı sıra ilə? Sözün bir hissəsi və hərf səhvi nəticə verirmi? Heç nə tapılmayanda nə olur?\n- **“Nəticələr”:** səhifədə neçə, hansı sahələr görünür?\n- Cümlədə iki ayrı tələb var: sürət və nəticənin düzgünlüyü.\n\n**Yenidən yazılmış (rəqəmlər təklifdir, PO təsdiq etməlidir):**\n\n1. Normal yükdə (500 eyni vaxtda istifadəçi) axtarış nəticəsi 95% hallarda 2 saniyədən tez göstərilir.\n2. Axtarış məhsulun adına görə aparılır, böyük-kiçik hərfi və sözün hissəsini nəzərə alır.\n3. Nəticələr əvvəlcə tam uyğunluq, sonra qismən uyğunluq sırası ilə göstərilir; səhifədə 20 məhsul görünür.\n4. Heç nə tapılmayanda “Nəticə tapılmadı” mesajı görünür.\n\nİndi hər tələb testlə “keçdi” və ya “keçmədi” olur.",
+    "c": [
+      "“Tez” və “düzgün” qeyri-müəyyən söz kimi göstərilib",
+      "Sürət tələbi rəqəmlə yazılıb",
+      "Tələb ən azı iki ayrı, testlənə bilən tələbə bölünüb"
+    ]
+  },
+  "c10t2": {
+    "h": "Story: rol + istək + fayda. Meyarlar üçün üç davranış götür: uğurlu sıfırlama, mövcud olmayan e-poçt, müddəti keçmiş link.",
+    "a": "**User story:** Bir istifadəçi kimi, şifrəmi unutduqda onu e-poçtla sıfırlamaq istəyirəm ki, hesabıma yenidən girə bilim.\n\n**Acceptance criteria:**\n\n```gherkin\nScenario: Uğurlu sıfırlama\n  Given istifadəçinin qeydiyyatdan keçmiş e-poçtu var\n  When o, “Şifrəni unutdum” səhifəsində e-poçtunu yazıb linkdən yeni şifrə təyin edir\n  Then “Şifrə dəyişdirildi” mesajı görünür\n  And yeni şifrə ilə giriş işləyir, köhnə ilə yox\n\nScenario: Qeydiyyatda olmayan e-poçt\n  Given e-poçt sistemdə yoxdur\n  When istifadəçi həmin e-poçtu yazır\n  Then eyni ümumi mesaj görünür: “Bu e-poçt qeydiyyatdadırsa, link göndərildi”\n  And hesabın olub-olmaması açıqlanmır\n\nScenario: Müddəti bitmiş link\n  Given sıfırlama linkinin müddəti (30 dəqiqə) keçib\n  When istifadəçi linki açır\n  Then “Linkin müddəti bitib” mesajı və yeni link istəmək imkanı görünür\n```\n\nMüddət nümunədir, tələbdən dəqiqləşdirilir.",
+    "c": [
+      "Story-də rol, istək və fayda var",
+      "Üç ssenari Given, When, Then ilə yazılıb, hər biri bir davranışdır",
+      "Pozitivlə yanaşı xəta və ya müddəti bitmiş hal var"
+    ]
+  },
+  "c10t3": {
+    "h": "Cədvəlin sətirləri tələblər, sütunu onları yoxlayan test case-lərdir. Beş test case-i yalnız iki tələbə ver, üçüncünü boş burax.",
+    "a": "Nümunə: qeydiyyat forması.\n\n**Tələblər:**\n- T1: e-poçt formatı yoxlanılır.\n- T2: şifrə ən azı 8 simvoldur.\n- T3: qeydiyyatdan sonra təsdiq e-poçtu göndərilir.\n\n**RTM:**\n\n| Tələb | TC-1 düzgün e-poçt | TC-2 səhv e-poçt | TC-3 8 simvol | TC-4 7 simvol | TC-5 boş şifrə | Status |\n|---|---|---|---|---|---|---|\n| T1 | ✓ | ✓ | | | | Əhatə olunub |\n| T2 | | | ✓ | ✓ | ✓ | Əhatə olunub |\n| T3 | | | | | | **Testsizdir** |\n\n**RTM bunu necə göstərir:** T3-ün sətrində heç bir test case yoxdur, boşluq dərhal görünür. Beləcə relizdən əvvəl “təsdiq e-poçtu heç yoxlanmayıb” deyə bilirəm. Tərsinə də işləyir: tələb sütununda olmayan test case artıq ola bilər. Tələb dəyişəndə də hansı testlərin yenilənəcəyi buradan görünür.",
+    "c": [
+      "Üç tələb və beş test case bir cədvəldə bağlanıb",
+      "Bir tələbin sətri qəsdən boşdur",
+      "Boş sətrin testsiz tələbi göstərdiyi izah olunub"
+    ]
+  },
+  "c10t4": {
+    "h": "Kim, nə, harada, nə vaxt, limit, default, xəta, əlaqə, data, mətn: hər sözdən bir sual çıxar.",
+    "a": "Nümunə suallar:\n\n1. **Kim:** daxil olmamış istifadəçi səbətə əlavə edə bilir? Daxil olanda səbət birləşirmi?\n2. **Nə:** say dəyişmək, silmək və “sonra al” mümkündürmü?\n3. **Harada:** kompüter və telefon arasında eyni səbət görünürmü?\n4. **Nə vaxt:** səbət nə qədər saxlanılır? Qiymət səbətdə olarkən dəyişsə, hansı qiymət qüvvədədir?\n5. **Limit:** maksimum neçə məhsul və ya bir məhsuldan neçə ədəd olar?\n6. **Default:** yeni əlavə edilən məhsulun sayı nə qədərdir? Sıralama necədir?\n7. **Xəta:** məhsul stokda bitəndə və ya sayı 0 yazılanda nə baş verir?\n8. **Əlaqə:** promo kod, çatdırılma qiyməti və ümumi məbləğ necə hesablanır?\n9. **Data:** kəsr və mənfi say qəbul olunurmu? Qiymətlərdə valyuta və yuvarlaqlaşdırma necədir?\n10. **Mətn:** boş səbət və xəta mesajlarının mətni nədir? Azərbaycanca və ingiliscə var?",
+    "c": [
+      "On sual var və hamısı səbətə aiddir",
+      "Xəta halı və limit barədə sual var",
+      "Suallar konkretdir, “səbət yaxşı işləməlidir?” kimi deyil"
+    ]
+  },
+  "c10q1": {
+    "a": "**Funksional tələb** sistemin nə etdiyini deyir: “Sifariş təsdiqlənəndə e-poçt göndərilir.” **Qeyri-funksional tələb** bunu necə yaxşı etdiyini deyir: sürət, təhlükəsizlik, rahatlıq: “Səhifə 2 saniyədən tez açılır.” İkisi də ölçülə bilən olmalıdır.",
+    "c": [
+      "Funksional “nə edir”, qeyri-funksional “necə yaxşı edir” kimi fərqləndirilib",
+      "Hər birinə misal var"
+    ]
+  },
+  "c10q2": {
+    "a": "**Rol** (kim), **istək** (nə), **fayda** (niyə): “Bir müştəri kimi, sifarişimi izləmək istəyirəm ki, nə vaxt gələcəyini bilim.” Fayda hissəsi real ssenariləri düşünməyə kömək edir.",
+    "c": [
+      "Rol, istək və fayda sadalanıb",
+      "Formul və ya misalla göstərilib"
+    ]
+  },
+  "c10q3": {
+    "a": "**Given:** ilkin vəziyyət (nə verilib). **When:** hərəkət (nə edilir). **Then:** gözlənilən nəticə. Hər ssenari bir davranışı yoxlayır, qəbul meyarlarını birmənalı və testlənə bilən edir.",
+    "c": [
+      "Given ilkin vəziyyət, When hərəkət, Then nəticə kimi izah olunub",
+      "Bir ssenarinin bir davranış olduğu və ya misal qeyd olunub"
+    ]
+  },
+  "c10q4": {
+    "a": "RTM tələbləri test case-lərə və nəticələrə bağlayır. Hər tələbin testi olduğunu göstərir, testsiz tələb boş xanadan dərhal görünür. Tələb dəyişəndə hansı testlərin yenilənəcəyi bilinir, relizdən əvvəl isə əhatə sübut olunur.",
+    "c": [
+      "Tələb, test case və nəticə əlaqəsi izah olunub",
+      "Testsiz tələbin görünməsi və ya dəyişikliyin təsiri qeyd olunub"
+    ]
+  }
+}
