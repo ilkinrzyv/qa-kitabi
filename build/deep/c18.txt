@@ -526,3 +526,105 @@ function isValidUsername(name) {
   return name.length > 3 && name.length <= 15 && !name.includes(' ');
 }
 ```
+
+=== c18x1
+@qısa
+Class eyni quruluşlu obyektlər düzəldən qəlibdir: `new` yeni obyekt yaradır, `constructor` onu hazırlayır, `this` isə obyektin özüdür. Page Object məhz budur: lokatorlar `constructor`-da, hərəkətlər metodlarda yazılır.
+@yadda
+- `new` olmadan class işləmir: `TypeError: Class constructor … cannot be invoked without 'new'`.
+- Sahəyə həmişə `this.` ilə müraciət olunur.
+- `async` metod Promise qaytarır: çağıranda `await` yaz.
+@dərin
+### Metod data ilə nə edir?
+Metod obyektin sahələrini oxuyur və dəyişir. `cart.add(2)` çağırılanda `this` `cart`-dır. `b.add(2)` çağırılanda isə `this` `b` olur. Eyni kod, fərqli obyekt.
+
+### Class və adi obyekt
+Bir dəfəlik data üçün adi obyekt kifayətdir: `{ user: 'ali', pass: '123' }`. Hərəkət də varsa və eyni quruluş çox lazımdırsa, class seçilir. Test datası çox vaxt adi obyektdir, səhifə isə class.
+
+### Niyə test `new LoginPage(page)` yazır?
+Hər testin öz `page`-i var. Lokatorlar həmin `page`-ə bağlıdır, ona görə hər test öz obyektini yaradır. Bir obyekti testlər arasında paylaşsan, testlər bir-birinin tabında işləyər.
+
+### Tipik yanlış anlama
+“`this` hər yerdə eyni şeydir.” Yox, `this` metodun kimin üzərindən çağırıldığından asılıdır. Testdə sadə qayda kifayətdir: class-ın içində `this.` yaz, testdə isə obyektin adını: `loginPage.login(...)`.
+@nümunə
+**Tapşırıq.** `Account` class-ı yaz: `constructor(owner)` balansı 0 edir, `deposit(n)` balansı artırıb yeni balansı qaytarır. İki hesab yaradıb onların bir-birindən asılı olmadığını göstər.
+@addımlar
+1. **Qəlib:** `class Account { constructor(owner) { this.owner = owner; this.balance = 0; } }`
+2. **Metod:** class-ın içinə `deposit(n) { this.balance = this.balance + n; return this.balance; }` əlavə et.
+3. **Obyektlər:** `const a = new Account('Aysel'); const b = new Account('Leyla');`
+4. **Çağırış:** `a.deposit(50);`
+5. **Yoxlama:** `console.log(a.balance, b.balance);` → `50 0`. Hər obyektin öz datası var.
+6. **Sındır:** `this.balance` yerinə `balance` yaz, işə sal: `ReferenceError: balance is not defined`. Xəta mesajını tanı, sonra qaytar.
+@növbən
+`BugReport` class-ı yaz: `constructor(title, severity)` başlığı və ciddiliyi saxlayır, `status`-u `'New'` edir. `close()` statusu `'Closed'` edib qaytarır, `summary()` `"Major: Səbət boşdur"` kimi mətn qaytarır. İki report yarat, birini bağla və statusların fərqli qaldığını çap et. `new` yazmasan və `status`-u `this.`-siz yazsan, hansı mesajlar çıxır?
+
+=== c18x2
+@qısa
+Modul ayrıca fayldır: `export` verir, `import` götürür. Yol import yazılan fayla görə hesablanır: `./` eyni qovluq, `../` bir yuxarı, nöqtəsiz yol isə quraşdırılmış paket deməkdir. Fiqurlu mötərizə adla export üçündür.
+@yadda
+- `{ LoginPage }` adla export: ad dəqiq yazılır.
+- Yol həmişə yazıldığı fayldan hesablanır.
+- `as` başqa ad verir: `import { test as base }`.
+@dərin
+### Fayl uzantısı
+Playwright testlərində `../pages/LoginPage` yazmaq olur. Təmiz Node-da isə modul yolunda uzantı lazımdır: `./pricing.mjs`. Xəta `Cannot find module` olsa, əvvəl uzantıya və qovluğa bax. Playwright-da bu xəta testlər başlamazdan əvvəl çıxır: heç bir test işə düşmür.
+
+### Dairəvi asılılıq
+A faylı B-ni, B də A-nı import edirsə, biri hələ hazır olmayan dəyəri görə bilər. Test layihəsində sadə qayda kömək edir: testlər `fixtures`-i, `fixtures` `pages`-i götürür, tərsi yox.
+
+### Paket haradan gəlir
+Nöqtəsiz yol `node_modules` qovluğunda axtarılır, onu `npm install` qurur. `package.json` hansı paketlərin lazım olduğunu saxlayır. Ona görə `node_modules` repo-ya düşmür (20.3): `npm ci` onu yenidən qurur.
+
+### Tipik yanlış anlama
+“Mötərizə fərq etməz.” Fərq edir: `import LoginPage from` default export axtarır. Faylda `export class LoginPage` varsa, Node `does not provide an export named 'default'` deyir, Playwright testi isə `_LoginPage.default is not a constructor`.
+@nümunə
+**Tapşırıq.** `data/users.mjs` faylında `STANDARD_USER` obyektini və `makeEmail(name)` funksiyasını yaz. `main.mjs` faylından götürüb işlət.
+@addımlar
+1. **Export:** `data/users.mjs`: `export const STANDARD_USER = { name: 'standard_user' };`
+2. **Funksiya:** `export function makeEmail(name) { return name + '@example.com'; }`
+3. **Import:** `main.mjs`: `import { STANDARD_USER, makeEmail } from './data/users.mjs';`
+4. **İşlət:** `console.log(makeEmail(STANDARD_USER.name));` → `standard_user@example.com`
+5. **Sındır:** import sətrində `makeEmail` adını `makeMail` yaz, işə sal: `does not provide an export named 'makeMail'`. Mesajı oxu, adı düzəlt.
+@növbən
+Bu quruluşda `tests/ui/checkout.spec.js` faylının yuxarısına lazım olan `import` sətirlərini yaz: `pages/CheckoutPage.js` (adla export `CheckoutPage`), `data/users.js` (adla export `STANDARD_USER`), `@playwright/test` (`test`, `expect`). Sonra `tests/auth.setup.js` faylından eyni `pages/CheckoutPage.js`-in yolu necə olur? `Cannot find module`, `does not provide an export named` xətaları nəyi göstərir?
+
+=== c18x3
+@qısa
+Mühit dəyişəni proqrama kənardan verilən dəyərdir, Node-da `process.env`-dədir və həmişə mətndir. Şifrə və ünvan kodda yox, burada saxlanılır. Framework kodu təzə söz deyil, fəsildəki yazılışların birləşməsidir: onu parçalayıb oxu.
+@yadda
+- Verilməyən dəyişən `undefined`-dir: `||` ilə standart dəyər ver.
+- Dəyər həmişə mətndir: ədəd üçün `Number(...)`.
+- `.env` `.gitignore`-da olmalıdır.
+@dərin
+### Boş mətn və 0
+`||` boş mətni və `0`-ı da “boş” sayır. `process.env.RETRIES || 2` yazanda `RETRIES=0` mətn olduğu üçün `'0'` doğru sayılır və qalır. Amma `Number(process.env.RETRIES) || 2` 0-ı 2-yə çevirir. Rəqəmlə işləyəndə buna diqqət et.
+
+### Şifrə loga düşməsin
+`console.log(process.env.SAUCE_PASSWORD)` şifrəni terminala və CI loguna yazır. Yoxlamaq üçün yalnız varlığını çap et: `console.log(!!process.env.SAUCE_PASSWORD)` → `true` və ya `false` (`!!` dəyəri true/false-a çevirir).
+
+### Testdən əvvəl yoxlama
+Şifrə verilməyibsə, test səhifədə anlaşılmaz yerdə düşür: `fill` mətn gözləyir, `undefined` alır. `playwright.config.js`-də əvvəlcədən dayandırmaq daha aydındır: `if (!process.env.SAUCE_PASSWORD) throw new Error('SAUCE_PASSWORD verilməyib');`. `throw` proqramı həmin mesajla dayandırır.
+
+### Tipik yanlış anlama
+“`.env` özü oxunur.” Node onu özü yükləmir: `playwright.config.js`-in başında `import 'dotenv/config';` sətri lazımdır. Sətir yoxdursa, dəyər `undefined` qalır.
+@nümunə
+**Tapşırıq.** Testlər `BASE_URL` və `SAUCE_PASSWORD` dəyişənlərini işlətsin. Ünvan verilməsə, saucedemo açılsın; şifrə verilməsə, testlər aydın mesajla dayansın.
+@addımlar
+1. **Ünvan:** `playwright.config.js`-də `baseURL: process.env.BASE_URL || 'https://www.saucedemo.com'`.
+2. **Şifrə:** testdə `process.env.SAUCE_PASSWORD`, kodda açıq şifrə yoxdur.
+3. **Yoxlama:** həmin faylın başında `if (!process.env.SAUCE_PASSWORD) throw new Error('SAUCE_PASSWORD verilməyib');`.
+4. **Kompüterdə:** `.env` faylı və `import 'dotenv/config';`, `.gitignore`-a `.env`.
+5. **CI-da:** dəyər `secrets`-dən gəlir (20.10), test kodu dəyişmir.
+6. **Sına:** `.env`-i müvəqqəti başqa adla saxla və `npx playwright test` işlət: mesaj aydın çıxmalıdır.
+@növbən
+Bu kodu sətir-sətir öz sözlərinlə izah et. Hər `async`, `{ }`, tərs dırnaq, `await`, `||` və `?:` nə edir, dəyər haradan gəlir?
+
+```javascript
+const API = process.env.API_URL || 'https://api.ministore.test';
+const retries = process.env.CI ? 2 : 0;
+test(`səbət: ${retries} təkrar`, async ({ request }) => {
+  const res = await request.get(`${API}/products`);
+  const [first] = await res.json();
+  expect(first).toHaveProperty('price');
+});
+```

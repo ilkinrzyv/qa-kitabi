@@ -285,5 +285,57 @@
       "Təkrar girişin aradan qalxdığı deyilib",
       "Faylda sessiya olduğu üçün repo-ya düşməməsi deyilib"
     ]
+  },
+  "c19x8m": {
+    "h": "beforeEach ilə səhifəni aç. Dialog mətnini dinləyicinin içində yoxla, sonra dismiss çağır.",
+    "a": "```javascript\nimport { test, expect } from '@playwright/test';\n\ntest.beforeEach(async ({ page }) => {\n  await page.goto('https://ministore.test/settings.html');\n});\n\ntest('PDF qəbul olunur', async ({ page }) => {\n  await page.getByLabel('CV faylı').setInputFiles('cv.pdf');\n  await expect(page.getByTestId('file-status')).toHaveText('Seçildi: cv.pdf');\n});\n\ntest('exe rədd olunur', async ({ page }) => {\n  await page.getByLabel('CV faylı').setInputFiles('foto.exe');\n  await expect(page.getByTestId('file-status')).toHaveText('Yalnız PDF faylı olar');\n});\n\ntest('silməkdən imtina', async ({ page }) => {\n  page.on('dialog', async dialog => {\n    expect(dialog.message()).toContain('silmək');\n    await dialog.dismiss();\n  });\n  await page.getByRole('button', { name: 'Hesabı sil' }).click();\n  await expect(page.getByTestId('account-status')).toHaveText('Ləğv edildi');\n});\n```\n\nDinləyicini klikdən sonra yazsan, klik anında dinləyici yoxdur və Playwright pəncərəni özü ləğv edir. Status yenə “Ləğv edildi” olur, amma mətn heç yoxlanmır: test aldadıcı yaşıldır.",
+    "c": [
+      "Hər hal ayrıca testdir",
+      "Dinləyici klikdən əvvəl yazılıb",
+      "dialog.message() yoxlanılıb",
+      "Dinləyici gec yazılanda testin aldadıcı keçdiyi deyilib"
+    ]
+  },
+  "c19x9m": {
+    "h": "route klikdən əvvəl yazılır. Üç soft yoxlama: title, account-status, file-status.",
+    "a": "```javascript\nimport { test, expect } from '@playwright/test';\n\ntest.beforeEach(async ({ page }) => {\n  await page.goto('https://ministore.test/settings.html');\n});\n\ntest('internet kəsilib', async ({ page }) => {\n  await page.route('**/api/orders', route => route.abort());\n  await page.getByRole('button', { name: 'Sifarişləri yüklə' }).click();\n  await expect(page.getByRole('alert')).toHaveText('İnternet bağlantısı yoxdur');\n});\n\ntest('ayarlar ekranı', async ({ page }) => {\n  await expect.soft(page.getByTestId('title')).toHaveText('Ayarlar');\n  await expect.soft(page.getByTestId('account-status')).toHaveText('Hesab aktivdir');\n  await expect.soft(page.getByTestId('file-status')).toHaveText('Fayl seçilməyib');\n});\n```\n\nBu testlər ekranın xətaya düzgün reaksiya verdiyini göstərir. Real API haqqında isə heç nə demir: birinci testdə server heç çağırılmır. API-nin işlədiyini ayrıca API testi sübut edir (19.14).",
+    "c": [
+      "route klikdən əvvəl yazılıb",
+      "Xəta mesajının mətni yoxlanılıb",
+      "Üç yoxlama da expect.soft-dur",
+      "Saxta cavabın real API-ni yoxlamadığı deyilib"
+    ]
+  },
+  "c19t7": {
+    "h": "the-internet.herokuapp.com giriş istəmir. Hər səhifə üçün ayrıca test yaz və adlarını ekranda oxu.",
+    "a": "Bu kodu öz kompüterində işə sal, kitabın məşqi internetə çıxmır.\n\n```javascript\nimport { test, expect } from '@playwright/test';\n\nconst SITE = 'https://the-internet.herokuapp.com';\n\ntest('işarə qutusu', async ({ page }) => {\n  await page.goto(`${SITE}/checkboxes`);\n  const first = page.getByRole('checkbox').first();\n  await first.check();\n  await expect(first).toBeChecked();\n});\n\ntest('açılan siyahı', async ({ page }) => {\n  await page.goto(`${SITE}/dropdown`);\n  await page.locator('#dropdown').selectOption('2');\n  await expect(page.locator('#dropdown')).toHaveValue('2');\n});\n\ntest('üzərinə gəlmək', async ({ page }) => {\n  await page.goto(`${SITE}/hovers`);\n  await page.locator('.figure').first().hover();\n  await expect(page.getByText('name: user1')).toBeVisible();\n});\n\ntest('təsdiq pəncərəsi', async ({ page }) => {\n  await page.goto(`${SITE}/javascript_alerts`);\n  page.on('dialog', dialog => dialog.dismiss());\n  await page.getByRole('button', { name: 'Click for JS Confirm' }).click();\n  await expect(page.locator('#result')).toHaveText('You clicked: Cancel');\n});\n\ntest('yeni tab', async ({ page }) => {\n  await page.goto(`${SITE}/windows`);\n  const popupPromise = page.waitForEvent('popup');\n  await page.getByRole('link', { name: 'Click Here' }).click();\n  const popup = await popupPromise;\n  await expect(popup.getByRole('heading')).toHaveText('New Window');\n});\n```\n\nSaytın quruluşu dəyişə bilər. Lokator işləməsə, DevTools ilə elementə bax və lokatoru özün düzəlt: real işdə də belə olur.",
+    "c": [
+      "Hər səhifə üçün ayrıca test var",
+      "Dialog dinləyicisi klikdən əvvəldir",
+      "Yeni tab üçün gözləmə klikdən əvvəl başlayır",
+      "Hər testdə nəticə yoxlanılır",
+      "Testlər öz kompüterində işə salınıb"
+    ]
+  },
+  "c19q9": {
+    "a": "Klik hadisəni dərhal doğurur. Dinləyici sonra yazılsa, Playwright pəncərəni artıq ləğv edib. `await page.waitForEvent('popup')` klikdən əvvəl yazılsa isə test klikə çatmır və timeout olur. Ona görə gözləmə əvvəl başladılır, `await` klikdən sonra yazılır.",
+    "c": [
+      "Hadisənin klik anında baş verdiyi deyilib",
+      "Dialog və yeni tab halları ayrıca izah olunub"
+    ]
+  },
+  "c19q10": {
+    "a": "Server xətası, boş siyahı və internet kəsilməsi kimi çətin alınan halları sabit və tez yoxlayır: ekran düzgün reaksiya verirmi. Real API-nin işlədiyini isə sübut etmir, çünki cavabı test özü verir. Ona görə API ayrıca test olunur (19.14).",
+    "c": [
+      "Nadir hallar nümunə kimi deyilib",
+      "Real API-ni sübut etmədiyi deyilib"
+    ]
+  },
+  "c19q11": {
+    "a": "Bir ekranda bir-birindən asılı olmayan bir neçə şeyi yoxlayanda faydalıdır: bütün fərqlər bir icrada görünür, test sonda düşür. Hazırlıq addımında isə zərərlidir: giriş alınmayıbsa, sonrakı yoxlamalar mənasız xətalar verir və əsl səbəb itir.",
+    "c": [
+      "Müstəqil yoxlamalar üçün faydası deyilib",
+      "Asılı addımlarda zərəri deyilib"
+    ]
   }
 }

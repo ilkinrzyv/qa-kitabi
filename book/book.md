@@ -2898,7 +2898,7 @@ Oyun da proqramdır, amma əlavə çətinlikləri var: vəziyyətlərin sayı ç
 
 ## Fəsil 18. Tester üçün JavaScript əsasları
 
-Avtomatlaşdırma, Postman skriptləri və Playwright testləri üçün JavaScript-in əsasları kifayətdir: dəyişənlər, şərtlər, funksiyalar, massivlər, obyektlər və async/await. Bu fəsildə hər anlayışı tester gözü ilə, kiçik nümunələrlə öyrənəcəyik.
+Avtomatlaşdırma, Postman skriptləri və Playwright testləri üçün JavaScript-in əsasları kifayətdir: dəyişənlər, şərtlər, funksiyalar, massivlər, obyektlər və async/await. Fəslin sonunda test framework-ünün hər sətirdə işlətdiyi class, modullar və mühit dəyişənləri gəlir. Bu fəsildə hər anlayışı tester gözü ilə, kiçik nümunələrlə öyrənəcəyik.
 
 ### 18.1. Kodu harada işə salmaq
 
@@ -3103,12 +3103,202 @@ PASS: Mətn "30" rədd olunur
 
 `check()` funksiyası avtomatik testin mahiyyətidir: faktiki nəticəni gözlənilənlə müqayisə edir və PASS və ya FAIL yazır. Playwright-ın `expect()` funksiyası da eyni işi görür, sadəcə daha güclüdür.
 
+### 18.11. Class: eyni quruluşlu obyektlər {#c18x1}
+
+Obyekt (18.8) bir şeyin datasını saxlayır. Çox vaxt eyni quruluşlu çoxlu obyekt lazım olur və onların öz hərəkətləri də olur. **Class** belə obyektlər düzəldən qəlibdir: çertyoj bir dənədir, ondan istənilən qədər ev tikmək olar. Page Object Model (19.7) məhz bunun üzərində qurulub, ona görə bu bölməni yaxşı başa düşmək lazımdır.
+
+```javascript
+class Cart {
+  constructor(owner) {
+    this.owner = owner;
+    this.count = 0;
+  }
+
+  add(n) {
+    this.count = this.count + n;
+    return this.count;
+  }
+}
+
+const cart = new Cart('Aysel');
+const after = cart.add(2);
+console.log(cart.owner, after); // Aysel 2
+```
+
+| Söz | Nə edir |
+| --- | --- |
+| class Cart | Qəlib elan edir. Bu sətir hələ heç bir obyekt yaratmır |
+| new Cart('Aysel') | Qəlibdən yeni obyekt yaradır və constructor-u işə salır |
+| constructor(owner) | Yeni obyektin ilkin hazırlığı. new-dakı dəyərlər buraya gəlir |
+| this | “Bu obyektin özü”. this.count bu obyektin count sahəsidir |
+| add(n) | Metod: obyektin hərəkəti. cart.add(2) kimi çağırılır |
+
+Hər obyektin öz datası olur. Bir səbətə məhsul əlavə etmək o birisinə toxunmur:
+
+```javascript
+const a = new Cart('Aysel');
+const b = new Cart('Leyla');
+a.add(3);
+console.log(a.count, b.count); // 3 0
+```
+
+**Tipik səhvlər və mesajları:**
+
+| Səhv | Mesaj | Səbəb |
+| --- | --- | --- |
+| Cart('Aysel') | TypeError: Class constructor Cart cannot be invoked without 'new' | new yazılmayıb |
+| this.count əvəzinə count | ReferenceError: count is not defined | Sahəyə this ilə müraciət olunur |
+| cart.ad(2) | TypeError: cart.ad is not a function | Metodun adı səhvdir |
+
+**Page Object ilə bağlantı.** 19.7-dəki LoginPage indi oxunur:
+
+```javascript
+export class LoginPage {
+  constructor(page) {
+    this.page = page;
+    this.loginButton = page.getByRole('button', { name: 'Login' });
+  }
+
+  async open() {
+    await this.page.goto('https://www.saucedemo.com/');
+  }
+}
+```
+
+- `constructor(page)`: testdən brauzer tabı gəlir, `this.page = page` onu saxlayır ki, metodlar da işlədə bilsin.
+- `this.loginButton`: lokator bir dəfə yazılır, bütün metodlar onu götürür.
+- `async open()`: metodun içində gözləmə var (18.9), ona görə `async`-dir. Testdə də `await loginPage.open()` yazılır. `await` yazılmasa, test gözləmədən irəli qaçır.
+- Testdə `new LoginPage(page)` hər test üçün ayrıca obyekt yaradır, testlər bir-birinə mane olmur.
+
+### 18.12. Modullar: import və export {#c18x2}
+
+Kod çoxalanda bir fayla sığmır. **Modul** ayrıca fayldır: `export` “bunu başqa fayllara verirəm” deyir, `import` isə “bunu oradan götürürəm”. Page class-lar `pages/`, testlər `tests/` qovluğunda durur (19.11) və bir-birini belə tapır.
+
+```javascript
+// pricing.mjs
+export const CURRENCY = 'AZN';
+
+export function tax(amount) {
+  return amount * 18 / 100;
+}
+```
+
+```javascript
+// main.mjs
+import { tax, CURRENCY } from './pricing.mjs';
+
+console.log(tax(100), CURRENCY); // 18 AZN
+```
+
+Burada fayl uzantısı `.mjs`-dir, çünki `.mjs` faylı Node üçün həmişə modul deməkdir. `.js` faylını isə Node `package.json`-dakı ayara görə köhnə qaydada (CommonJS) oxuya bilər. `package.json` layihənin parametrlər faylıdır: `npm install` və `npm init playwright` onu yaradır.
+
+Yolun əvvəli hara baxılacağını deyir:
+
+| Yazılış | Hara baxır | Misal |
+| --- | --- | --- |
+| ./ad | Eyni qovluq | ./pricing.mjs |
+| ../ad | Bir qovluq yuxarı | ../pages/LoginPage |
+| ../../ad | İki qovluq yuxarı | ../../fixtures/pages |
+| Nöqtəsiz | Quraşdırılmış paket (node_modules) | @playwright/test |
+
+Yol **import yazılan fayla görə** hesablanır. `tests/ui/cart.spec.js` faylından `pages/LoginPage.js` belə görünür: bir yuxarı `tests/`, iki yuxarı layihənin kökü, sonra `pages/`:
+
+```javascript
+import { LoginPage } from '../../pages/LoginPage';
+```
+
+**Fiqurlu mötərizə nə vaxt lazımdır:**
+
+```javascript
+// Adla export: bir faylda bir neçə ola bilər, adı dəqiq yazılır
+export class LoginPage { /* … */ }
+import { LoginPage } from '../pages/LoginPage';
+
+// Default export: faylda biri olur, mötərizə yazılmır
+export default defineConfig({ /* … */ });
+import config from './playwright.config';
+```
+
+**Başqa adla götürmək.** 19.12-dəki `import { test as base }` belə oxunur: paketin `test`-ini bu faylda `base` adlandır. Çünki eyni faylda öz `test`-imizi yaradırıq. Sətrin ardınca gələn `export { expect };` isə paketdən gələn `expect`-i bu fayldan da verir ki, testlər ikisini bir yerdən götürsün.
+
+**Tipik səhvlər və mesajları:**
+
+| Mesaj | Harada görünür | Səbəb | Həll |
+| --- | --- | --- | --- |
+| Cannot find module / Cannot find package | Node və Playwright | Yol və ya paket səhvdir | Qovluğu say; paket üçün npm install |
+| does not provide an export named 'X' | Node | Faylda elə adla export yoxdur | Faylda export yaz, adın hərflərini yoxla |
+| _LoginPage.X is not a constructor (class), (0 , _users.x) is not a function (funksiya), Cannot read properties of undefined (sabit) | Playwright testi | Eyni səhv: ad səhvdir və ya mötərizə unudulub | import sətrini faylın export-u ilə tutuşdur |
+| Cannot use import statement outside a module | Node | package.json faylı CommonJS sayır | Faylı .mjs et və ya package.json-da "type": "module" yaz |
+
+Playwright `import`-u özü emal edir, ona görə 19.6-dakı testlər `.js` faylında işləyir, amma səhv adın mesajı da fərqli olur: fayl yüklənir və xəta adın işlədildiyi sətirdə çıxır.
+
+### 18.13. Mühit dəyişənləri və testin kodunu oxumaq {#c18x3}
+
+Şifrə koda yazılmır (19.11), ünvan da mühitə görə dəyişir. **Mühit dəyişəni** (environment variable) proqrama kənardan verilən dəyərdir. Node-da onlar `process.env` obyektindədir:
+
+```javascript
+console.log(process.env.SAUCE_PASSWORD);        // verilməyibsə: undefined
+const url = process.env.BASE_URL || 'https://www.saucedemo.com';
+const retries = process.env.CI ? 2 : 0;
+```
+
+- `||` soldakı dəyər boşdursa, sağdakını götürür: `BASE_URL` verilməyibsə, standart ünvan işlənir.
+- `şərt ? a : b` qısa `if`-dir: şərt doğrudursa `a`, deyilsə `b`. GitHub Actions `CI` dəyişənini özü verir, ona görə kompüterdə 0, CI-da 2 olur.
+
+**Dəyəri necə vermək olar:**
+
+```bash
+# PowerShell
+$env:SAUCE_PASSWORD = "secret_sauce"
+npx playwright test
+
+# Bash (Linux, Mac, Git Bash)
+SAUCE_PASSWORD=secret_sauce npx playwright test
+```
+
+Hər dəfə yazmamaq üçün `.env` faylı işlədilir. Faylda `SAUCE_PASSWORD=secret_sauce` yazılır, `npm install -D dotenv` qurulur, `playwright.config.js` (19.11) faylının başına `import 'dotenv/config';` əlavə olunur. `.env` `.gitignore`-da olmalıdır (20.3). Diqqət: **dəyər həmişə mətndir**: `process.env.RETRIES` üçün `'2'` gəlir, ədəd lazımdırsa, `Number(process.env.RETRIES)` yazılır.
+
+**Hazır dəyəri parçalamaq.** Framework kodunda iki qısa yazılış tez-tez görünür: **destructuring** obyektdən və ya massivdən dəyər götürür, **spread** (`...`) isə içindəkiləri köçürür.
+
+```javascript
+const user = { name: 'Aysel', age: 25 };
+const { name } = user;                  // const name = user.name; ilə eynidir
+const prices = [45, 120];
+const [first] = prices;                 // const first = prices[0]; ilə eynidir
+const more = [...prices, 80];           // [45, 120, 80]
+const older = { ...user, age: 26 };     // { name: 'Aysel', age: 26 }
+```
+
+**Testin kodunu oxumaq.** Framework kodunda bu fəslin bütün yazılışları bir yerə yığılır:
+
+```javascript
+test(`giriş xətası: ${user}`, async ({ page }) => {
+  const { token } = await login.json();
+  await page.goto(`${API}/cart`);
+});
+```
+
+| Yazılış | Mənası | Harada |
+| --- | --- | --- |
+| \`mətn ${x}\` | Mətnin içinə dəyər qoymaq (template literal) | 18.4 |
+| async () => { } | İçində gözləmə olan ox funksiyası (arrow function) | 18.6, 18.9 |
+| ({ page }) | Gələn obyektdən page sahəsini götürmək | Bu bölmə |
+| const { token } = obyekt | const token = obyekt.token ilə eynidir | Bu bölmə |
+| await | Nəticəni gözləmək | 18.9 |
+| { ...devices['Desktop Chrome'] } | Obyektin bütün sahələrini köçürmək | Bu bölmə |
+
+Yad sətir görəndə onu parçala: əvvəl hansı funksiya çağırılır, ona nə verilir, nəticə hara yazılır. Bir sətri başa düşməyənə qədər növbətisinə keçmə: framework kodu təzə söz yox, bu yazılışların birləşməsidir.
+
 ### Diqqət: tez-tez edilən səhvlər
 
 - **`==` yazmaq.** Həmişə `===`.
 - **`await`-i unutmaq.** Kod gözləmədən irəli qaçır, test təsadüfi düşür.
 - **Massivdə indeksin 0-dan başladığını unutmaq.**
 - **Pul hesablamalarında kəsr ədədlərə güvənmək.** `0.1 + 0.2` nəticəsi 0.3 yox, 0.30000000000000004-dür. Bu, real defekt mənbəyidir.
+- **`new` yazmamaq.** `TypeError: Class constructor … cannot be invoked without 'new'`.
+- **Class-ın içində `this.` yazmamaq.** `ReferenceError: … is not defined`.
+- **`import` yolunu səhv saymaq.** Yol import yazılan fayldan hesablanır: qovluqları say.
+- **Şifrəni koda yazmaq.** Git tarixində qalır. `process.env` və `.env` işlət.
 
 ### Həll olunmuş nümunə
 
@@ -3150,6 +3340,8 @@ FAIL: Kəsr: 0.1 × 3 = 0.3 | gözlənilən: 0.3 | faktiki: 0.30000000000000004
 3. Bir istifadəçi obyekti yarat və email sahəsində @ olub-olmadığını yoxla.
 4. `calculateTotal` üçün mənfi qiymətlə (-10) test yaz. Funksiya nə qaytarır? Bu, defektdirmi? Funksiyanı necə düzəldərdin?
 5. `'İLKİN'.toLowerCase()` və `'İLKİN'.toLocaleLowerCase('az')` nəticələrini 'ilkin' ilə `===` vasitəsilə müqayisə et. Nə gördün?
+6. `TestRun` class-ı yaz: `constructor(name)` adı saxlayır, `passed` və `failed`-i 0 edir; `record(ok)` uyğun sayğacı artırır; `summary()` `"Smoke: 2 passed, 1 failed"` kimi mətn qaytarır. Üç nəticə yaz və çap et. İkinci `TestRun` yarat və sayğaclarının ayrı olduğunu göstər.
+7. `TestRun`-u `test-run.mjs` faylına köçür və `export` et. `main.mjs`-də `import` et, adı `process.env.RUN_NAME`-dən oxu, verilməyibsə `Smoke` olsun. Dəyişənlə və dəyişənsiz işə sal.
 
 ### Özünü yoxla
 
@@ -3158,10 +3350,12 @@ FAIL: Kəsr: 0.1 × 3 = 0.3 | gözlənilən: 0.3 | faktiki: 0.30000000000000004
 - filter, map və find nə edir?
 - await nə üçün lazımdır?
 - Niyə 0.1 + 0.2 !== 0.3?
-
+- `new` və `this` nə edir?
+- `../../pages/LoginPage` yolu necə oxunur?
+- Şifrə niyə `process.env`-dən oxunur və `.env` niyə repo-ya düşmür?
 ## Fəsil 19. Avtomatlaşdırma: test piramidası, Playwright framework-ü, Cypress və Selenium
 
-Avtomatlaşdırma təkrarlanan yoxlamaları koda tapşırmaqdır: regression testləri hər dəyişiklikdən sonra dəqiqələr ərzində, insansız işləyir. Bu fəsildə nəyi avtomatlaşdırmaq lazım olduğunu, test piramidasını və Playwright ilə ilk real testi öyrənəcəksən, sonra onun üstündə tam framework quracaqsan: Page Object, fixture, data-driven test, API testi, login vəziyyəti, trace və hesabat. Fəslin sonunda eyni fikirləri Cypress və Selenium-da da görəcəksən.
+Avtomatlaşdırma təkrarlanan yoxlamaları koda tapşırmaqdır: regression testləri hər dəyişiklikdən sonra dəqiqələr ərzində, insansız işləyir. Bu fəsildə nəyi avtomatlaşdırmaq lazım olduğunu, test piramidasını və Playwright ilə ilk real testi öyrənəcəksən, sonra onun üstündə tam framework quracaqsan: Page Object, fixture, data-driven test, API testi, login vəziyyəti, trace və hesabat. Sonra eyni fikirləri Cypress və Selenium-da görəcəksən. Fəsil real səhifələrin çətin hissələri ilə bitir: fayl yükləmə, təsdiq pəncərəsi, iframe, yeni tab və saxta şəbəkə cavabları.
 
 ### 19.1. Nəyi avtomatlaşdırmalı, nəyi yox
 
@@ -3297,7 +3491,7 @@ test('bloklanmış istifadəçi xəta mesajı görür', async ({ page }) => {
 
 ### 19.7. Page Object Model (POM)
 
-Testlər çoxaldıqca eyni lokatorlar hər yerdə təkrarlanır. Login düyməsinin lokatoru dəyişsə, 50 testi düzəltmək lazım gələcək. POM bunu həll edir: hər səhifə üçün bir class yaradılır, lokatorlar və hərəkətlər orada bir dəfə yazılır.
+Testlər çoxaldıqca eyni lokatorlar hər yerdə təkrarlanır. Login düyməsinin lokatoru dəyişsə, 50 testi düzəltmək lazım gələcək. POM bunu həll edir: hər səhifə üçün bir class yaradılır, lokatorlar və hərəkətlər orada bir dəfə yazılır. Class, `new` və `this` 18.11-də, `import` və `export` 18.12-dədir.
 
 `pages/LoginPage.js`:
 
@@ -3428,7 +3622,7 @@ export default defineConfig({
 });
 ```
 
-`baseURL` yazılanda testlərdə qısa yol işlənir: `await page.goto('/')`. Mühit dəyişəndə (test → staging) testlərin heç biri dəyişmir, yalnız `BASE_URL` dəyişir. Şifrə `.env` faylındadır (`SAUCE_PASSWORD=...`), kodda isə `process.env.SAUCE_PASSWORD` kimi oxunur. Bunun üçün paket lazımdır: `npm install -D dotenv`. `.env` mütləq `.gitignore`-a yazılır.
+`baseURL` yazılanda testlərdə qısa yol işlənir: `await page.goto('/')`. Mühit dəyişəndə (test → staging) testlərin heç biri dəyişmir, yalnız `BASE_URL` dəyişir. Şifrə `.env` faylındadır (`SAUCE_PASSWORD=...`), kodda isə `process.env.SAUCE_PASSWORD` kimi oxunur (18.13). Bunun üçün paket lazımdır: `npm install -D dotenv`. `.env` mütləq `.gitignore`-a yazılır.
 
 ### 19.12. Fixture-lər {#c19x2}
 
@@ -3469,6 +3663,7 @@ test('məhsul səbətə əlavə olunur', async ({ inventoryPage }) => {
 });
 ```
 
+- `import { test as base }` — paketin `test`-i bu faylda `base` adlanır, `export { expect }` isə `expect`-i bu fayldan da verir (18.12).
 - `base.extend({ … })` — öz fixture-lərimizlə yeni `test` yaradır.
 - `async ({ page }, use) => { … }` — fixture başqa fixture-dən (`page`) istifadə edə bilər.
 - `await use(x)` — `x`-i testə verir və test bitənə qədər burada gözləyir. `use`-dan əvvəlki kod hazırlıq, sonrakı kod təmizlikdir (teardown).
@@ -3763,6 +3958,150 @@ test('məhsul səbətə əlavə olunur', async () => {
 
 **Necə seçməli:** yeni JavaScript layihəsi üçün Playwright, komanda brauzerdə debug rahatlığını üstün tutursa Cypress, Java və ya C# komandası, köhnə infrastruktur və ya geniş brauzer şəbəkəsi varsa Selenium (bəzən Playwright-ın həmin dil versiyası). Əsas fikirlər (Page Object, müstəqil test, test datasının ayrılması, CI) üçündə eynidir: bir aləti dərindən bilən adam o birisini həftələrlə öyrənir, aylarla yox.
 
+### 19.18. Real səhifə hərəkətləri {#c19x8}
+
+Giriş və səbətdən sonra iş başqa elementlərə gəlib çıxır: işarə qutusu (checkbox), fayl yükləmə, təsdiq pəncərəsi, iframe, yeni tab. Aşağıdakı kod **məşq səhifəsində** işləyir: `https://ministore.test/settings.html` yalnız bu kitabın Playwright məşqindədir (PW-14, PW-15, PW-16), internetdə açılmır. Real layihədə eyni kodu öz lokatorlarınla yazırsan.
+
+**İşarə qutusu, siyahı, üzərinə gəlmək, klaviatura.** Tooltip üzərinə gələndə çıxan kiçik izahdır:
+
+```javascript
+const news = page.getByLabel('Xəbərlər gəlsin');
+await news.check();
+await expect(news).toBeChecked();
+
+await page.getByLabel('Ölkə').selectOption('ge');
+await expect(page.getByLabel('Ölkə')).toHaveValue('ge');
+
+await page.getByRole('button', { name: 'Kömək' }).hover();
+await expect(page.getByRole('tooltip')).toBeVisible();
+
+await page.getByPlaceholder('Məhsul axtar').fill('bolt');
+await page.getByPlaceholder('Məhsul axtar').press('Enter');
+await expect(page.getByTestId('search-result')).toHaveText('«bolt» üçün 1 nəticə');
+
+await page.getByRole('button', { name: 'Şərtlər' }).click();
+await page.keyboard.press('Escape');
+await expect(page.getByRole('dialog')).toBeHidden();
+```
+
+- `check()` və `uncheck()` qutunu lazımi vəziyyətə gətirir və nəticəni yoxlayır. `click()` isə sadəcə vəziyyəti tərsinə çevirir, ona görə əvvəlki vəziyyətdən asılıdır.
+- `selectOption('ge')` dəyərə və ya görünən mətnə görə seçir, `selectOption({ label: 'Gürcüstan' })` yalnız görünən mətnə görə.
+- Lokatorun `press` metodu əvvəl həmin elementə fokuslanır, `page.keyboard.press` isə düyməni fokus hazırda haradadırsa, ora göndərir.
+
+**Fayl yükləmək.** Fayl pəncərəsi açılmır, fayl birbaşa sahəyə verilir:
+
+```javascript
+await page.getByLabel('CV faylı').setInputFiles('cv.pdf');
+await expect(page.getByTestId('file-status')).toHaveText('Seçildi: cv.pdf');
+await page.getByLabel('CV faylı').setInputFiles([]);
+```
+
+Nisbi yol testi işə saldığın qovluğa görə hesablanır, boş massiv seçimi təmizləyir. Test ideyaları: icazəsiz format, limitdən böyük fayl, 0 baytlıq fayl (14.1).
+
+**Təsdiq pəncərəsi (dialog).** «Şərtlər» səhifənin öz elementi idi (`role=dialog`). Brauzerin `confirm` pəncərəsi isə səhifənin elementi deyil, lokatorla tapılmır. `page.on('dialog', funksiya)` deməkdir: pəncərə açılan an bu funksiyanı işlət. Belə funksiyaya dinləyici (listener) deyilir və o, **klikdən əvvəl** yazılır:
+
+```javascript
+page.on('dialog', dialog => dialog.accept());
+await page.getByRole('button', { name: 'Hesabı sil' }).click();
+await expect(page.getByTestId('account-status')).toHaveText('Hesab silindi');
+```
+
+Dinləyici olmasa, Playwright pəncərəni özü ləğv edir və test “Ləğv edildi” halını görür. Dinləyici yazıb `accept()` və ya `dismiss()` çağırmasan, klik qalıb timeout olur. Mətni də yoxlamaq olar: `expect(dialog.message()).toContain('silmək')`.
+
+**iframe.** iframe səhifənin içində açılan başqa səhifədir: ödəniş forması çox vaxt başqa saytdan belə gəlir. Adi lokator onun içinə baxmır:
+
+```javascript
+const pay = page.frameLocator('#pay');
+await pay.getByRole('button', { name: 'Ödə' }).click();
+await expect(pay.getByTestId('pay-status')).toHaveText('Ödəniş qəbul olundu');
+```
+
+`page.getByRole('button', { name: 'Ödə' })` burada heç nə tapmır, timeout olur. Element gözlə görünür, amma lokator tapmırsa, əvvəlcə iframe olub-olmadığını yoxla.
+
+**Yeni tab.** Gözləmə klikdən **əvvəl** başladılır, `await` isə klikdən sonra yazılır:
+
+```javascript
+const popupPromise = page.waitForEvent('popup');
+await page.getByRole('link', { name: 'Çatdırılma qaydaları' }).click();
+const popup = await popupPromise;
+await expect(popup).toHaveURL(/rules/);
+await expect(popup.getByRole('heading')).toHaveText('Çatdırılma qaydaları');
+```
+
+`popup` da `page` kimidir: lokatorlar və yoxlamalar onda işləyir. Əvvəl `await page.waitForEvent('popup')` yazsan, test klikə çatmır və timeout olur.
+
+### 19.19. Şəbəkə, yumşaq yoxlama və vizual müqayisə {#c19x9}
+
+Bu bölmənin kodunu da məşq səhifəsində sınaya bilərsən (PW-17, PW-18, PW-19). Yalnız vizual müqayisə orada işləmir.
+
+**Cavabı gözləmək.** Elementə baxmaq kifayət deyilsə, sorğunun özünü yoxlamaq olar. Yeni tabdakı kimi: əvvəl gözləmə, sonra klik.
+
+```javascript
+const responsePromise = page.waitForResponse('**/api/orders');
+await page.getByRole('button', { name: 'Sifarişləri yüklə' }).click();
+const response = await responsePromise;
+expect(response.status()).toBe(200);
+await expect(page.getByText('Sifariş 1001')).toBeVisible();
+```
+
+**Cavabı saxtalaşdırmaq (mock).** Server 500 qaytaranda ekran nə göstərir? Real serveri sındırmaq olmur, amma cavabı test özü verə bilər:
+
+```javascript
+await page.route('**/api/orders', route => route.fulfill({
+  status: 500,
+  json: { error: 'server down' },
+}));
+await page.getByRole('button', { name: 'Sifarişləri yüklə' }).click();
+await expect(page.getByRole('alert')).toContainText('yüklənmədi');
+```
+
+| Nə lazımdır | Yazılış | Nəyi yoxlayır |
+| --- | --- | --- |
+| Server xətası | route.fulfill({ status: 500, json: { … } }) | Xəta mesajı görünürmü, səhifə dağılırmı |
+| Boş siyahı | route.fulfill({ json: [] }) | “Sifariş yoxdur” vəziyyəti |
+| İnternet kəsilməsi | route.abort() | Bağlantı xətası mesajı |
+| Dəyişmədən keçir | route.continue() | Yalnız bəzi sorğuları tutmaq üçün |
+
+Bu, UI testinin ən güclü alətlərindən biridir: nadir halları sabit və tez yoxlayır. **Məhdudiyyəti:** saxta cavabla test real API-nin düzgün işlədiyini sübut etmir. Ona görə API-nin özünü ayrıca yoxla (19.14).
+
+**Yumşaq yoxlama (soft assertion).** Adi `expect` düşəndə test dayanır. `expect.soft` qeyd edir və davam edir, test sonda uğursuz sayılır. Bir ekranda bir neçə müstəqil şeyi yoxlayanda faydalıdır, çünki bütün fərqləri bir dəfəyə görürsən:
+
+```javascript
+await expect.soft(page.getByTestId('title')).toHaveText('Ayarlar');
+await expect.soft(page.getByTestId('account-status')).toHaveText('Hesab aktivdir');
+await expect.soft(page.getByTestId('file-status')).toHaveText('Fayl seçilməyib');
+```
+
+Sonrakı addım əvvəlkindən asılıdırsa, adi `expect` yaz: uğursuz girişdən sonra davam etməyin mənası yoxdur.
+
+**Hook-lar.** `beforeEach` hər testdən əvvəl (19.6), `beforeAll` isə bir dəfə işləyir:
+
+```javascript
+let token;
+
+test.beforeAll(async ({ request }) => {
+  const res = await request.post(`${API}/login`, {
+    data: { username: 'standard_user', password: process.env.SAUCE_PASSWORD },
+  });
+  const body = await res.json();
+  token = body.token;
+});
+
+test.afterAll(async () => {
+  console.log('Testlər bitdi');
+});
+```
+
+`beforeAll`-da `page` işlətmək olmur, çünki `page` hər test üçün yenidən yaradılır. `beforeAll` hər worker (testləri paralel işlədən ayrıca proses) üçün ayrıca işləyir. Test düşəndə də worker yenidən başlayır və `beforeAll` təkrar işləyir, ona görə “cəmi bir dəfə” deyə güvənmə. `beforeAll` düşərsə, faylın qalan testləri işə düşmür (`did not run`), `afterAll` isə yenə işləyir. Təkrarlanan hazırlıq üçün çox vaxt fixture (19.12) daha yaxşıdır.
+
+**Vizual müqayisə.** Playwright ekranın şəklini əvvəlki etalonla (baseline) tutuşdura bilər:
+
+```javascript
+await expect(page).toHaveScreenshot('settings.png', { maxDiffPixels: 100 });
+```
+
+İlk icrada etalon yoxdur: şəkil yaradılır, test isə uğursuz sayılır (`A snapshot doesn't exist at …, writing actual`). Şəklə bax, düzgündürsə, növbəti icralar onunla müqayisə olunur. Dizayn dəyişəndə: `npx playwright test --update-snapshots`. Şrift və sistem fərqinə görə etalonlar brauzer və əməliyyat sisteminə görə ayrıca saxlanılır (`settings-chromium-win32.png`), ona görə Windows-da çəkilən etalon Linux CI-da işləmir. Etalonu CI ilə eyni mühitdə yarat. Bu yoxlama kitabın məşqində işləmir, real brauzer lazımdır.
+
 ### Diqqət: tez-tez edilən səhvlər
 
 - **`await`-i unutmaq.** Test gözləmədən irəli qaçır.
@@ -3773,6 +4112,10 @@ test('məhsul səbətə əlavə olunur', async () => {
 - **Data-driven testdə dövrü `test`-in içinə qoymaq.** Birinci səhv dəyərdə dayanır, qalanlar yoxlanmır.
 - **`await response.json()` yazmamaq.** Dəyər Promise olur, `user.name` isə `undefined`.
 - **Şifrəni və `playwright/.auth`-u repo-ya atmaq.** `.env` və `.auth` `.gitignore`-a yazılır.
+- **İşarə qutusunu `click()` ilə işarələmək.** Qutu artıq işarəli idisə, işarə gedir. `check()` yaz.
+- **Dialog dinləyicisini klikdən sonra yazmaq.** Playwright pəncərəni artıq ləğv edib, dinləyici işləmir.
+- **`await page.waitForEvent('popup')`-u klikdən əvvəl yazmaq.** Test klikə çatmır, timeout olur.
+- **Hər şeyi saxta cavabla yoxlamaq.** Real API sınsa da, testlər yaşıl qalır.
 
 ### Həll olunmuş nümunə
 
@@ -3817,6 +4160,7 @@ test('məhsul səbətə əlavə olunur', async ({ page }) => {
 4. LoginPage POM-unu yarat və yazdığın bütün login testlərini ona keçir.
 5. Testlərdən birini qəsdən sındır (gözlənilən mətni dəyiş) və HTML hesabatda xətanın necə göstərildiyinə bax.
 6. Öz framework-ünü qur: Swag Labs üçün qovluq quruluşu, 2 page class, 1 fixture, 1 data-driven test, 2 API testi, login vəziyyəti və GitHub Actions. README yaz və GitHub-a yüklə: bu, portfolio-nun əsas layihəsi olacaq.
+7. Real saytda sına: `https://the-internet.herokuapp.com` sınaq üçün açıq saytdır, giriş istəmir. `/checkboxes`, `/dropdown`, `/hovers`, `/javascript_alerts` və `/windows` səhifələrinin hər biri üçün bir test yaz və öz kompüterində işə sal.
 
 ### Özünü yoxla
 
@@ -3828,7 +4172,9 @@ test('məhsul səbətə əlavə olunur', async ({ page }) => {
 - Fixture nədir və `test.beforeEach`-dən nə ilə fərqlənir?
 - Data-driven test nə vaxt lazımdır, nə vaxt lazım deyil?
 - `storageState` hansı problemi həll edir və fayl niyə repo-ya düşməməlidir?
-
+- Dialog və yeni tab üçün hazırlıq niyə klikdən əvvəl yazılır?
+- `page.route` nəyi yoxlamağa kömək edir, nəyi sübut etmir?
+- `expect.soft` nə vaxt faydalıdır, nə vaxt yox?
 ## Fəsil 20. Git, GitHub və CI/CD
 
 Git kodun versiyalarını saxlayır, GitHub onu komanda ilə paylaşmağa imkan verir, CI/CD isə hər dəyişiklikdən sonra testləri avtomatik işə salır. Avtomatlaşdırma ilə işləyən tester üçün üçü də gündəlik alətdir.

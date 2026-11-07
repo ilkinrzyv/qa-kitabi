@@ -174,5 +174,78 @@
       "İkilik saxlanma səbəb kimi deyilib",
       "Həll: kiçik fərqlə müqayisə və ya tam ədəd"
     ]
+  },
+  "c18x1m": {
+    "h": "status constructor-da this.status = 'New' kimi yazılır. summary üçün tərs dırnaq və ${this.severity} işlət.",
+    "a": "```javascript\nclass BugReport {\n  constructor(title, severity) {\n    this.title = title;\n    this.severity = severity;\n    this.status = 'New';\n  }\n\n  close() {\n    this.status = 'Closed';\n    return this.status;\n  }\n\n  summary() {\n    return `${this.severity}: ${this.title}`;\n  }\n}\n\nconst first = new BugReport('Səbət boşdur', 'Major');\nconst second = new BugReport('Düymə kiçikdir', 'Minor');\nfirst.close();\nconsole.log(first.summary());             // Major: Səbət boşdur\nconsole.log(first.status, second.status); // Closed New\n```\n\n`new` yazmasan: `TypeError: Class constructor BugReport cannot be invoked without 'new'`. Metodda `status = 'Closed'` yazsan, Node `ReferenceError: status is not defined` deyir. Brauzer konsolunda isə xəta çıxmır, çünki orada `window.status` var: sahə sadəcə dəyişmir.",
+    "c": [
+      "İki obyekt new ilə yaradılıb",
+      "Sahələr this. ilə yazılır və oxunur",
+      "Bir report bağlananda o biri New qalır",
+      "İki xəta mesajı düzgün deyilib"
+    ]
+  },
+  "c18x2m": {
+    "h": "tests/ui/ içindən kökə çıxmaq üçün iki dəfə ../ lazımdır. tests/ içindən isə bir dəfə.",
+    "a": "```javascript\n// tests/ui/checkout.spec.js\nimport { test, expect } from '@playwright/test';\nimport { CheckoutPage } from '../../pages/CheckoutPage';\nimport { STANDARD_USER } from '../../data/users';\n```\n\n`tests/auth.setup.js` faylı bir qovluq yuxarıdadır: `import { CheckoutPage } from '../pages/CheckoutPage';`.\n\n- `Cannot find module`: yol və ya fayl adı səhvdir, qovluqları say.\n- `does not provide an export named`: fayl tapılıb, amma orada belə adla export yoxdur, adı yoxla. Playwright testində eyni səhv fərqli görünür: class üçün `is not a constructor`, funksiya üçün `is not a function`, `STANDARD_USER` kimi sabit üçün `Cannot read properties of undefined`.",
+    "c": [
+      "İki qovluq yuxarı: ../../",
+      "Paket nöqtəsiz yazılır",
+      "auth.setup.js üçün yol bir pillə qısadır",
+      "İki xəta mesajının fərqi deyilib"
+    ]
+  },
+  "c18x3m": {
+    "h": "Sətirləri yuxarıdan aşağı oxu: əvvəl dəyər haradan gəlir, sonra hara yazılır.",
+    "a": "- `process.env.API_URL || '…'`: mühit dəyişəni verilibsə onu, verilməyibsə standart ünvanı götürür.\n- `process.env.CI ? 2 : 0`: `CI` varsa 2, yoxdursa 0. Qısa `if`-dir.\n- Testin adı tərs dırnaqdadır: `${retries}` dəyəri mətnin içinə qoyur.\n- `async ({ request }) =>`: içində gözləmə olan ox funksiyası. `{ request }` Playwright-ın verdiyi obyektdən `request`-i götürür.\n- `await request.get(...)`: GET sorğusu göndərir və cavabı gözləyir. Ünvan yenə tərs dırnaqla qurulur.\n- `const [first] = await res.json()`: gövdəni massivə çevirir, birinci elementi `first`-ə yazır.\n- `expect(first).toHaveProperty('price')`: birinci məhsulda `price` sahəsi varmı. Burada `await` yoxdur, çünki dəyər artıq əldədir.",
+    "c": [
+      "|| və ?: düzgün izah olunub",
+      "Destructuring həm obyektdə, həm massivdə deyilib",
+      "await-in nəyi gözlədiyi deyilib",
+      "Niyə son sətirdə await olmadığı deyilib"
+    ]
+  },
+  "c18t6": {
+    "h": "record(ok) daxilində if/else yaz. summary üçün tərs dırnaq işlət.",
+    "a": "```javascript\nclass TestRun {\n  constructor(name) {\n    this.name = name;\n    this.passed = 0;\n    this.failed = 0;\n  }\n\n  record(ok) {\n    if (ok) {\n      this.passed = this.passed + 1;\n    } else {\n      this.failed = this.failed + 1;\n    }\n  }\n\n  summary() {\n    return `${this.name}: ${this.passed} passed, ${this.failed} failed`;\n  }\n}\n\nconst run = new TestRun('Smoke');\nrun.record(true);\nrun.record(true);\nrun.record(false);\nconsole.log(run.summary()); // Smoke: 2 passed, 1 failed\n\nconst other = new TestRun('Regression');\nother.record(false);\nconsole.log(other.summary()); // Regression: 0 passed, 1 failed\nconsole.log(run.summary());   // Smoke: 2 passed, 1 failed\n```\n\nHər obyektin öz datası var: ikinci obyekt birincinin sayğaclarına toxunmur.",
+    "c": [
+      "Sayğaclar constructor-da 0-dır",
+      "record uyğun sayğacı artırır",
+      "summary dəyəri qaytarır, çap etmir",
+      "İkinci obyektin sayğacları ayrıdır"
+    ]
+  },
+  "c18t7": {
+    "h": "Fayl uzantısı .mjs olsun, import yolunda da yaz. Ad üçün process.env.RUN_NAME || 'Smoke'.",
+    "a": "`test-run.mjs` faylında class-ın əvvəlinə `export` əlavə olunur: `export class TestRun { … }`.\n\n```javascript\n// main.mjs\nimport { TestRun } from './test-run.mjs';\n\nconst name = process.env.RUN_NAME || 'Smoke';\nconst run = new TestRun(name);\nrun.record(true);\nconsole.log(run.summary());\n```\n\nİşə salmaq:\n\n```bash\n# Dəyişən verilmədən\nnode main.mjs\n\n# PowerShell\n$env:RUN_NAME = \"Regression\"\nnode main.mjs\n\n# Bash\nRUN_NAME=Regression node main.mjs\n```\n\nNəticə: birincidə `Smoke: 1 passed, 0 failed`, o birilərdə `Regression: 1 passed, 0 failed`. `TestRun` adını `import`-da səhv yazsan: `does not provide an export named`.",
+    "c": [
+      "Class export olunub, main-də import olunub",
+      "Yol ./ ilə başlayır, uzantı yazılıb",
+      "Ad process.env-dən gəlir, standart dəyər var",
+      "Hər iki halda nəticə yoxlanılıb"
+    ]
+  },
+  "c18q6": {
+    "a": "`new` class-dan yeni obyekt yaradır və `constructor`-u işə salır. `this` həmin obyektin özüdür: `this.count` bu obyektin sahəsidir. Hər obyektin öz datası olur, ona görə bir səbətin dəyişməsi o birisinə təsir etmir.",
+    "c": [
+      "new obyekt yaradır, constructor işləyir",
+      "this obyektin özüdür",
+      "Obyektlərin datası ayrıdır"
+    ]
+  },
+  "c18q7": {
+    "a": "Yol import yazılan fayldan hesablanır: iki qovluq yuxarı, sonra `pages/` və `LoginPage` faylı. `tests/ui/cart.spec.js` üçün bir yuxarı `tests/`, iki yuxarı layihənin köküdür.",
+    "c": [
+      "Yol yazıldığı fayldan hesablanır",
+      "../ bir qovluq yuxarıdır"
+    ]
+  },
+  "c18q8": {
+    "a": "Koda yazılan şifrə Git tarixində qalır və repo-nu görən hər kəs oxuyur. `process.env` dəyəri koddan kənardan alır: kompüterdə `.env`-dən, CI-da secrets-dən. Ona görə `.env` `.gitignore`-a yazılır, test kodu isə dəyişmir.",
+    "c": [
+      "Git tarixi riski deyilib",
+      ".env .gitignore-dadır",
+      "Kompüter və CI-da dəyərin haradan gəldiyi deyilib"
+    ]
   }
 }

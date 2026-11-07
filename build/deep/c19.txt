@@ -713,3 +713,77 @@ Lokatorlar (CSS, data-test), ssenarilər və data köçür. Yenidən yazılan hi
 5. **Fərq:** Playwright-da `request.get` 404-də xəta atmır, burada isə atır: alət dəyişəndə belə kiçik fərqlər vacibdir.
 @növbən
 Şirkət üçün alət seç və iki səhifəlik yox, 6–8 cümləlik əsaslandırma yaz: 12 nəfərlik Java komandası, 800 köhnə Selenium testi, Safari tələbi, yeni test yazan iki nəfər JavaScript bilir. Üç seçim müqayisə et: Selenium-da qalmaq, Playwright Java, Playwright JavaScript. Keçid planı və riskləri də yaz.
+
+=== c19x8
+@qısa
+Real səhifədə işarə qutusu, fayl, təsdiq pəncərəsi, iframe və yeni tab olur. Hər birinin öz üsulu var: `check`, `setInputFiles`, `page.on('dialog')`, `frameLocator`, `waitForEvent('popup')`. Hadisəni gözləyən kod klikdən əvvəl yazılır.
+@yadda
+- Dialog və yeni tab üçün hazırlıq klikdən əvvəl qurulur.
+- Adi lokator iframe-in içinə baxmır: `frameLocator` lazımdır.
+- Fayl pəncərəsi açılmır: `setInputFiles` faylı birbaşa verir.
+@dərin
+### check, yoxsa click?
+İki test eyni hesabla işləyirsə, qutu artıq işarəli ola bilər. `click()` onda işarəni götürür və test yanlış nəticə verir. `check()` isə “işarəli olsun” deyir, vəziyyət nə olsa da nəticə eynidir.
+
+### Dialog növləri
+`alert` yalnız “OK”, `confirm` “OK/Ləğv”, `prompt` mətn istəyir: `dialog.accept('mətn')`. `dialog.type()` növü, `dialog.message()` mətni verir. Mətni yoxlamaq faydalıdır: “Sil” düyməsi səhv obyektin adını göstərə bilər.
+
+### page.on və page.once
+`page.on` testin sonuna qədər işləyir, `page.once` yalnız növbəti dialoga. Bir testdə fərqli cavablar lazımdırsa, `once` işlət.
+
+### Üzərinə gəlmək niyə kövrəkdir
+Mobil cihazda hover yoxdur. Məlumat yalnız hover ilə görünürsə, bu özü əlçatanlıq sualıdır (14.7). Testdə hover-dən sonra yoxlamanı dərhal yaz: başqa hərəkət menyunu bağlaya bilər.
+
+### Tipik yanlış anlama
+“Element görünür, deməli lokator onu tapmalıdır.” Element iframe-in içində və ya başqa tabda ola bilər. Lokator tapmayanda DevTools-da elementin üstündə `#document` olub-olmadığına bax.
+@nümunə
+**Tapşırıq.** Məşq səhifəsində ödəniş iframe-də, qaydalar isə yeni tabda açılır. İkisini də yoxlayan test yaz.
+@addımlar
+1. **Aç:** `await page.goto('https://ministore.test/settings.html');`
+2. **iframe:** `const pay = page.frameLocator('#pay');`
+3. **Ödəniş:** `await pay.getByRole('button', { name: 'Ödə' }).click();` və `await expect(pay.getByTestId('pay-status')).toHaveText('Ödəniş qəbul olundu');`
+4. **Yeni tabı gözlə:** `const popupPromise = page.waitForEvent('popup');`
+5. **Kliklə və götür:** `await page.getByRole('link', { name: 'Çatdırılma qaydaları' }).click();` və `const popup = await popupPromise;`
+6. **Yoxla:** `await expect(popup.getByRole('heading')).toHaveText('Çatdırılma qaydaları');`
+@növbən
+Məşq səhifəsi üçün test yaz: (1) `cv.pdf` yüklə və statusu yoxla; (2) `foto.exe` yüklə və “Yalnız PDF faylı olar” mesajını yoxla; (3) “Hesabı sil”-də dialogu `dismiss` et, “Ləğv edildi” statusunu yoxla; (4) dialog mətnində “silmək” sözünün olduğunu da yoxla. Dinləyicini klikdən sonra yazsan, nə baş verir?
+
+=== c19x9
+@qısa
+`waitForResponse` sorğunun cavabını yoxlayır, `page.route` ilə isə cavabı test özü verir: 500, boş siyahı, internet kəsilməsi. `expect.soft` düşəndə davam edir, `beforeAll` bir dəfə işləyir, `toHaveScreenshot` ekranı etalonla tutuşdurur.
+@yadda
+- Gözləmə klikdən əvvəl, `await` klikdən sonra.
+- Saxta cavab UI-ni yoxlayır, real API-ni yox.
+- Vizual etalon brauzer və sistemə bağlıdır: CI ilə eyni mühitdə yarat.
+@dərin
+### Nə vaxt saxta cavab?
+| Vəziyyət | Üsul |
+| --- | --- |
+| Boş siyahı, 500, kəsilmə | `route`: real data ilə almaq çətindir |
+| Üçüncü tərəf servis (ödəniş, xəritə) | `route`: test başqasından asılı olmur |
+| Əsas axının uğurlu halı | Real API: bütöv inteqrasiyanı görürsən |
+
+### Real cavabı dəyişib ötürmək
+`route.fetch()` real cavabı alır, sən onu dəyişib verirsən: məsələn, real siyahıya uzun adlı məhsul əlavə etmək. Bu, kitabın məşqində yoxdur, real layihədə faydalıdır.
+
+### Sorğunu yoxlamaq
+Bəzən göndərilən data vacibdir: ekran düz görünsə də, serverə səhv data gedə bilər. Sıra yenə eynidir: `const reqPromise = page.waitForRequest('**/api/cart');`, sonra POST göndərən klik, sonra `const req = await reqPromise;` və `expect(req.postDataJSON().qty).toBe(2);`. GET sorğusunun gövdəsi olmur. Bu, kitabın məşqində yoxdur, real layihədə faydalıdır.
+
+### Soft yoxlama nə vaxt zərərlidir
+Düşəndən sonrakı addımlar mənasız xətalar verir: səhifə açılmayıbsa, on soft yoxlamanın hamısı düşür və əsl səbəb itir. Hazırlığa adi `expect`, yoxlamalara soft yaz.
+
+### Vizual testin riski
+Tarix, reklam və animasiya hər dəfə fərqli görünür. `mask: [lokator]` dəyişən hissəni gizlədir, `maxDiffPixels` kiçik fərqə icazə verir. Az sayda sabit ekran üçün işlət: yüzlərlə şəkil saxlamaq özü böyük işdir.
+
+### Tipik yanlış anlama
+“Mock-la bütün testlər yaşıldır, deməli sistem işləyir.” Saxta cavab real API dəyişəndə də yaşıl qalır. API-ni ayrıca test etmək (19.14) və az sayda real E2E saxlamaq lazımdır.
+@nümunə
+**Tapşırıq.** “Sifarişləri yüklə” üç halda düzgün işləyirmi: real cavab, boş siyahı, server xətası?
+@addımlar
+1. **Real:** `const p = page.waitForResponse('**/api/orders');`, klik, `const r = await p;`, `expect(r.status()).toBe(200);`, `await expect(page.getByText('Sifariş 1001')).toBeVisible();`
+2. **Boş:** ayrıca testdə `await page.route('**/api/orders', route => route.fulfill({ json: [] }));`, klik, `await expect(page.getByTestId('orders-empty')).toHaveText('Sifariş yoxdur');`
+3. **Xəta:** `route.fulfill({ status: 500, json: { error: 'x' } })`, klik, `await expect(page.getByRole('alert')).toContainText('yüklənmədi');`
+4. **Sıra:** `route` klikdən əvvəl yazılır, yoxsa real cavab gəlir.
+5. **Nəticə:** hər hal ayrıca testdir, biri düşəndə o birilər işləyir.
+@növbən
+Məşq səhifəsində “Sifarişləri yüklə” üçün test yaz: internet kəsiləndə `route.abort()` ilə “İnternet bağlantısı yoxdur” mesajı görünsün. Sonra üç soft yoxlama ilə səhifənin başlığını, hesab statusunu və fayl statusunu yoxlayan test yaz. Bu testlər real API haqqında nə deyir, nə demir?
