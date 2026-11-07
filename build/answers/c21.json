@@ -1,0 +1,179 @@
+{
+  "c21s1m": {
+    "h": "21.1-dəki səkkiz sahəyə 0–2 bal ver. Ən zəif ikisini seç. Hər həftənin sonu görünən nəticə olsun: fayl, repo, hesabat. “Oxudum” sübut deyil.",
+    "a": "Ballar nümunədir, özününkünü real qoy.\n\n| Sahə | Bal |\n|---|---|\n| Test nəzəriyyəsi | 2 |\n| Test dizaynı | 2 |\n| Sənədlər | 1 |\n| Alətlər | 1 |\n| Texniki (HTTP, REST, JSON, SQL) | **0** |\n| Avtomatlaşdırma | 0 (junior üçün məcburi deyil) |\n| Dil | **1** |\n| Yumşaq bacarıqlar | 2 |\n\n**Ən zəif iki sahə (məcburi olanlar):** Texniki, Dil.\n\n| Həftə | Tapşırıq | Sübut |\n|---|---|---|\n| 1 | Fəsil 13 və 15: HTTP, REST, JSON; Postman-da 10 sorğu | Postman kolleksiyası repo-da |\n| 2 | Fəsil 16: 20 SQL sorğusu | `sql-queries.md`: sorğular və cavablar |\n| 3 | Hər gün Playwright və ya Postman sənədindən 1 səhifə, terminlər siyahısı | 50 sözlük qlossari, 3 ingiliscə bug report |\n| 4 | Newman hesabatı, README, ingiliscə qısa layihə təsviri | Repo-nun README-si və hesabat linki |\n\nHəftənin sonunda sübut hazır deyilsə, plan real deyil: həcmi azaldıram.",
+    "c": [
+      "Sahələrə 0–2 bal verilib",
+      "Ən zəif iki sahə seçilib",
+      "Dörd həftənin hər biri üçün konkret tapşırıq var",
+      "Hər həftənin görünən sübutu var"
+    ]
+  },
+  "c21s2m": {
+    "h": "Ən böyük boşluqdan başla: bug report-lar. Word-dən daha oxunan formaya keç, dizayn texnikalarını göstər, README-ni sonda tam yaz. 120 çox olsa, sayı azalt.",
+    "a": "**Prioritet sırası:**\n\n1. **5–10 bug report əlavə et.** Addımlar, faktiki və gözlənilən nəticə, severity, sübut. **Göstərir:** həqiqətən test edib defekt tapa bilir, aydın yazır.\n2. **Test dizaynı izini göstər.** EP və BVA cədvəli, bir qərar cədvəli, hansı test case hansından çıxıb. **Göstərir:** testləri təsadüfən yox, düşünərək seçir.\n3. **120 test case-i ən yaxşı 20–30-a endir və izlənilən formata keçir.** Excel, Google Sheets və ya Markdown: status, prioritet, tələb. **Göstərir:** seçim edə bilir, keyfiyyət saydan vacibdir, iş oxunur.\n4. **Test planı və yekun hesabat.** Əhatə, risklər, nəticə rəqəmlərlə. **Göstərir:** işi bütöv görür.\n5. **README-ni yenidən yaz.** Məqsəd, sayt, alətlər, nəyi tapdı, linklər. **Göstərir:** işəgötürən 2 dəqiqədə işin nə olduğunu anlayır.\n\nREADME birinci görünür, amma sonuncu yazılır, çünki əvvəlcə göstəriləsi nəticə lazımdır. Əgər vaxt azdırsa, 1-ci bəndi birinci et: ən böyük boşluq oradadır.",
+    "c": [
+      "Bug report-un əlavəsi yüksək prioritetdədir",
+      "Test dizaynı texnikalarının izi planda var",
+      "README konkret məzmunla yenidən yazılır",
+      "Hər addımın işəgötürənə nəyi göstərdiyi yazılıb"
+    ]
+  },
+  "c21s3m": {
+    "h": "Sifətləri sil, sübuta çevir. Müəllimlik QA-ya nə verir: səhvi tapmaq, aydın izah, plan, rəqəm. Rəqəmi uydurma, özününkünü yaz.",
+    "a": "Bu rəqəmlər nümunədir: öz real rəqəmlərini yaz, uydurma.\n\n**Xülasə:**\n\n> Müəllimlik təcrübəsindən QA-ya keçən Junior QA namizədi. Test dizaynı (EP, BVA), bug report, Postman və SQL ilə praktik layihələr etmişəm: saucedemo.com üçün 30 test case, 8 defekt report. Mürəkkəb mövzunu aydın izah etmək və səhvi diqqətlə tapmaq bacarığımı komandaya gətirirəm.\n\n**Təcrübə: Riyaziyyat müəllimi, 2 il**\n\n- **Yoxladım:** hər həftə 60 şagird işini meyar cədvəli ilə qiymətləndirdim, səhvləri növə görə qruplaşdırıb ən çox təkrarlananını qeyd etdim.\n- **Qurdum:** 3 sinif üçün illik dərs planı hazırladım, yarım ildən bir nəticələrə görə yenilədim.\n- **İzah etdim:** valideynlər üçün aylıq hesabat yazdım, nəticələri sadə dildə və rəqəmlərlə çatdırdım.\n\nHər bənddə fel, iş və nəticə var. Sifətləri bu faktlar sübut edir, ona görə “kommunikativ” sözü artıq lazım deyil.",
+    "c": [
+      "Boş sifətlər (kommunikativ, yaradıcı) çıxarılıb",
+      "Xülasədə QA məqsədi və praktik layihə var",
+      "2–3 bəndin hər birində fel, iş və nəticə var",
+      "Müəllimlik QA bacarıqlarına bağlanıb"
+    ]
+  },
+  "c21s4m": {
+    "h": "Hər tələbin qarşısına sübut yaz, boş qalanı boşluq say. Boşluğu tez doldurmaq üçün: bir mobil oyunda sessiya və 3 report. Yalan yazma.",
+    "a": "Sübutlar nümunədir: sənin olanları yaz.\n\n| Elan | Sübutum | Vəziyyət |\n|---|---|---|\n| Exploratory test | Saucedemo üzrə 2 sessiya qeydi | Var |\n| Bug report | Portfolio-da 8 report | Var |\n| Oyunlarda təcrübə | Fəsil 17 tapşırığı | Zəif |\n| Detallara diqqət | Tapılan vizual və sərhəd defektləri | Var |\n| Jira (üstünlük) | Jira Free-də layihə | Yoxdur |\n| Mobil oyunlar (üstünlük) | Yoxdur | Yoxdur |\n| Performans anlayışı (üstünlük) | FPS, TTK anlayışı, Fəsil 17 hesablaması | Zəif |\n\n**Müraciət:**\n\n> Salam! QA Tester vakansiyasına müraciət edirəm. Exploratory sessiyalar keçirmişəm və 8 bug report yazmışam, nümunələr portfolio-mdadır. Boş vaxtımda mobil oyunlar oynayıram, indi bir oyunda 30 dəqiqəlik sessiyalar keçirib report-lar hazırlayıram. Mənim üçün maraqlı olan oyun baqlarını dəqiq yer, video və tezlik ilə çatdırmaqdır.\n\n**Çatışmayanlar:** 3–5 gündə bir mobil oyunda 2 sessiya, 3 oyun report-u (yer, video, tezlik); Jira Free-də bu report-ları açmaq; FPS və qızma üçün bir qısa ölçmə. Bunları “etdim” deyə yalnız etdikdən sonra yazıram.",
+    "c": [
+      "Uyğunluq xəritəsi tələblər və sübutlardan ibarətdir",
+      "Müraciət 4 cümlədir və elana uyğundur",
+      "Çatışmayan sübutlar və onları əldə etmək yolu yazılıb",
+      "Yalan iddia yoxdur"
+    ]
+  },
+  "c21s5m": {
+    "h": "Üç gün: 1) nəzəriyyə, test dizaynı; 2) API, HTTP, SQL; 3) e-ticarət ssenarisi, hekayələr. Hər gün ucadan danış, sonda şirkətə uyğun 3 sual.",
+    "a": "| Gün | Mövzu | Təkrar | Praktika |\n|---|---|---|---|\n| 1 | Nəzəriyyə, test dizaynı, bug report | Fəsil 3, 5, 6, 8 | 21.6-dakı 12 sualı ucadan cavabla; EP və BVA ilə bir forma |\n| 2 | HTTP, API, SQL | Fəsil 13, 15, 16 | Postman-da 5 sorğu; `JOIN` və `GROUP BY` ilə 5 sorğu; 401 və 403 fərqi |\n| 3 | E-ticarət testi, davranış sualları | Fəsil 14, 21 | Səbət, ödəniş, endirim üçün test ideyaları; “Səbəti test et”; 3 STAR hekayəsi |\n\n**“Özün haqqında danış” (1 dəqiqə):**\n1. **Kimdir:** bir cümlə keçmiş iş və QA-ya gəliş səbəbi.\n2. **Nə etmişəm:** portfolio-dan iki layihə, rəqəmlə.\n3. **Niyə burada:** e-ticarət məhsulu və manual + API işi nəyə görə maraqlıdır.\n\n**Sonda 3 sual:**\n1. Junior QA ilk 3 ayda nəyə cavabdeh olur?\n2. Testlər regression zamanı necə bölünür, API testini kim yazır?\n3. Komanda defekt prosesini necə aparır: QA reliz qərarında iştirak edirmi?\n\nGecəni yatmağa saxla: son axşam yeni mövzu öyrənmirəm.",
+    "c": [
+      "Üç gün üçün mövzu və təkrar ediləcək fəsillər var",
+      "API və e-ticarət vakansiyaya uyğun yer alıb",
+      "“Özün haqqında danış” planı var",
+      "Şirkətə verilən üç sual var"
+    ]
+  },
+  "c21s6m": {
+    "h": "Formul: faktlar → təsir → məlumatlandırma → qərar. Emosiyasız. Fərqi tap: mühit, data, addımlar, versiya. Proqramçı ilə birlikdə bax.",
+    "a": "**1. Faktları dəqiqləşdirirəm.** Report-u yenidən oxuyuram, baqı təzə mühitdə, proqramçı dediyi build-də təkrarlayıram. **Niyə:** bəlkə, baq artıq düzəlib, ya da report-da addım çatışmır. Əmin olmadan mübahisə etmirəm.\n\n**2. Fərqi tapıram.** Build, mühit, hesab, data, brauzer, ardıcıllıq. Proqramçı hansı şərtlə yoxlayıb? **Niyə:** “Cannot reproduce” çox vaxt fərqli şərt deməkdir.\n\n**3. Sübutu gücləndirirəm.** Video, dəqiq vaxt, Network sorğusu, Console, log ID-si, data. Report-u yeniləyirəm. **Niyə:** başqası əlavə sualsız təkrarlaya bilməlidir.\n\n**4. Birlikdə baxırıq.** Proqramçıya yazıram və 10 dəqiqəlik baxış təklif edirəm: “Məndə hər dəfə çıxır, gəl birlikdə baxaq.” **Niyə:** bir ekranda fərq tez görünür, şəxsi mübahisə də olmur.\n\n**5. Statusu açıram və təsirini deyirəm.** Təkrarlanırsa, report Reopened olur. **Niyə:** defekt itməməlidir. Yenə də razılıq yoxdursa, təsiri ilə birlikdə tech lead və ya PO-ya çıxarıram.\n\nCavab qısa, faktlarla qurulub, “proqramçı səhvdir” demir.",
+    "c": [
+      "Əvvəl təkrarlama və mühit faktları dəqiqləşdirilir",
+      "Sübut (video, log, Network) gücləndirilir",
+      "Proqramçı ilə birlikdə baxmaq var, emosiya yoxdur",
+      "Hər addımda niyə izah olunub"
+    ]
+  },
+  "c21s7m": {
+    "h": "Əvvəl sual ver: dəqiqlik nə qədər olmalıdır? Sonra normal yeriş, sərhədlər (gün keçidi, doğru limit), yalançı addımlar, tutarlılıq, batareya və sinxron. Prioritet ver.",
+    "a": "**Aydınlaşdırıcı suallar:** Kim üçündür? Tələb olunan dəqiqlik nədir (məsələn, ±5%)? Hansı qollarda, hansı sürətdə? Telefona sinxron olurmu? Gün neçədə sıfırlanır?\n\n**Funksional:**\n- 100 addım yeri, sayğac 95–105 göstərir.\n- Qaçış, yavaş yeriş, pilləkən, sağ və sol qol.\n- Telefon tətbiqində eyni rəqəm görünür.\n\n**Sərhəd və neqativ:**\n- Gecə 23:59 → 00:00: gün sıfırlanır, dünənki saxlanılır.\n- 0 addım; çox böyük sayı (100 000) ekrana sığır.\n- Oturarkən əl hərəkəti, avtobus, velosiped: yalançı addım minimumdur.\n- Saat qoldan çıxarılıb: addım sayılmır.\n\n**Etibarlılıq:**\n- Saat dolduqda, yenidən başlayanda sayğac itmir.\n- Sinxronsuz bir həftə: data telefonda boşluq yaratmır.\n\n**Qeyri-funksional:**\n- Batareya sərfi; rahat oxunan ekran; günəş altında görünüş.\n- Su, istilik, tər şəraiti; addım datasının məxfiliyi.\n\n**Prioritet:**\n1. Normal yerişdə dəqiqlik, çünki məhsulun əsas dəyəridir.\n2. Gün keçidi və data itkisi.\n3. Yalançı addımlar.\n4. Batareya və qalanı.",
+    "c": [
+      "Əvvəlcə aydınlaşdırıcı suallar verilib",
+      "Funksional, sərhəd və neqativ hallar var",
+      "Etibarlılıq və qeyri-funksional testlər var",
+      "Sonda səbəblə prioritet verilib"
+    ]
+  },
+  "c21s8m": {
+    "h": "Nümunə kiçik olsa da olar, amma real olsun. Situation və Task qısa, Action ən uzun: nə etdin? Result rəqəmlə. Sonda “indi fərqli nə edirəm”.",
+    "a": "Bu, formanı göstərən uydurma nümunədir. Öz real hekayəni yaz, başqasınınkını yox.\n\n**S (Situation):** Kurs layihəsində saucedemo üçün test case-lər yazırdım, ilk testləri mentora göndərdim.\n\n**T (Task):** Mənim işim checkout üçün 15 testlik siyahı hazırlamaq idi.\n\n**A (Action):** Mentor göstərdi ki, üç test case-də “düzgün işləməlidir” yazmışam, gözlənilən nəticə yoxdur, yəni nəticəni yoxlamaq olmur. Səhvi qəbul etdim, gizlətmədim. Hamısını yenidən oxudum və eyni problemi daha 6 testdə tapdım. Hər birinə ekrandakı dəqiq mətni və ya məbləği yazdım. Sonra qayda yaratdım: test case-i göndərməzdən əvvəl hər birində “başqası bunu sual vermədən yoxlaya bilərmi?” sualını verirəm. Bunu checklist-ə əlavə etdim və qalan testlərdə tətbiq etdim.\n\n**R (Result):** 9 test case-i düzəltdim, növbəti baxışda eyni səhv çıxmadı, testləri həmkarım sualsız icra etdi.\n\n**Fərqli:** indi işi göndərməzdən əvvəl öz checklist-imlə yoxlayıram.",
+    "c": [
+      "Dörd hissənin hamısı var: S, T, A, R",
+      "Action ən uzun hissədir, addımlar konkretdir",
+      "Səhv həqiqətən sənin səhvindir, başqasını günahlandırmır",
+      "Sonda indi nəyi fərqli etdiyin cümləsi var"
+    ]
+  },
+  "c21s9m": {
+    "h": "Keçid 26-dır. Əlavə düzgün sayını hesabla. Hər fəsilin səhvini cəmlə. Ən çox itki harada? Hədəfi keçiddən bir az yuxarı qoy.",
+    "a": "**Hesab:** keçid 26. İndi 22. **Lazım: 4 əlavə düzgün cavab.** Səhvlər cəmi: 2 + 3 + 2 + 7 + 3 + 1 = 18 = 40 − 22. Ehtiyat üçün hədəf: **30+**.\n\n**Prioritet:**\n1. **4-cü fəsil (7 səhv): test dizaynı texnikaları.** Ən böyük itki. Tək bu fəsildə 4 səhvi düzəltmək keçid üçün kifayətdir.\n2. **2-ci və 5-ci fəsil (3-ər səhv).**\n3. **1, 3, 6 (2, 2, 1):** yüngül təkrar, rəqəm az olsa da qiymətli suallardır.\n\n**4 həftəlik plan:**\n\n| Həftə | İş | Nəticə |\n|---|---|---|\n| 1 | Fəsil 4: EP, BVA, qərar cədvəli, vəziyyət keçidi; hər gün məşq sualları | Bu texnikalarda səhv ≤ 3 |\n| 2 | Fəsil 2 və 5: testin növü, səviyyələr, risk, defekt idarəsi. Həftə sonu nümunə imtahan | ≥ 27/40 |\n| 3 | Fəsil 1, 3, 6: terminlər, statik test, alətlər. Səhvlər dəftəri | ≥ 29/40 |\n| 4 | 2–3 nümunə imtahan, vaxtla (60 dəqiqə); yalnız səhvlər üzrə təkrar | ≥ 30/40 sabit |\n\nHər imtahandan sonra yalnız balı yox, səhv sualın **səbəbini** yazıram. Son iki nümunədə 30-dan aşağıdırsa, imtahanı təxirə salmağı düşünürəm.",
+    "c": [
+      "4 əlavə düzgün cavab lazım olduğu hesablanıb",
+      "4-cü fəsil birinci prioritetdir, 7 səhvə görə",
+      "Dörd həftənin hər biri üçün konkret iş var",
+      "Vaxtla nümunə imtahanlar plandadır"
+    ]
+  },
+  "c21s10m": {
+    "h": "Bir istiqamət seç. Hər mərhələ: mövzu + görünən nəticə. Səkkiz həftə üçün 3–4 mərhələ kifayətdir. Kiçik, amma bitmiş iş yaxşıdır.",
+    "a": "Nümunə: **avtomatlaşdırma** seçimi. Başqa sahə də eyni formada qurulur.\n\n| Həftə | Öyrənmə | Portfolio nəticəsi |\n|---|---|---|\n| 1–2 | JavaScript: funksiya, massiv, async (Fəsil 18); lokatorlar | Saucedemo üçün 10 test, repo |\n| 3–4 | POM, test datası, data-driven | 3 page class, 25 test, oxunan struktur |\n| 5 | Playwright API testləri, login vəziyyətini saxlamaq | JSONPlaceholder üçün API testləri, UI-dan sürətli giriş |\n| 6 | Flaky testlər, trace, `--repeat-each` | Bir flaky halın səbəbi və həlli haqqında qısa qeyd |\n| 7 | GitHub Actions: PR-da test, HTML hesabat | Yaşıl workflow, hesabat linki |\n| 8 | README, müsahibə hazırlığı, kodun təmizlənməsi | Tam README, 2 dəqiqəlik layihə təqdimatı |\n\n**Yoxlama:** hər iki həftədən bir repo-ya baxıram: yeni adam “nə, necə, nəticə” suallarına cavabı tapırmı?\n\nPlan dəyişə bilər, amma hər həftə görünən nəticə olmalıdır. Həftəlik vaxt az olsa, həcmi azaldıram, ardıcıllığı saxlayıram.",
+    "c": [
+      "Bir ixtisaslaşma seçilib",
+      "Səkkiz həftə mərhələlərlə əhatə olunub",
+      "Hər mərhələdə öyrənmə mövzusu və konkret nəticə var",
+      "Nəticələr portfolio-da görünən işdir"
+    ]
+  },
+  "c21t1": {
+    "h": "Bacarıqları qruplaşdır, yalnız işlətdiyini yaz. Layihədə: ad, alətlər, nə etdin, rəqəm, link. Rəqəmlər sənin real rəqəmlərin olsun.",
+    "a": "Bu, formadır. Yalnız həqiqətən etdiyini yaz, rəqəmləri öz işindən götür.\n\n**Bacarıqlar**\n\n- **Test:** test case, checklist, bug report, EP, BVA, qərar cədvəli, exploratory test\n- **Alətlər:** Jira, Postman, Newman, Chrome DevTools\n- **Texniki:** HTTP, REST, JSON, SQL (`JOIN`, `GROUP BY`)\n- **Avtomatlaşdırma (əsas):** JavaScript, Playwright, Git, GitHub Actions\n- **Dil:** Azərbaycan (ana dili), İngilis (texniki mətn oxuma)\n\n**Layihələr**\n\n**Saucedemo: manual test.** Checklist, 30 test case, 8 bug report. Satış axınında 2 Major defekt tapdım. Link: github.com/ADIN/saucedemo-manual\n\n**JSONPlaceholder: API testi.** Postman, Newman. 25 sorğu, 60 avtomatik yoxlama, HTML hesabat. Link: github.com/ADIN/jsonplaceholder-api\n\n**Saucedemo: Playwright.** POM, 15 test, GitHub Actions ilə hər PR-da icra. Link: github.com/ADIN/saucedemo-playwright\n\nATS üçün sadə mətn saxla, cədvəl və şəkil işlətmə, açar sözləri dürüstcə elana uyğunlaşdır.",
+    "c": [
+      "Bacarıqlar qruplaşdırılıb",
+      "Hər layihədə alət, iş və rəqəm var",
+      "Layihələrin linki var",
+      "Sadalanan bacarıqlar həqiqətən işlədilən bacarıqlardır"
+    ]
+  },
+  "c21t2": {
+    "h": "Beş hissə: suallar, funksional, qeyri-funksional, neqativ və sərhəd, prioritet. Sonda “ilk nəyi yoxlardım və niyə” cümləsi vacibdir.",
+    "a": "**1. Sual verirəm:** Evdə, yoxsa ofisdə? Hansı içkilər? Ödənişlidirmi? Kapsul, yoxsa dən? Tələblər və təhlükəsizlik standartı varmı?\n\n**2. Funksional:**\n- Hər içki düyməsi düzgün içkini hazırlayır: həcm, temperatur.\n- Dən üyüdülür, süd əlavə olunur, güc seçimi işləyir.\n- Təmizləmə proqramı işləyir, ekran statusu düzgündür.\n\n**3. Qeyri-funksional:**\n- **Dad:** eyni içki hər dəfə eyni nəticəni verir.\n- **Sürət:** fincan neçə saniyəyə dolur?\n- **Təhlükəsizlik:** isti hissələrə toxunma, elektrik.\n- **Rahatlıq:** düymələr aydındır, səs səviyyəsi, görünüş.\n- **Davamlılıq:** gündə 200 fincan.\n\n**4. Neqativ və sərhəd:**\n- Su, dən və ya süd bitib: aydın xəbərdarlıq, başlamır.\n- Fincan qoyulmayıb, yarımçıq hazırlıqda düymə basılır.\n- Hazırlıq zamanı elektrik kəsilir, sonra gəlir.\n- Çox kiçik və çox hündür fincan.\n\n**5. Prioritet:**\n1. **Təhlükəsizlik**, çünki insana zərər ən ağırıdır.\n2. **Əsas içkinin hazırlanması**, çünki məhsulun məqsədidir.\n3. **Çatışmayan su və dən halı**, çünki tez-tez olur və aparatı zədələyə bilər.",
+    "c": [
+      "Cavab suallarla başlayır",
+      "Funksional, qeyri-funksional, neqativ və sərhəd hissələri var",
+      "Sonda səbəblə prioritet verilib"
+    ]
+  },
+  "c21t3": {
+    "h": "README işəgötürənə üç suala cavab verir: nə, necə, nəticə. Bölmələri sırala və hər birində konkret nə olacağını yaz.",
+    "a": "Plan nümunədir, öz layihənə uyğunlaşdır.\n\n| Bölmə | Nə olacaq |\n|---|---|\n| **Başlıq və 2 cümlə** | Layihə nədir, hansı sayt üçün |\n| **Məqsəd** | Nəyi yoxlamaq istədim, niyə |\n| **Əhatə** | Yoxlanılan axınlar; yoxlanılmayan hissələr və səbəbi |\n| **Alətlər** | Playwright, GitHub Actions, Postman, SQL, versiyalar |\n| **Quruluş** | Qovluqların qısa siyahısı: `tests/`, `pages/`, `docs/` |\n| **Necə işə salınır** | Kopyalanan əmrlər: `npm ci`, `npx playwright test` |\n| **Nəticələr** | Test sayı, tapılan defektlər (rəqəmlə), hesabat linki, ekran şəkli |\n| **Bug report nümunələri** | 2–3 ən yaxşı report-a birbaşa link |\n| **Müəllif** | Ad, LinkedIn, qısa əlaqə |\n\n**Yoxlama:** tanımadığın adam 2 dəqiqəyə layihəni başa düşür və əmrlərlə testi işə salır. Şifrə, şəxsi data, real şirkət haqqında təsdiqlənməmiş iddia README-də olmur.",
+    "c": [
+      "Nə, necə, nəticə sualları cavablanır",
+      "İşə salma əmrləri üçün bölmə var",
+      "Nəticələr rəqəm və ya linklə göstərilir",
+      "Hər bölmənin nə ehtiva etdiyi yazılıb"
+    ]
+  },
+  "c21t4": {
+    "h": "Beş sual seç, cavabı bağlı halda yaz: tərif, misal, mümkünsə öz təcrübən. Sonra 21.6-dakı cədvəllə tutuşdur: nə çatmır? Cümləni əzbərləmə, başa düş.",
+    "a": "Beş sualın nümunəsi. Sənin cavabın öz sözlərinlə olmalıdır; aşağıda cavabın hansı formada olduğu görünür.\n\n**1. Severity və priority fərqi?** Severity defektin təsirinin ciddiliyidir, priority isə nə qədər tez düzəldilməsidir. Məsələn, ana səhifədə şirkətin adı səhv yazılıb: funksiya işləyir, severity aşağıdır, amma hamı görür, priority yüksəkdir.\n\n**2. Retest və regression fərqi?** Retest düzəldilmiş baqı təkrar yoxlayır. Regression bu düzəlişin başqa yerləri sındırmadığını yoxlayır. Mən Mini Store-da endirimi düzəldəndə əvvəl həmin testi, sonra səbət və checkout-u yoxlayıram.\n\n**3. EP və BVA nədir?** EP dəyərləri eyni davranan qruplara bölür. BVA həmin qrupların sərhədlərini yoxlayır. Yaş 18–60-dırsa: 17, 18, 60, 61.\n\n**4. 401 və 403 fərqi?** 401: server kim olduğumu bilmir, daxil olmalıyam. 403: kimliyim bəllidir, amma bu işə icazəm yoxdur.\n\n**5. Testə vaxt çatmırsa?** Risk üzrə sıralayıram: pul, giriş, ən çox dəyişən yerlər birinci. Yoxlanmayan hissəni komandaya açıq deyirəm, qərarı birlikdə veririk.\n\n**Özünü yoxla:** ucadan de, vaxtını ölç: hər cavab 30–40 saniyəyə sığmalıdır.",
+    "c": [
+      "Beş sual öz sözlərinlə cavablanıb, cədvəldən köçürülməyib",
+      "Hər cavabda tərif və misal var",
+      "Cavablar cədvəldəki nümunə ilə tutuşdurulub",
+      "Cavablar ucadan deyilib"
+    ]
+  },
+  "c21t5": {
+    "h": "Real hekayə seç: iş, kurs, ailə də ola bilər. S və T qısa, A ən uzun. Nəticəni rəqəmlə və ya konkret faktla yaz. Söhbət sənin etdiyin haqqındadır.",
+    "a": "Bu, formanı göstərən uydurma nümunədir. Öz hekayəni yaz.\n\n**S (Situation):** Keçmiş işimdə kiçik mağazada satış uçotu Excel-də aparılırdı, ay sonu hesabatlarda rəqəmlər uyğun gəlmirdi.\n\n**T (Task):** Rəhbər fərqin səbəbini tapmağı mənə tapşırdı, hesabat iki günə lazım idi.\n\n**A (Action):** Əvvəlcə bir ayın datasını götürdüm və qəbzləri cədvəllə sətir-sətir tutuşdurdum. Fərq yalnız üç iş gününə düşürdü. Həmin günlərin qeydlərinə baxanda gördüm ki, geri qaytarmalar mənfi məbləğ kimi yox, adi satış kimi yazılıb. Bunu misallarla rəhbərə göstərdim. Sonra cədvəldə məcburi “əməliyyat növü” sütunu yaratdım, işçilər üçün bir səhifəlik qısa qayda yazdım və ilk həftə qeydləri hər gün özüm yoxladım.\n\n**R (Result):** Növbəti ay fərq 340 AZN-dən 0-a düşdü, hesabat iki gün əvəzinə bir saata hazır oldu.\n\n**QA ilə əlaqə:** problemi təkrarlanan addımlarla daraltdım, sübut topladım, kökünü tapdım və yoxlama qurdum.",
+    "c": [
+      "Hekayə realdır, S, T, A, R hissələri var",
+      "Action ən uzun hissədir və “mən” dilində yazılıb",
+      "Nəticə rəqəm və ya konkret faktladır",
+      "Cavab 1–2 dəqiqəyə deyilə bilər"
+    ]
+  },
+  "c21q1": {
+    "a": "**Manual test:** test planı, checklist, 20–30 test case, 5–10 bug report. **API:** Postman kolleksiyası, Newman hesabatı. **Avtomatlaşdırma:** Playwright, POM, GitHub Actions. **SQL:** sorğular və həllər. Hər layihənin README-si olur. Keyfiyyət saydan vacibdir.",
+    "c": [
+      "Manual, API, avtomatlaşdırma və ya SQL layihələri sadalanıb",
+      "README və ya keyfiyyət qeyd olunub"
+    ]
+  },
+  "c21q2": {
+    "a": "QA üçün faydalı bacarıqlara çevirib, rəqəmlə göstərirəm: diqqət, yoxlama, izah, hesabat. Məsələn, “hər həftə 60 şagird işini meyar üzrə yoxladım”. Ümumi sifətlərin yerinə fel, iş və nəticə yazıram. Vəzifə adını dəyişmirəm.",
+    "c": [
+      "Təcrübə QA bacarıqlarına bağlanır",
+      "Konkret iş və rəqəm misalı var"
+    ]
+  },
+  "c21q3": {
+    "a": "1. **Sual ver:** kim, nə üçün, hansı tələblər.\n2. **Funksional:** əsas iş.\n3. **Qeyri-funksional:** rahatlıq, davamlılıq, təhlükəsizlik.\n4. **Neqativ və sərhəd:** ekstremal şərtlər.\n5. **Prioritet:** nə birinci, niyə.",
+    "c": [
+      "Əvvəl aydınlaşdırıcı suallar göstərilib",
+      "Funksional, qeyri-funksional, neqativ və prioritet var"
+    ]
+  },
+  "c21q4": {
+    "a": "**S (Situation):** vəziyyət. **T (Task):** sənin vəzifən. **A (Action):** nə etdin, ən ətraflı hissədir. **R (Result):** nəticə, mümkünsə rəqəmlə. Davranış suallarına cavabı quruluşlu və qısa edir.",
+    "c": [
+      "Dörd hərfin mənası düzgündür",
+      "Action-ın əsas olduğu və ya nəticənin rəqəmlə verildiyi deyilib"
+    ]
+  }
+}

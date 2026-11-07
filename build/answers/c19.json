@@ -1,0 +1,182 @@
+{
+  "c19s1m": {
+    "h": "Soruş: dəfələrlə təkrarlanırmı, nəticəni maşın yoxlaya bilərmi? “Anlaşıqlı”, “rahat” sözləri insan rəyi istəyir. Sonra mümkün olan ən aşağı səviyyəni seç.",
+    "a": "| Test | Qərar | Səviyyə | Səbəb |\n|---|---|---|---|\n| (a) 30 valyuta cütü | Avtomatlaşdır | API, hesablama üçün unit | Eyni addımlar, 30 data, nəticə rəqəmdir: data-driven test üçün ideal |\n| (b) Onboarding anlaşıqlılığı | Manual | Yoxdur | Anlaşıqlılıq insan rəyidir, üstəlik ekranlar yenidir və tez dəyişir |\n| (c) Gecə hesabatının formatı | Avtomatlaşdır | API və ya fayl yoxlaması | Hər gecə təkrarlanır, format qaydalarını maşın yoxlaya bilir |\n| (d) Jestlərin rahatlığı | Manual, real cihazda | Yoxdur | Rahatlığı barmaqla hiss etmək lazımdır; yalnız “jest işləyir” avtomatlaşdırıla bilər |\n| (e) Köçürmə limitinin sərhədləri | Avtomatlaşdır | API, qayda üçün unit | Sərhəd dəyərləri sabitdir, risk yüksəkdir, UI lazım deyil |\n\nQayda: “işləyirmi?” sualını maşın, “yaxşıdırmı?” sualını insan yoxlayır. (a), (c), (e) hər relizdə təkrarlanır, ona görə yazmağa dəyər.",
+    "c": [
+      "(a), (c), (e) avtomatlaşdırılır, (b), (d) manual qalır",
+      "Avtomatlaşdırılanlar üçün səviyyə API və ya unit-dir, UI deyil",
+      "Hər qərarın səbəbi yazılıb"
+    ]
+  },
+  "c19s2m": {
+    "h": "Saylar piramida kimi azalsın. Hesablama qaydası unit-ə, server yoxlaması API-yə, tam istifadəçi yolu E2E-yə düşür. Sərhəd dəyərlərini E2E-də təkrar etmə.",
+    "a": "Saylar nümunədir, piramida dəqiq nisbət deyil, istiqamətdir.\n\n| Səviyyə | Nə yoxlanılır | Say |\n|---|---|---|\n| **Unit** | Miqdar: 0, 1, 10, 11, mətn; cəm: 1 və bir neçə məhsul, kəsr, endirim | 10 |\n| **API** | Server limitləri: `quantity` 0 və 11 → 400; stokda olmayan məhsul → 400 və ya 409; cəmin serverdə hesablanması, cavabda düzgün gəlməsi | 6 |\n| **E2E** | Məhsul əlavə olunur, miqdar artır, ekranda cəm yenilənir; stokda olmayan məhsulda düymə deaktivdir | 2 |\n\n**E2E-ni niyə az saxlayıram:**\n- Hər test brauzer açır, girişdən keçir, ona görə yavaşdır.\n- UI dəyişəndə və şəbəkə ləngiyəndə tez sınır, flaky olur.\n- Düşəndə səbəb aydın deyil: UI, API, yoxsa baza?\n- Qaydaları aşağıda artıq yoxlamışam. E2E-yə qalan yalnız “hissələr birlikdə işləyirmi” sualıdır.",
+    "c": [
+      "Sərhəd və hesablama yoxlamaları unit-dədir",
+      "API-də serverin limit və stok qaydaları var",
+      "E2E-də ən az test var və əsas yol yoxlanılır",
+      "E2E-nin niyə az saxlandığı izah olunub"
+    ]
+  },
+  "c19s3m": {
+    "h": "Komandanın dili, brauzer ehtiyacı, debug tələbi. A-da JavaScript və tək Chrome var. B-də C# və müxtəlif brauzerlər: hansı alət C#-ı dəstəkləyir?",
+    "a": "**Komanda A: Cypress.** Playwright də uyğundur.\n1. **Dil:** komanda JavaScript bilir, Cypress də JavaScript-dədir.\n2. **Brauzer:** yalnız Chrome lazımdır, ona görə Cypress-in brauzer məhdudiyyətləri mane olmur.\n3. **Debug:** vaxt səyahəti, addımları brauzerdə görmək sürətli debug tələbinə uyğundur.\n\n**Komanda B: Selenium (C#).** Playwright-ın da .NET versiyası var, ona görə o, güclü alternativdir.\n1. **Dil:** Selenium C#-ı rəsmi dəstəkləyir, testlər komandanın dilində olur.\n2. **Brauzerlər:** WebDriver standartı ilə geniş brauzer seçimi.\n3. **Korporativ ekosistem:** Selenium uzun illərdir işlənir, Windows mühitində və hazır infrastrukturda geniş yayılıb.\n\nHəmişə düzgün cavab yoxdur. Komandanın biliyi, layihənin ehtiyacı və kiçik sınaq (proof of concept) qərarı həll edir.",
+    "c": [
+      "A üçün Cypress və ya Playwright əsaslandırılıb",
+      "B üçün C#-ı dəstəkləyən alət seçilib: Selenium və ya Playwright .NET",
+      "Hər komanda üçün ən azı üç meyar var"
+    ]
+  },
+  "c19s4m": {
+    "h": "`playwright.config.js`-də `projects`, `use.video`, `retries`. CI-ı `process.env.CI` ilə tanıyırsan. Bir brauzer üçün `--project` bayrağı işlənir.",
+    "a": "```javascript\nimport { defineConfig, devices } from '@playwright/test';\n\nexport default defineConfig({\n  testDir: './tests',\n  retries: process.env.CI ? 2 : 0,\n  use: {\n    video: 'retain-on-failure',\n  },\n  projects: [\n    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },\n    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },\n    { name: 'webkit', use: { ...devices['Desktop Safari'] } },\n  ],\n});\n```\n\n**İzah:**\n1. **`projects`:** hər test üç brauzerdə işləyir. Üç test varsa, 9 icra olur, ona görə vaxt artır.\n2. **`video: 'retain-on-failure'`:** hər test videoya çəkilir, keçəninki silinir, düşəninki qalır. Sübut var, disk də dolmur.\n3. **`retries: process.env.CI ? 2 : 0`:** CI mühitində düşən test 2 dəfə də işlədilir. Öz kompüterimdə təkrar yoxdur, problemi dərhal görürəm.\n\n**Yalnız Firefox:**\n\n```text\nnpx playwright test --project=firefox\n```\n\nDiqqət: retry-la keçən test “flaky” kimi qeyd olunur, səbəbini yenə tapmaq lazımdır.",
+    "c": [
+      "`projects`-də üç brauzer var",
+      "Video `retain-on-failure` ilə qurulub",
+      "`retries` CI-da 2, kompüterdə 0-dır",
+      "Firefox əmri `--project=firefox` ilə yazılıb"
+    ]
+  },
+  "c19s5m": {
+    "h": "Sahələrdə placeholder var, düymənin rolu var. Kövrək variant: sıra nömrəsi, uzun CSS zənciri. Soruş: hansı dəyişiklikdə sınır?",
+    "a": "| Element | Tövsiyə olunan | Kövrək | Nə vaxt sınır |\n|---|---|---|---|\n| First Name | `page.getByPlaceholder('First Name')` | `page.locator('input').nth(0)` | Formaya yeni sahə əlavə olunanda |\n| Last Name | `page.getByPlaceholder('Last Name')` | `page.locator('form div:nth-child(2) input')` | Maket və iç-içə `div`-lər dəyişəndə |\n| Zip/Postal Code | `page.getByPlaceholder('Zip/Postal Code')` | `page.locator('input').last()` | Sonda başqa sahə yarananda |\n| Continue | `page.getByRole('button', { name: 'Continue' })` | `page.locator('.submit-button.btn_action')` | Dizayn üçün class adı dəyişəndə |\n\n`data-test` atributu da sabitdir: `page.locator('[data-test=\"firstName\"]')`. Kövrək lokatorun əsas problemi səhifənin quruluşuna bağlı olmasıdır. Ən pisi odur ki, `nth(0)` səhv sahəni tapıb səssizcə yanlış yerə yaza bilər.",
+    "c": [
+      "Hər dörd elementə iki lokator yazılıb",
+      "Tövsiyə olunanlar placeholder, rol və ya test id ilə qurulub",
+      "Kövrək variantın hansı dəyişiklikdə sınacağı izah olunub"
+    ]
+  },
+  "c19s6m": {
+    "h": "Şəkillərin `src` dəyərlərini oxu, `Set`-ə qoy. Fərqli qiymətlərin sayı elementlərin sayı ilə eyni olmalıdır. Düşən test burada baqı göstərir.",
+    "a": "```javascript\nimport { test, expect } from '@playwright/test';\n\ntest('səhv şifrə ilə giriş xəta mesajı göstərir', async ({ page }) => {\n  // Arrange\n  await page.goto('https://www.saucedemo.com/');\n  // Act\n  await page.getByPlaceholder('Username').fill('standard_user');\n  await page.getByPlaceholder('Password').fill('yanlis_sifre');\n  await page.getByRole('button', { name: 'Login' }).click();\n  // Assert\n  await expect(page.locator('[data-test=\"error\"]')).toContainText('do not match');\n});\n\ntest('problem_user: hər məhsulun şəkli fərqlidir', async ({ page }) => {\n  // Arrange\n  await page.goto('https://www.saucedemo.com/');\n  await page.getByPlaceholder('Username').fill('problem_user');\n  await page.getByPlaceholder('Password').fill('secret_sauce');\n  await page.getByRole('button', { name: 'Login' }).click();\n  await expect(page).toHaveURL(/inventory/);\n  // Act\n  const images = page.locator('.inventory_item img');\n  await expect(images).toHaveCount(6);\n  const sources = await images.evaluateAll(list => list.map(img => img.getAttribute('src')));\n  // Assert\n  expect(new Set(sources).size).toBe(sources.length);\n});\n```\n\n**İkinci test düşür:** `Expected: 6, Received: 1`. Bütün məhsullarda eyni şəkil olduğu üçün `Set`-də bir dəyər qalır. Bu, testin səhvi deyil, qəsdən qoyulmuş baqın sübutudur: test “şəkillər fərqli olmalıdır” deyir, sayt pozur. `standard_user` ilə eyni test keçir, bu da testin özünün düz olduğunu göstərir.",
+    "c": [
+      "Birinci testdə xəta `do not match` ifadəsi ilə yoxlanılır",
+      "İkinci testdə şəkillər bir-biri ilə müqayisə olunur",
+      "İkinci testin düşməsi baqın sübutu kimi izah olunub",
+      "Arrange, Act, Assert hər testdə göstərilib"
+    ]
+  },
+  "c19s7m": {
+    "h": "Metod `allTextContents()` qaytarır. Gözlənilən sıranı adların surətindən qur: `[...names].sort(...)`. Tərs sıra üçün `localeCompare`-də b və a yerini dəyiş.",
+    "a": "**`pages/InventoryPage.js`-ə əlavə:**\n\n```javascript\nexport class InventoryPage {\n  constructor(page) {\n    this.page = page;\n    this.sortSelect = page.locator('[data-test=\"product-sort-container\"]');\n    this.names = page.locator('.inventory_item_name');\n  }\n\n  async sortBy(label) {\n    await this.sortSelect.selectOption({ label });\n  }\n\n  async getNames() {\n    return await this.names.allTextContents();\n  }\n}\n```\n\n**Test:**\n\n```javascript\nimport { test, expect } from '@playwright/test';\nimport { LoginPage } from '../pages/LoginPage';\nimport { InventoryPage } from '../pages/InventoryPage';\n\ntest('Name (Z to A): adlar tərs əlifba sırasındadır', async ({ page }) => {\n  const loginPage = new LoginPage(page);\n  const inventoryPage = new InventoryPage(page);\n  await loginPage.open();\n  await loginPage.login('standard_user', 'secret_sauce');\n\n  await inventoryPage.sortBy('Name (Z to A)');\n\n  await expect(inventoryPage.names).toHaveCount(6);\n  const names = await inventoryPage.getNames();\n  const expected = [...names].sort((a, b) => b.localeCompare(a));\n  expect(names).toEqual(expected);\n});\n```\n\n**`localeCompare`:** `b.localeCompare(a)` iki mətni əlifbaya görə müqayisə edir, `a` və `b` yeri dəyişəndə sıra tərsinə olur. `[...names]` surət yaradır, çünki `sort` massivi yerindəcə dəyişir: surətsiz test özünü özü ilə müqayisə edərdi. `toHaveCount(6)` boş siyahının səhvən keçməsinin qarşısını alır.",
+    "c": [
+      "`getNames()` `.inventory_item_name` mətnlərini qaytarır, yoxlama isə testdədir",
+      "Test “Name (Z to A)” sıralamasını seçir",
+      "Gözlənilən sıra surət üzərində `localeCompare` ilə qurulub",
+      "`localeCompare`-in işi izah olunub"
+    ]
+  },
+  "c19s8m": {
+    "h": "İkinci test nəyə ehtiyac duyur və onu kim yaradır? Müstəqillik üçün data ya testin özündə, ya hazırlıq mərhələsində yaranmalıdır.",
+    "a": "**Səbəb:** ikinci test birincinin yaratdığı `test_user_1`-ə bağlıdır. Tək işləyəndə bu istifadəçi yoxdur, ona görə düşür. Birinci test düşsə, ikincisi də düşər, ardıcıllıq dəyişsə, yenə düşər. Paralel icrada da problem yaranır.\n\n**Yol 1: hər test öz istifadəçisini yaradır.** `test.beforeEach` içində API ilə unikal adla istifadəçi yaradılır, sonda silinir:\n\n```javascript\nlet username;\n\ntest.beforeEach(async ({ request }) => {\n  username = 'test_user_' + Date.now();\n  await request.post('/api/users', { data: { username, password: 'Test123!' } });\n});\n```\n\nTest tam müstəqildir, paralel işləyir, amma qurulması API tələb edir və yavaş ola bilər.\n\n**Yol 2: əvvəlcədən hazır test datası (seed).** Test mühiti açılanda sabit istifadəçi yaradılır, test ona yalnız oxumaq üçün daxil olur. Sürətlidir, amma paylaşılan datadır: testlər onu dəyişməməlidir.\n\nProfil səhifəsini oxuyan bu test üçün hər iki yol işləyir. Yoxlama: testi tək (`--grep`) və qarışıq sırada işə sal.",
+    "c": [
+      "Səbəb ikinci testin birincinin datasından asılılığı ilə izah olunub",
+      "Testin tək düşməsi bu asılılığa bağlanıb",
+      "İki fərqli həll var: test özü yaradır, hazır data və ya bənzəri",
+      "Həllin testi tək işlətməklə yoxlanması deyilib"
+    ]
+  },
+  "c19s9m": {
+    "h": "“Yalnız paralel” və “eyni hesab” ipucudur. İki test eyni səbətə baxırsa, nə baş verir? `--workers=1` fərziyyəni yoxlayır, trace sübutu verir.",
+    "a": "**Ehtimal olunan səbəb:** paylaşılan test datası. Paralel işləyən testlər eyni hesabın səbətini dəyişir. Biri məhsul əlavə edəndə o biri səbətdə 2 görür və ya biri səbəti təmizləyir. Tək işləyəndə problem yoxdur.\n\n**Diaqnostika:**\n\n```text\nnpx playwright test cart.spec.js --repeat-each=10\nnpx playwright test cart.spec.js --repeat-each=10 --workers=1\nnpx playwright test cart.spec.js --repeat-each=10 --trace=on\n```\n\n1. **`--repeat-each=10`:** testi 10 dəfə işlədib səhvi öz kompüterimdə üzə çıxarıram.\n2. **`--workers=1`:** paralellik yoxdur. Testlər indi keçirsə, səbəb testlərin bir-birinə mane olmasıdır.\n3. **Trace:** düşən icrada səbətin sayını və cart sorğularını görürəm: səbətə gözlənilməz məhsul nə vaxt düşüb?\n\n**Həll:**\n- Hər worker üçün ayrıca hesab (`testInfo.parallelIndex`) və ya hər test üçün API ilə yeni istifadəçi.\n- Testdən əvvəl səbətin təmizlənməsi kifayət deyil: paralel test yenə mane ola bilər.\n\nRetry sayını artırmaq həll deyil, səbəbi gizlədir. Düzəlişdən sonra `--repeat-each=10` ilə təkrar yoxlayıram.",
+    "c": [
+      "Səbəb paylaşılan hesab və paralel müdaxilə kimi göstərilib",
+      "Üç diaqnostika addımının hər birinin məqsədi deyilib",
+      "Həll hər worker və ya test üçün ayrı datadır",
+      "Retry əsas həll sayılmayıb"
+    ]
+  },
+  "c19s10m": {
+    "h": "Sıra eynidir: aç, daxil ol, bas, yoxla. Fərq: `findElement`, `sendKeys`, açıq `driver.wait(until...)`. Sonda brauzeri `quit()` ilə bağla.",
+    "a": "```javascript\nimport { Builder, By, until } from 'selenium-webdriver';\nimport assert from 'node:assert';\n\nconst driver = await new Builder().forBrowser('chrome').build();\n\ntry {\n  // İlkin şərt: giriş\n  await driver.get('https://www.saucedemo.com/');\n  await driver.findElement(By.css('[data-test=\"username\"]')).sendKeys('standard_user');\n  await driver.findElement(By.css('[data-test=\"password\"]')).sendKeys('secret_sauce');\n  await driver.findElement(By.css('[data-test=\"login-button\"]')).click();\n\n  // Addım: açıq gözləmə, sonra basmaq\n  const addButton = await driver.wait(\n    until.elementLocated(By.css('[data-test=\"add-to-cart-sauce-labs-backpack\"]')),\n    5000\n  );\n  await addButton.click();\n\n  // Gözlənilən nəticə\n  const badge = await driver.wait(until.elementLocated(By.css('.shopping_cart_badge')), 5000);\n  assert.strictEqual(await badge.getText(), '1');\n} finally {\n  await driver.quit();\n}\n```\n\n**Playwright-la fərq:** burada gözləməni özüm yazıram, Playwright-da auto-waiting var. `assert` birdəfəlik yoxlayır, `toHaveText` isə şərt ödənənə qədər təkrar yoxlayır. `finally` test düşsə də brauzeri bağlayır. Məntiq eynidir: lokator, hərəkət, yoxlama. Kod `npm install selenium-webdriver` tələb edir, fayl `.mjs` ola bilər.",
+    "c": [
+      "Lokator `By.css('[data-test=\"add-to-cart-sauce-labs-backpack\"]')`-dir",
+      "`until.elementLocated` ilə açıq gözləmə işlənib",
+      "Nişanın mətni `getText()` ilə 1-ə qarşı yoxlanılır",
+      "Brauzer sonda `quit()` ilə bağlanır"
+    ]
+  },
+  "c19t1": {
+    "h": "Əvvəl məhsul əlavə et, nişanın göründüyünü yoxla. Silmədən sonra iki şey yoxla: səbətdə sətir qalmır, nişan yoxa çıxır.",
+    "a": "```javascript\nimport { test, expect } from '@playwright/test';\n\ntest('məhsul səbətdən silinir', async ({ page }) => {\n  // İlkin şərt: giriş və bir məhsul\n  await page.goto('https://www.saucedemo.com/');\n  await page.getByPlaceholder('Username').fill('standard_user');\n  await page.getByPlaceholder('Password').fill('secret_sauce');\n  await page.getByRole('button', { name: 'Login' }).click();\n  await page.locator('[data-test=\"add-to-cart-sauce-labs-backpack\"]').click();\n  await expect(page.locator('.shopping_cart_badge')).toHaveText('1');\n\n  // Addım\n  await page.locator('.shopping_cart_link').click();\n  await page.locator('[data-test=\"remove-sauce-labs-backpack\"]').click();\n\n  // Gözlənilən nəticə\n  await expect(page.locator('.cart_item')).toHaveCount(0);\n  await expect(page.locator('.shopping_cart_badge')).toHaveCount(0);\n});\n```\n\nTest əvvəlcə ilkin vəziyyəti yoxlayır: nişan 1-dir. Bu olmasa, silmə işləməsə də test yanlış səbəbdən keçə bilər. `toHaveCount(0)` element yoxa çıxana qədər gözləyir, ona görə `waitForTimeout` lazım deyil.",
+    "c": [
+      "Test səbətə əlavə etməklə başlayır",
+      "Məhsul “Remove” ilə silinir",
+      "Silmədən sonra səbət və ya nişan boş yoxlanılır",
+      "Sabit gözləmə işlənməyib"
+    ]
+  },
+  "c19t2": {
+    "h": "Şifrə sahəsinə başqa dəyər yaz. Xəta `[data-test=\"error\"]` elementindədir. Mətnin tam halı üçün `toHaveText`, hissə üçün `toContainText`.",
+    "a": "```javascript\nimport { test, expect } from '@playwright/test';\n\ntest('yanlış şifrə ilə giriş xəta mesajı göstərir', async ({ page }) => {\n  await page.goto('https://www.saucedemo.com/');\n  await page.getByPlaceholder('Username').fill('standard_user');\n  await page.getByPlaceholder('Password').fill('yanlis_sifre');\n  await page.getByRole('button', { name: 'Login' }).click();\n\n  await expect(page.locator('[data-test=\"error\"]')).toHaveText(\n    'Epic sadface: Username and password do not match any user in this service'\n  );\n  await expect(page).not.toHaveURL(/inventory/);\n});\n```\n\nİkinci yoxlama göstərir ki, istifadəçi daxil olmayıb. `toContainText('do not match')` da uyğundur və mətnin kiçik dəyişikliyində daha az sınır. Tam mətn yoxlaması isə mətnin özü tələbdirsə, seçilir.",
+    "c": [
+      "Düzgün istifadəçi adı, yanlış şifrə işlənib",
+      "Xəta mesajının mətni yoxlanılır",
+      "Lokator `[data-test=\"error\"]` və ya bərabər etibarlıdır"
+    ]
+  },
+  "c19t3": {
+    "h": "`npx playwright codegen https://www.saucedemo.com/` işə sal, addımları et. Codegen yoxlama yazmır: sonda özün `expect` əlavə et.",
+    "a": "Yaranan kod təxminən belədir; Playwright versiyasına görə fərqlənə bilər.\n\n```javascript\nawait page.goto('https://www.saucedemo.com/');\nawait page.locator('[data-test=\"username\"]').fill('standard_user');\nawait page.locator('[data-test=\"password\"]').fill('secret_sauce');\nawait page.locator('[data-test=\"login-button\"]').click();\nawait page.locator('[data-test=\"add-to-cart-sauce-labs-backpack\"]').click();\nawait page.locator('.shopping_cart_link').click();\nawait page.locator('[data-test=\"checkout\"]').click();\nawait page.locator('[data-test=\"firstName\"]').fill('Aysel');\nawait page.locator('[data-test=\"lastName\"]').fill('Məmmədova');\nawait page.locator('[data-test=\"postalCode\"]').fill('1000');\nawait page.locator('[data-test=\"continue\"]').click();\nawait page.locator('[data-test=\"finish\"]').click();\n```\n\n**Sətirlər:**\n- 1–4: saytı aç, ad və şifrə yaz, daxil ol.\n- 5: Backpack-i səbətə at.\n- 6–7: səbəti aç, “Checkout” bas.\n- 8–11: müştəri məlumatını yaz, “Continue” bas.\n- 12: yekun səhifəsində “Finish” bas.\n\n**Çatışmayan:** codegen hərəkətləri yazır, nəticəni yox. Özüm yoxlama əlavə edirəm:\n\n```javascript\nawait expect(page.locator('.complete-header')).toHaveText('Thank you for your order!');\n```\n\nCodegen başlanğıcdır, hazır test deyil: testə ad verirəm, datanı və ümumi hissələri ayırıram.",
+    "c": [
+      "Codegen ilə tam axın yazılıb: səbət, Checkout, məlumatlar, Finish",
+      "Hər sətir və ya sətir qrupu izah olunub",
+      "Sonda nəticəni yoxlayan `expect` əlavə olunub"
+    ]
+  },
+  "c19t4": {
+    "h": "`pages/LoginPage.js` yarat, kitabdakı class-ı yaz. Testlərdə lokatorları sil, `new LoginPage(page)`, `open()` və `login()` çağır. `expect` testdə qalır.",
+    "a": "**`pages/LoginPage.js`** (19.7-dəki class):\n\n```javascript\nexport class LoginPage {\n  constructor(page) {\n    this.page = page;\n    this.username = page.getByPlaceholder('Username');\n    this.password = page.getByPlaceholder('Password');\n    this.loginButton = page.getByRole('button', { name: 'Login' });\n    this.error = page.locator('[data-test=\"error\"]');\n  }\n\n  async open() {\n    await this.page.goto('https://www.saucedemo.com/');\n  }\n\n  async login(user, pass) {\n    await this.username.fill(user);\n    await this.password.fill(pass);\n    await this.loginButton.click();\n  }\n}\n```\n\n**`tests/login.spec.js`:**\n\n```javascript\nimport { test, expect } from '@playwright/test';\nimport { LoginPage } from '../pages/LoginPage';\n\ntest('düzgün istifadəçi ilə uğurlu giriş', async ({ page }) => {\n  const loginPage = new LoginPage(page);\n  await loginPage.open();\n  await loginPage.login('standard_user', 'secret_sauce');\n  await expect(page).toHaveURL(/inventory/);\n});\n\ntest('bloklanmış istifadəçi xəta görür', async ({ page }) => {\n  const loginPage = new LoginPage(page);\n  await loginPage.open();\n  await loginPage.login('locked_out_user', 'secret_sauce');\n  await expect(loginPage.error).toContainText('locked out');\n});\n\ntest('yanlış şifrə xəta göstərir', async ({ page }) => {\n  const loginPage = new LoginPage(page);\n  await loginPage.open();\n  await loginPage.login('standard_user', 'yanlis_sifre');\n  await expect(loginPage.error).toContainText('do not match');\n});\n```\n\nİndi login düyməsinin lokatoru dəyişsə, bir yerdə düzəldirəm. Sonda hamısını `npx playwright test` ilə yoxlayıram.",
+    "c": [
+      "Lokatorlar və hərəkətlər LoginPage-də bir dəfə yazılıb",
+      "Bütün login testləri `login()` işlədir, lokator təkrarı yoxdur",
+      "`expect` testlərdə qalır",
+      "Köçürmədən sonra testlər keçir"
+    ]
+  },
+  "c19t5": {
+    "h": "Gözlənilən mətni dəyiş, testi işə sal, `npx playwright show-report` aç, düşən testə daxil ol. Bitəndə dəyişikliyi geri qaytar.",
+    "a": "**Addımlar:**\n1. Testdə `toContainText('locked out')` yerinə `toContainText('locked inn')` yaz.\n2. Əmrlər:\n\n```text\nnpx playwright test login.spec.js\nnpx playwright show-report\n```\n\n3. Hesabatda qırmızı testi aç.\n\n**Hesabatda görünür:**\n- **Testin adı və brauzer.**\n- **Xəta:** `Expected substring: \"locked inn\"` və `Received string: \"Epic sadface: Sorry, this user has been locked out.\"`\n- **Kod parçası:** düşən sətir işarələnir.\n- **Addımlar:** hər hərəkət vaxtı ilə.\n- **Əlavələr:** ayarlardan asılı olaraq ekran şəkli, video, trace.\n\n**Oxuma qaydası:** gözlənilən və alınan mətni tutuşdururam. Burada fərq testin özündədir: test səhvdir, sayt yox. Real halda eyni fərq məhsulun baqı da ola bilər, ona görə tələbə baxıram. Sonda dəyişikliyi geri qaytarıb testin yaşıl olduğunu yoxlayıram.",
+    "c": [
+      "Gözlənilən mətn qəsdən dəyişdirilib, test düşüb",
+      "HTML hesabat açılıb",
+      "Gözlənilən və alınan mətn oxunub",
+      "Dəyişiklik sonra geri qaytarılıb"
+    ]
+  },
+  "c19q1": {
+    "a": "**Avtomatlaşdır:** tez-tez təkrarlanan, sabit, kritik testləri: regression, smoke, data-driven. **Avtomatlaşdırma:** bir dəfəlik, tez dəyişən funksiyanı, UX və rahatlıq qiymətləndirməsini, exploratory testi. Səbəb: yazmaq və saxlamaq vaxt alır, faydanın bu xərci keçməsi lazımdır.",
+    "c": [
+      "Təkrarlanan və sabit testlər avtomatlaşdırılır",
+      "Bir dəfəlik, UX və ya tez dəyişən testlər manual qalır"
+    ]
+  },
+  "c19q2": {
+    "a": "Piramida testlərin səviyyəyə görə sağlam bölgüsünü göstərir: çox **unit**, orta qədər **API**, az **UI/E2E**. Aşağı tez və ucuzdur. **“Dondurma qabı”** bunun tərsidir: çoxlu UI və manual test, az unit. Nəticə: yavaş, bahalı, kövrək dəst.",
+    "c": [
+      "Unit çox, UI az bölgüsü deyilib",
+      "Dondurma qabı tərs bölgü kimi izah olunub"
+    ]
+  },
+  "c19q3": {
+    "a": "**Sıra:** `getByRole`, `getByLabel`, `getByPlaceholder`, `getByText`, `getByTestId`, son olaraq CSS (`locator`). Səbəb: istifadəçinin gördüyünə əsaslanan lokatorlar dizayn dəyişəndə də işləyir, uzun CSS isə quruluşa bağlıdır və tez sınır.",
+    "c": [
+      "Rol və görünən mətn əvvəl, CSS sonda göstərilib",
+      "Sabitlik səbəb kimi izah olunub"
+    ]
+  },
+  "c19q4": {
+    "a": "**Auto-waiting:** Playwright hərəkətdən əvvəl elementin görünməsini, sabit olmasını, basıla bilməsini özü gözləyir, `expect` də şərt ödənənə qədər təkrar yoxlayır. Ona görə sabit gözləmə (`waitForTimeout`) lazım deyil.",
+    "c": [
+      "Elementin hazır olmasını özü gözlədiyi deyilib",
+      "Sabit gözləməyə ehtiyacın olmadığı qeyd olunub"
+    ]
+  },
+  "c19q5": {
+    "a": "**Flaky test** kod dəyişmədən bəzən keçir, bəzən düşür. **Səbəblər:** vaxt problemləri (element hələ yüklənməyib), testlərin asılılığı, paylaşılan test datası, qeyri-sabit mühit. Komanda ona etibarı itirir. Səbəb tapılmalıdır, retry ilə gizlədilməməlidir.",
+    "c": [
+      "Flaky-nin dəyişiklik olmadan fərqli nəticə verməsi deyilib",
+      "Ən azı iki səbəb sadalanıb"
+    ]
+  }
+}
