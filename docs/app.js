@@ -135,6 +135,26 @@ const chLabel = c => c.num ? `Fəsil ${c.num}. ${c.title}` : c.fullTitle;
 const secLabel = s => s.num ? `${s.num}. ${s.title}` : s.title;
 const chCode = c => c.num ? pad2(c.num) : (c.id === 'c0' ? '00' : c.id === 'ga' ? 'A' : 'B');
 const partOf = c => BOOK.parts.find(p => p.id === c.part);
+// each part has its own colour (app.css: --p0 … --p8) and pattern; a chapter's banner shows its number and an icon
+const partId = c => c.id === 'c0' ? 'p0' : c.part || 'p8';
+const CH_ICON = { c0: 'book', c1: 'search', c2: 'bulb', c3: 'refresh', c4: 'steps', c5: 'layers', c6: 'cards', c7: 'eye', c8: 'sliders', c9: 'checklist', c10: 'help',
+  c11: 'list', c12: 'bug', c13: 'send', c14: 'monitor', c15: 'ext', c16: 'chart', c17: 'phone', c18: 'pencil', c19: 'play', c20: 'upload', c21: 'users', gb: 'copy' };
+const PART_PAT = [
+  [14, '<circle cx="7" cy="7" r="1.4" fill="currentColor"/>'],
+  [16, '<circle cx="4" cy="4" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/>'],
+  [16, '<path d="M0 16L16 0" stroke="currentColor" stroke-width="1.4"/>'],
+  [16, '<path d="M16 0H0V16" fill="none" stroke="currentColor" stroke-width="1.1"/>'],
+  [16, '<path d="M3 8h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>'],
+  [18, '<path d="M9 5v8M5 9h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>'],
+  [20, '<circle cx="10" cy="10" r="5" fill="none" stroke="currentColor" stroke-width="1.3"/>'],
+  [18, '<path d="M4 14L9 5l5 9z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>'],
+  [14, '<circle cx="7" cy="7" r="1.1" fill="currentColor"/>'],
+];
+function chBanner(c) {
+  const pid = partId(c), [sz, shape] = PART_PAT[+pid.slice(1)] || PART_PAT[8], num = c.num ? pad2(c.num) : c.id === 'c0' ? '00' : 'B';
+  return `<div class="ch-banner" data-part="${pid}" aria-hidden="true"><svg class="ch-pat"><defs><pattern id="chp-${c.id}" width="${sz}" height="${sz}" patternUnits="userSpaceOnUse">${shape}</pattern></defs><rect width="100%" height="100%" fill="url(#chp-${c.id})"/></svg>`
+    + `<span class="ch-bnum">${num}</span><span class="ch-bico">${icon(CH_ICON[c.id] || 'book')}</span></div>`;
+}
 function partLabel(p) { if (!p) return ''; const m = p.title.match(/^(\S+) hissə — (.*)$/); return m ? { pn: m[1], name: m[2], full: p.title } : { pn: '', name: p.title, full: p.title }; }
 
 /* markdown for Claude's answers */
@@ -454,6 +474,7 @@ function render(opts) {
   hideSelPill();
   const v = $('#view');
   const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw, git: vGit, iv: vInterview, rs: vScript, en: vEnglish };
+  document.body.removeAttribute('data-part'); // the reader sets it: the chapter's part colour for section numbers and the read bar
   (views[S.view] || vHome)(v);
   document.body.dataset.view = S.view; document.body.dataset.tab = S.tab; // PC layouts are keyed by these (app.css)
   sideRender();
@@ -551,7 +572,7 @@ function vHome(v) {
       const qchip = st.q ? `<span class="chip ${st.q.best / st.q.n >= 0.7 ? 'pass' : 'warn'}">${st.q.best}/${st.q.n}</span>` : '';
       return `<button class="chrow${per === 100 ? ' done' : ''}" data-act="open-ch" data-ch="${c.id}"><span class="id">${chCode(c)}</span><span class="tt"><b>${esc(c.title)}</b><div class="meter${per === 100 ? ' pass' : ''}"><i style="width:${per}%"></i></div></span><span class="side"><span class="pct">${st.done}/${st.total}</span>${qchip}</span></button>`;
     }).join('');
-    parts += `<section class="part"><div class="part-h">${pl.pn ? `<span class="pn">${esc(pl.pn)}</span>` : ''}<h2>${esc(pl.name)}</h2></div><div class="chlist">${rows}</div></section>`;
+    parts += `<section class="part" data-part="${p.id}"><div class="part-h">${pl.pn ? `<span class="pn">${esc(pl.pn)}</span>` : ''}<h2>${esc(pl.name)}</h2></div><div class="chlist">${rows}</div></section>`;
   });
   v.innerHTML = `
   <div class="hero">
@@ -565,7 +586,7 @@ function vHome(v) {
     </div>
   </div>
   <div class="block">${cont}</div>${installCard()}
-  <section class="part"><div class="part-h"><span class="pn">0</span><h2>Giriş</h2></div><div class="chlist"><button class="chrow" data-act="open-ch" data-ch="c0"><span class="id">00</span><span class="tt"><b>Bu kitabı necə oxumalı</b><span class="muted" style="font-size:13px">Quruluş, terminlər, oxu sırası</span></span><span class="side">${icon('arrow')}</span></button></div></section>
+  <section class="part" data-part="p0"><div class="part-h"><span class="pn">0</span><h2>Giriş</h2></div><div class="chlist"><button class="chrow" data-act="open-ch" data-ch="c0"><span class="id">00</span><span class="tt"><b>Bu kitabı necə oxumalı</b><span class="muted" style="font-size:13px">Quruluş, terminlər, oxu sırası</span></span><span class="side">${icon('arrow')}</span></button></div></section>
   ${parts}`;
 }
 
@@ -1051,7 +1072,8 @@ function vReader(v) {
       <div class="ch-lvl"><span class="lb">İzah səviyyəsi</span>${lvlCtl('', PREF().lvl || 'std', 'lvl-all')}</div>
       <div class="row"><button class="btn sm" data-act="konspekt" data-ch="${c.id}">${icon('list')}Konspekt</button><button class="btn sm" data-act="sum" data-ch="${c.id}">${icon('print')}Xülasə vərəqi</button><button class="btn sm ai-only" data-act="ch-lesson" data-ch="${c.id}">${icon('steps')}Fəsil üzrə dərs</button></div>
     </div>` : '';
-  v.innerHTML = `<header class="ch-hero"><div class="kicker"><b>${c.num ? 'Fəsil ' + pad2(c.num) : (c.id === 'c0' ? 'Giriş' : 'Əlavə B')}</b>${pl && pl.pn ? ' · ' + esc(pl.name) : ''}</div>
+  document.body.dataset.part = partId(c);
+  v.innerHTML = `<header class="ch-hero" data-part="${partId(c)}">${chBanner(c)}<div class="kicker"><b>${c.num ? 'Fəsil ' + pad2(c.num) : (c.id === 'c0' ? 'Giriş' : 'Əlavə B')}</b>${pl && pl.pn ? ' · ' + esc(pl.name) : ''}</div>
     <h1 class="h1">${esc(c.title)}</h1>${stats}${tools}
     ${c.intro ? `<div class="prose ch-intro">${c.intro}</div>` : ''}</header>
     ${c.sections.map(s => secHTML(c, s)).join('')}${end}`;
