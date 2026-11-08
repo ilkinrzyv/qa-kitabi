@@ -221,6 +221,27 @@ figure.diagram{margin:1.1em 0;border:1px solid var(--line);border-radius:14px;ba
 figure.diagram.wide figcaption::after{content:"  ·  ← sürüşdür →";color:var(--accent)}
 figure.diagram.narrow .dg-scroll svg{min-width:0;max-width:460px;margin:0 auto}
 figure.diagram figcaption{font-size:12.5px;color:var(--ink-3);padding:8px 14px 10px;border-top:1px solid var(--line);margin-top:6px;font-family:var(--f-mono)}
+/* step-by-step diagrams (app.js dga*): the current step in full, earlier steps dimmed, later ones faint */
+.dga{padding:8px 12px 4px;font-family:var(--f-ui)}
+.dga-go span{color:var(--ink-3);font-weight:400}
+.dga.on{padding-top:6px}
+.dga-top{display:flex;align-items:center;gap:8px}
+.dga-n{font-family:var(--f-mono);font-size:12.5px;font-weight:600;color:var(--accent);min-width:36px}
+.dga-dots{display:flex;flex-wrap:wrap;flex:1;min-width:0}
+.dga-dots button{width:24px;height:28px;display:grid;place-items:center;padding:0;border-radius:6px}
+.dga-dots button::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--line-2);transition:background .25s,transform .25s}
+.dga-dots button.done::before{background:var(--accent-line)}
+.dga-dots button[aria-current]::before{background:var(--accent);transform:scale(1.4)}
+.dga .dga-t{margin:4px 0 10px;font-size:15px;line-height:1.5;color:var(--ink);min-height:3em}
+.dga-t code{font-size:.88em}
+.dga-ctl{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.dga-ctl .dga-next{margin-left:auto}
+figure.dga-on [data-s]{transition:opacity .45s ease}
+figure.dga-on [data-s].dga-p{opacity:.45}
+figure.dga-on [data-s].dga-f{opacity:.07}
+.dga-fx{pointer-events:none}
+.dga-dot{fill:var(--accent);stroke:var(--surface);stroke-width:1.5}
+@media (prefers-reduced-motion:reduce){.dga-dots button::before{transition:none}}
 .sec-f{display:flex;flex-direction:column;gap:10px;margin-top:16px}
 .sec-f .r1{display:flex;gap:8px;align-items:center}
 .learn{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 13px 0 10px;border-radius:999px;border:1px solid var(--line-2);
@@ -750,7 +771,8 @@ details.say-d[open]>summary{border-bottom:0;border-radius:0}
 @page{size:A4;margin:12mm}
 @media print{
   html,body{background:#fff!important}
-  body::before,#topbar,#tabbar,.toast,.selpill,.sheet{display:none!important}
+  body::before,#topbar,#tabbar,.toast,.selpill,.sheet,.dga,.dga-fx{display:none!important}
+  figure.dga-on [data-s]{opacity:1!important;transition:none!important}
   #view{padding:0;max-width:none;min-height:0}
   #view:has(.sums)>:not(.sums){display:none!important}
   .sums{display:block;margin:0}

@@ -65,6 +65,33 @@ class D:
         self.slug, self.W, self.H, self.label = slug, W, H, label
         self.defs, self.parts, self.boxes, self.errs, self.rects = [], [], [], [], []
         self._markers = {}
+        self.caps, self._g, self._used = [], None, set()
+
+    # ---------- animation steps (the reader plays them one by one: app.js dga*) ----------
+    def steps(self, *caps):
+        """Captions of the steps, in order: step n is caps[n - 1]. `x` in a caption is shown as code."""
+        self.caps = list(caps)
+
+    def at(self, *ns):
+        """What is drawn next belongs to steps ns: it appears at the first one and is lit again at the others.
+        at() with no steps is the base layer, always shown."""
+        if self._g is not None:
+            self.parts.append('</g>')
+            self._g = None
+        if ns:
+            self._g = ' '.join(str(n) for n in ns)
+            self.parts.append(f'<g data-s="{self._g}">')
+            self._used.update(ns)
+
+    def step_errs(self):
+        n, out = len(self.caps), []
+        if not n and not self._used:
+            return out
+        out += [f'step {i} has nothing drawn' for i in range(1, n + 1) if i not in self._used]
+        out += [f'elements in step {i}, which has no caption' for i in sorted(self._used) if not 1 <= i <= n]
+        out += [f'step {i}: caption empty or over 220 characters' for i, c in enumerate(self.caps, 1)
+                if not c.strip() or len(c) > 220]
+        return out
 
     # ---------- primitives ----------
     def arrowhead(self, color=AX):
@@ -76,8 +103,10 @@ class D:
             self._markers[color] = mid
         return f'url(#{self._markers[color]})'
 
-    def rect(self, x, y, w, h, fill='none', fo=None, stroke=None, sw=1.25, rx=8, dash=None, so=None):
+    def rect(self, x, y, w, h, fill='none', fo=None, stroke=None, sw=1.25, rx=8, dash=None, so=None, grow=False):
         a = f'<rect x="{x:g}" y="{y:g}" width="{w:g}" height="{h:g}" rx="{rx:g}" fill="{fill}"'
+        if grow:  # a bar: in its step it grows from the left
+            a += ' data-fx="grow"'
         if fo is not None:
             a += f' fill-opacity="{fo:g}"'
         if stroke:
@@ -236,6 +265,7 @@ class D:
                     self.errs.append(f'overlap: "{sa}" × "{sb}"')
 
     def svg(self):
+        self.at()  # close the last step's group
         self.check_overlaps()
         for (x, y, w, h) in self.rects:
             if x < -0.5 or y < -0.5 or x + w > self.W + 0.5 or y + h > self.H + 0.5:

@@ -41,17 +41,26 @@ reg('qaqc', 'c1s2', 'Testing QC-nin əsas formasıdır', 'QA, QC, testing · res
 def chain():
     d = D('chain', W, 300, 'Səhv defekt yaradır, defekt işə düşəndə nasazlıq olur')
     ty = d.title('Səhv defekt yaradır, defekt işə düşəndə nasazlıq olur')
+    d.steps('İnsan səhv edir (error): proqramçı 10% endirim üçün `0.1` yerinə `0.01` yazır.',
+            'Səhv koda düşür və defekt (bug) kimi orada qalır. Düstur səhvdir, amma hələ heç kim bunu görmür.',
+            'Kod işə düşəndə nasazlıq (failure) baş verir: 100 AZN-lik mala 10 əvəzinə 1 AZN endirim çıxır.',
+            'Defektli kod heç vaxt işə düşməsə, istifadəçi heç nə görmür. Amma defekt kodda qalır.')
     x, w, h = 10, 196, 52
     y1 = ty + 22
+    d.at(1)
     d.labelbox(x, y1, w, h, 'Səhv · error', '0.1 yerinə 0.01 yazılır')
     y2 = y1 + h + 34
+    d.at(2)
     d.line(x + w / 2, y1 + h, x + w / 2, y2, end=True)
     d.text(x + w / 2 + 10, y1 + h + 21, 'koda düşür', size=12, fill=S)
+    d.at(2, 4)
     d.labelbox(x, y2, w, h, 'Defekt · bug', 'Kodda səhv düstur qalır', fill=WARN, fo=0.1, stroke=WARN)
     y3 = y2 + h + 34
+    d.at(3)
     d.line(x + w / 2, y2 + h, x + w / 2, y3, end=True)
     d.text(x + w / 2 + 10, y2 + h + 21, 'kod işə düşür', size=12, fill=S)
     d.labelbox(x, y3, w, h, 'Nasazlıq · failure', '100 AZN-ə 1 AZN endirim', fill=CRIT, fo=0.1, stroke=CRIT)
+    d.at(4)
     # branch: defect that never runs
     bx, bw, bh = 226, 104, 64
     by = y2 + h / 2 - bh / 2
@@ -73,11 +82,18 @@ def rework():
     ty = d.title('Defekt nə qədər gec tapılsa, bir o qədər çox iş təkrarlanır')
     cols = ['Tələb', 'Dizayn', 'Kod', 'Test', 'Canlı']
     rows = ['Tələbi düzəlt', 'Dizaynı dəyiş', 'Kodu dəyiş', 'Yenidən test et', 'Təcili reliz']
+    d.steps('Defekt tələbdə tapılır: yalnız tələbi düzəltmək kifayətdir. Təkrarlanan iş — 1.',
+            'Dizaynda tapılır: tələb də, dizayn da dəyişir. Təkrarlanan iş — 2.',
+            'Kod mərhələsində tapılır: tələb, dizayn və kod dəyişir. Təkrarlanan iş — 3.',
+            'Testdə tapılır: üstəlik düzəlişi yenidən test etmək lazımdır. Təkrarlanan iş — 4.',
+            'Canlıda tapılır: təcili reliz də lazımdır. Təkrarlanan iş — 5, üstəlik müştəri itkisi və reputasiya zərəri.')
     lx, cx0, cw = 10, 118, 44
     hy = ty + 26
     d.text(cx0, hy, 'Defekt harada tapılıb:', size=12, fill=S)
     for j, c in enumerate(cols):
+        d.at(j + 1)
         d.text(cx0 + j * cw + cw / 2, hy + 20, c, size=12, w=600, anchor='middle')
+    d.at()
     ry0, rh, rg = hy + 30, 26, 4
     for i, r in enumerate(rows):
         y = ry0 + i * (rh + rg)
@@ -86,14 +102,18 @@ def rework():
             cx = cx0 + j * cw + 3
             if i <= j:
                 last = (i == 4)
+                d.at(j + 1)
                 d.rect(cx, y, cw - 6, rh, fill=CRIT if last else A, fo=0.28 if last else 0.22,
                        stroke=CRIT if last else A, sw=1, rx=4)
+                d.at()
             else:
                 d.rect(cx, y, cw - 6, rh, fill='none', stroke=AX, sw=1, rx=4, so=0.35, dash='3 3')
     yb = ry0 + 5 * (rh + rg) + 16
     d.text(lx, yb, 'Təkrarlanan iş', size=12, w=600)
     for j in range(5):
+        d.at(j + 1)
         d.text(cx0 + j * cw + cw / 2, yb, str(j + 1), size=13, w=600, anchor='middle', mono=True)
+    d.at(5)
     d.text(lx, yb + 22, 'Canlıda üstəlik: müştəri itkisi və reputasiya', size=12, fill=CRIT)
     d.H = yb + 32
     return d
@@ -118,13 +138,24 @@ def scrum():
         ('pill', 'Sprint Review', ('demoya kömək edir',), 30),
         ('pill', 'Retrospective', ('prosesi yaxşılaşdırır',), 30),
     ]
+    d.steps('Product Backlog — məhsul üçün görüləcək işlərin prioritetə görə düzülmüş siyahısı. Sprintin işləri buradan götürülür.',
+            'Sprint Planning: komanda sprintə hansı işləri götürəcəyini seçir. Tester qəbul meyarlarını (AC) aydınlaşdırır və test işini qiymətləndirir.',
+            'Seçilən işlər Sprint Backlog-a düşür: bu sprintin planı budur.',
+            'Sprint 1–4 həftə çəkir. Hər gün qısa Daily Scrum olur. Tester test edir və maneələri deyir.',
+            'Sprintin nəticəsi Increment-dir: işləyən məhsul hissəsi, Definition of Done (DoD) ödənib.',
+            'Sprint Review: komanda nəticəni maraqlı tərəflərə göstərir. Tester demoya kömək edir.',
+            'Retrospective: komanda necə işlədiyini müzakirə edir və prosesi yaxşılaşdırır.',
+            'Sonra növbəti sprint başlayır — yenə Sprint Planning ilə.')
     y = ty + 24
     d.text(ax, y + 20, 'Tester nə edir:', size=12, w=600, fill=A)
     pos = []
-    for kind, label, ann, h in items:
+    for n, (kind, label, ann, h) in enumerate(items, 1):
+        d.at(n)
         if pos:
             py, ph = pos[-1]
             d.line(cx, py + ph, cx, y, end=True)
+        if n == 2:
+            d.at(2, 8)  # the next sprint starts here again
         if kind == 'pill':
             d.rect(x, y, w, h, fill=A, fo=0.16, stroke=A, rx=h / 2)
             d.text(cx, y + h / 2 + 4.6, label, size=12.5, w=600, anchor='middle', inside=(x, y, w, h))
@@ -145,6 +176,7 @@ def scrum():
         pos.append((y, h))
         y += h + 20
     # loop back from Retrospective to Sprint Planning
+    d.at(8)
     ry, rh = pos[-1]
     py, ph = pos[1]
     lx = 22
@@ -163,23 +195,31 @@ def kanban():
     ty = d.title('WIP limiti dolanda yeni iş gözləyir, komanda əvvəl başladığını bitirir')
     cols = [('To Do', None, ['#16', '#17', '#18']), ('In Progress', 'WIP 3', ['#13', '#14', '#15']),
             ('Testing', 'WIP 3', ['#10', '#11', '#12']), ('Done', None, ['#7', '#8', '#9'])]
+    d.steps('İş lövhədə soldan sağa axır: To Do → In Progress → Testing → Done.',
+            'WIP limiti sütunda eyni anda neçə iş ola biləcəyini məhdudlaşdırır. Testing-də artıq 3 iş var: limit dolub.',
+            '#15 hazırdır, amma Testing-ə keçə bilmir — gözləyir. Yeni işə başlamaq da olmaz: In Progress də doludur.',
+            '#12-nin testi bitir və o, Done-a keçir: Testing-də yer açılır, #15 testə gedir. Komanda əvvəl başladığını bitirir.')
     x0, cw, g = 8, 76, 6
     top = ty + 18
     colh = 172
     for i, (name, wip, cards) in enumerate(cols):
         cx = x0 + i * (cw + g)
         full = name == 'Testing'
+        d.at(*((1, 2) if full else (1,)))
         d.rect(cx, top, cw, colh, fill=TINT, stroke=WARN if full else AX, sw=1.5 if full else 1, rx=8)
         d.text(cx + cw / 2, top + 19, name, size=12.5, w=600, anchor='middle', inside=(cx, top, cw, colh))
         if wip:
+            d.at(2)
             d.text(cx + cw / 2, top + 36, wip, size=12, anchor='middle', fill=WARN if full else S,
                    w=600 if full else 400, inside=(cx, top, cw, colh))
         for k, c in enumerate(cards):
             yy = top + 48 + k * 38
             hot = c in ('#15', '#12')
+            d.at(*((1, 3) if c == '#15' else (1, 4) if c == '#12' else (1,)))
             d.rect(cx + 8, yy, cw - 16, 28, fill=P, fo=0.04, stroke=A if hot else AX, sw=1.5 if hot else 1, rx=5)
             d.text(cx + cw / 2, yy + 18.5, c, size=12.5, anchor='middle', mono=True)
     # blocked move #15 -> Testing
+    d.at(3)
     c15y = top + 48 + 2 * 38 + 14
     xa, xb = x0 + cw + g + cw - 8, x0 + 2 * (cw + g) + 8
     d.line(xa, c15y, xb - 1, c15y, stroke=CRIT, sw=1.5, end=True)
@@ -188,9 +228,12 @@ def kanban():
     d.line(mx - 5, c15y + 5, mx + 5, c15y - 5, stroke=CRIT, sw=2)
     # #12 -> Done frees capacity
     xa2, xb2 = x0 + 2 * (cw + g) + cw - 8, x0 + 3 * (cw + g) + 8
+    d.at(4)
     d.line(xa2, c15y, xb2 - 1, c15y, stroke=GOOD, sw=1.5, end=True)
     yb = top + colh + 24
+    d.at(3)
     d.text(10, yb, '#15 gözləyir: Testing dolub (3/3).', size=12, fill=CRIT)
+    d.at(4)
     d.text(10, yb + 18, '#12 bitəndə yer açılır və #15 testə keçir.', size=12, fill=GOOD)
     d.H = yb + 28
     return d
@@ -209,9 +252,16 @@ def stlc():
               ('4. Test mühiti', 'server, build, hesablar', 'işlək mühit (smoke)'),
               ('5. Testin icrası', 'icra, report, retest', 'nəticələr, baqlar'),
               ('6. Bağlanış', 'metriklər, dərslər', 'yekun hesabat')]
+    d.steps('Tələblərin analizi: tələbləri oxuyursan, sual verirsən, riskləri tapırsan. Nəticə — suallar və risklər.',
+            'Planlaşdırma: nəyi, nə vaxt və necə test edəcəyini müəyyən edirsən. Nəticə — test planı.',
+            'Test dizaynı: test case-lər, checklist-lər və test datası hazırlanır.',
+            'Test mühiti: server, build və test hesabları hazırlanır. Smoke test mühitin işlədiyini göstərir.',
+            'Testin icrası: test case-ləri icra edirsən, baqlar üçün bug report yazırsan, düzəlişləri retest edirsən.',
+            'Bağlanış: metriklər toplanır, dərslər çıxarılır. Nəticə — test summary report (yekun hesabat).')
     x, w, h, pitch = 10, 168, 34, 58
     y = ty + 20
     for i, (name, act, out) in enumerate(phases):
+        d.at(i + 1)
         yy = y + i * pitch
         last = i == len(phases) - 1
         d.rect(x, yy, w, h, fill=A, fo=0.12 if not last else 0.2, stroke=A, rx=6)
@@ -308,8 +358,12 @@ reg('boxes', 'c7s3', 'əslində grey box işləyir', 'black, grey, white box · 
 def branch():
     d = D('branch', W, 330, 'İki test iki budağı işə salır: branch coverage 100% olur')
     ty = d.title('İki test, iki budaq: branch coverage 100%')
+    d.steps('Funksiyada bir qərar var: `total >= 50`. Qərarın iki budağı olur: «doğru» və «yalan».',
+            '`getShippingCost(80)` testi «doğru» budağına gedir: `return 0`. İki budaqdan biri yoxlanıb — branch coverage 50%.',
+            '`getShippingCost(20)` testi «yalan» budağını işə salır: `return 3`. İki test hər iki budağı keçir — branch coverage 100%.')
     cx = 170
     sy = ty + 18
+    d.at(1)
     d.rect(cx - 92, sy, 184, 28, fill=TINT, stroke=AX, rx=14)
     d.text(cx, sy + 18.5, 'getShippingCost(total)', size=12, mono=True, anchor='middle')
     dy = sy + 28 + 22 + 28
@@ -317,7 +371,8 @@ def branch():
     d.poly([(cx, dy - 28), (cx + 84, dy), (cx, dy + 28), (cx - 84, dy)], fill=A, fo=0.1, stroke=A)
     d.text(cx, dy + 4.4, 'total >= 50 ?', size=12.5, mono=True, anchor='middle')
     by = dy + 70
-    for side, xx, lab, test, ret in ((-1, cx - 84, 'bəli', '80', 'return 0'), (1, cx + 84, 'xeyr', '20', 'return 3')):
+    for side, xx, lab, test, ret in ((-1, cx - 84, 'doğru', '80', 'return 0'), (1, cx + 84, 'yalan', '20', 'return 3')):
+        d.at(2 if side < 0 else 3)
         d.line(xx, dy, xx, by - 1, stroke=A, sw=1.5, end=True)
         tx = xx + 8 * (-side) if False else xx + (10 if side < 0 else -10)
         d.text(tx, dy + 30, lab, size=12, fill=S, anchor='start' if side < 0 else 'end')
@@ -325,14 +380,16 @@ def branch():
         d.rect(xx - 52, by, 104, 30, fill=A, fo=0.12, stroke=A, rx=6)
         d.text(xx, by + 19.5, ret, size=12.5, mono=True, anchor='middle')
     ty2 = by + 58
+    d.at()
     d.text(10, ty2, 'Testlər', size=12, w=600, fill=S)
     d.text(330, ty2, 'Branch coverage', size=12, w=600, fill=S, anchor='end')
     for k, (lab, frac, val) in enumerate((('yalnız 80', 0.5, '1/2 · 50%'), ('80 və 20', 1.0, '2/2 · 100%'))):
         yy = ty2 + 20 + k * 24
+        d.at(k + 2)
         d.text(10, yy + 4, lab, size=12.5, mono=False)
         bx, bw = 96, 150
         d.rect(bx, yy - 6, bw, 12, fill=TINT, stroke=AX, sw=1, rx=6)
-        d.rect(bx, yy - 6, bw * frac, 12, fill=GOOD if frac == 1 else WARN, fo=0.85, rx=6)
+        d.rect(bx, yy - 6, bw * frac, 12, fill=GOOD if frac == 1 else WARN, fo=0.85, rx=6, grow=True)
         d.text(330, yy + 4, val, size=12.5, mono=True, anchor='end')
     d.H = ty2 + 20 + 24 + 16
     return d
@@ -383,7 +440,12 @@ reg('bva', 'c8s4', '8 test bütün vacib halları', 'EP + BVA · yaş 18–60', 
 def trace():
     d = D('trace', W, 340, 'Hər test case bir qəbul meyarından doğur')
     ty = d.title('Hər test case bir qəbul meyarından doğur')
+    d.steps('User story kimin, nəyi və niyə istədiyini deyir: alıcı məhsulları qiymətə görə sıralamaq istəyir.',
+            'Qəbul meyarları (acceptance criteria, AC) story-ni yoxlanıla bilən qaydalara bölür.',
+            'Hər meyardan test case-lər doğur: AC1-dən iki, AC2-dən və AC3-dən birər test case.',
+            'Test düşəndə hansı meyarın pozulduğu dərhal bəllidir. Məsələn, TC-3 düşsə, AC2 pozulub: sıralayanda filtrlər sıfırlanır.')
     sy = ty + 16
+    d.at(1)
     d.rect(10, sy, 320, 62, fill=A, fo=0.08, stroke=A, rx=10)
     d.text(22, sy + 19, 'USER STORY', size=11.5, w=600, fill=A, ls=0.8)
     d.text(22, sy + 37, 'Alıcı kimi məhsulları qiymətə görə sıralamaq', size=12.5, inside=(10, sy, 320, 62))
@@ -393,15 +455,18 @@ def trace():
            ('AC3', 'Yeniləyəndə qalır', [('TC-4', 'F5-dən sonra')])]
     ax, aw, tx, tw_ = 10, 146, 176, 154
     y = sy + 62 + 26
+    d.at(2)
     d.line(84, sy + 62, 84, y - 1, end=True)
     for code, text, tcs in acs:
         n = len(tcs)
         blockh = n * 30 + (n - 1) * 8
         ah = 44
         ay = y + blockh / 2 - ah / 2
+        d.at(*((2, 4) if code == 'AC2' else (2,)))
         d.rect(ax, ay, aw, ah, fill=TINT, stroke=AX, rx=6)
         d.text(ax + 10, ay + 18, code, size=12, w=600, fill=A)
         d.text(ax + 10, ay + 34, text, size=12, inside=(ax, ay, aw, ah))
+        d.at(*((3, 4) if code == 'AC2' else (3,)))
         for k, (tc, tt) in enumerate(tcs):
             tyy = y + k * 38
             d.rect(tx, tyy, tw_, 30, fill=A, fo=0.12, stroke=A, rx=6)
@@ -409,6 +474,7 @@ def trace():
                    inside=(tx, tyy, tw_, 30))
             d.line(ax + aw, ay + ah / 2, tx - 1, tyy + 15, end=True)
         y += blockh + 18
+    d.at(4)
     d.text(10, y + 8, 'Test düşəndə hansı meyarın pozulduğu dərhal bəllidir.', size=12, fill=S)
     d.H = y + 18
     return d
@@ -443,10 +509,15 @@ def session():
         rows.append((dirn, lines, col, note, y))
         y += 14
     bottom = y
+    d.steps('Login: brauzer `POST /login` göndərir. Server sessiya yaradır və cavabda `Set-Cookie` ilə onun id-sini verir.',
+            'Sonrakı hər sorğuda brauzer cookie-ni özü göndərir. Server a1b2-ni tanıyır və `200 OK` qaytarır.',
+            'Logout: server a1b2 sessiyasını silir.',
+            'Köhnə cookie ilə sorğu gələndə server onu tanımır: `401 Unauthorized`. Tester məhz bunu yoxlayır.')
     d.line(bxl, top, bxl, bottom, dash='3 4')
     d.line(sxl, top, sxl, bottom, dash='3 4')
     mid = (bxl + sxl) / 2
-    for dirn, lines, col, note, ay in rows:
+    for i, (dirn, lines, col, note, ay) in enumerate(rows):
+        d.at((1, 1, 2, 2, 3, 4, 4)[i])
         for k, ln in enumerate(lines):
             yy = ay - 6 - (len(lines) - 1 - k) * 14
             d.text(mid, yy, ln, size=12, mono=True, anchor='middle', fill=P if k == 0 else S)
@@ -456,6 +527,7 @@ def session():
             d.line(sxl - 2, ay, bxl + 2, ay, stroke=col if col != AX else AX, end=True)
         if note:
             d.text(sxl + 8, ay + 4.3, note, size=12, fill=A)
+    d.at(4)
     d.text(10, bottom + 22, 'Test: cookie-ni sil və ya logout-dan sonra köhnə', size=12, fill=S)
     d.text(10, bottom + 38, 'cookie ilə sorğu göndər — giriş rədd olunmalıdır.', size=12, fill=S)
     d.H = bottom + 48
@@ -472,18 +544,25 @@ def tokenflow():
     steps = [
         ('1. Sorğu', [('POST {{baseUrl}}/login', P, 400)], 'server cavab verir'),
         ('2. Cavab · 200 OK', [('{"token": "', P, 400), ('eyJhbGci…', A, 600), ('"}', P, 400)], 'skript oxuyur'),
-        ('3. Tests skripti', [('pm.environment.set("token", …)', P, 400)], 'dəyəri saxlayır'),
+        ('3. Post-response skripti', [('pm.environment.set("token", …)', P, 400)], 'dəyəri saxlayır'),
         ('4. Environment', [('token = ', P, 400), ('eyJhbGci…', A, 600)], '{{token}} əvəzlənir'),
         ('5. Növbəti sorğu', [('Authorization: Bearer ', P, 400), ('{{token}}', A, 600)], None),
     ]
+    d.steps('Login sorğusu göndərilir: `POST {{baseUrl}}/login`.',
+            'Server `200 OK` ilə cavab verir. Cavabın gövdəsində (body) token var.',
+            'Post-response skripti (köhnə Postman-da Tests) cavabı oxuyur və token-i `pm.environment.set` ilə environment-ə yazır.',
+            'Token indi environment dəyişənidir: onu əl ilə köçürmək lazım deyil.',
+            'Növbəti sorğuda `{{token}}` öz dəyəri ilə əvəzlənir: `Authorization: Bearer …`.')
     x, w, h, gap = 10, 320, 46, 26
     y = ty + 16
     for i, (head, segs, arrow_lab) in enumerate(steps):
         env = head.startswith('4')
+        d.at(i + 1)
         d.rect(x, y, w, h, fill=A if env else TINT, fo=0.1 if env else None, stroke=A if env else AX, rx=8)
         d.text(x + 12, y + 18, head, size=12, w=600, fill=S)
         d.rich(x + 12, y + 36, segs, size=12, mono=True, inside=(x, y, w, h))
         if arrow_lab:
+            d.at(i + 2)
             d.line(60, y + h, 60, y + h + gap - 1, end=True)
             d.text(70, y + h + gap / 2 + 4.3, arrow_lab, size=12, fill=S)
         y += h + gap
@@ -576,10 +655,15 @@ reg('frametime', 'c17s6', '1% low', 'FPS və kadr vaxtı · stutter', frametime(
 def awaitd():
     d = D('await', W, 300, 'await nəticə gələnə qədər növbəti sətri saxlayır')
     ty = d.title('await nəticə gələnə qədər növbəti sətri saxlayır')
+    d.steps('await-siz: sorğu gedir, cavab isə bir az sonra gələcək. Kod gözləmədən növbəti sətrə keçir.',
+            '`console.log` cavab gəlməmiş işləyir və `Promise { <pending> }` çap edir: nəticə hələ yoxdur.',
+            'await ilə: kod bu sətirdə dayanır və cavabı gözləyir.',
+            'Cavab gələndən sonra növbəti sətir işləyir: `console.log` istifadəçinin adını çap edir.')
     x0, x1 = 24, 322
     panels = [('await-siz', False), ('await ilə', True)]
     y = ty + 28
     for name, has in panels:
+        d.at(3 if has else 1)
         d.text(10, y, name, size=13, w=600, mono=False)
         ay = y + 46
         d.line(x0, ay, x1, ay, end=True)
@@ -588,15 +672,18 @@ def awaitd():
         d.text(t_req - 6, ay - 12, 'sorğu getdi', size=12, fill=S)
         d.circle(t_resp, ay, 5, fill=AX)
         d.text(t_resp, ay - 12, 'cavab gəldi', size=12, fill=S, anchor='middle')
+        d.at(2 if not has else 4)
         if not has:
             lx = 70
             d.circle(lx, ay, 6, fill=CRIT, stroke=CRIT)
             d.text(lx - 12, ay + 22, 'console.log(response)', size=12, mono=True)
             d.text(lx - 12, ay + 38, 'Promise { <pending> }', size=12, mono=True, fill=CRIT)
         else:
-            d.rect(t_req + 9, ay - 10, t_resp - t_req - 18, 20, fill=A, fo=0.16, rx=10)
+            d.at(3)
+            d.rect(t_req + 9, ay - 10, t_resp - t_req - 18, 20, fill=A, fo=0.16, rx=10, grow=True)
             d.text((t_req + t_resp) / 2, ay + 4.3, 'await: gözləyir', size=12, w=600, fill=A, anchor='middle',
                    halo=True)
+            d.at(4)
             lx = 292
             d.circle(lx, ay, 6, fill=GOOD, stroke=GOOD)
             d.text(330, ay + 24, 'console.log(user.name)', size=12, mono=True, anchor='end')
@@ -622,34 +709,46 @@ def pom():
             d.rect(x, y, tw_, 26, fill=TINT, stroke=AX, rx=5)
             d.text(x + tw_ / 2, y + 17.5, t, size=12, mono=True, anchor='middle', inside=(x, y, tw_, 26))
 
+    d.steps('POM-suz: üç test faylının hər biri login düyməsinin lokatorunu özü yazır.',
+            'Lokator dəyişəndə üç faylın üçünü də düzəltmək lazımdır. Birini unutsan, o test düşəcək.',
+            'POM ilə: testlər `LoginPage` class-ından istifadə edir, lokator yalnız orada yazılıb.',
+            'Lokator dəyişəndə yalnız `LoginPage` düzəlir, testlərə toxunmursan.')
     # without POM
     y = ty + 26
+    d.at(1)
     d.text(10, y, 'POM-suz', size=13, w=600)
     ty1 = y + 10
     tests_row(ty1, CRIT)
     ub = (90, ty1 + 26 + 44, 160, 40)
     for x in tx:
         d.line(x + tw_ / 2, ty1 + 26, ub[0] + ub[2] / 2 + (x - 120) * 0.45, ub[1] - 1, stroke=CRIT, end=True)
+    d.at(1, 2)
     d.rect(*ub, fill=CRIT, fo=0.08, stroke=CRIT, rx=6)
     d.text(ub[0] + ub[2] / 2, ub[1] + 17, 'Login düyməsi', size=12.5, w=600, anchor='middle', inside=ub)
     d.text(ub[0] + ub[2] / 2, ub[1] + 32, '#login-button', size=12, mono=True, fill=S, anchor='middle', inside=ub)
+    d.at(2)
     d.text(258, ub[1] + 15, 'lokator', size=12, fill=CRIT)
     d.text(258, ub[1] + 31, '3 yerdə', size=12, w=600, fill=CRIT)
     sep = ub[1] + ub[3] + 18
+    d.at()
     d.line(10, sep, 330, sep, stroke=AX, sw=1, so=0.4)
     # with POM
     y = sep + 24
+    d.at(3)
     d.text(10, y, 'POM ilə', size=13, w=600)
     ty2 = y + 10
     tests_row(ty2, GOOD)
     pb = (90, ty2 + 26 + 40, 160, 40)
     for x in tx:
         d.line(x + tw_ / 2, ty2 + 26, pb[0] + pb[2] / 2 + (x - 120) * 0.45, pb[1] - 1, stroke=AX, end=True)
+    d.at(3, 4)
     d.rect(*pb, fill=GOOD, fo=0.1, stroke=GOOD, rx=6)
     d.text(pb[0] + pb[2] / 2, pb[1] + 17, 'LoginPage', size=12.5, w=600, anchor='middle', inside=pb)
     d.text(pb[0] + pb[2] / 2, pb[1] + 32, 'this.loginButton', size=12, mono=True, fill=S, anchor='middle', inside=pb)
+    d.at(4)
     d.text(258, pb[1] + 15, 'lokator', size=12, fill=GOOD)
     d.text(258, pb[1] + 31, '1 yerdə', size=12, w=600, fill=GOOD)
+    d.at(3)
     ub2 = (90, pb[1] + pb[3] + 30, 160, 32)
     d.line(170, pb[1] + pb[3], 170, ub2[1] - 1, end=True)
     d.rect(*ub2, fill=TINT, stroke=AX, rx=6)
@@ -671,26 +770,33 @@ def waitd():
     def X(t):
         return x0 + t * pps
 
+    d.steps('Səhifə hər dəfə fərqli sürətlə yüklənir: bir dəfə nəticə 0,8 saniyədə görünür, başqa dəfə 1,4 saniyədə.',
+            '`waitForTimeout(1000)` həmişə 1 saniyə gözləyir, sonra yoxlayır: səhifə tez açılanda keçir, gec açılanda düşür. Bu, flaky testdir.',
+            '`await expect(…)` şərti təkrar-təkrar yoxlayır və şərt ödənən kimi keçir: hər iki halda.')
     top = ty + 40
     lane1, lane2 = top + 40, top + 128
     bottom = lane2 + 52
+    d.at(1)
     for t, lab in ((0.8, 'tez: 0,8 s'), (1.4, 'yavaş: 1,4 s')):
         d.line(X(t), top - 6, X(t), bottom - 18, stroke=A, dash='4 3', sw=1.25)
         d.text(X(t), top - 14, lab, size=12, w=600, fill=A, anchor='middle')
     # lane 1: fixed wait 1.0 s
+    d.at(2)
     d.text(10, lane1 - 18, 'waitForTimeout(1000)', size=12, mono=True, halo=True)
-    d.rect(X(0), lane1 - 6, X(1.0) - X(0), 12, fill=AX, fo=0.25, rx=6)
+    d.rect(X(0), lane1 - 6, X(1.0) - X(0), 12, fill=AX, fo=0.25, rx=6, grow=True)
     d.poly([(X(1.0), lane1 - 8), (X(1.0) + 8, lane1), (X(1.0), lane1 + 8), (X(1.0) - 8, lane1)], fill=P)
-    d.text(10, lane1 + 26, 'Yoxlama 1,0 s-də: tez gündə keçir, yavaş gündə düşür.', size=12, fill=CRIT, halo=True)
+    d.text(10, lane1 + 26, 'Yoxlama 1,0 s-də: tez açılanda keçir, gec açılanda düşür.', size=12, fill=CRIT, halo=True)
     # lane 2: polling
+    d.at(3)
     d.text(10, lane2 - 18, 'await expect(…)', size=12, mono=True, halo=True)
     t = 0.0
     while t <= 1.4001:
         d.circle(X(t), lane2, 2.4, fill=AX)
         t += 0.1
     d.circle(X(1.4), lane2, 6, fill=GOOD, stroke=GOOD)
-    d.text(10, lane2 + 26, 'Şərt ödənənə qədər təkrar yoxlayır: hər iki gündə keçir.', size=12, fill=GOOD, halo=True)
+    d.text(10, lane2 + 26, 'Şərt ödənənə qədər təkrar yoxlayır: hər iki halda keçir.', size=12, fill=GOOD, halo=True)
     # axis
+    d.at()
     ay = bottom
     d.line(x0, ay, x1 + 8, ay, end=True)
     for tt in (0, 0.5, 1.0, 1.5, 2.0):
@@ -711,15 +817,23 @@ def gitareas():
     items = [('İşçi qovluq', 'redaktə etdiyin fayllar'), ('Staging', 'commit-ə hazır dəyişikliklər'),
              ('Lokal repo', 'commit-lərin tarixçəsi'), ('GitHub (remote)', 'komandanın ortaq nüsxəsi')]
     cmds = ['git add', 'git commit -m', 'git push']
+    d.steps('İşçi qovluq: faylları burada redaktə edirsən.',
+            '`git add` dəyişikliyi staging-ə qoyur: növbəti commit-ə nəyin düşəcəyini sən seçirsən.',
+            '`git commit -m` staging-dəkiləri mesajla lokal repo-nun tarixçəsinə yazır.',
+            '`git push` commit-ləri GitHub-a göndərir: komanda onları görür.',
+            '`git pull` komandanın yeni commit-lərini GitHub-dan götürür və işçi qovluğu yeniləyir.')
     y0 = ty + 20
     for i, (t, s) in enumerate(items):
         y = y0 + i * pitch
         gh = i == 3
+        d.at(*((1, 5) if i == 0 else (4, 5) if gh else (i + 1,)))
         d.labelbox(x, y, w, h, t, s, fill=A, fo=0.16 if gh else 0.08, stroke=A)
         if i < 3:
+            d.at(i + 2)
             d.line(x + 56, y + h, x + 56, y + pitch - 1, end=True)
             d.text(x + 66, y + h + (pitch - h) / 2 + 4.3, cmds[i], size=12.5, w=500, mono=True, fill=A)
     # pull arrow
+    d.at(5)
     yl = y0 + 3 * pitch + h / 2
     yf = y0 + h / 2
     rx = 262
@@ -737,19 +851,31 @@ def prflow():
     d = D('prflow', W, 350, 'Hər tapşırıq ayrıca budaqda gedir və main-ə yalnız PR ilə qayıdır')
     ty = d.title('Hər tapşırıq ayrıca budaqda gedir və main-ə yalnız PR ilə qayıdır')
     my, fy = ty + 50, ty + 118
+    d.steps('main-dən ayrıca budaq açılır: `git switch -c feature/login-tests`. main-ə toxunulmur.',
+            'Budaqda iş kiçik commit-lərlə gedir, hər birinin mənalı mesajı olur.',
+            'Budaq GitHub-a push edilir və pull request (PR) açılır: «bu dəyişikliyi main-ə qəbul edin».',
+            'Review və CI: komanda kodu yoxlayır, avtomatik testlər yaşıl olmalıdır.',
+            'Merge: budaq main-ə birləşir. main yenə işlək qalır.')
     d.text(10, my - 14, 'main', size=12, w=600, mono=True, fill=A)
     d.line(16, my, 326, my, stroke=A, sw=2, end=True)
     for x in (34, 84):
         d.circle(x, my, 6, fill=A, stroke=A)
+    d.at(5)
     d.circle(296, my, 7, fill=GOOD, stroke=GOOD)
     # branch
-    d.path(f'M 84 {my:g} C 100 {my:g} 104 {fy:g} 124 {fy:g} H 236', stroke=AX, sw=2)
+    d.at(1, 3)
+    d.path(f'M 84 {my:g} C 100 {my:g} 104 {fy:g} 124 {fy:g}', stroke=AX, sw=2)
+    d.at(2, 3)
+    d.path(f'M 124 {fy:g} H 236', stroke=AX, sw=2)
     for x in (140, 190, 236):
         d.circle(x, fy, 6, fill='none', stroke=AX, sw=2)
+    d.at(4)
     d.path(f'M 236 {fy:g} C 264 {fy:g} 270 {my:g} 289 {my:g}', stroke=GOOD, sw=2, dash='5 4', end=True)
+    d.at(1, 3)
     d.text(124, fy + 26, 'feature/login-tests', size=12, mono=True, fill=S)
     badges = [(1, 98, my + 30), (2, 190, fy - 22), (3, 236, fy - 22), (4, 270, fy - 8), (5, 296, my - 22)]
     for n, bx, by in badges:
+        d.at(n)
         d.circle(bx, by, 9, fill=P)
         d.text(bx, by + 4.3, str(n), size=12, w=600, anchor='middle', fill=TINT, check=False)
     legend = [('budaq aç', 'git switch -c feature/login-tests'),
@@ -759,6 +885,7 @@ def prflow():
               ('merge', 'main yenə işlək qalır')]
     ly = fy + 56
     for i, (a_, b) in enumerate(legend):
+        d.at(i + 1)
         yy = ly + i * 22
         d.circle(19, yy - 4, 8, fill=P)
         d.text(19, yy + 0.3, str(i + 1), size=11.5, w=600, anchor='middle', fill=TINT, check=False)
@@ -777,10 +904,16 @@ def pipeline():
     stages = ['Push / PR', 'Build', 'Linter + unit testlər', 'API testləri', 'Deploy: staging', 'E2E + smoke',
               'Deploy: production']
     x, w, h, pitch = 38, 172, 32, 50
+    d.steps('Push və ya PR pipeline-ı avtomatik başladır.',
+            'Build və sürətli yoxlamalar: linter və unit testlər bir neçə dəqiqəyə nəticə verir.',
+            'API testləri. Hər mərhələ qapıdır: biri düşsə, pipeline dayanır, deploy olmur və komandaya xəbər gedir.',
+            'Hamısı keçəndə build staging-ə çıxır, orada E2E və smoke testlər işləyir. Ucuz və sürətli yoxlamalar əvvəldədir.',
+            'Production-a deploy: continuous delivery-də əl ilə təsdiqlə, continuous deployment-də avtomatik.')
     y0 = ty + 20
     cx = x + w / 2
     for i, s in enumerate(stages):
         y = y0 + i * pitch
+        d.at((1, 2, 2, 3, 4, 4, 5)[i])
         if i == 0:
             d.rect(x, y, w, h, fill=A, fo=0.18, stroke=A, rx=h / 2)
         elif s.startswith('Deploy'):
@@ -789,8 +922,10 @@ def pipeline():
             d.rect(x, y, w, h, fill=TINT, stroke=AX, rx=6)
         d.text(cx, y + h / 2 + 4.5, s, size=12.5, w=600, anchor='middle', inside=(x, y, w, h))
         if i < len(stages) - 1:
+            d.at((2, 2, 3, 4, 4, 5)[i])  # the arrow belongs to the stage it leads to
             d.line(cx, y + h, cx, y + pitch - 1, end=True)
     # fail branch at API tests
+    d.at(3)
     fy = y0 + 3 * pitch + h / 2
     fx = 236
     d.line(x + w, fy, fx - 1, fy, stroke=CRIT, sw=1.5, end=True)
@@ -799,9 +934,11 @@ def pipeline():
     d.text(fx + 48, fy + 5, 'deploy olmur,', size=12, fill=S, anchor='middle')
     d.text(fx + 48, fy + 20, 'xəbər gedir', size=12, fill=S, anchor='middle')
     # delivery vs deployment
+    d.at(5)
     ly = y0 + 5 * pitch + h + (pitch - h) / 2
     d.text(cx + 10, ly + 4.3, 'Delivery: əl ilə təsdiq', size=12, fill=S)
     # speed axis
+    d.at(4)
     d.line(18, y0 + pitch, 18, y0 + 5 * pitch + h, stroke=AX, end=True)
     d.text(13, y0 + 3 * pitch + h / 2, 'əvvəl sürətli, sonra yavaş', size=12, fill=S, anchor='middle', rotate=-90)
     d.H = y0 + 6 * pitch + h + 12
@@ -829,17 +966,25 @@ def tstatus():
           ('2. Sona qədər getdi?', 'addımları keçmək olur', ('Blocked', 'baq mane olur', WARN, None)),
           ('3. Faktiki = gözlənilən?', 'ekrandakı ilə tutuşdur', ('Failed', 'bug report yaz', CRIT, None))]
     pitch = qh + 30
+    d.steps('Birinci sual: test bu relizdə icra olunurmu? Qəsdən buraxılıbsa və ya növbəsi hələ çatmayıbsa, status Not run olur.',
+            'İkinci sual: test sona qədər getdimi? Başqa bir problem (məsələn, login işləmir) addımları keçməyə mane olursa, status Blocked olur.',
+            'Üçüncü sual: faktiki nəticə gözlənilənlə eynidirmi? Deyilsə, status Failed olur və bug report yazılır.',
+            'Üç sualın üçünə də «bəli» — status Passed. Blocked test isə mane olan problem aradan qalxanda yenidən icra olunur.')
     y0 = ty + 22
     for i, (q, sub, (st, ss, col, tf)) in enumerate(qs):
         y = y0 + i * pitch
+        d.at(i + 1)
         d.labelbox(qx, y, qw, qh, q, sub, fill=TINT, fo=None, stroke=AX)
         cy = y + qh / 2
         d.line(qx + qw, cy, ox - 1, cy, end=True)
         d.text((qx + qw + ox) / 2, cy - 7, 'xeyr', size=12, fill=S, anchor='middle')
+        d.at(*((2, 4) if st == 'Blocked' else (i + 1,)))  # step 4 says when a Blocked test runs again
         outcome(d, ox, y, ow, qh, st, ss, col, dash='4 3' if col == AX else None, tfill=tf)
+        d.at(i + 2)
         d.line(qx + 40, y + qh, qx + 40, y + pitch - 1, end=True)
         d.text(qx + 50, y + qh + (pitch - qh) / 2 + 4.3, 'bəli', size=12, fill=S)
     py = y0 + 3 * pitch
+    d.at(4)
     outcome(d, qx, py, qw, qh, 'Passed', 'test keçdi', GOOD)
     yb = py + qh + 26
     d.text(10, yb, 'Blocked testi mane olan baq düzələndə', size=12, fill=S)
@@ -860,8 +1005,12 @@ def stubs():
             ('Bottom-up', 'aşağıdan yuxarı', ('Driver', 'qeydiyyat əvəzinə', True),
              ('Email servisi', 'hazırdır, test olunur', False))]
     cw, g, bh = 155, 10, 46
+    d.steps('Top-down: yuxarı modul (Qeydiyyat) hazırdır, onun çağırdığı email servisi hələ yoxdur. Onun yerini stub tutur.',
+            'Bottom-up: aşağı modul (Email servisi) hazırdır, onu çağıran qeydiyyat hələ yoxdur. Onu driver çağırır.',
+            'Big Bang: bütün modullar birdən qoşulur. Baq çıxanda onun hansı modulda olduğunu tapmaq çətindir.')
     y = ty + 30
     for i, (name, sub, top, bot) in enumerate(cols):
+        d.at(i + 1)
         x = 10 + i * (cw + g)
         d.text(x, y, name, size=13, w=600)
         d.text(x, y + 17, sub, size=12, fill=S)
@@ -875,10 +1024,12 @@ def stubs():
         d.line(x + 40, b1 + bh, x + 40, b2 - 1, end=True)
         d.text(x + 50, b1 + bh + 24.3, 'çağırır', size=12, fill=S)
     ly = y + 30 + 2 * bh + 40 + 30
+    d.at()
     d.rect(10, ly - 10, 24, 14, fill=A, fo=0.12, stroke=A, rx=3)
     d.text(42, ly + 1.3, 'əsl modul', size=12, fill=S)
     d.rect(140, ly - 10, 24, 14, fill=TINT, stroke=AX, rx=3, dash='4 3')
     d.text(172, ly + 1.3, 'müvəqqəti əvəzedici', size=12, fill=S)
+    d.at(3)
     d.rich(10, ly + 30, [('Big Bang', P, 600), (' — hamısı birdən qoşulur: baq', S, 400)], size=12, mono=False)
     d.text(10, ly + 46, 'çıxanda onun yerini tapmaq çətindir.', size=12, fill=S)
     d.H = ly + 56
@@ -1083,12 +1234,17 @@ def star():
                                        [('qısa yoxladım', S, 400)]]),
              ('R', 'Result · nəticə', [[('Relizdən əvvəl ', S, 400), ('3 kritik defekt', GOOD, 600)],
                                        [('tapıldı və düzəldildi', S, 400)]])]
+    d.steps('Situation — vəziyyət: harada idin, nə baş verirdi. Misalda: kursdakı komanda layihəsi.',
+            'Task — sənin vəzifən. Misalda: testlərə vaxt az qalmışdı.',
+            'Action — nə etdin, konkret addımlarla: ən vacib 10 ssenarini seçdin, qalanını checklist ilə qısa yoxladın.',
+            'Result — nəticə, mümkünsə rəqəmlə: relizdən əvvəl 3 kritik defekt tapıldı və düzəldildi.')
     cx, r, tx = 28, 15, 58
     y0 = ty + 22
     hs = [34 + 16 * len(lines) for _, _, lines in items]
     d.line(cx, y0 + 22, cx, y0 + sum(hs[:-1]) + 12 * (len(hs) - 1) + 22, stroke=AX)
     y = y0
-    for (letter, head, lines), h in zip(items, hs):
+    for n, ((letter, head, lines), h) in enumerate(zip(items, hs), 1):
+        d.at(n)
         if letter == 'A':
             d.rect(tx - 10, y, 330 - tx + 10, h, fill=A, fo=0.08, stroke=A)
         cy = y + 22
@@ -1098,6 +1254,7 @@ def star():
         for k, segs in enumerate(lines):
             d.rich(tx, y + 44 + k * 16, segs, size=12, mono=False)
         y += h + 12
+    d.at(3, 4)
     d.text(10, y + 14, 'A-da konkret addımların, R-də rəqəm olsun.', size=12, fill=S)
     d.H = y + 24
     return d
@@ -1181,15 +1338,70 @@ def riskmatrix():
 reg('riskmatrix', 'c11x2', 'Profil şəkli yüklənmir', 'risk matrisi · ehtimal × təsir', riskmatrix())
 
 
+# Steps for the older hand-drawn SVGs in widgets/: parse_book.py adds data-s to the parts these CSS selectors find.
+# slug -> [(caption, [selectors])]; a part listed in several steps appears at the first and is lit again at the others.
+def _cn(n, g='connectors'):
+    return f'g[data-claude-anchor="{g}"] > path:nth-of-type({n})'
+
+
+def _ga(*names):
+    return [f'g[data-claude-anchor="{x}"]' for x in names]
+
+
+def _tx(*ids):
+    return [f'text[data-claude-text-id="{x}"]' for x in ids]
+
+
+_VDEV = _ga('dev-business', 'dev-system', 'dev-arch', 'dev-module')
+_VTEST = _ga('test-unit', 'test-integration', 'test-system', 'test-acceptance')
+LEGACY = {
+    'vmodel': [
+        ('Sol qol yuxarıdan aşağı inkişaf mərhələləridir: biznes tələblərindən modul dizaynına qədər.',
+         _VDEV + _tx('col-dev') + [_cn(1), _cn(2), _cn(3)]),
+        ('Ən aşağıda kodlaşdırma: proqramçılar kodu yazır.', _ga('coding') + [_cn(4)]),
+        ('Sağ qol aşağıdan yuxarı test səviyyələridir: unit testdən qəbul testinə qədər.',
+         _VTEST + _tx('col-test') + [_cn(5), _cn(6), _cn(7), _cn(8)]),
+        ('Kəsik xətlər cütləri birləşdirir: hər səviyyənin testləri qarşısındakı inkişaf mərhələsində hazırlanır. '
+         'Test planlaşdırılması kod yazılmazdan çox əvvəl başlayır.',
+         _VDEV + _VTEST + ['g[data-claude-anchor="pairs"]'] + _tx('pair-note')),
+    ],
+    'buglife': [
+        ('Tester defekti tapır və report yazır: status New.', _ga('st-new')),
+        ('Lead və ya menecer defekti proqramçıya təyin edir: Assigned.', _ga('st-assigned') + [_cn(1)]),
+        ('Proqramçı defekt üzərində işləyir: Open / In Progress.', _ga('st-open') + [_cn(2)]),
+        ('Proqramçı və ya PO başqa qərar da verə bilər: Rejected (defekt deyil), Duplicate (artıq yazılıb), '
+         'Deferred (sonrakı relizə saxlanılıb), Cannot Reproduce (təkrarlanmadı).', _ga('other-outcomes') + [_cn(9)]),
+        ('Kod düzəldilir (Fixed). Düzəliş test mühitinə çatanda status Ready for Test olur.',
+         _ga('st-fixed', 'st-ready') + [_cn(3), _cn(4)]),
+        ('Tester retest edir. Defekt qalıbsa — Reopened: defekt yenidən proqramçıya qayıdır.',
+         _ga('st-reopened', 'st-ready', 'st-assigned') + _tx('retest-fail', 'back-to-dev') + [_cn(7), _cn(8)]),
+        ('Retest uğurludursa — Verified, sonra Closed. Düzəldilmiş defekt yalnız uğurlu retest-dən sonra bağlanır.',
+         _ga('st-verified', 'st-closed', 'st-ready') + _tx('retest-ok') + [_cn(5), _cn(6)]),
+    ],
+    'web': [
+        ('Brauzer serverə HTTP sorğu göndərir: `GET /products`. Bu sorğunu DevTools-un Network panelində görürsən.',
+         [_cn(1, 'http-calls')] + _tx('step-1')),
+        ('Server lazım olanı bazadan SQL ilə soruşur: `SELECT … FROM products`.', [_cn(1, 'db-calls')] + _tx('step-2')),
+        ('Baza məhsulların siyahısını serverə qaytarır. Bu iki addım brauzerdə görünmür: onları SQL ilə yoxlayırsan.',
+         [_cn(2, 'db-calls')] + _tx('step-3')),
+        ('Server cavab qaytarır: `200 OK` və JSON. Bu da Network panelində görünür.',
+         [_cn(2, 'http-calls')] + _tx('step-4')),
+        ('Brauzer cavabdan səhifəni qurub göstərir.', _ga('step-render')),
+    ],
+}
+
+
 if __name__ == '__main__':
     import svgkit
     bad = 0
     for e in ALL:
         dd = e['d']
         dd.svg()
-        if dd.errs:
+        errs = dd.errs + dd.step_errs()
+        if errs:
             bad += 1
             print('==', e['slug'])
-            for er in dd.errs:
+            for er in errs:
                 print('   ', er)
-    print('diagrams', len(ALL), 'with issues', bad, 'missing glyphs', sorted(svgkit.MISSING))
+    print('diagrams', len(ALL), 'with issues', bad, 'missing glyphs', sorted(svgkit.MISSING),
+          'step-by-step', sum(1 for e in ALL if e['d'].caps), '+', len(LEGACY), 'older')
