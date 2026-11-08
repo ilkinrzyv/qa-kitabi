@@ -66,6 +66,15 @@ Screenshots land in `build/shots/` (gitignored).
   `ev`, `row`, `side`, `why`, `model`). The shop logs what it sends in `dvtEvent` / `dvtLoad` (`app.js`, practice API
   paths); a planted bug's request or console line carries the bug's key, and that is what the diagnosis checks. A new
   page clears both logs unless Preserve log is on. The store has the same panel behind a toggle. `t26.js`.
+- `build/bughunt.json` — the bug hunt (`#bugov`, `#bugov-2`, `vHunt`, prefix `bh`): four new store builds (2.1–2.4, `st.hunt` =
+  level) with planted bugs and no test case — a charter, a timebox (`min`), the build's requirements (`spec` + the level's `add`)
+  and tips. Each bug: label `t`, keyword groups `where` (any word), `what` and `when` (every group; `when` may be absent), accepted
+  `sev`, `hint`, `why`, `model` title and `alt` titles. `parse_book.py` checks that the model and every alt identify their own bug
+  and that no model title also matches another bug of its level. The bugs themselves are code: `bhApply` (the shop; it hands the
+  rest to `smBase` with problem_user's and error_user's old bugs fixed), `smDevHTML` / `smPrice` (title, tax, price), `dvtEvent` /
+  `dvtLoad` (build 2.3's requests and console line) and `BH_SEEN` (when a bug's evidence is on screen or in DevTools — a bug is
+  logged only then). The level opens at `need` found in the one before. Finds, hints, misses and notes are the `bh` store doc.
+  `t38.js` reproduces and logs every bug, tries every alt and checks the store still has its old bugs.
 - `build/trace.json` — code tracer programs keyed by section id (example sections too). `lang: js` steps have the line
   `l`, variables set `v` (JS literals as text), dropped `x`, console output `o` and a note `n`; `t19.js` runs each
   program in Node and expects the same console lines and final top-level values. `lang: pw` steps drive the practice

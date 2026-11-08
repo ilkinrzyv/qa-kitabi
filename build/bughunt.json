@@ -1,0 +1,261 @@
+{
+  "intro": "Mini Store-un dörd yeni build-i test mühitinə gəlib. Köhnə məlum defektlər (problem_user, error_user) bu build-lərdə düzəldilib, amma hər build-də yeni bug-lar gizlənib. Test case yoxdur: kəşfiyyat sessiyasıdır (7.6). Mağazanı tələblərlə tutuşdur və bug-ı ekranda görünərkən qeyd et.",
+  "need": 3,
+  "spec": [
+    "Login: Username və Password məcburidir. Boş qalan sahənin adı xəta mesajında yazılır: “Epic sadface: Username is required” və ya “Epic sadface: Password is required”. locked_out_user bloklanıb.",
+    "Products: 6 məhsul və 4 sıralama seçimi. “Add to cart” basanda həmin məhsul səbətə düşür, düyməsi “Remove” olur, səbət nişanında məhsulların sayı görünür.",
+    "Məhsulun qiyməti bütün səhifələrdə eynidir: Products, Your Cart, Checkout: Overview.",
+    "Your Cart: “Remove” yalnız həmin məhsulu silir. “Continue Shopping” Products-a qaytarır.",
+    "Checkout: Your Information: First Name, Last Name və Zip/Postal Code məcburidir.",
+    "Checkout: Overview: Item total — qiymətlərin cəmi; Tax — Item total-un 8%-i, sentə yuvarlaqlaşdırılır; Total = Item total + Tax. “Cancel” Products-a qaytarır, səbət olduğu kimi qalır.",
+    "“Finish” sifarişi tamamlayır və səbəti boşaldır.",
+    "Menyu: “Logout” sessiyanı bitirir — növbəti istifadəçi boş səbətlə başlayır. “Reset App State” səbəti boşaldır."
+  ],
+  "levels": [
+    {
+      "id": 1, "name": "İlk baxış", "build": "2.1", "min": 10,
+      "charter": "Mağazanın bütün səhifələrini kəşf et: girişdən sifarişin sonuna qədər. Fokus — ekranda görünən mətnlər, mesajlar və rəqəmlər. Məqsəd — tələblərə zidd olan hər şeyi tapmaq.",
+      "tips": [
+        "Hər səhifəni aç və hər yazını oxu: başlıqlar, düymələr, mesajlar.",
+        "Eyni məhsulun qiymətini hər səhifədə tutuşdur.",
+        "Neqativ test: formu boş və ya yarımçıq göndər (7.5).",
+        "Prosesi sona qədər apar: sifarişi tamamla və sonra nəyin qaldığına bax."
+      ],
+      "bugs": {
+        "h1typo": {
+          "t": "Your Cart: səhifənin başlığında “Your Chart” yazılıb — “Your Cart” olmalıdır.",
+          "where": ["your cart", "səbət", "cart səhifə"],
+          "what": [["chart", "orfoqraf", "yazı səhv", "hərf səhv", "səhv yazıl", "typo"]],
+          "sev": ["Trivial", "Minor"],
+          "sevWhy": "Funksiyaya təsiri yoxdur — Trivial. Səhifənin başlığında olduğu üçün Minor da qəbul olunur. Priority isə yüksək ola bilər: bu yazını hər alıcı görür (12.5).",
+          "hint": "Hər səhifənin başlığını hərf-hərf oxu — xüsusən səbət səhifəsinin.",
+          "why": "Səhifənin adı səhv yazılıb: “Chart” diaqram deməkdir, səbət isə “Cart”-dır. Kiçik səhvdir, amma hamı görür — yazı səhvləri də bug report-a düşür.",
+          "model": "Your Cart: səhifə başlığında “Your Chart” yazılıb (“Your Cart” olmalıdır)",
+          "alt": ["Səbət səhifəsində başlıqda orfoqrafik səhv var: Your Chart", "Your Cart səhifəsinin adı səhv yazılıb"]
+        },
+        "h1price": {
+          "t": "T-Shirt (Red): Products-da $15.99, Your Cart və Overview-da $19.99 görünür; məbləğ də $19.99 ilə hesablanır.",
+          "where": ["your cart", "səbət", "overview", "checkout"],
+          "what": [["t-shirt (red)", "(red)", "red t-shirt", "qırmızı"],["19.99", "qiymət", "price", "fərqli", "dəyiş", "baha"]],
+          "sev": ["Critical", "Major"],
+          "sevWhy": "Alıcıdan elan olunandan çox pul alınır — Critical: ödəniş səhv məbləğlə gedir. Yalnız bir məhsula aid olduğu üçün Major da qəbul olunur.",
+          "hint": "Hər məhsulu səbətə at və qiymətini Products-dakı ilə tutuşdur.",
+          "why": "Tələb: qiymət bütün səhifələrdə eynidir. T-Shirt (Red) Products-da $15.99-dur, səbətdə və Overview-da isə $19.99 — Total da bu qiymətlə hesablanır.",
+          "model": "Your Cart: T-Shirt (Red)-in qiyməti $19.99 görünür, Products-da isə $15.99",
+          "alt": ["Səbət: qırmızı T-Shirt-in qiyməti Products-dakından fərqlidir", "Checkout: Overview: T-Shirt (Red) $19.99 ilə hesablanır"]
+        },
+        "h1err": {
+          "t": "Login: Username boş qalanda xəta mesajı “Password is required” deyir.",
+          "where": ["login", "giriş"],
+          "what": [["password is required", "səhv mesaj", "yanlış mesaj", "səhv xəta", "yanlış xəta", "mesaj səhv", "mesajı səhv", "password-u göstərir", "şifrəni göstərir"]],
+          "when": [["username", "istifadəçi adı"], ["boş", "doldurmadan", "yazmadan", "yazılmayanda", "olmadan"]],
+          "sev": ["Minor", "Trivial"],
+          "sevWhy": "Giriş işləyir, amma mesaj çaşdırır: istifadəçi şifrəni yoxlayacaq, halbuki boş qalan Username-dir — Minor. Mətn səhvi kimi Trivial da qəbul olunur.",
+          "hint": "Neqativ test: Login formunu müxtəlif boş sahələrlə göndər və mesajı tələblə tutuşdur.",
+          "why": "Tələb: boş qalan sahənin adı mesajda yazılır. Username boşdur, mesaj isə Password-u göstərir — istifadəçi yanlış sahəni düzəltməyə çalışacaq.",
+          "model": "Login: Username boş qalanda “Epic sadface: Password is required” xətası çıxır",
+          "alt": ["Giriş: istifadəçi adını yazmadan Login basanda səhv mesaj çıxır", "Login: Username boş olanda xəta mesajı səhvdir"]
+        },
+        "h1done": {
+          "t": "Checkout: Complete!: sifariş tamamlanandan sonra səbət boşalmır — nişanda məhsulların sayı qalır.",
+          "where": ["complete", "sifariş", "checkout", "products", "back home"],
+          "what": [["səbət", "nişan", "badge"], ["boşalmır", "qalır", "silinmir", "təmizlənmir", "görünür", "dəyişmir", "sıfırlanmır"]],
+          "when": [["finish", "sifariş", "tamamla", "alış"]],
+          "sev": ["Major", "Critical"],
+          "sevWhy": "Sifariş yaranır, amma köhnə məhsullar səbətdə qalır: alıcı növbəti sifarişdə onları təsadüfən yenidən ala bilər — Major. Pul itkisi riski kimi Critical da qəbul olunur.",
+          "hint": "Sifarişi sona qədər apar və “Finish”-dən sonra səbət nişanına bax.",
+          "why": "Tələb: “Finish” sifarişi tamamlayır və səbəti boşaldır. Sifariş tamamlandı, amma nişan köhnə sayı göstərir, Products-da isə “Remove” düymələri qalır.",
+          "model": "Checkout: Complete!: “Finish”-dən sonra səbət boşalmır, nişanda məhsulların sayı qalır",
+          "alt": ["Sifarişi tamamlayandan sonra səbət nişanı qalır", "Checkout: Finish basandan sonra səbət təmizlənmir"]
+        }
+      }
+    },
+    {
+      "id": 2, "name": "Sərhədlər və hesablamalar", "build": "2.2", "min": 15,
+      "add": [
+        "Səbətdə ən çox 5 məhsul ola bilər: 6-cı məhsulu əlavə edəndə “Cart limit: 5 items” xəbərdarlığı çıxır, məhsul əlavə olunmur.",
+        "Zip/Postal Code: 4–6 rəqəm. Başqa uzunluq və ya rəqəmdən başqa simvol olsa — “Error: Postal Code must be 4–6 digits”.",
+        "Ad sahələri yalnız boşluqlardan ibarət ola bilməz: belə dəyər boş sayılır."
+      ],
+      "charter": "Səbəti və checkout formunu kəşf et. Fokus — sərhəd dəyərləri və hesablamalar. Məqsəd — limitlərdə və məbləğlərdə xətaları tapmaq.",
+      "tips": [
+        "Sərhədlər: limitin özünü, bir az altını və bir az üstünü yoxla (8.3).",
+        "Sıfır, bir, çox: əvvəl bir məhsulla, sonra bir neçə məhsulla hesabla (7.6).",
+        "Error guessing: boş sahə, yalnız boşluqlar (9.4).",
+        "Məbləği özün hesabla: kalkulyator da test alətidir."
+      ],
+      "bugs": {
+        "h2zip": {
+          "t": "Checkout: Your Information: 6 rəqəmli Zip/Postal Code rədd olunur, halbuki tələb 4–6 rəqəmdir.",
+          "where": ["checkout", "your information", "information"],
+          "what": [["zip", "postal", "poçt"], ["qəbul", "rədd", "xəta", "error", "keçmir", "must be", "olmur", "vermir", "imkan"]],
+          "when": [["6", "altı"]],
+          "sev": ["Critical", "Major"],
+          "sevWhy": "6 rəqəmli kodu olan alıcı sifarişi heç tamamlaya bilmir, başqa yolu yoxdur — Critical. Alıcıların yalnız bir hissəsinə aid olduğu üçün Major da qəbul olunur.",
+          "hint": "Zip/Postal Code-u sərhədlərdə yoxla: 3, 4, 6 və 7 rəqəm (8.3).",
+          "why": "Tələb: 4–6 rəqəm. 6 sərhədin içindədir və qəbul olunmalıdır, amma rədd olunur: proqramçı yəqin “≤ 6” əvəzinə “< 6” yazıb. Bir vahid sürüşmə (off-by-one) tipik sərhəd xətasıdır — BVA məhz onu tutur.",
+          "model": "Checkout: Your Information: 6 rəqəmli Zip/Postal Code (100000) “must be 4–6 digits” xətası ilə rədd olunur",
+          "alt": ["Checkout: Zip kodu 6 rəqəm olanda qəbul olunmur", "Your Information: altı rəqəmli poçt kodu ilə Continue xəta verir"]
+        },
+        "h2tax": {
+          "t": "Checkout: Overview: səbətdə bir neçə məhsul olanda Tax yalnız birinci məhsulun 8%-i kimi hesablanır.",
+          "where": ["overview", "checkout"],
+          "what": [["tax", "vergi"], ["səhv", "yanlış", "düzgün deyil", "az", "birinci", "8%", "hesablan", "uyğun deyil", "fərqli"]],
+          "when": [["2", "iki", "bir neçə", "birdən çox", "çox məhsul", "neçə məhsul"]],
+          "sev": ["Critical", "Major"],
+          "sevWhy": "Məbləğ səhv hesablanır: şirkət çox məhsullu hər sifarişdə vergini az alır, hesabatda və qanun qarşısında problem yaranır — Critical. Ödəniş yenə alındığı üçün Major da qəbul olunur.",
+          "hint": "Overview-da Tax-ı özün hesabla: əvvəl bir məhsulla, sonra iki məhsulla (sıfır, bir, çox).",
+          "why": "Tələb: Tax — Item total-un 8%-i. Bir məhsulda düzgündür, iki məhsulda isə Tax yalnız birinci məhsuldan hesablanır: məsələn, $39.98 üçün $3.20 əvəzinə $2.40.",
+          "model": "Checkout: Overview: səbətdə iki məhsul olanda Tax səhv hesablanır — $39.98 üçün $3.20 əvəzinə $2.40",
+          "alt": ["Overview: bir neçə məhsul olanda vergi yalnız birinci məhsuldan hesablanır", "Checkout: Overview: 2 məhsulla Tax 8% deyil"]
+        },
+        "h2limit": {
+          "t": "Products: 5-ci məhsul səbətə əlavə olunmur — “Cart limit: 5 items” xəbərdarlığı səbətdə 4 məhsul olanda çıxır.",
+          "where": ["products", "səbət", "cart"],
+          "what": [["5", "beşinci", "beş", "limit"], ["əlavə olunmur", "əlavə etmək olmur", "əlavə edilmir", "düşmür", "qəbul olunmur", "xəbərdarlıq", "cart limit", "olmur", "alınmır", "getmir"]],
+          "when": [["4", "dörd"]],
+          "sev": ["Major", "Minor"],
+          "sevWhy": "Alıcı bir sifarişdə 5 məhsul ala bilmir, amma 4-ünü alıb qalanını ikinci sifarişlə ala bilər — yolu var, Major. Minor da qəbul olunur.",
+          "hint": "Məhsulları səbətə bir-bir əlavə et; xəbərdarlıq çıxanda nişandakı sayı tələblə tutuşdur (8.3).",
+          "why": "Tələb: ən çox 5 məhsul, xəbərdarlıq 6-cı məhsulda. Burada isə 5-ci məhsul artıq rədd olunur: limit bir vahid tez işləyir (off-by-one).",
+          "model": "Products: səbətdə 4 məhsul olanda 5-ci məhsul əlavə olunmur, “Cart limit: 5 items” xəbərdarlığı çıxır",
+          "alt": ["Səbətə beşinci məhsul düşmür, səbətdə dörd məhsul var", "Products: 4 məhsuldan sonra cart limit xəbərdarlığı çıxır"]
+        },
+        "h2space": {
+          "t": "Checkout: Your Information: yalnız boşluqlardan ibarət Last Name qəbul olunur, Overview açılır.",
+          "where": ["checkout", "your information", "information"],
+          "what": [["last name", "soyad"], ["boşluq", "space", "probel"]],
+          "sev": ["Minor", "Major"],
+          "sevWhy": "Sifariş soyadsız yaranır: çatdırılmada problem ola bilər, amma alış işləyir — Minor. Datanın keyfiyyətinə təsir etdiyi üçün Major da qəbul olunur.",
+          "hint": "Error guessing: məcburi sahələrə yalnız boşluq yaz (9.4) — hər sahəni ayrıca yoxla.",
+          "why": "Tələb: yalnız boşluqlardan ibarət dəyər boş sayılır. First Name-də bu qayda işləyir, Last Name-də isə yox: boşluqlar qəbul olunur və sifariş soyadsız gedir.",
+          "model": "Checkout: Your Information: yalnız boşluqlardan ibarət Last Name qəbul olunur, “Continue” Overview-u açır",
+          "alt": ["Checkout: Last Name sahəsinə boşluq yazanda xəta çıxmır", "Your Information: soyad yerinə probel yazmaq olur"]
+        }
+      }
+    },
+    {
+      "id": 3, "name": "Ekranın arxası", "build": "2.3", "min": 15, "dvt": true,
+      "add": [
+        "Login: POST /login; username və password sorğunun gövdəsində (body) gedir.",
+        "Səbətdən silmək: DELETE /cart/{productId}, productId — məhsulun nömrəsi (1–6). Cavab — səbətin son vəziyyəti.",
+        "Sifariş: POST /orders; gövdədə alıcının məlumatları və ödəniləcək məbləğ (total) gedir."
+      ],
+      "charter": "Mağazanı DevTools açıq halda kəşf et. Fokus — brauzerin serverə göndərdiyi sorğular və Console. Məqsəd — ekranda görünməyən defektləri tapmaq.",
+      "tips": [
+        "Hər hərəkətdən sonra Network-a bax: hansı sorğu getdi, URL-də və Payload-da nə var (13.9).",
+        "Səhifə dəyişəndə log silinir: “Preserve log”-u aç.",
+        "Ekran düzgün görünür deyə, sorğu da düzgündür demək deyil: sorğunu tələblə tutuşdur.",
+        "Console-da qırmızı sətir — ekran qaydasında olsa da — bir tapıntıdır."
+      ],
+      "bugs": {
+        "h3pw": {
+          "t": "Login: şifrə URL-də göndərilir — GET /login?username=…&password=…",
+          "where": ["login", "giriş"],
+          "what": [["şifrə", "parol", "password"], ["url", "query", "get /", "get sorğ", "get ilə", "get metod", "get request", "ünvan", "parametr"]],
+          "sev": ["Critical"],
+          "sevWhy": "Təhlükəsizlik riski: URL brauzerin tarixçəsində, server loglarında və proxy-lərdə qalır, şifrə oradan oğurlana bilər — Critical (12.3, 14.8).",
+          "hint": "Login sorğusuna Network-da bax: metoduna və URL-inə. Uğurlu girişdən sonra log silinir — “Preserve log”-u aç və ya yanlış şifrə ilə yoxla.",
+          "why": "Tələb: şifrə sorğunun gövdəsində gedir (POST /login). Burada isə GET sorğusu şifrəni URL-də göndərir. 14.8-in sadə yoxlaması budur: “Şifrə URL-də görünürmü?”",
+          "model": "Login: şifrə URL-də göndərilir — GET /login?username=standard_user&password=secret_sauce",
+          "alt": ["Login: password GET sorğusunun URL-ində görünür", "Giriş: parol query parametrində gedir"]
+        },
+        "h3del": {
+          "t": "Your Cart: “Remove” DELETE /cart/undefined göndərir (404) — məhsul ekrandan itir, amma serverdə qalır və səhifə dəyişəndə geri qayıdır.",
+          "where": ["your cart", "səbət", "cart"],
+          "what": [["remove", "sil"], ["undefined", "404", "geri qayıdır", "qayıdır", "yenidən görünür", "qalır", "silinmir", "geri gəlir"]],
+          "sev": ["Major", "Critical"],
+          "sevWhy": "Alıcı məhsulu sildiyini düşünür, amma o, sifarişə düşür. Products səhifəsində “Remove” işləyir — yolu var, Major. İstəmədiyi məhsulu almaq riski kimi Critical da qəbul olunur.",
+          "hint": "Your Cart-da məhsulu sil, Network-da DELETE sorğusunun URL-ini və statusunu oxu. Sonra səhifəni dəyiş və səbətə yenidən bax.",
+          "why": "Ekran məhsulu dərhal silir, amma brauzer serverə DELETE /cart/undefined göndərir: productId itib, server 404 qaytarır və məhsul serverdə qalır. Növbəti səhifə səbəti serverdən oxuyur — məhsul geri gəlir. Defekt frontend-dədir (13.10).",
+          "model": "Your Cart: “Remove” DELETE /cart/undefined göndərir (404), məhsul səhifə dəyişəndə geri qayıdır",
+          "alt": ["Səbət: Remove basanda məhsul silinmir, sonra yenidən görünür", "Your Cart: silinən məhsul Checkout-da geri gəlir"]
+        },
+        "h3total": {
+          "t": "Checkout: Overview: “Finish” POST /orders-da total-u vergisiz göndərir (Item total), ekrandakı Total isə vergi ilədir.",
+          "where": ["overview", "checkout", "finish", "orders", "sifariş"],
+          "what": [["total", "məbləğ", "cəm"], ["vergi", "tax", "fərqli", "uyğun deyil", "eyni deyil", "item total", "payload", "gövdə"]],
+          "sev": ["Critical", "Major"],
+          "sevWhy": "Server sifarişi səhv məbləğlə qeydə alır: şirkət hər sifarişdə vergi qədər pul itirir — Critical. Major da qəbul olunur.",
+          "hint": "“Finish”-dən əvvəl “Preserve log”-u aç, sonra POST /orders-un Payload-unda total-u ekrandakı Total ilə tutuşdur.",
+          "why": "Tələb: gövdədə ödəniləcək məbləğ gedir. Ekranda Total vergi ilədir (məsələn, $32.39), Payload-da isə total vergisizdir (29.99): server sifarişi az məbləğlə qeydə alır.",
+          "model": "Checkout: Overview: “Finish” POST /orders-da total-u vergisiz göndərir — Payload-da 29.99, ekranda Total $32.39",
+          "alt": ["POST /orders: Payload-dakı total ekrandakı Total ilə eyni deyil", "Checkout: sifarişin məbləği serverə vergisiz gedir"]
+        },
+        "h3con": {
+          "t": "Your Cart: səhifə açılanda Console-da “Uncaught ReferenceError: promoBanner is not defined” xətası çıxır.",
+          "where": ["your cart", "səbət", "cart"],
+          "what": [["console", "konsol"], ["xəta", "error", "referenceerror", "promobanner"]],
+          "when": [["açıl", "açan", "yüklən", "load", "keç", "gir"]],
+          "sev": ["Minor", "Major"],
+          "sevWhy": "Ekranda görünən təsiri yoxdur, amma kodun bir hissəsi işləmir — Minor. Səbəti hələ bilmədiyimiz şəkildə poza bilər deyə Major da qəbul olunur.",
+          "hint": "Hər səhifəyə keçəndə Console tabına bax: qırmızı sətir varmı?",
+          "why": "Səhifə düzgün görünür, amma kod qırılır: promoBanner adlı dəyişən yoxdur. Bu xəta səhifənin bir hissəsinin (məsələn, promo banner-in) göstərilməməsinə səbəb ola bilər. Console-dakı qırmızı xəta özü bir tapıntıdır.",
+          "model": "Your Cart: səhifə açılanda Console-da “Uncaught ReferenceError: promoBanner is not defined” xətası çıxır",
+          "alt": ["Səbət səhifəsi yüklənəndə konsolda ReferenceError var", "Your Cart: səhifəyə keçəndə Console-da qırmızı xəta çıxır"]
+        }
+      }
+    },
+    {
+      "id": 4, "name": "Ardıcıllıq və vəziyyət", "build": "2.4", "min": 20,
+      "charter": "Mağazanı müxtəlif ardıcıllıqlarla kəşf et. Fokus — hərəkətlərin birləşməsi, prosesi yarıda dayandırmaq, istifadəçini dəyişmək. Məqsəd — vəziyyətdən asılı defektləri tapmaq.",
+      "tips": [
+        "Vəziyyət keçidləri: hərəkətləri başqa ardıcıllıqla et — əvvəl sırala, sonra əlavə et (9.2).",
+        "Başla, dayan, geri qayıt: prosesi yarıda “Cancel” ilə kəs (7.6).",
+        "Başqa istifadəçi: çıx və başqa adla gir — əvvəlki istifadəçidən nə qaldı? (14.8)",
+        "Sıfır, bir, çox: səbətdə bir və bir neçə məhsulla sına."
+      ],
+      "bugs": {
+        "h4sort": {
+          "t": "Products: sıralama dəyişəndən sonra “Add to cart” başqa məhsulu səbətə atır — A-dan Z-yə sırada həmin yerdə duranı.",
+          "where": ["products"],
+          "what": [["başqa", "fərqli", "yanlış", "səhv", "digər", "ayrı", "əvəzinə"], ["məhsul", "əlavə", "düşür", "atır", "backpack", "add to cart"]],
+          "when": [["sırala", "sort", "price", "low to high", "high to low", "z to a", "sıra"]],
+          "sev": ["Critical", "Major"],
+          "sevWhy": "Alıcı seçmədiyi məhsulu alır — Critical: əsas funksiya səhv işləyir və pul itir. Səbəti yoxlayıb düzəltmək mümkün olduğu üçün Major da qəbul olunur.",
+          "hint": "Hərəkətləri birləşdir: əvvəl sıralamanı dəyiş, sonra məhsul əlavə et və hansı düymənin “Remove” olduğuna bax (9.2).",
+          "why": "Tələb: “Add to cart” basanda həmin məhsul səbətə düşür. Sıralamadan sonra kod məhsulu adına görə yox, siyahıdakı yerinə görə götürür — yeri də köhnə, A-dan Z-yə sıradan oxuyur.",
+          "model": "Products: “Price (low to high)” seçiləndən sonra Onesie üçün “Add to cart” basanda Onesie əvəzinə Backpack səbətə düşür",
+          "alt": ["Products: sıralamadan sonra Add to cart başqa məhsulu əlavə edir", "Products: Price (high to low) seçəndə səbətə yanlış məhsul düşür"]
+        },
+        "h4leak": {
+          "t": "Logout-dan sonra başqa istifadəçi ilə girəndə əvvəlki istifadəçinin səbəti qalır.",
+          "where": ["login", "products", "səbət", "giriş", "logout", "cart"],
+          "what": [["səbət", "cart", "nişan", "badge", "məhsul"], ["əvvəlki", "köhnə", "qalır", "keçir", "birinci", "görünür"]],
+          "when": [["logout", "çıx"], ["başqa", "digər", "ikinci", "fərqli", "problem_user", "error_user", "standard_user"]],
+          "sev": ["Critical", "Major"],
+          "sevWhy": "Bir istifadəçi digərinin seçimlərini görür və onları ala bilər: məxfilik pozulur — Critical (12.3: təhlükəsizlik riski). Major da qəbul olunur.",
+          "hint": "İstifadəçini dəyiş: səbətə məhsul at, menyudan “Logout” et, başqa adla daxil ol və səbət nişanına bax.",
+          "why": "Tələb: “Logout” sessiyanı bitirir, növbəti istifadəçi boş səbətlə başlayır. Burada səbət brauzerdə qalır və növbəti istifadəçiyə keçir — ortaq kompüterdə bu, başqasının datasını görmək deməkdir (14.8: sessiya).",
+          "model": "Products: Logout edib başqa istifadəçi ilə daxil olanda əvvəlki istifadəçinin səbəti qalır",
+          "alt": ["Logout-dan sonra problem_user ilə girəndə köhnə səbət görünür", "Giriş: başqa istifadəçi ilə daxil olanda səbət nişanında əvvəlki məhsullar qalır, logout etmişəm"]
+        },
+        "h4cancel": {
+          "t": "Checkout: Overview: “Cancel” səbəti boşaldır — tələbə görə səbət olduğu kimi qalmalıdır.",
+          "where": ["overview", "checkout"],
+          "what": [["səbət", "cart", "nişan", "məhsul"], ["boşal", "silin", "itir", "yox olur", "təmizlən", "gedir", "qalmır"]],
+          "when": [["cancel", "imtina", "ləğv"]],
+          "sev": ["Major", "Minor"],
+          "sevWhy": "Fikrini dəyişib geri qayıdan alıcının bütün seçimləri itir və hamısını yenidən əlavə etməlidir — yolu var, Major. Minor da qəbul olunur.",
+          "hint": "Başla, dayan, geri qayıt: Overview-a qədər get, “Cancel” bas və səbətdə nə qaldığına bax (7.6).",
+          "why": "Tələb: Overview-da “Cancel” Products-a qaytarır, səbət olduğu kimi qalır. Burada isə səbət boşalır — prosesi yarıda dayandıran alıcı seçimlərini itirir.",
+          "model": "Checkout: Overview: “Cancel” basanda səbət boşalır (Products-a qayıdır, nişan görünmür)",
+          "alt": ["Overview: Cancel basandan sonra səbətdəki məhsullar itir", "Checkout: Overview-dan imtina edəndə səbət təmizlənir"]
+        },
+        "h4rm2": {
+          "t": "Your Cart: səbətdə iki və ya daha çox məhsul olanda bir məhsulun “Remove” düyməsi hamısını silir.",
+          "where": ["your cart", "səbət", "cart"],
+          "what": [["hamı", "bütün", "hər iki", "ikisi", "all", "digər", "o biri"], ["sil", "itir", "yox olur", "gedir"]],
+          "when": [["iki", "2", "bir neçə", "birdən çox", "çox məhsul"]],
+          "sev": ["Major", "Minor"],
+          "sevWhy": "Alıcı bir məhsulu silmək istəyir, hamısını itirir və qalanları yenidən əlavə etməlidir — yolu var, Major. Minor da qəbul olunur.",
+          "hint": "Sıfır, bir, çox: Your Cart-da əvvəl bir, sonra iki məhsulla “Remove” sına.",
+          "why": "Tələb: “Remove” yalnız həmin məhsulu silir. Bir məhsulda fərq görünmür; iki məhsulda isə hamısı silinir — “bir” işləyir, “çox” işləmir.",
+          "model": "Your Cart: səbətdə iki məhsul olanda bir məhsulun “Remove” düyməsi hamısını silir",
+          "alt": ["Səbət: 2 məhsul olanda Remove bütün məhsulları silir", "Your Cart: bir neçə məhsul varkən birini silmək o birini də silir"]
+        }
+      }
+    }
+  ],
+  "sections": { "c7s6": [1, 2, 3, 4], "c8s3": [2], "c9s2": [4], "c9s4": [2], "c12s3": [1], "c13s9": [3], "c14s8": [3, 4] }
+}

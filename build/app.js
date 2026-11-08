@@ -87,6 +87,8 @@ const ICONS = {
   cart: '<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.6 12.2a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.5L21.5 8H6.2"/>',
   print: '<path d="M7 9V3h10v6"/><path d="M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7z"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  star: '<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>',
+  lock: '<rect x="5" y="11" width="14" height="9.5" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   camera: '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>',
   bug: '<rect x="7" y="7" width="10" height="13" rx="5"/><path d="M9 7a3 3 0 0 1 6 0M12 11v9M3 13h4M17 13h4M4 8l3 2M20 8l-3 2M4 19l3-2M20 19l-3-2"/>'
 };
@@ -216,6 +218,7 @@ function defFor(key) {
   if (key === 'chat') return { ctx: 'c1', turns: [] };
   if (key === 'pw') return { code: {}, done: {}, loc: {} };
   if (key === 'en') return { done: {}, txt: {} };
+  if (key === 'bh') return { lv: {}, last: 0 };
   if (key.startsWith('notes-')) return { n: {} };
   if (key.startsWith('ans-')) return { a: {} };
   return {};
@@ -473,7 +476,7 @@ function render(opts) {
   if (observer) { observer.disconnect(); observer = null; }
   hideSelPill();
   const v = $('#view');
-  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw, git: vGit, iv: vInterview, rs: vScript, en: vEnglish, skills: vSkills };
+  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, hunt: vHunt, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw, git: vGit, iv: vInterview, rs: vScript, en: vEnglish, skills: vSkills };
   document.body.removeAttribute('data-part'); // the reader sets it: the chapter's part colour for section numbers and the read bar
   (views[S.view] || vHome)(v);
   document.body.dataset.view = S.view; document.body.dataset.tab = S.tab; // PC layouts are keyed by these (app.css)
@@ -490,6 +493,7 @@ const SIDE_PR = [['cards', 'cards', 'Fleş kartlar', 'data-act="cards"'], ['glos
   ['iv', 'chat', 'Müsahibə məşqi', 'data-act="iv-open"'], ['rs', 'users', 'Rol oyunları', 'data-act="rs-open"'],
   ['en', 'pencil', 'İş üçün ingiliscə', 'data-act="en-open"'], ['skills', 'steps', 'Bacarıq xəritəsi', 'data-act="skills-open"'],
   ['store', 'cart', 'Məşq mağazası', () => `data-act="sm-open" data-sc="${SM.id && SM.ver !== REL_D.ver ? SM.id : 'tc01'}"`],
+  ['hunt', 'target', 'Bug ovu', () => `data-act="bh-open" data-lv="${BH.lv || ''}"`],
   ['release', 'checklist', 'Reliz testi', 'data-act="rel-open"'], ['devtools', 'bug', 'DevTools', 'data-act="dv-open"'],
   ['sql', 'list', 'SQL', 'data-act="sql-open"'], ['lab', 'send', 'API', 'data-act="lab-open"'],
   ['pw', 'play', 'Playwright', () => `data-act="pw-open" data-tab="${PW.tab}"`], ['git', 'steps', 'Git', () => `data-act="git-open-task" data-id="${GIT.task}"`],
@@ -935,10 +939,10 @@ function dtHTML(sid, c) {
 function textBody(c, s) {
   const lv = lvlOf(s.id);
   if (lv === 'short') {
-    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${engLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}
+    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${bhLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${engLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}
       <button class="btn sm ghost more" data-act="lvl" data-sec="${s.id}" data-v="std">${icon('book')}Tam mətni oxu</button>${miniHTML(c, s, false)}`;
   }
-  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${engLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
+  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${bhLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${engLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
 }
 function fbHTML(a) {
   let h = '';
@@ -1029,7 +1033,7 @@ function secHTML(c, s) {
   else if (s.kind === 'selfcheck') body = selfHTML(c, s);
   else if (s.kind === 'checklist') body = checklistHTML(s);
   else if (s.x) body = textBody(c, s);
-  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${engLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}`;
+  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${bhLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${engLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}`;
   return `<section class="sec${learned ? ' learned' : ''}" id="${s.id}" data-sec="${s.id}" data-kind="${s.kind}">
     <header class="sec-h"><span class="sec-num">${esc(s.num || kindTag(s).toLocaleUpperCase('az'))}</span><h2>${esc(s.title)}</h2>${s.x ? lvlCtl(s.id, lvlOf(s.id)) : ''}</header>
     ${body}${footerHTML(c, s)}</section>`;
@@ -1213,13 +1217,14 @@ const SM_ERR = { badAdd: 'onesie', price: { fleece: 4.99 } };
 const SM = { id: undefined, ver: '1.0', found: {}, passed: {}, dvt: { open: false, tab: 'net', filter: 'all', sub: 'hdrs', keep: false, sel: null, seq: 0, net: [], con: [] } }; // session only
 const money = n => '$' + n.toFixed(2);
 const tcName = id => id.replace(/^tc/, 'TC-');
-// the price the shop shows and sorts by is the one the server sends: wrong for error_user's Fleece Jacket
-const smPrice = (st, p) => (st.user === 'error_user' && SM_ERR.price[p.id]) || p.price;
+// the price the shop shows and sorts by is the one the server sends: wrong for error_user's Fleece Jacket. Bug hunt
+// build 2.1 (st.hunt 1) has its own: T-Shirt (Red) costs more everywhere but on Products. The hunt builds fixed the old bugs
+const smPrice = (st, p) => (st.hunt ? st.hunt === 1 && st.page !== 'products' && BH_PRICE[p.id] : st.user === 'error_user' && SM_ERR.price[p.id]) || p.price;
 const smFresh = (s0, ver) => ({ page: s0.page, user: s0.user || '', cart: (s0.cart || []).slice(), sort: 'az', order: 'az', err: '', menu: false, ver: ver || '1.0', f: { user: '', pass: '', first: '', last: '', zip: '' } });
 function smStart(id, ver) {
   const sc = scById[id] || null, nid = sc ? id : null, v = sc && ver === REL_D.ver ? ver : '1.0';
   // a restart keeps the open bug report: reproducing the bug again is how its frequency (3/3) is measured
-  Object.assign(SM, { id: nid, ver: v, sc, dv: null, done: 0, off: false, snap: null, fb: null, ans: '', status: '', title: '', touched: {}, st: smFresh(sc ? sc.start : { page: 'login' }, v),
+  Object.assign(SM, { id: nid, ver: v, sc, dv: null, bh: null, done: 0, off: false, snap: null, fb: null, ans: '', status: '', title: '', touched: {}, st: smFresh(sc ? sc.start : { page: 'login' }, v),
     rep: SM.id === nid && SM.ver === v ? SM.rep : null });
   dvtReset();
 }
@@ -1240,9 +1245,11 @@ function smEvent(e) {
 }
 // the shop itself: one event changes one state (the practice store's, or the code tracer's browser); planted bugs that
 // fire are noted in `found`. Build 1.1 (store.json "release") fixes add and sort, not Last Name, and breaks Remove on
-// Your Cart for every user — the regression the release test has to catch
-function smApply(st, e, found) {
-  const prob = st.user === 'problem_user', errU = st.user === 'error_user', v11 = st.ver === REL_D.ver;
+// Your Cart for every user — the regression the release test has to catch. A bug hunt build (st.hunt) goes through
+// bhApply, which plants its own bugs and leaves the rest to smBase with problem_user's and error_user's bugs fixed
+function smApply(st, e, found) { if (st.hunt) bhApply(st, e, found); else smBase(st, e, found); }
+function smBase(st, e, found) {
+  const prob = st.user === 'problem_user' && !st.hunt, errU = st.user === 'error_user' && !st.hunt, v11 = st.ver === REL_D.ver;
   switch (e.ev) {
     case 'login': {
       const u = st.f.user.trim(), p = st.f.pass; Object.assign(e, { user: u, pass: p });
@@ -1294,7 +1301,7 @@ function smStep(e, before) {
 }
 // typing into a field (the store, a Playwright fill); problem_user's planted bug: Last Name's letters land in First Name
 function smFill(st, f, v, found) {
-  if (f === 'last' && st.user === 'problem_user' && v) { st.f.first = v.slice(-1); st.f.last = ''; found.last = (found.last || 0) + 1; }
+  if (f === 'last' && st.user === 'problem_user' && !st.hunt && v) { st.f.first = v.slice(-1); st.f.last = ''; found.last = (found.last || 0) + 1; }
   else st.f[f] = v;
 }
 function smType(t) {
@@ -1395,20 +1402,22 @@ function smFbHTML() {
     <details class="cmp-why sm-model"><summary>${icon('eye')}Ekranda nə vardı? (nümunə cavab)</summary><p>${esc(smList(SM.snap))}.</p>
       ${sb && f.truth === 'Failed' ? `<p><b>Bug başlığı:</b> ${esc(sb.model)}</p>` : ''}</details>`;
 }
+// bug hunt builds: st.gone = removed on screen only (build 2.3, until the next page reads the cart again), st.note = the
+// Products page's own warning (build 2.2's cart limit); the title and the tax have planted bugs of their own (bhApply)
 function smDevHTML(st = SM.st) {
-  const n = st.cart.length, pg = st.page;
+  const vis = st.gone && st.gone.length ? st.cart.filter(id => !st.gone.includes(id)) : st.cart, n = vis.length, pg = st.page;
   const btn = (e, label, cls, extra) => `<button class="sm-btn${cls ? ' ' + cls : ''}" data-act="sm" data-e="${e}"${extra || ''}>${label}</button>`;
   const err = st.err ? `<div class="sm-err" role="alert"><span>${esc(st.err)}</span><button data-act="sm" data-e="err-x" aria-label="Bağla">✕</button></div>` : '';
   const inp = (f, type) => `<input class="sm-in${st.err ? ' bad' : ''}" data-sm-f="${f}" type="${type || 'text'}" placeholder="${SM_FIELDS[f]}" value="${esc(st.f[f])}" autocomplete="off" autocapitalize="off" spellcheck="false">`;
   const line = (p, b) => `<div class="sm-item">${pg === 'products' ? '' : '<span class="sm-qty">1</span>'}<div><div class="sm-name">${esc(p.name)}</div><div class="sm-price">${money(smPrice(st, p))}</div></div>${b || ''}</div>`;
-  const items = st.cart.map(id => prodById[id]);
-  const total = items.reduce((a, p) => a + smPrice(st, p), 0), tax = Math.round(total * 8) / 100;
-  const ver = st.ver === REL_D.ver ? ` <span class="sm-ver">${st.ver}</span>` : '';
+  const items = vis.map(id => prodById[id]);
+  const total = items.reduce((a, p) => a + smPrice(st, p), 0), tax = Math.round((st.hunt === 2 && items.length > 1 ? smPrice(st, items[0]) : total) * 8) / 100;
+  const vl = st.hunt ? BHL(st.hunt).build : st.ver === REL_D.ver ? st.ver : '', ver = vl ? ` <span class="sm-ver">${vl}</span>` : '';
   if (pg === 'login') return `<div class="sm-logo big">Mini Store${ver}</div><div class="sm-body">${inp('user')}${inp('pass', 'password')}${err}${btn('login', 'Login', 'main')}
     <div class="sm-cred"><b>Accepted usernames are:</b><br>${STORE.users.join('<br>')}<br><b>Password for all users:</b><br>${esc(STORE.password)}</div></div>`;
   const body = {
-    products: () => smOrder(st).map(p => line(p, st.cart.includes(p.id) ? btn('remove', 'Remove', 'rm', ` data-item="${p.id}" data-where="products"`) : btn('add', 'Add to cart', '', ` data-item="${p.id}" data-where="products"`))).join(''),
-    cart: () => `<div class="sm-ch"><span>QTY</span><span>Description</span></div>${(st.user === 'error_user' ? items.slice(0, 1) : items).map(p => line(p, btn('remove', 'Remove', 'rm', ` data-item="${p.id}" data-where="cart"`))).join('')}
+    products: () => (st.note ? `<div class="sm-err" role="alert"><span>${esc(st.note)}</span></div>` : '') + smOrder(st).map(p => line(p, st.cart.includes(p.id) ? btn('remove', 'Remove', 'rm', ` data-item="${p.id}" data-where="products"`) : btn('add', 'Add to cart', '', ` data-item="${p.id}" data-where="products"`))).join(''),
+    cart: () => `<div class="sm-ch"><span>QTY</span><span>Description</span></div>${(st.user === 'error_user' && !st.hunt ? items.slice(0, 1) : items).map(p => line(p, btn('remove', 'Remove', 'rm', ` data-item="${p.id}" data-where="cart"`))).join('')}
       <div class="sm-acts">${btn('shop', 'Continue Shopping')}${btn('checkout', 'Checkout', 'main')}</div>`,
     info: () => `${inp('first')}${inp('last')}${inp('zip')}${err}<div class="sm-acts">${btn('cancel', 'Cancel')}${btn('continue', 'Continue', 'main')}</div>`,
     overview: () => `<div class="sm-ch"><span>QTY</span><span>Description</span></div>${items.map(p => line(p)).join('')}
@@ -1419,7 +1428,7 @@ function smDevHTML(st = SM.st) {
   return `<div class="sm-bar"><button class="sm-ib" data-act="sm" data-e="menu" aria-label="Open Menu">☰</button><span class="sm-logo">Mini Store${ver}</span>
       <button class="sm-ib sm-cart" data-act="sm" data-e="cart" aria-label="Səbət">${icon('cart')}${n ? `<span class="sm-badge">${n}</span>` : ''}</button></div>
     ${st.menu ? `<div class="sm-menu"><button data-act="sm" data-e="shop">All Items</button><button data-act="sm" data-e="logout">Logout</button><button data-act="sm" data-e="reset">Reset App State</button></div>` : ''}
-    <div class="sm-ph"><span class="sm-title">${SM_PAGES[pg]}</span>${pg === 'products' ? `<select class="sm-sort" data-sm-sort aria-label="Sıralama">${SM_SORTS.map(([v, l]) => `<option value="${v}"${st.sort === v ? ' selected' : ''}>${l}</option>`).join('')}</select>` : ''}</div>
+    <div class="sm-ph"><span class="sm-title">${st.hunt === 1 && pg === 'cart' ? 'Your Chart' : SM_PAGES[pg]}</span>${pg === 'products' ? `<select class="sm-sort" data-sm-sort aria-label="Sıralama">${SM_SORTS.map(([v, l]) => `<option value="${v}"${st.sort === v ? ' selected' : ''}>${l}</option>`).join('')}</select>` : ''}</div>
     <div class="sm-body">${body}</div>`;
 }
 function smCaseHTML() {
@@ -1458,7 +1467,7 @@ function smRedraw(typing) {
 }
 function vStore(v) {
   const id = scById[S.params.sc] ? S.params.sc : null, ver = id && S.params.ver === REL_D.ver ? REL_D.ver : '1.0';
-  if (SM.id !== id || SM.ver !== ver || SM.dv) smStart(id, ver);
+  if (SM.id !== id || SM.ver !== ver || SM.dv || SM.bh) smStart(id, ver);
   const sc = SM.sc, rel = SM.ver === REL_D.ver;
   setHeader({ back: true, kicker: rel ? `Reliz testi · ${SM.ver}` : 'Məşq mağazası', name: sc ? `${tcName(sc.id)} · ${sc.title}` : STORE.free.title });
   // build 1.1: the chips keep the version, their marks are the release runs
@@ -1741,8 +1750,10 @@ function dvtLoad(st, nav) {
   const D = SM.dvt;
   if (nav && !D.keep) Object.assign(D, { net: [], con: [], sel: null });
   dvtReq('document', 'GET', SITE_URL + TR_URL[st.page], 200, null, null);
-  if (st.page === 'products') dvtApi('GET', '/products', 200, null, dvtProducts(st), st.user === 'error_user' ? 'eprice' : null);
-  if (['products', 'cart', 'overview'].includes(st.page)) dvtApi('GET', '/cart', 200, null, dvtCart(st), st.page === 'cart' && st.user === 'error_user' && st.cart.length > 1 ? 'eview' : null);
+  const errU = st.user === 'error_user' && !st.hunt;
+  if (st.page === 'products') dvtApi('GET', '/products', 200, null, dvtProducts(st), errU ? 'eprice' : null);
+  if (['products', 'cart', 'overview'].includes(st.page)) dvtApi('GET', '/cart', 200, null, dvtCart(st), st.page === 'cart' && errU && st.cart.length > 1 ? 'eview' : null);
+  if (st.hunt === 3 && st.page === 'cart') dvtCon('error', 'Uncaught ReferenceError: promoBanner is not defined', 'cart.js:41', 'h3con'); // bug hunt 2.3
 }
 function dvtReset() { Object.assign(SM.dvt, { net: [], con: [], sel: null }); dvtLoad(SM.st); }
 // what the shop sent for one event (smApply already ran); fired(k): planted bug k happened just now
@@ -1750,16 +1761,29 @@ function dvtEvent(e, b0, fired) {
   const st = SM.st;
   if (e.ev === 'login' && e.user && e.pass) { // empty fields are caught by the form itself: nothing is sent
     const code = !st.err ? 200 : /locked out/.test(st.err) ? 403 : 401;
-    dvtApi('POST', '/login', code, { username: e.user, password: e.pass }, code === 200 ? { token: dvtTok(e.user), username: e.user } : { error: st.err.replace(/^Epic sadface: /, '') });
+    const res = code === 200 ? { token: dvtTok(e.user), username: e.user } : { error: st.err.replace(/^Epic sadface: /, '') };
+    if (st.hunt === 3) dvtApi('GET', `/login?username=${encodeURIComponent(e.user)}&password=${encodeURIComponent(e.pass)}`, code, null, res, 'h3pw'); // bug hunt 2.3: the password in the URL
+    else dvtApi('POST', '/login', code, { username: e.user, password: e.pass }, res);
   } else if (e.ev === 'add') {
+    const id = e.added || e.item; // bug hunt 2.4: after a sort the shop adds another product than the one pressed
     if (fired('add')) dvtCon('error', "Uncaught TypeError: Cannot read properties of undefined (reading 'id')", 'inventory.js:57', 'add');
     else if (fired('e400')) dvtApi('POST', '/cart', 400, { product_id: pidOf(e.item) }, { error: 'productId is required' }, 'e400');
-    else dvtApi('POST', '/cart', 201, { productId: pidOf(e.item) }, dvtCart(st));
+    else if (fired('h2limit')) { } // the shop's own limit check: nothing is sent
+    else if (st.hunt && b0.cart.includes(id)) dvtApi('POST', '/cart', 409, { productId: pidOf(id) }, { error: 'Product is already in the cart' }, 'h4sort');
+    else dvtApi('POST', '/cart', 201, { productId: pidOf(id) }, dvtCart(st), fired('h4sort') ? 'h4sort' : null);
   } else if (e.ev === 'remove' && !fired('remove')) { // problem_user's Remove on Products fails in the page: nothing is sent
-    dvtApi('DELETE', '/cart/' + pidOf(e.item), 200, null, dvtCart(st));
+    if (fired('h3del')) dvtApi('DELETE', '/cart/undefined', 404, null, { error: 'Product is not in the cart' }, 'h3del');
+    else if (fired('h4rm2')) dvtApi('DELETE', '/cart', 200, null, dvtCart(st), 'h4rm2');
+    else dvtApi('DELETE', '/cart/' + pidOf(e.item), 200, null, dvtCart(st));
+  } else if (e.ev === 'cancel' && fired('h4cancel')) {
+    dvtApi('DELETE', '/cart', 200, null, dvtCart(st), 'h4cancel');
   } else if (e.ev === 'finish') {
     const f = st.f, body = { firstName: f.first || 'Ali', lastName: f.last || 'Aliyev', zip: f.zip || '1000' }; // a case that starts on Overview filled the form before
     if (fired('e500')) dvtApi('POST', '/orders', 500, body, { error: 'Internal Server Error' }, 'e500');
+    else if (st.hunt === 3) { // bug hunt 2.3: the order goes out with the item total, the screen's Total has the tax in it
+      const c = dvtCart(st, b0.cart), b = Object.assign({}, body, { total: c.total });
+      dvtApi('POST', '/orders', 201, b, Object.assign({ id: 1000 + SM.dvt.seq }, body, c, { status: 'created' }), 'h3total');
+    }
     else { const c = dvtCart(st, b0.cart); dvtApi('POST', '/orders', 201, body, Object.assign({ id: 1000 + SM.dvt.seq }, body, c, { tax: round2(c.total * 0.08), status: 'created' })); }
   }
   if (st.page !== b0.page) dvtLoad(st, true);
@@ -1888,6 +1912,249 @@ function vDevtools(v) {
 }
 const dvtLinkHTML = s => s.dt ? `<div class="sm-link"><div class="srt-k">${icon('search')}DevTools məşqi</div><p class="srt-hint">Məşq mağazasında Network və Console-u aç: beş istifadəçi şikayəti, hər biri 13.10-dakı cədvəlin bir sətri.</p>
   <div class="sm-links">${DVD.tasks.map(t => `<button class="btn sm" data-act="dv-open" data-dv="${t.id}"><b>${DVS.done[t.id] ? '✓' : dvName(t.id)}</b> ${esc(t.title)}</button>`).join('')}</div></div>` : '';
+/* ---------- bug hunt (bughunt.json, #bugov): four new builds of the practice store (2.1–2.4) with planted bugs and no test
+   case — an exploratory session with a charter, a timebox and the build's requirements (7.6). bhApply plants the bugs,
+   BH_SEEN says when one shows on screen or in DevTools. The reader logs a bug by its title: bhFind identifies it by
+   bughunt.json's keyword groups (where: any word; what and when: every group) and takes it only while its evidence is
+   there (12.8). Found bugs, hints and notes are the `bh` store doc; the next level opens at BHD.need found bugs. t38 ---------- */
+const BHD = BOOK.bughunt;
+const BHL = n => BHD.levels[n - 1];
+const BH_N = BHD.levels.reduce((a, l) => a + Object.keys(l.bugs).length, 0);
+const BH_PRICE = { redshirt: 19.99 }; // build 2.1: T-Shirt (Red) everywhere but on Products
+const BH_LIMIT = 5; // build 2.2's requirement: at most 5 products; its bug refuses the 5th
+const BH_ERR1 = 'Epic sadface: Password is required', BH_ZIP = 'Error: Postal Code must be 4–6 digits', BH_NOTE = 'Cart limit: 5 items';
+const BH = { lv: 0, t0: 0, title: '', sev: '', edit: null, fb: null }; // session only
+let bhTick = 0;
+// the shop of a hunt build (st.hunt = level): hx marks what a planted bug did, for BH_SEEN; own = whose cart it is
+function bhApply(st, e, found) {
+  const n = st.hunt, X = st.hx, f = st.f, pg0 = st.page, base = () => smBase(st, e, found), hit = k => { found[k] = (found[k] || 0) + 1; };
+  if (!['type', 'menu', 'err-x'].includes(e.ev)) st.note = '';
+  switch (e.ev) {
+    case 'login': {
+      const prev = st.own;
+      if (n === 1 && !f.user.trim()) { Object.assign(e, { user: '', pass: f.pass }); st.err = BH_ERR1; break; } // 2.1: the message names the wrong field
+      base();
+      if (n === 3 && e.user && e.pass) hit('h3pw'); // 2.3: dvtEvent sends the password in the URL
+      if (n === 4 && !st.err && st.cart.length && prev && prev !== st.user) { X.leak = 1; hit('h4leak'); } // 2.4: the cart outlives the user
+      break;
+    }
+    case 'logout': base(); if (n !== 4) Object.assign(st, { cart: [], gone: [] }); break; // the requirement: the next user starts with an empty cart
+    case 'add': {
+      if (st.cart.includes(e.item)) { base(); break; }
+      if (n === 2 && st.cart.length >= BH_LIMIT - 1) { st.note = BH_NOTE; X.limit = 1; hit('h2limit'); break; } // 2.2: the limit hits one product early
+      if (n === 4 && st.order !== 'az') { // 2.4: the product is taken by its place in the list, read from the A–Z order
+        const i = smOrder(st).findIndex(p => p.id === e.item), real = smOrder(Object.assign({}, st, { order: 'az' }))[i].id;
+        if (real !== e.item) { e.added = real; if (!st.cart.includes(real)) st.cart.push(real); X.sort = (X.sort || []).concat(real); hit('h4sort'); break; }
+      }
+      base(); break;
+    }
+    case 'remove':
+      if (n === 3 && e.where === 'cart') { st.gone.push(e.item); X.del = (X.del || []).concat(e.item); hit('h3del'); break; } // 2.3: off the screen, still on the server
+      if (n === 4 && e.where === 'cart' && st.cart.length > 1) { st.cart = []; X.rm2 = 1; hit('h4rm2'); break; } // 2.4: one Remove empties the cart
+      base(); break;
+    case 'cancel':
+      if (n === 4 && st.page === 'overview') { Object.assign(st, { page: 'products', cart: [], err: '' }); X.cancel = 1; hit('h4cancel'); break; } // 2.4
+      base(); break;
+    case 'continue':
+      if (n !== 2) { base(); break; }
+      // build 2.2's own rules; its bugs: 6 digits are refused (< 6 instead of ≤ 6), a Last Name of spaces passes (not trimmed)
+      Object.assign(e, { first: f.first, last: f.last, zip: f.zip });
+      st.err = !f.first.trim() ? 'Error: First Name is required' : !f.last ? 'Error: Last Name is required' : !f.zip ? 'Error: Postal Code is required' : !/^\d{4,5}$/.test(f.zip) ? BH_ZIP : '';
+      if (st.err === BH_ZIP && /^\d{6}$/.test(f.zip)) hit('h2zip');
+      if (!st.err) { st.page = 'overview'; if (!f.last.trim()) hit('h2space'); }
+      break;
+    case 'finish':
+      if (n === 1) { st.page = 'complete'; X.done = 1; hit('h1done'); break; } // 2.1: the order goes, the cart stays
+      base(); if (n === 3) hit('h3total'); break; // 2.3: dvtEvent sends the total without the tax
+    case 'reset': base(); Object.assign(st, { gone: [], hx: {} }); break;
+    default: base();
+  }
+  if (st.page !== pg0) st.gone = []; // a new page reads the cart from the server again
+  if (!st.cart.length) st.own = ''; else if (!st.own) st.own = st.user;
+}
+const bhIn = k => SM.dvt.net.some(x => x.bug === k) || SM.dvt.con.some(x => x.bug === k); // the evidence is in DevTools now
+// a planted bug is "seen" while the screen (or DevTools) shows it: only then can it be logged
+const BH_SEEN = {
+  h1typo: st => st.page === 'cart',
+  h1price: st => (st.page === 'cart' || st.page === 'overview') && st.cart.includes('redshirt'),
+  h1err: st => st.page === 'login' && st.err === BH_ERR1 && !st.f.user.trim(),
+  h1done: st => !!st.hx.done && st.cart.length > 0 && st.page !== 'login',
+  h2zip: st => st.page === 'info' && st.err === BH_ZIP && /^\d{6}$/.test(st.f.zip),
+  h2tax: st => st.page === 'overview' && st.cart.length > 1,
+  h2limit: st => st.page === 'products' && !!st.hx.limit && st.cart.length === BH_LIMIT - 1,
+  h2space: st => st.page === 'overview' && !!st.f.last && !st.f.last.trim(),
+  h3pw: () => bhIn('h3pw'),
+  h3del: st => (st.hx.del || []).some(id => st.cart.includes(id)),
+  h3total: () => bhIn('h3total'),
+  h3con: () => bhIn('h3con'),
+  h4sort: st => (st.page === 'products' || st.page === 'cart') && (st.hx.sort || []).some(id => st.cart.includes(id)),
+  h4leak: st => !!st.hx.leak && st.cart.length > 0 && st.page !== 'login',
+  h4cancel: st => !!st.hx.cancel && !st.cart.length && st.page !== 'login',
+  h4rm2: st => !!st.hx.rm2 && !st.cart.length && st.page === 'cart'
+};
+const bhDoc = () => { const d = Store.doc('bh'); if (!ivObj(d.lv)) d.lv = {}; return d; };
+function bhRec(n) {
+  const L = bhDoc().lv, r = ivObj(L[n]) ? L[n] : (L[n] = {}), bugs = BHL(n).bugs;
+  if (!ivObj(r.f)) r.f = {};
+  Object.keys(r.f).forEach(k => { if (!bugs[k] || !ivObj(r.f[k]) || typeof r.f[k].t !== 'string') delete r.f[k]; });
+  if (!Array.isArray(r.h)) r.h = [];
+  if (typeof r.miss !== 'number') r.miss = 0;
+  if (typeof r.notes !== 'string') r.notes = '';
+  return r;
+}
+const bhFound = n => Object.keys(bhRec(n).f).length;
+const bhOpen = n => n === 1 || bhFound(n - 1) >= BHD.need;
+const bhTotal = () => BHD.levels.reduce((a, l) => a + bhFound(l.id), 0);
+// [where, what, when]; when is null for a bug whose condition is already in what
+function bhParts(t, b) { const T = fz(t), has = arr => arr.some(k => T.includes(fz(k))); return [has(b.where), b.what.every(has), b.when ? b.when.every(has) : null]; }
+const bhPartsOk = p => Array.isArray(p) && !!p[0] && !!p[1] && p[2] !== false;
+// all found; every title complete; every severity accepted
+function bhStars(n) {
+  const r = bhRec(n), bugs = BHL(n).bugs, ks = Object.keys(bugs), all = ks.every(k => r.f[k]);
+  return [all, all && ks.every(k => bhPartsOk(r.f[k].p)), all && ks.every(k => bugs[k].sev.includes(r.f[k].s))];
+}
+const BH_STAR = ['hamısı tapılıb', 'hər başlıq tamdır', 'hər severity qəbul olunur'];
+const bhStarsHTML = s => `<span class="bh-stars" role="img" aria-label="${s.filter(Boolean).length}/3 ulduz: ${BH_STAR.filter((x, i) => s[i]).join(', ') || 'hələ yoxdur'}">${s.map(x => `<span${x ? ' class="on"' : ''}>${icon('star')}</span>`).join('')}</span>`;
+const bhSec = () => Math.max(0, Math.floor((Date.now() - BH.t0) / 1000));
+const bhClock = () => { const s = bhSec(); return `${pad2(Math.floor(s / 60))}:${pad2(s % 60)}`; };
+function bhTimer() {
+  clearInterval(bhTick);
+  bhTick = setInterval(() => {
+    const el = document.getElementById('bh-time'); if (!el) { clearInterval(bhTick); return; }
+    el.textContent = bhClock(); el.classList.toggle('warn', bhSec() > BHL(BH.lv).min * 60);
+    const md = document.getElementById('bh-md'); if (md) md.textContent = bhMd(BH.lv);
+  }, 1000);
+}
+function bhStart(n) {
+  smStart(null);
+  SM.bh = n; SM.st = Object.assign(smFresh({ page: 'login' }), { hunt: n, hx: {}, note: '', gone: [], own: '' });
+  Object.keys(BHL(n).bugs).forEach(k => { delete SM.found[k]; });
+  if (BHL(n).dvt) SM.dvt.open = true;
+  dvtReset();
+  Object.assign(BH, { lv: n, t0: Date.now(), title: '', sev: '', edit: null, fb: null });
+  bhDoc().last = n; Store.changed('bh', 2500);
+}
+const bhDefault = () => { const l = bhDoc().last; return BHL(l) && bhOpen(l) ? l : 1; };
+// the best match for a title: its "what" groups must all be there; a bug on screen now and one not yet found come first
+function bhFind(n, title) {
+  const bugs = BHL(n).bugs, r = bhRec(n);
+  let best = null;
+  Object.keys(bugs).forEach(k => {
+    const p = bhParts(title, bugs[k]); if (!p[1]) return;
+    const seen = !!BH_SEEN[k](SM.st), sc = (seen ? 4 : 0) + (r.f[k] ? 0 : 2) + (p[0] ? 1 : 0) + (p[2] !== false ? 1 : 0);
+    if (!best || sc > best.sc) best = { k, p, seen, sc };
+  });
+  return best;
+}
+function bhSubmit() {
+  const n = BH.lv, bugs = BHL(n).bugs, r = bhRec(n), t = BH.title.trim().slice(0, 300);
+  if (!t) { toast('Bug-ın başlığını yaz.'); return; }
+  if (!BH.sev) { toast('Severity seç.'); return; }
+  if (BH.edit && r.f[BH.edit]) {
+    Object.assign(r.f[BH.edit], { t, s: BH.sev, p: bhParts(t, bugs[BH.edit]) });
+    BH.fb = { kind: 'edit', k: BH.edit }; Object.assign(BH, { edit: null, title: '', sev: '' });
+  } else {
+    const m = bhFind(n, t);
+    if (!m) { r.miss++; BH.fb = { kind: 'miss' }; }
+    else if (r.f[m.k]) BH.fb = { kind: 'dup', k: m.k };
+    else if (!m.seen) BH.fb = { kind: 'gone' };
+    else { r.f[m.k] = { t, s: BH.sev, p: m.p, at: bhSec() }; BH.fb = { kind: 'found', k: m.k }; Object.assign(BH, { title: '', sev: '' }); }
+  }
+  bhDoc().last = n; Store.changed('bh');
+}
+function bhHint() {
+  const r = bhRec(BH.lv), k = Object.keys(BHL(BH.lv).bugs).find(x => !r.f[x] && !r.h.includes(x));
+  if (!k) { toast('Tapılmayan bug-ların hamısı üçün ipucu artıq açıqdır — siyahıya bax.'); return; }
+  r.h.push(k); Store.changed('bh'); toast('İpucu tapıntılar siyahısında açıldı.');
+}
+function bhMd(n) {
+  const L = BHL(n), r = bhRec(n), ks = Object.keys(L.bugs), got = ks.filter(k => r.f[k]);
+  return [`## Test sessiyası: Mini Store ${L.build} — ${L.name}`, '', `**Charter:** ${L.charter}`, `**Timebox:** ${L.min} dəq · **Sərf olunan vaxt:** ${n === BH.lv ? bhClock() : '—'}`, '',
+    `**Tapılan bug-lar (${got.length}/${ks.length}):**`].concat(got.length ? got.map((k, i) => `${i + 1}. ${r.f[k].t} — Severity: ${r.f[k].s}`) : ['—'],
+    ['', `**İpucu:** ${r.h.length} · **Uyğun gəlməyən qeydlər:** ${r.miss}`, `**Qeydlər:** ${r.notes.trim() || '—'}`]).join('\n');
+}
+function bhPickHTML(cur) {
+  return BHD.levels.map(l => {
+    const open = bhOpen(l.id), got = open ? bhFound(l.id) : 0, all = bhStars(l.id).every(Boolean);
+    return `<button class="chip${l.id === cur ? ' acc' : all ? ' pass' : ''}" data-act="bh-open" data-lv="${l.id}"${open ? '' : ` aria-label="Səviyyə ${l.id}: bağlıdır"`}>${open ? '' : icon('lock')}${l.id} · ${esc(l.name)}${got ? ` <span class="bh-n">${got}/${Object.keys(l.bugs).length}</span>` : ''}</button>`;
+  }).join('');
+}
+function bhLvHTML() {
+  const n = BH.lv, L = BHL(n), k = Object.keys(L.bugs).length, got = bhFound(n);
+  return `<div class="card bh-lv"><div class="sm-id">Səviyyə ${n} · <span lang="en">Mini Store ${L.build}</span> · kəşfiyyat sessiyası</div><h2 class="sm-t">${esc(L.name)}</h2>
+    <p class="sm-p"><b>Charter:</b> ${esc(L.charter)}</p>
+    <div class="bh-meta"><span class="chip">${icon('clock')}Timebox: ${L.min} dəq</span><span class="chip bh-time${bhSec() > L.min * 60 ? ' warn' : ''}" id="bh-time" title="Bu sessiyada keçən vaxt">${bhClock()}</span>
+      <span class="chip${got === k ? ' pass' : ''}">${icon('bug')}${got}/${k} tapılıb</span>${bhStarsHTML(bhStars(n))}</div>
+    <details class="bh-d" data-open="bh-spec"${OPEN['bh-spec'] === false ? '' : ' open'}><summary>Tələblər: build ${L.build} necə işləməlidir</summary>
+      <ol class="bh-spec">${BHD.spec.concat(L.add || []).map(s => `<li>${esc(s)}</li>`).join('')}</ol><p class="muted bh-p">Bug-ı tələblə əsaslandır: hansı qaydanı pozur?</p></details>
+    <details class="bh-d" data-open="bh-tips"${OPEN['bh-tips'] ? ' open' : ''}><summary>Bu səviyyənin texnikaları</summary><ul class="bh-spec">${L.tips.map(s => `<li>${esc(s)}</li>`).join('')}</ul></details>
+    <div class="row bh-acts"><button class="btn sm" data-act="bh-hint"${got === k ? ' disabled' : ''}>${icon('bulb')}İpucu</button><button class="btn sm ghost" data-act="bh-reset">${icon('refresh')}Mağazanı sıfırla</button><button class="btn sm ghost" data-act="bh-restart">${icon('trash')}Sessiyanı yenidən başla</button></div></div>`;
+}
+function bhFormHTML() {
+  const ed = BH.edit && BHL(BH.lv).bugs[BH.edit];
+  return `<div class="sm-fb-h">${ed ? 'Başlığı düzəlt' : 'Tapıntını qeyd et'}</div>
+    ${ed ? `<p class="bh-p"><b>${esc(ed.t)}</b></p>` : '<p class="muted bh-p">Bug-ı görəndə — ekran və ya DevTools onu göstərərkən — başlığını yaz və severity seç (12.2, 12.3).</p>'}
+    <input class="field bh-in" data-bh-title value="${esc(BH.title)}" placeholder="[harada] + [nə baş verir] + [hansı şərtdə]" autocomplete="off" spellcheck="false" aria-label="Bug-ın başlığı">
+    <label class="br-f"><span class="br-l">Severity</span><select class="field br-sel" data-bh-sev><option value="">— seç —</option>${BR_SEV.map(o => `<option${BH.sev === o ? ' selected' : ''}>${o}</option>`).join('')}</select></label>
+    <div class="row"><button class="btn primary" data-act="bh-log">${icon(ed ? 'check' : 'bug')}${ed ? 'Yadda saxla' : 'Qeyd et'}</button>${ed ? '<button class="btn ghost" data-act="bh-noedit">Ləğv et</button>' : ''}</div>
+    <div id="bh-fb" class="sm-fb" aria-live="polite">${bhFbHTML()}</div>`;
+}
+const bhRows = (p, b) => [['Harada', p[0]], ['Nə baş verir', p[1]]].concat(b.when ? [['Hansı şərtdə', p[2]]] : [])
+  .map(([t, ok]) => `<li>${smMark(!!ok)}<div><b>${t}</b>${ok ? '' : ' — başlıqda yoxdur'}</div></li>`).join('');
+function bhFbHTML() {
+  const f = BH.fb; if (!f) return '';
+  const n = BH.lv, L = BHL(n), b = f.k && L.bugs[f.k];
+  if (f.kind === 'miss') return `<div class="sm-state off">${icon('x')}Bu başlıq build ${L.build}-in heç bir bug-ına uyğun gəlmədi.</div>
+    <ul class="bh-spec"><li>Formul: [harada] + [nə baş verir] + [hansı şərtdə] (12.2).</li><li>Düymə, sahə və mesajların adını ekrandakı kimi, ingiliscə yaz; rəqəmləri də yaz.</li><li>Əmin deyilsənsə, tələblərə bax: hansı qayda pozulur?</li></ul>`;
+  if (f.kind === 'gone') return `<div class="sm-state off">${icon('eye')}Başlıq bu build-in bug-larından birinə bənzəyir, amma onun sübutu indi nə ekranda, nə də DevTools-da görünür. Bug-ı yenidən təkrarla və ekran onu göstərərkən qeyd et: sübutsuz bug report qəbul olunmur (12.8).</div>`;
+  if (f.kind === 'dup') return `<div class="sm-state">${icon('check')}Bu bug artıq siyahıdadır: ${esc(b.t)}</div>`;
+  const rec = bhRec(n).f[f.k]; if (!rec) return '';
+  const sevOk = b.sev.includes(rec.s), k = Object.keys(L.bugs).length, got = bhFound(n), next = BHL(n + 1);
+  return `<div class="sm-good">${icon('check')}${f.kind === 'edit' ? 'Başlıq yeniləndi' : 'Tapıldı'}</div><p class="bh-p"><b>${esc(b.t)}</b></p>
+    <div class="sm-fb-h">Başlıq: [harada] + [nə baş verir] + [hansı şərtdə]</div><ul class="sm-rows">${bhRows(rec.p, b)}</ul>
+    <div class="sm-st ${sevOk ? 'ok' : 'no'}">${smMark(sevOk)}<div><b>Severity: ${esc(rec.s)}</b> — ${esc(b.sevWhy)}</div></div>
+    <details class="cmp-why sm-model"><summary>${icon('eye')}Niyə bug-dır? Nümunə başlıq</summary><p>${esc(b.why)}</p><p><b>Nümunə başlıq:</b> ${esc(b.model)}</p></details>
+    ${f.kind === 'found' && next && got === BHD.need ? `<div class="sm-state ok">${icon('star')}Səviyyə ${next.id} açıldı: ${esc(next.name)}. Bu build-in qalan bug-larını da tapa bilərsən.</div>` : ''}
+    ${f.kind === 'found' && got === k ? `<div class="sm-state ok">${icon('check')}Build ${L.build}-in bütün bug-ları tapıldı. Sessiya vərəqini doldur${next ? `, sonra səviyyə ${next.id}-ə keç` : ''}.</div>` : ''}`;
+}
+function bhListHTML() {
+  const n = BH.lv, L = BHL(n), r = bhRec(n), ks = Object.keys(L.bugs), next = BHL(n + 1);
+  const li = ks.map((k, i) => {
+    const f = r.f[k], b = L.bugs[k];
+    if (!f) return `<li class="bh-q"><span class="bh-i">${i + 1}</span><div><b>Hələ tapılmayıb</b>${r.h.includes(k) ? `<span class="bh-hint">${icon('bulb')}${esc(b.hint)}</span>` : ''}</div></li>`;
+    const sevOk = b.sev.includes(f.s), tOk = bhPartsOk(f.p);
+    return `<li class="bh-ok"><span class="bh-i">${icon('check')}</span><div><b>${esc(b.t)}</b><span class="bh-mine">Sənin başlığın: ${esc(f.t)}</span>
+      <span class="bh-tags"><span class="chip ${tOk ? 'pass' : 'warn'}">${tOk ? 'başlıq tamdır' : 'başlıq natamamdır'}</span><span class="chip ${sevOk ? 'pass' : 'warn'}">${esc(f.s)}</span>
+        <button class="btn sm ghost" data-act="bh-edit" data-k="${k}">${icon('pencil')}Düzəlt</button></span></div></li>`;
+  }).join('');
+  return `<div class="sm-fb-h">Tapıntılar: ${bhFound(n)}/${ks.length}</div><ul class="bh-fl">${li}</ul>
+    <p class="muted bh-p bh-legend">${bhStarsHTML(bhStars(n))}<span>Üç ulduz: hamısı tapılıb, hər başlıq tamdır, hər severity qəbul olunur.${r.miss ? ` Uyğun gəlməyən qeydlər: ${r.miss}.` : ''}</span></p>
+    ${next && bhOpen(next.id) ? `<div class="row"><button class="btn" data-act="bh-open" data-lv="${next.id}">${icon('arrow')}Səviyyə ${next.id}: ${esc(next.name)}</button></div>` : ''}
+    <div class="sm-fb-h bh-sh">Test sessiyası vərəqi <span lang="en">(test session sheet)</span></div>
+    <label class="br-f"><span class="br-l">Qeydlər: nəyi yoxladın, hansı suallar yarandı, növbəti sessiya üçün ideyalar</span><textarea class="field br-ta" data-bh-notes rows="3">${esc(r.notes)}</textarea></label>
+    <pre class="rel-md" id="bh-md">${esc(bhMd(n))}</pre>
+    <div class="row"><button class="btn" data-act="bh-copy">${icon('copy')}Markdown kimi kopyala</button></div>`;
+}
+function bhRedraw() {
+  [['bh-lv', bhLvHTML], ['bh-form', bhFormHTML], ['bh-list', bhListHTML], ['bh-pick', () => bhPickHTML(BH.lv)]].forEach(([id, f]) => { const el = document.getElementById(id); if (el) el.innerHTML = f(); });
+}
+function vHunt(v) {
+  const want = +S.params.lv, n = BHL(want) ? want : BH.lv || bhDefault(), L = BHL(n);
+  setHeader({ back: true, kicker: 'Bug ovu', name: `Səviyyə ${n} · ${L.name}` });
+  const head = `<p class="muted sm-intro">${esc(BHD.intro)}</p><div class="sm-pick" id="bh-pick">${bhPickHTML(n)}</div>`;
+  if (!bhOpen(n)) {
+    const p = BHL(n - 1);
+    v.innerHTML = `${head}<div class="card bh-lock">${icon('lock')}<div><b>Səviyyə ${n} hələ bağlıdır</b><span>Səviyyə ${p.id}-də (${esc(p.name)}) ən azı ${BHD.need} bug tap: indi ${bhFound(p.id)}/${Object.keys(p.bugs).length}.</span></div>
+      <button class="btn sm" data-act="bh-open" data-lv="${p.id}">${icon('arrow')}Səviyyə ${p.id}</button></div>`;
+    return;
+  }
+  if (SM.bh !== n) bhStart(n);
+  v.innerHTML = `${head}<div id="bh-lv">${bhLvHTML()}</div><div class="sm-dev" id="sm-dev">${smDevHTML()}</div>${dvtBoxHTML()}
+    <div class="card bh-form" id="bh-form">${bhFormHTML()}</div><div class="card bh-list" id="bh-list">${bhListHTML()}</div>`;
+  bhTimer();
+}
+const bhLinkHTML = s => s.bh ? `<div class="sm-link"><div class="srt-k">${icon('target')}Bug ovu</div><p class="srt-hint">Bu bölmənin texnikası ilə Mini Store-un yeni build-ində gizli bug-ları tap: charter, timebox, tələblər və sübutla qeyd.</p>
+  <div class="sm-links">${s.bh.map(n => `<button class="btn sm" data-act="bh-open" data-lv="${n}"><b>Səviyyə ${n}</b> ${esc(BHL(n).name)}</button>`).join('')}</div></div>` : '';
 /* ---------- code tracer (trace.json): JavaScript runs line by line with its variables and console; a Playwright test runs
    against the practice store's shop, its lines coloured by role (locator, action, assertion) ---------- */
 const TR = {}; // steps taken per program (session only)
@@ -4461,6 +4728,10 @@ function vPractice(v) {
   <section class="block"><div class="block-h"><h2>Məşq mağazası</h2><span class="muted" style="font-size:13px">${Object.keys(SM.passed).length}/${STORE.scenarios.length} test case</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">saucedemo.com-a bənzəyən kiçik mağaza modeli. Test case-in addımlarını icra et, faktiki nəticəni yaz — kitab onu ekranda olanla tutuşdurur. problem_user-də gizli bug-lar var: tapdığın hər biri üçün tam bug report yaz.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="sm-open" data-sc="tc01">${icon('play')}Test case-lərlə başla</button><button class="btn" data-act="sm-open" data-sc="">${icon('search')}Kəşfiyyat sessiyası</button></div></div></section>
+  <section class="block"><div class="block-h"><h2>Bug ovu</h2><span class="muted" style="font-size:13px">${bhTotal()}/${BH_N} bug</span></div>
+    <div class="card"><div class="muted" style="font-size:13.5px">Mini Store-un dörd yeni build-i, hər birində gizli bug-lar. Test case yoxdur: charter, timebox və tələblərlə kəşfiyyat sessiyası. Bug-ı ekranda sübutu ilə qeyd et, başlığını yaz, severity seç. Növbəti səviyyə əvvəlkində ${BHD.need} bug tapanda açılır.</div>
+      <div class="sm-pick bh-mini">${bhPickHTML(0)}</div>
+      <div class="row"><button class="btn primary" data-act="bh-open">${icon('target')}${bhTotal() ? 'Ova davam et' : 'Ova başla'}</button></div></div></section>
   <section class="block"><div class="block-h"><h2>Reliz testi</h2><span class="muted" style="font-size:13px">${relDone().filter(Boolean).length}/4 mərhələ</span></div>
     <div class="card"><div class="muted" style="font-size:13.5px">Mini Store ${REL_D.ver} gəldi: proqramçılar üç defekti düzəltdiklərini yazıblar. Smoke testlə build-i yoxla, düzəlişləri retest et, regression üçün test case seç və komandaya fakt əsasında reliz tövsiyəsi ver.</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="rel-open">${icon('layers')}Reliz panelini aç</button></div></div></section>
@@ -5120,12 +5391,12 @@ function vInterview(v) {
 const SK_SHORT = { c1: 'QA nədir', c2: 'Testin 7 prinsipi', c3: 'SDLC və Agile', c4: 'STLC və reliz', c5: 'Test səviyyələri', c6: 'Test növləri', c7: 'Test yanaşmaları',
   c8: 'EP və BVA', c9: 'Qərar cədvəli, vəziyyətlər', c10: 'Tələblər', c11: 'Test case və plan', c12: 'Bug report, triage', c13: 'Veb, HTTP, loglar', c14: 'Veb testi',
   c15: 'API və Postman', c16: 'SQL', c17: 'Mobil və oyun', c18: 'JavaScript, TypeScript', c19: 'Playwright', c20: 'Git, CI, Docker', c21: 'Karyera, ingiliscə' };
-const SK_TOOLS = { c4: ['release'], c12: ['store', 'exam'], c13: ['devtools'], c15: ['lab'], c16: ['sql'], c19: ['pw'], c20: ['git'], c21: ['iv', 'en'] };
+const SK_TOOLS = { c4: ['release'], c7: ['hunt'], c12: ['store', 'exam'], c13: ['devtools'], c15: ['lab'], c16: ['sql'], c19: ['pw'], c20: ['git'], c21: ['iv', 'en'] };
 const SK_X = [24, 50, 76, 50]; // the path winds left, middle, right, middle
 function skCount(id) {
   if (id === 'exam') { const e = P().exams || []; return e.length ? `${Math.max(...e.map(x => x.ok))}/${EXAM_N}` : ''; }
   if (id === 'iv') { const h = ivDoc().hist.length; return h ? `${h} cəhd` : ''; }
-  const [d, t] = { store: [Object.keys(SM.passed).length, STORE.scenarios.length], release: [relDone().filter(Boolean).length, 4], devtools: [Object.keys(DVS.done).length, DVD.tasks.length],
+  const [d, t] = { store: [Object.keys(SM.passed).length, STORE.scenarios.length], hunt: [bhTotal(), BH_N], release: [relDone().filter(Boolean).length, 4], devtools: [Object.keys(DVS.done).length, DVD.tasks.length],
     sql: [SQLC.tasks.filter(x => SQX.done[x.id]).length, SQLC.tasks.length], lab: [API.tasks.filter(x => LAB.done[x.id]).length, API.tasks.length],
     pw: [PWD.tasks.filter(x => pwDoc().done[x.id]).length, PWD.tasks.length], git: [GITD.tasks.filter(x => gitDone()[x.id]).length, GITD.tasks.length],
     en: [Object.keys(engDoc().done).filter(k => engById[k]).length, ENG.drills.length] }[id];
@@ -5866,6 +6137,19 @@ document.addEventListener('click', ev => {
     case 'pw-use-model': openConfirm('Nümunə həll', 'Nümunə redaktora yazılacaq, öz kodun silinəcək.', 'Yaz', () => { pwDoc().code[PW.task] = pwTaskById[PW.task].model.join('\n'); Store.changed('pw'); PW.run = null; render({ keepScroll: true }); }); break;
     case 'sm-open': closeSheet(); go('store', { sc: d.sc || null, ver: d.ver || null }, { push: S.view !== 'store' }); break;
     case 'sm-restart': smStart(SM.id, SM.ver); render({ keepScroll: true }); break;
+    case 'bh-open': closeSheet(); S.tab = 'practice'; go('hunt', { lv: +d.lv || 0 }, { push: S.view !== 'hunt' }); break;
+    case 'bh-log': bhSubmit(); bhRedraw(); break;
+    case 'bh-hint': bhHint(); bhRedraw(); break;
+    case 'bh-reset': { const t0 = BH.t0; bhStart(BH.lv); BH.t0 = t0; render({ keepScroll: true }); toast('Mağaza ilk vəziyyətinə qayıtdı. Tapıntılar və vaxt qalır.'); break; }
+    case 'bh-restart': openConfirm('Sessiyanı yenidən başla?', `Səviyyə ${BH.lv}-də tapılan bug-lar, ipucları və qeydlər silinəcək.`, 'Yenidən başla', () => { delete bhDoc().lv[BH.lv]; Store.changed('bh'); bhStart(BH.lv); render({ keepScroll: true }); }); break;
+    case 'bh-edit': {
+      const f = bhRec(BH.lv).f[d.k]; if (!f) break;
+      Object.assign(BH, { edit: d.k, title: f.t, sev: f.s, fb: null }); bhRedraw();
+      const el = $('#bh-form'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      break;
+    }
+    case 'bh-noedit': Object.assign(BH, { edit: null, title: '', sev: '', fb: null }); bhRedraw(); break;
+    case 'bh-copy': try { navigator.clipboard.writeText(bhMd(BH.lv)).then(() => toast('Sessiya vərəqi kopyalandı.'), () => toast('Kopyalamaq alınmadı')); } catch (e) { toast('Kopyalamaq alınmadı'); } break;
     case 'rel-open': closeSheet(); if (S.view === 'store' && S.stack.length && S.stack[S.stack.length - 1].view === 'release') back(); else go('release', {}, { push: S.view !== 'release' }); break;
     case 'rel-run': smStart(d.sc, REL_D.ver); go('store', { sc: d.sc, ver: REL_D.ver }); break;
     case 'rel-map': if (relTk.some(t => !REL.map[t.bug])) toast('Hər defekt üçün test case seç.'); else { REL.mapChk = true; rerender(); } break;
@@ -6182,6 +6466,7 @@ document.addEventListener('keydown', ev => {
       else { smEvent({ ev: SM.st.page === 'login' ? 'login' : 'continue' }); smRedraw(); }
     }
     else if (ev.target.id === 'pw-q') { ev.preventDefault(); pwLocEval(true); }
+    else if (ev.target.dataset && ev.target.dataset.bhTitle !== undefined) { ev.preventDefault(); bhSubmit(); bhRedraw(); }
   }
   if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.classList && ev.target.classList.contains('fc')) { ev.preventDefault(); ev.target.click(); }
 });
@@ -6227,6 +6512,9 @@ document.addEventListener('input', ev => {
   else if (t.id === 'pw-ed') { pwDoc().code[PW.task] = t.value; Store.changed('pw', 1500); pwEdGrow(); }
   else if (t.dataset.smAns !== undefined) SM.ans = t.value;
   else if (t.dataset.smTitle !== undefined) SM.title = t.value;
+  else if (t.dataset.bhTitle !== undefined) BH.title = t.value;
+  else if (t.dataset.bhSev !== undefined) BH.sev = t.value;
+  else if (t.dataset.bhNotes !== undefined) { bhRec(BH.lv).notes = t.value.slice(0, 4000); Store.changed('bh', 1500); const md = $('#bh-md'); if (md) md.textContent = bhMd(BH.lv); }
   else if (t.dataset.sqlq !== undefined) SQX.q = t.value;
   else if (t.dataset.lab) { LAB.req[t.dataset.lab] = t.value; if (t.dataset.lab === 'm') labRedraw('req'); }
   else if (t.dataset.lt) {
@@ -6289,7 +6577,7 @@ AI.setState('pending');
 // links from the offline app: #c3s4 opens a section; #c3s4-simple, #c3-lesson, #c3-konspekt and #g12-term also
 // start that Claude action once Claude is ready. Only ids from the book are accepted, so a link cannot carry its own prompt.
 // #c3-xulase and #xulase open the summary sheets (the claude.ai version links there when it cannot print);
-// #magaza opens the practice store, #magaza-tc04 with that test case; #reliz the release test, #reliz-tc06 that test case
+// #magaza opens the practice store, #magaza-tc04 with that test case; #bugov the bug hunt, #bugov-2 that level; #reliz the release test, #reliz-tc06 that test case
 // on build 1.1; #devtools the DevTools practice, #devtools-dv3 that task; #playwright-pw3 a Playwright task, #lokator-l5
 // a locator; #git the Git practice, #git-g5 that task; #musahibe the interview practice; #ssenari the scripted role plays,
 // #ssenari-dev-works that one; #ingilisce the work English practice; #bacariq the skill map.
@@ -6315,6 +6603,7 @@ function routeHash() {
   else if (h === 'mesq' || h === 'practice') { S.tab = 'practice'; S.view = 'practice'; S.params = {}; }
   else if (h === 'xulase') { S.tab = 'practice'; S.view = 'summary'; S.params = { ch: 'all' }; }
   else if (t === 'magaza') { S.tab = 'practice'; S.view = 'store'; S.params = { sc: own(scById, act) ? act : null }; }
+  else if (t === 'bugov') { S.tab = 'practice'; S.view = 'hunt'; S.params = { lv: /^[1-9]$/.test(act || '') && BHL(+act) ? +act : 0 }; }
   else if (t === 'reliz') { S.tab = 'practice'; if (own(scById, act)) { S.view = 'store'; S.params = { sc: act, ver: REL_D.ver }; } else { S.view = 'release'; S.params = {}; } }
   else if (t === 'devtools') { S.tab = 'practice'; S.view = 'devtools'; S.params = { dv: own(dvById, act) ? act : null }; }
   else if (t === 'playwright' || t === 'lokator') {

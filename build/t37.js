@@ -24,7 +24,7 @@ const { setup } = require('./harness');
   let { browser, page, errors } = await setup({ hash: '#bacariq', w: 390, h: 844, mobile: true, wait: 1200 });
   let s = await state(page);
   out.start = s;
-  want('map drawn', s.view === 'skills' && s.nodes === 21 && s.bands === 7 && s.tools === 10, s);
+  want('map drawn', s.view === 'skills' && s.nodes === 21 && s.bands === 7 && s.tools === 11, s);
   want('first step is chapter 1', s.next === 'c1' && !s.done.length && s.on === 0 && /^Fəsil 01/.test(s.cont || ''), s);
   want('labels clear of nodes, inside the map', !s.clash.length, s.clash);
   want('no overflow on a phone', s.overflow <= 0, s.overflow);
