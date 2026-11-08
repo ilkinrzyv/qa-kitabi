@@ -70,6 +70,7 @@ const ICONS = {
   help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .9-1 1.6v.4"/><path d="M12 17h.01"/>',
   save: '<path d="M6 3h12v18l-6-4-6 4z"/><path d="M12 7v6M9 10h6"/>',
   play: '<path d="M8 5v14l11-7z"/>',
+  pause: '<path d="M9 5v14M15 5v14"/>',
   chat: '<path d="M4 5h16v11H9l-5 4z"/>',
   checklist: '<path d="M4 6l1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17"/><path d="M11 6h9M11 12h9M11 18h9"/>',
   trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
@@ -474,7 +475,7 @@ function render(opts) {
   opts = opts || {};
   const y = window.scrollY;
   if (observer) { observer.disconnect(); observer = null; }
-  hideSelPill();
+  hideSelPill(); dgaReset();
   const v = $('#view');
   const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, hunt: vHunt, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw, git: vGit, iv: vInterview, rs: vScript, en: vEnglish, skills: vSkills };
   document.body.removeAttribute('data-part'); // the reader sets it: the chapter's part colour for section numbers and the read bar
@@ -1046,6 +1047,7 @@ function refreshSec(sid) {
   el.replaceWith(nu);
   if (observer) observer.observe(nu);
   $$('.dg-scroll', nu).forEach(d => { if (d.scrollWidth > d.clientWidth + 4) d.closest('figure').classList.add('wide'); });
+  dgaDecorate(nu);
   return nu;
 }
 function vReader(v) {
@@ -1095,8 +1097,158 @@ function vReader(v) {
   }, { rootMargin: '-35% 0px -60% 0px' });
   $$('.sec', v).forEach(el => observer.observe(el));
   $$('.dg-scroll', v).forEach(d => { if (d.scrollWidth > d.clientWidth + 4) d.closest('figure').classList.add('wide'); });
+  dgaDecorate(v);
   if (!target && (!P().last || P().last.ch !== c.id)) { P().last = { ch: c.id, sec: c.sections[0] ? c.sections[0].id : null }; Store.changed('progress', 2500); }
   onScroll();
+}
+/* ---------- step-by-step diagrams: diagrams.py (and LEGACY for the older SVGs) puts data-s on the parts of a diagram, the steps
+   they belong to; parse_book.py adds data-anim and the captions as a hidden list. The whole diagram stays the default view (print,
+   summary sheets). "Addım-addım izlə" shows one step at a time: its parts in full, earlier ones dimmed, later ones faint; its lines
+   draw in and a dot runs along its arrows a few times. One diagram plays at a time and nothing is saved ---------- */
+const DGA = { fig: null, i: 0, n: 0, caps: [], els: [], auto: false, timer: 0, raf: 0, anims: [] };
+const DGA_RM = window.matchMedia('(prefers-reduced-motion: reduce)');
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const dgaIdle = f => `<button class="btn sm dga-go" data-act="dga" data-v="start">${icon('play')}Addım-addım izlə<span>· ${+f.dataset.anim} addım</span></button>`;
+function dgaDecorate(root) {
+  $$('figure.diagram[data-anim]', root).forEach(f => {
+    if (f.querySelector(':scope > .dga')) return;
+    const bar = document.createElement('div'); bar.className = 'dga'; bar.innerHTML = dgaIdle(f);
+    f.insertBefore(bar, f.querySelector(':scope > figcaption'));
+  });
+}
+function dgaStart(f) {
+  if (DGA.fig && DGA.fig !== f) dgaStop();
+  DGA.fig = f; DGA.n = +f.dataset.anim; DGA.auto = false;
+  DGA.caps = $$('.dga-steps li', f).map(li => li.innerHTML);
+  DGA.els = $$('[data-s]', f).map(el => ({ el, s: el.getAttribute('data-s').split(' ').map(Number) }));
+  f.classList.add('dga-on');
+  const bar = f.querySelector(':scope > .dga'); bar.classList.add('on');
+  bar.innerHTML = `<div class="dga-top"><span class="dga-n"></span><div class="dga-dots">${DGA.caps.map((_, k) => `<button data-act="dga" data-v="go" data-i="${k + 1}" aria-label="Addım ${k + 1}"></button>`).join('')}</div>
+      <button class="ibtn" data-act="dga" data-v="stop" aria-label="Bütöv sxemə qayıt">${icon('x')}</button></div>
+    <p class="dga-t" aria-live="polite"></p>
+    <div class="dga-ctl"><button class="btn sm ghost" data-act="dga" data-v="prev">${icon('back')}Geri</button><button class="btn sm ghost" data-act="dga" data-v="auto"></button><button class="btn sm primary dga-next" data-act="dga"></button></div>`;
+  dgaGo(1);
+  bar.querySelector('.dga-next').focus({ preventScroll: true });
+}
+function dgaPaint() {
+  const bar = DGA.fig.querySelector(':scope > .dga'), { i, n } = DGA;
+  bar.querySelector('.dga-n').textContent = `${i}/${n}`;
+  bar.querySelectorAll('.dga-dots button').forEach((b, k) => { b.classList.toggle('done', k + 1 < i); if (k + 1 === i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); });
+  bar.querySelector('.dga-t').innerHTML = DGA.caps[i - 1] || '';
+  bar.querySelector('[data-v="prev"]').disabled = i <= 1;
+  const au = bar.querySelector('[data-v="auto"]'); au.setAttribute('aria-pressed', String(DGA.auto));
+  au.innerHTML = DGA.auto ? `${icon('pause')}Dayandır` : `${icon('play')}Avtomatik`;
+  const nx = bar.querySelector('.dga-next'); nx.dataset.v = i < n ? 'next' : 'stop';
+  nx.innerHTML = i < n ? `Növbəti${icon('arrow')}` : `${icon('check')}Bitir`;
+}
+function dgaGo(i) {
+  const f = DGA.fig; if (!f || !f.isConnected) { dgaReset(); return; }
+  dgaFxStop();
+  DGA.i = clamp(i, 1, DGA.n);
+  const cur = [];
+  DGA.els.forEach(({ el, s }) => {
+    const on = s.includes(DGA.i), first = Math.min(...s);
+    el.classList.toggle('dga-c', on); el.classList.toggle('dga-p', !on && first < DGA.i); el.classList.toggle('dga-f', !on && first > DGA.i);
+    if (on) cur.push(el);
+  });
+  dgaPaint(); dgaFx(cur); dgaSeen(cur); dgaTimer();
+}
+const dgaDur = L => clamp(Math.round(L * 7), 450, 1400);
+const dgaParts = (els, sel) => { const out = []; els.forEach(el => { if (el.matches(sel)) out.push(el); out.push(...el.querySelectorAll(sel)); }); return out; };
+// the current step's lines draw in (their arrowhead waits for the line), bars grow from the left and a dot runs along each arrow
+function dgaFx(cur) {
+  if (DGA_RM.matches || typeof Element.prototype.animate !== 'function') return;
+  const arrows = [];
+  dgaParts(cur, 'line,path,polyline').forEach(p => {
+    const mk = p.getAttribute('marker-end'); let L = 0;
+    try { L = p.getTotalLength(); } catch (e) { L = 0; }
+    if (!L) return;
+    const dashed = (getComputedStyle(p).strokeDasharray || 'none') !== 'none';
+    if (mk) arrows.push({ p, L, wait: dashed ? 150 : dgaDur(L) });
+    if (dashed) return; // a dashed line keeps its dashes; only the dot runs along it
+    if (mk) p.removeAttribute('marker-end');
+    const a = p.animate([{ strokeDasharray: `${L} ${L}`, strokeDashoffset: L }, { strokeDasharray: `${L} ${L}`, strokeDashoffset: 0 }], { duration: dgaDur(L), easing: 'ease-in-out' });
+    const done = () => { if (mk) p.setAttribute('marker-end', mk); };
+    a.onfinish = done; a.oncancel = done; DGA.anims.push(a);
+  });
+  dgaParts(cur, 'rect[data-fx="grow"]').forEach(b => {
+    b.style.transformBox = 'fill-box'; b.style.transformOrigin = 'left center';
+    DGA.anims.push(b.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: 750, easing: 'ease-out' }));
+  });
+  dgaDots(arrows);
+}
+function dgaDots(arrows) {
+  const svg = DGA.fig.querySelector('svg'), sm = svg && svg.getScreenCTM();
+  if (!arrows.length || !sm) return;
+  let layer = svg.querySelector(':scope > .dga-fx');
+  if (!layer) { layer = document.createElementNS(SVG_NS, 'g'); layer.setAttribute('class', 'dga-fx'); svg.appendChild(layer); }
+  const inv = sm.inverse();
+  const items = arrows.map(({ p, L, wait }) => {
+    const m = p.getScreenCTM(); if (!m) return null;
+    const c = document.createElementNS(SVG_NS, 'circle'); c.setAttribute('r', '4'); c.setAttribute('class', 'dga-dot');
+    const col = (p.closest('[stroke]') || p).getAttribute('stroke') || '';
+    if (/status|categorical/.test(col)) c.style.fill = col; // coloured arrows keep their colour, grey ones get the accent
+    c.style.opacity = '0'; layer.appendChild(c);
+    return { p, L, c, m: inv.multiply(m), dur: dgaDur(L), wait };
+  }).filter(Boolean);
+  const t0 = performance.now();
+  const tick = now => {
+    if (!layer.isConnected) { DGA.raf = 0; return; }
+    let alive = false;
+    items.forEach(it => {
+      const t = now - t0 - it.wait, per = it.dur + 900, k = Math.floor(t / per), u = (t - k * per) / it.dur;
+      if (t < 0) { alive = true; return; }
+      if (k >= 3) { it.c.style.opacity = '0'; return; } // three runs per step
+      alive = true;
+      if (u > 1) { it.c.style.opacity = '0'; return; }
+      const e = u < .5 ? 2 * u * u : 1 - (2 - 2 * u) * (2 - 2 * u) / 2;
+      const pt = it.p.getPointAtLength(e * it.L), q = new DOMPoint(pt.x, pt.y).matrixTransform(it.m);
+      it.c.setAttribute('cx', q.x.toFixed(1)); it.c.setAttribute('cy', q.y.toFixed(1)); it.c.style.opacity = '1';
+    });
+    DGA.raf = alive ? requestAnimationFrame(tick) : 0;
+  };
+  DGA.raf = requestAnimationFrame(tick);
+}
+function dgaFxStop() {
+  cancelAnimationFrame(DGA.raf); DGA.raf = 0;
+  DGA.anims.forEach(a => { try { a.cancel(); } catch (e) { } }); DGA.anims = [];
+  const fx = DGA.fig && DGA.fig.querySelector('svg > .dga-fx'); if (fx) fx.textContent = '';
+}
+// a wide diagram scrolls sideways on a phone: bring the current step into view
+function dgaSeen(cur) {
+  const sc = DGA.fig.querySelector('.dg-scroll'); if (!sc || sc.scrollWidth <= sc.clientWidth + 4) return;
+  const r = sc.getBoundingClientRect(); let l = Infinity, rr = -Infinity;
+  cur.forEach(el => { const b = el.getBoundingClientRect(); if (b.width || b.height) { l = Math.min(l, b.left); rr = Math.max(rr, b.right); } });
+  if (l === Infinity || (l >= r.left + 8 && rr <= r.right - 8)) return;
+  const mid = (l + rr) / 2 - r.left + sc.scrollLeft;
+  sc.scrollTo({ left: Math.max(0, mid - sc.clientWidth / 2), behavior: DGA_RM.matches ? 'auto' : 'smooth' });
+}
+// "Avtomatik": the next step after time to read this one; it stops at the last step
+function dgaTimer() {
+  clearTimeout(DGA.timer);
+  if (!DGA.auto) return;
+  if (DGA.i >= DGA.n) { DGA.auto = false; dgaPaint(); return; }
+  const len = (DGA.caps[DGA.i - 1] || '').replace(/<[^>]+>/g, '').length;
+  DGA.timer = setTimeout(() => dgaGo(DGA.i + 1), 2400 + len * 55);
+}
+function dgaReset() { clearTimeout(DGA.timer); dgaFxStop(); DGA.fig = null; DGA.auto = false; }
+function dgaStop(focus) {
+  const f = DGA.fig; dgaReset();
+  if (!f || !f.isConnected) return;
+  f.classList.remove('dga-on');
+  $$('[data-s]', f).forEach(el => el.classList.remove('dga-c', 'dga-p', 'dga-f'));
+  const fx = f.querySelector('svg > .dga-fx'); if (fx) fx.remove();
+  const bar = f.querySelector(':scope > .dga'); if (!bar) return;
+  bar.classList.remove('on'); bar.innerHTML = dgaIdle(f);
+  if (focus) bar.querySelector('button').focus({ preventScroll: true });
+}
+function dgaAct(f, v, i) {
+  if (v === 'start' || DGA.fig !== f) { dgaStart(f); return; }
+  if (v === 'next') dgaGo(DGA.i + 1);
+  else if (v === 'prev') dgaGo(DGA.i - 1);
+  else if (v === 'go') dgaGo(+i);
+  else if (v === 'auto') { DGA.auto = !DGA.auto; if (DGA.auto && DGA.i >= DGA.n) dgaGo(1); else { dgaPaint(); dgaTimer(); } }
+  else if (v === 'stop') dgaStop(true);
 }
 /* ---------- chapter summary (konspekt) ---------- */
 function konspektText(c) {
@@ -6072,6 +6224,7 @@ document.addEventListener('click', ev => {
   const d = el.dataset;
   switch (act) {
     case 'tab': goTab(d.tab); break;
+    case 'dga': { const f = el.closest('figure.diagram[data-anim]'); if (f) dgaAct(f, d.v, d.i); break; }
     case 'srt-pick': {
       const st = srtState(d.k); st.pick = st.pick === +d.j ? null : +d.j; srtRedraw(d.k); break;
     }
@@ -6428,6 +6581,10 @@ document.addEventListener('pointerdown', ev => {
 });
 document.addEventListener('keydown', ev => {
   if (ev.key === 'Escape' && sheetEl) { closeSheet(); return; }
+  if (DGA.fig && ev.target.closest && ev.target.closest('.dga.on') && !ev.ctrlKey && !ev.metaKey && !ev.altKey) { // a playing diagram: ← → walk the steps, Esc shows the whole
+    if (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft') { ev.preventDefault(); dgaGo(DGA.i + (ev.key === 'ArrowRight' ? 1 : -1)); return; }
+    if (ev.key === 'Escape') { dgaStop(true); return; }
+  }
   // search from the keyboard, as on a PC site: Ctrl+K (⌘K) anywhere, or / when not typing
   if (!sheetEl && !ev.altKey && ((ev.key === 'k' || ev.key === 'K') && (ev.ctrlKey || ev.metaKey) && !ev.shiftKey
     || ev.key === '/' && !ev.ctrlKey && !ev.metaKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName) && !ev.target.isContentEditable)) { ev.preventDefault(); openSearch(); return; }

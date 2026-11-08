@@ -120,6 +120,14 @@ Screenshots land in `build/shots/` (gitignored).
   position varied: `t32.js` fails if pressing one letter passes a script.
 - `build/quiz_*.json` — chapter quizzes. `build/diagrams.py` — SVG diagrams registered with `reg(slug, sid, anchor, cap, d)`,
   drawn with `svgkit.py` (text measured with the vendored fonts in `fonts/`, overlap and overflow checks).
+- Step-by-step diagrams ("Addım-addım izlə", `dga*` in `app.js`): in a diagram function `d.steps(...)` gives the captions (`x` in
+  backticks = code) and `d.at(n, …)` puts what is drawn next into those steps (a part in several steps appears at the first and is
+  lit again at the others; `d.at()` = always shown); `rect(..., grow=True)` is a bar that grows in its step. The older SVGs in
+  `widgets/` get their steps from `LEGACY` (CSS selectors). `parse_book.py` adds `data-s` to the parts, `data-anim` and a hidden
+  `ol.dga-steps` to the figure, and counts a step with nothing drawn, an unknown step, a selector that finds nothing or a caption over
+  220 characters as an error. The whole diagram stays the default view (print, summary sheets); the player is drawn by
+  `dgaDecorate` in the reader only, one diagram plays at a time and nothing is saved. Lines draw in, a dot runs along the arrows;
+  reduced motion turns both off. `t39.js`.
 - `build/app.js` — the whole UI in one IIFE, no framework. `PWA = window.QA_PWA` exists only in the offline build:
   guard PWA-only code with `if (PWA)` so the artifact keeps working.
 - Part colours (end of `app.css`): `--p0` … `--p8` per part, light and dark, each at least 4.5:1 as text; `[data-part]` sets `--pc`,

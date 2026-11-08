@@ -82,6 +82,36 @@ for key, slug, k in DIAGRAMS:
     p = os.path.join(BASE, 'widgets', f'w{k}.svg')
     svgs[slug] = open(p, encoding='utf-8').read()
 
+# step-by-step diagrams (app.js dga*): parts of the SVG carry data-s (the steps they belong to) and the figure gets
+# data-anim + the captions as a hidden list. diagrams.py tags its own drawings; the older SVGs in widgets/ are tagged here.
+sys.path.insert(0, BASE)
+from diagrams import LEGACY as DG_LEGACY
+STEP_ERRS = []
+def dga_list(caps):
+    li = ''.join('<li>' + re.sub(r'`([^`]+)`', r'<code>\1</code>', htmlmod.escape(c, quote=False)) + '</li>' for c in caps)
+    return f'<ol class="dga-steps" hidden>{li}</ol>'
+def dga_legacy(slug, fig):
+    steps = DG_LEGACY.get(slug)
+    if not steps:
+        return
+    svg = fig.find('svg')
+    for n, (cap, sels) in enumerate(steps, 1):
+        if not cap.strip() or len(cap) > 220:
+            STEP_ERRS.append(f'{slug} step {n}: caption empty or over 220 characters')
+        for sel in sels:
+            found = svg.select(sel)
+            if not found:
+                STEP_ERRS.append(f'{slug} step {n}: nothing matches {sel}')
+            for el in found:
+                have = el.get('data-s', '').split()
+                if str(n) not in have:
+                    el['data-s'] = ' '.join(have + [str(n)])
+    for el in svg.select('[data-s]'):
+        if el.find_parent(attrs={'data-s': True}):
+            STEP_ERRS.append(f'{slug}: a step part inside another step part')
+    fig.figure['data-anim'] = str(len(steps))
+    fig.figcaption.insert_before(BeautifulSoup(dga_list([c for c, _ in steps]), 'html.parser'))
+
 def render(mdsrc):
     h = md.render(mdsrc)
     soup = BeautifulSoup(h, 'html.parser')
@@ -94,6 +124,7 @@ def render(mdsrc):
             fig = BeautifulSoup(
                 f'<figure class="diagram" data-d="{slug}"><div class="dg-scroll">{svgs[slug]}</div>'
                 f'<figcaption>{htmlmod.escape(cap)}</figcaption></figure>', 'html.parser')
+            dga_legacy(slug, fig)
             p.replace_with(fig)
     # tables -> scroll wrapper
     for tb in soup.find_all('table'):
@@ -902,13 +933,18 @@ for e in NEW_DIAGRAMS:
     svg = e['d'].svg()
     if e['d'].errs:
         print('WARN diagram issues', e['slug'], e['d'].errs, file=sys.stderr)
+    STEP_ERRS.extend(f'{e["slug"]}: {m}' for m in e['d'].step_errs())
+    caps = e['d'].caps
+    anim = f' data-anim="{len(caps)}"' if caps else ''
     ph = soup.new_tag('div', attrs={'data-ph': e['slug']})
     tgt.insert_after(ph)
-    fig = (f'<figure class="diagram narrow" data-d="{e["slug"]}"><div class="dg-scroll">{svg}</div>'
-           f'<figcaption>{htmlmod.escape(e["cap"])}</figcaption></figure>')
+    fig = (f'<figure class="diagram narrow" data-d="{e["slug"]}"{anim}><div class="dg-scroll">{svg}</div>'
+           f'{dga_list(caps) if caps else ""}<figcaption>{htmlmod.escape(e["cap"])}</figcaption></figure>')
     holder[key] = str(soup).replace(f'<div data-ph="{e["slug"]}"></div>', fig)
     dg_count += 1
-print('new diagrams', dg_count)
+for m in STEP_ERRS:
+    print('ERR step diagram', m, file=sys.stderr); errors += 1
+print('new diagrams', dg_count, 'step-by-step', sum((s.get('html') or '').count(' data-anim=') for c in chapters for s in c['sections']))
 # ---------- 6c. glossary term links (first occurrence per block) ----------
 GL_ALIASES = []  # (gid, pattern, chapters or None, case_sensitive)
 def _al(gid, *pats, chs=None, cs=False):
