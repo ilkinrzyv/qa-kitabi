@@ -199,6 +199,7 @@ function okStream(text) {
     exp.docs.progress = exp.docs.progress || { learned: {}, quiz: {}, last: null };
     exp.docs.progress.learned = { c1s1: 1, c1s2: 1, c1s3: 1 };
     exp.docs['notes-c1'] = { n: { c1s1: 'İdxal testi qeydi' } };
+    exp.docs['hl-c1'] = { h: { c1s1: [{ id: 'himp', s: 'm', o: 0, t: 'Test', pre: '', suf: ' — ', k: 'g', n: '', at: 1 }] } }; // highlights travel too
     const ipath = path.join(__dirname, 'shots', 'import-test.json');
     fs.writeFileSync(ipath, JSON.stringify(exp));
     const [fc] = await Promise.all([page.waitForEvent('filechooser'), page.click('#view [data-act="data-import"]')]);
@@ -210,6 +211,8 @@ function okStream(text) {
     await page.click('[data-act="tab"][data-tab="progress"]');
     out.afterImport = await page.$eval('.herofig', el => el.innerText.replace(/\s+/g, ' '));
     out.importedNote = await page.$eval('.notes-list', el => el.innerText.replace(/\s+/g, ' ').slice(0, 120)).catch(() => null);
+    out.importedHl = await page.$eval('.hl-list .hl-go .q', el => el.textContent).catch(() => null);
+    if (out.importedHl !== 'Test') throw new Error('import did not bring back the highlight: ' + out.importedHl);
     // 9. delete key -> no key again
     await page.click('#topbar [data-act="settings"]');
     await page.click('[data-act="key-del"]');

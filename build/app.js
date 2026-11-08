@@ -71,6 +71,7 @@ const ICONS = {
   save: '<path d="M6 3h12v18l-6-4-6 4z"/><path d="M12 7v6M9 10h6"/>',
   play: '<path d="M8 5v14l11-7z"/>',
   pause: '<path d="M9 5v14M15 5v14"/>',
+  marker: '<path d="M14.5 3.5l6 6-8 8-6-6z"/><path d="M6.5 11.5L4 14v3.5h3.5l2.5-2.5"/><path d="M3 21h18"/>',
   chat: '<path d="M4 5h16v11H9l-5 4z"/>',
   checklist: '<path d="M4 6l1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17"/><path d="M11 6h9M11 12h9M11 18h9"/>',
   trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
@@ -221,6 +222,7 @@ function defFor(key) {
   if (key === 'en') return { done: {}, txt: {} };
   if (key === 'bh') return { lv: {}, last: 0 };
   if (key.startsWith('notes-')) return { n: {} };
+  if (key.startsWith('hl-')) return { h: {} };
   if (key.startsWith('ans-')) return { a: {} };
   return {};
 }
@@ -477,7 +479,7 @@ function render(opts) {
   if (observer) { observer.disconnect(); observer = null; }
   hideSelPill(); dgaReset();
   const v = $('#view');
-  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, hunt: vHunt, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw, git: vGit, iv: vInterview, rs: vScript, en: vEnglish, skills: vSkills };
+  const views = { home: vHome, reader: vReader, practice: vPractice, quiz: vQuiz, cards: vCards, glossary: vGlossary, tutor: vTutor, progress: vProgress, konspekt: vKonspekt, summary: vSummary, store: vStore, hunt: vHunt, lab: vLab, sql: vSql, exam: vExam, ctfl: vCtfl, release: vRelease, devtools: vDevtools, pw: vPw, git: vGit, iv: vInterview, rs: vScript, en: vEnglish, skills: vSkills, hl: vHighlights };
   document.body.removeAttribute('data-part'); // the reader sets it: the chapter's part colour for section numbers and the read bar
   (views[S.view] || vHome)(v);
   document.body.dataset.view = S.view; document.body.dataset.tab = S.tab; // PC layouts are keyed by these (app.css)
@@ -636,7 +638,7 @@ function exampleHTML(s) {
   const n = s.steps.length;
   const shown = Math.min(EX[s.id] || 0, n);
   const steps = s.steps.slice(0, shown).map(u => `<li><div class="prose">${u}</div></li>`).join('');
-  return `<div class="ex-task prose">${s.task}</div>
+  return `<div class="ex-task prose" data-hl="e">${s.task}</div>
   <div class="ex-try">${icon('bulb')}<span>Əvvəlcə özün fikirləş: necə həll edərdin? Sonra həlli addım-addım aç.</span></div>
   <ol class="ex-steps" data-steps="${s.id}">${steps}</ol>
   <div class="ex-ctrl" data-exctrl="${s.id}">${exCtrl(s.id, n, shown)}</div>`;
@@ -651,11 +653,11 @@ function lvlCtl(sid, cur, act) {
   return `<div class="lvl" role="group" aria-label="İzah səviyyəsi">${LVLS.map(([v, l]) => `<button data-act="${act || 'lvl'}" data-sec="${sid || ''}" data-v="${v}" aria-pressed="${cur === v}">${l}</button>`).join('')}</div>`;
 }
 function keysHTML(x) {
-  return `<div class="keys"><div class="keys-h">${icon('bulb')}Yadda saxla</div><ol>${x.keys.map(k => `<li><span>${k}</span></li>`).join('')}</ol></div>`;
+  return `<div class="keys"><div class="keys-h">${icon('bulb')}Yadda saxla</div><ol data-hl="k">${x.keys.map(k => `<li><span>${k}</span></li>`).join('\n')}</ol></div>`;
 }
 function deepHTML(s, open) {
   const k = 'd:' + s.id;
-  return `<details class="deep" data-open="${k}"${open || OPEN[k] ? ' open' : ''}><summary>${icon('layers')}<span class="st">Dərindən<span class="sub">əlavə izah, incəliklər, tipik yanlışlar</span></span>${icon('chev', 'chev')}</summary><div class="dbody prose">${s.x.deep}</div></details>`;
+  return `<details class="deep" data-open="${k}"${open || OPEN[k] ? ' open' : ''}><summary>${icon('layers')}<span class="st">Dərindən<span class="sub">əlavə izah, incəliklər, tipik yanlışlar</span></span>${icon('chev', 'chev')}</summary><div class="dbody prose" data-hl="d">${s.x.deep}</div></details>`;
 }
 /* answer key (build/answers/cNN.json): every exercise has a model answer and criteria the reader checks their own answer
    against, so the book teaches without Claude. A hint first; the answer asks for an attempt once, then opens. Seen answers
@@ -940,10 +942,10 @@ function dtHTML(sid, c) {
 function textBody(c, s) {
   const lv = lvlOf(s.id);
   if (lv === 'short') {
-    return `<div class="short"><div class="short-k">Qısa</div><div class="prose">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${bhLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${engLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}
+    return `<div class="short"><div class="short-k">Qısa</div><div class="prose" data-hl="q">${s.x.short}</div></div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${bhLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${engLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}
       <button class="btn sm ghost more" data-act="lvl" data-sec="${s.id}" data-v="std">${icon('book')}Tam mətni oxu</button>${miniHTML(c, s, false)}`;
   }
-  return `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${bhLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${engLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
+  return `<div class="prose" data-hl="m">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${bhLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${engLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}${keysHTML(s.x)}${deepHTML(s, lv === 'deep')}${miniHTML(c, s, lv === 'deep')}`;
 }
 function fbHTML(a) {
   let h = '';
@@ -1034,7 +1036,7 @@ function secHTML(c, s) {
   else if (s.kind === 'selfcheck') body = selfHTML(c, s);
   else if (s.kind === 'checklist') body = checklistHTML(s);
   else if (s.x) body = textBody(c, s);
-  else body = `<div class="prose">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${bhLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${engLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}`;
+  else body = `<div class="prose" data-hl="m">${s.html}</div>${cmpHTML(s)}${srtHTML(s)}${ixHTML(s)}${simHTML(s)}${relLinkHTML(s)}${dvtLinkHTML(s)}${bhLinkHTML(s)}${labLinkHTML(s)}${sqlLinkHTML(s)}${pwLinkHTML(s)}${ivLinkHTML(s)}${engLinkHTML(s)}${trHTML(s)}${gitLinkHTML(s)}`;
   return `<section class="sec${learned ? ' learned' : ''}" id="${s.id}" data-sec="${s.id}" data-kind="${s.kind}">
     <header class="sec-h"><span class="sec-num">${esc(s.num || kindTag(s).toLocaleUpperCase('az'))}</span><h2>${esc(s.title)}</h2>${s.x ? lvlCtl(s.id, lvlOf(s.id)) : ''}</header>
     ${body}${footerHTML(c, s)}</section>`;
@@ -1047,7 +1049,7 @@ function refreshSec(sid) {
   el.replaceWith(nu);
   if (observer) observer.observe(nu);
   $$('.dg-scroll', nu).forEach(d => { if (d.scrollWidth > d.clientWidth + 4) d.closest('figure').classList.add('wide'); });
-  dgaDecorate(nu);
+  dgaDecorate(nu); hlPaint(nu);
   return nu;
 }
 function vReader(v) {
@@ -1077,7 +1079,7 @@ function vReader(v) {
     ${next ? `<button class="next" data-act="open-ch" data-ch="${next.id}"><div class="k">Növbəti →</div><div class="n">${esc(next.title)}</div></button>` : '<span></span>'}</div></div>`;
   const tools = c.kind === 'chapter' ? `<div class="ch-tools">
       <div class="ch-lvl"><span class="lb">İzah səviyyəsi</span>${lvlCtl('', PREF().lvl || 'std', 'lvl-all')}</div>
-      <div class="row"><button class="btn sm" data-act="konspekt" data-ch="${c.id}">${icon('list')}Konspekt</button><button class="btn sm" data-act="sum" data-ch="${c.id}">${icon('print')}Xülasə vərəqi</button><button class="btn sm ai-only" data-act="ch-lesson" data-ch="${c.id}">${icon('steps')}Fəsil üzrə dərs</button></div>
+      <div class="row"><button class="btn sm" data-act="konspekt" data-ch="${c.id}">${icon('list')}Konspekt</button><button class="btn sm" data-act="sum" data-ch="${c.id}">${icon('print')}Xülasə vərəqi</button><button class="btn sm" data-act="hl-open" data-ch="${c.id}">${hlBtn(c.id)}</button><button class="btn sm ai-only" data-act="ch-lesson" data-ch="${c.id}">${icon('steps')}Fəsil üzrə dərs</button></div>
     </div>` : '';
   document.body.dataset.part = partId(c);
   v.innerHTML = `<header class="ch-hero" data-part="${partId(c)}">${chBanner(c)}<div class="kicker"><b>${c.num ? 'Fəsil ' + pad2(c.num) : (c.id === 'c0' ? 'Giriş' : 'Əlavə B')}</b>${pl && pl.pn ? ' · ' + esc(pl.name) : ''}</div>
@@ -1097,7 +1099,7 @@ function vReader(v) {
   }, { rootMargin: '-35% 0px -60% 0px' });
   $$('.sec', v).forEach(el => observer.observe(el));
   $$('.dg-scroll', v).forEach(d => { if (d.scrollWidth > d.clientWidth + 4) d.closest('figure').classList.add('wide'); });
-  dgaDecorate(v);
+  dgaDecorate(v); hlPaint(v);
   if (!target && (!P().last || P().last.ch !== c.id)) { P().last = { ch: c.id, sec: c.sections[0] ? c.sections[0].id : null }; Store.changed('progress', 2500); }
   onScroll();
 }
@@ -1250,6 +1252,246 @@ function dgaAct(f, v, i) {
   else if (v === 'auto') { DGA.auto = !DGA.auto; if (DGA.auto && DGA.i >= DGA.n) dgaGo(1); else { dgaPaint(); dgaTimer(); } }
   else if (v === 'stop') dgaStop(true);
 }
+/* ---------- highlights: the reader selects words in the book's text and marks them in one of four colours, with an optional note.
+   Blocks that can be marked carry data-hl (m main text, q short, k "Yadda saxla", d deep, e an example's task). A highlight is kept
+   by its text, its offset in the block's text and 32 characters on each side, so it finds its place again when the page is drawn
+   anew (glossary links and diagrams included) and survives small edits of the book; one that cannot be found is listed as lost.
+   Overlapping highlights merge. Saved per chapter in the hl-<chapter> doc: { h: { sid: [{ id, s, o, t, pre, suf, k, n, at }] } } ---------- */
+const HL_K = [['y', 'Vacib'], ['g', 'Termin'], ['b', 'Misal'], ['p', 'Sual']];
+const HL_NAME = Object.fromEntries(HL_K);
+const HL_ORD = { e: 0, q: 1, m: 2, k: 3, d: 4 };
+const HL_MAX = 1200;
+const hlDoc = cid => Store.doc('hl-' + cid);
+let HLGO = null, hlTap = 0; // a highlight to scroll to after the reader is drawn; the pending open of a tapped highlight
+// the block's text nodes in order. Diagrams (and their player) are not text, nor is UI that code puts inside a block, such as the
+// SQL run bar of chapter 16: such UI must sit in an element listed here or carry data-nohl
+const HL_SKIP = 'figure,.dga,.sql-run,[data-nohl],script,style';
+function hlNodes(scope) {
+  const out = [], w = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT);
+  for (let n = w.nextNode(); n; n = w.nextNode()) { const p = n.parentElement; if (!p || !p.closest(HL_SKIP)) out.push(n); }
+  return out;
+}
+// the block a selection belongs to. A triple click or a drag a little past the last line ends the range at the start of the next
+// block (or starts it at the end of the one before): an end outside the block that adds no text is moved back to the block's edge
+function hlScopeOf(r) {
+  const el = n => n && (n.nodeType === 1 ? n : n.parentElement);
+  for (const cand of [el(r.startContainer), el(r.endContainer)]) {
+    const scope = cand && cand.closest('[data-hl]'); if (!scope || !scope.closest('.sec')) continue;
+    const c = r.cloneRange(), x = document.createRange();
+    if (!scope.contains(r.startContainer)) { x.setStart(r.startContainer, r.startOffset); x.setEnd(scope, 0); if (x.toString().trim()) continue; c.setStart(scope, 0); }
+    if (!scope.contains(r.endContainer)) { x.setStart(scope, scope.childNodes.length); x.setEnd(r.endContainer, r.endOffset); if (x.toString().trim()) continue; c.setEnd(scope, scope.childNodes.length); }
+    return { scope, r: c };
+  }
+  return null;
+}
+// saved highlights of a section; items that are not well formed (an edited export file, say) are dropped from memory, never drawn
+const hlOk = x => x && typeof x === 'object' && typeof x.id === 'string' && /^[a-z0-9]{1,40}$/i.test(x.id) && typeof x.t === 'string' && x.t.length > 0 && !!HL_NAME[x.k] && HL_ORD[x.s] !== undefined;
+function hlList(cid, sid, make) {
+  const D = hlDoc(cid); if (!D.h || typeof D.h !== 'object' || Array.isArray(D.h)) D.h = {};
+  let L = D.h[sid];
+  if (!Array.isArray(L)) { if (!make) return []; L = D.h[sid] = []; }
+  for (let i = L.length - 1; i >= 0; i--) {
+    const x = L[i]; if (!hlOk(x)) { L.splice(i, 1); continue; }
+    x.pre = String(x.pre || ''); x.suf = String(x.suf || ''); x.o = Math.max(0, +x.o || 0); x.n = typeof x.n === 'string' ? x.n : '';
+  }
+  return L;
+}
+const hlId = () => 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const hlText = scope => hlNodes(scope).map(n => n.data).join('');
+// the selection as [a, b) in the block's text, without the spaces at its ends
+function hlRangeOf(scope, r) {
+  let acc = 0, a = -1, b = -1;
+  const nodes = hlNodes(scope);
+  for (const n of nodes) {
+    const len = n.data.length;
+    if (r.comparePoint(n, 0) === 1) break;
+    if (a < 0) { if (n === r.startContainer) a = acc + Math.min(r.startOffset, len); else if (r.comparePoint(n, 0) === 0) a = acc; }
+    if (a >= 0) { if (n === r.endContainer) { b = acc + Math.min(r.endOffset, len); break; } if (r.comparePoint(n, len) === 0) b = acc + len; }
+    acc += len;
+  }
+  if (a < 0 || b <= a) return null;
+  const text = nodes.map(n => n.data).join('');
+  while (a < b && /\s/.test(text[a])) a++;
+  while (b > a && /\s/.test(text[b - 1])) b--;
+  return b > a ? { a, b, text } : null;
+}
+// where the highlight is now: its old offset if the text is still there, else the best match by the text around it
+function hlFind(text, it) {
+  if (text.substr(it.o, it.t.length) === it.t) return it.o;
+  // a short highlight ("test") occurs everywhere: elsewhere it counts only with some of its old neighbours around it
+  const need = it.t.length < 20 ? Math.min(8, it.pre.length + it.suf.length) : 0;
+  let best = -1, score = need - 1;
+  for (let i = text.indexOf(it.t); i >= 0; i = text.indexOf(it.t, i + 1)) {
+    const pre = text.slice(Math.max(0, i - it.pre.length), i), suf = text.substr(i + it.t.length, it.suf.length);
+    let sc = 0; while (sc < pre.length && pre[pre.length - 1 - sc] === it.pre[it.pre.length - 1 - sc]) sc++;
+    let k = 0; while (k < suf.length && suf[k] === it.suf[k]) k++;
+    const v = sc + k - Math.abs(i - it.o) / 1e7;
+    if (v > score) { score = v; best = i; }
+  }
+  return best;
+}
+function hlWrap(scope, a, b, it) {
+  let acc = 0; const made = [];
+  for (const n of hlNodes(scope)) {
+    const len = n.data.length, s = Math.max(a, acc) - acc, e = Math.min(b, acc + len) - acc;
+    acc += len;
+    if (s >= e) { if (acc >= b) break; continue; }
+    let mid = n; if (s > 0) mid = n.splitText(s); if (e - s < mid.data.length) mid.splitText(e - s);
+    if (!mid.data.trim()) continue; // the gap between two blocks stays outside
+    const m = document.createElement('mark'); m.className = `hl hl-${it.k}`; m.dataset.hid = it.id;
+    mid.parentNode.insertBefore(m, mid); m.appendChild(mid); made.push(m);
+  }
+  const first = made[0], last = made[made.length - 1];
+  if (last && it.n && it.n.trim()) { last.classList.add('has-n'); last.title = it.n; }
+  if (first && !first.closest('a,button')) { // reachable from the keyboard (Enter opens it); a mark inside a link or button leaves it alone
+    first.tabIndex = 0; first.setAttribute('role', 'button');
+    first.setAttribute('aria-label', `${first.textContent} — işarə: ${HL_NAME[it.k]}${it.n && it.n.trim() ? ', qeydi var' : ''}`);
+  }
+  return made;
+}
+function hlPaintSec(sec) {
+  const sid = sec.dataset.sec, cid = secCh[sid]; if (!cid) return;
+  const old = sec.querySelectorAll('mark.hl');
+  if (old.length) { old.forEach(m => m.replaceWith(...m.childNodes)); sec.querySelectorAll('[data-hl]').forEach(x => x.normalize()); }
+  const list = hlList(cid, sid); if (!list.length) return;
+  sec.querySelectorAll('[data-hl]').forEach(scope => {
+    const items = list.filter(x => x.s === scope.dataset.hl); if (!items.length) return;
+    const text = hlText(scope);
+    items.forEach(it => { const o = hlFind(text, it); if (o >= 0) hlWrap(scope, o, o + it.t.length, it); });
+  });
+}
+function hlPaint(root) {
+  (root.matches && root.matches('.sec') ? [root] : $$('.sec', root)).forEach(hlPaintSec);
+  if (!HLGO) return;
+  const hid = HLGO; HLGO = null;
+  const m = document.querySelector(`mark.hl[data-hid="${hid}"]`); if (!m) return;
+  requestAnimationFrame(() => requestAnimationFrame(() => { m.scrollIntoView({ block: 'center' }); hlFlash(hid); }));
+}
+function hlFlash(hid) { $$(`mark.hl[data-hid="${hid}"]`).forEach(m => { m.classList.remove('fl'); void m.offsetWidth; m.classList.add('fl'); }); }
+function hlGet(sid, hid) {
+  const cid = secCh[sid]; if (!cid) return null;
+  const list = hlList(cid, sid), it = list.find(x => x.id === hid);
+  return it ? { it, list, cid, sid } : null;
+}
+function hlMake(text, s, a, b, k, n) {
+  while (a < b && /\s/.test(text[a])) a++;
+  while (b > a && /\s/.test(text[b - 1])) b--;
+  return b <= a ? null : { id: hlId(), s, o: a, t: text.slice(a, b), pre: text.slice(Math.max(0, a - 32), a), suf: text.slice(b, b + 32), k, n: (n || '').slice(0, 1000), at: Date.now() };
+}
+// a new highlight works like a marker pen: a highlight of the same colour it touches becomes part of it (notes kept), one of another
+// colour keeps only what sticks out on either side. k null ("Qeyd") takes the colour of the highlight it touches, else Vacib
+function hlAdd(h, k) {
+  const cid = secCh[h.sid], sec = document.getElementById(h.sid), scope = sec && sec.querySelector(`[data-hl="${h.s}"]`);
+  if (!cid || !scope) return null;
+  const list = hlList(cid, h.sid, true), text = hlText(scope), at = new Map();
+  list.forEach(x => { if (x.s === h.s) { const o = hlFind(text, x); if (o >= 0) at.set(x, o); } });
+  const touches = (x, a, b) => at.has(x) && at.get(x) < b && at.get(x) + x.t.length > a;
+  if (!k) { const hit = list.find(x => touches(x, h.a, h.b)); k = hit ? hit.k : 'y'; }
+  let a = h.a, b = h.b, grew = true; const drop = new Set(), notes = [], parts = [];
+  while (grew) {
+    grew = false;
+    list.forEach(x => { if (drop.has(x) || x.k !== k || !touches(x, a, b)) return; drop.add(x); grew = true; a = Math.min(a, at.get(x)); b = Math.max(b, at.get(x) + x.t.length); if (x.n.trim()) notes.push(x.n.trim()); });
+  }
+  list.forEach(x => {
+    if (drop.has(x) || !touches(x, a, b)) return;
+    const o = at.get(x), e = o + x.t.length; drop.add(x);
+    if (o < a) parts.push(hlMake(text, h.s, o, a, x.k, x.n));
+    if (e > b) parts.push(hlMake(text, h.s, b, e, x.k, o < a ? '' : x.n));
+  });
+  const it = hlMake(text, h.s, a, b, k, notes.join('\n')); if (!it) return null;
+  for (let i = list.length - 1; i >= 0; i--) if (drop.has(list[i])) list.splice(i, 1);
+  list.push(it, ...parts.filter(Boolean)); list.sort((p, q) => HL_ORD[p.s] - HL_ORD[q.s] || p.o - q.o);
+  Store.changed('hl-' + cid);
+  hlPaintSec(sec); hlFlash(it.id); hlCount(cid);
+  return it;
+}
+const hlBtn = cid => { const n = hlAll(cid).length; return `${icon('marker')}İşarələr${n ? ' · ' + n : ''}`; };
+function hlCount(cid) { const b = document.querySelector(`.ch-tools [data-act="hl-open"][data-ch="${cid}"]`); if (b) b.innerHTML = hlBtn(cid); }
+function hlTerms(hid) { // glossary terms inside the highlight: the sheet links them, since a tap on the mark opens the sheet
+  const out = new Map();
+  $$(`mark.hl[data-hid="${hid}"]`).forEach(m => { const g = m.closest('.gt') || m.querySelector('.gt'); if (g && glById[g.dataset.g]) out.set(g.dataset.g, glById[g.dataset.g]); });
+  return [...out.values()].slice(0, 6);
+}
+function hlSheet(sid, hid, focus) {
+  const g = hlGet(sid, hid); if (!g) return;
+  const { it } = g, s = secById[sid], list = S.view !== 'reader';
+  openSheet(sheetHead('İşarə · ' + (s.num || kindTag(s)), s.title) + `<div class="sheet-body hl-sheet" data-sid="${sid}" data-hid="${hid}">
+    <blockquote class="hl-q hl-${it.k}">${esc(it.t)}</blockquote>
+    <div class="hl-kinds" role="group" aria-label="Rəng">${HL_K.map(([k, l]) => `<button class="hl-kind hl-${k}" data-act="hl-k" data-k="${k}" aria-pressed="${it.k === k}"><i class="hl-dot"></i>${l}</button>`).join('')}</div>
+    <label class="hl-nl" for="hl-n">Qeyd</label><textarea id="hl-n" class="field" rows="3" maxlength="1000" placeholder="Niyə işarələdin? Öz sözlərinlə yaz…">${esc(it.n || '')}</textarea>
+    <div class="row hl-acts"><button class="btn sm ghost" data-act="hl-del">${icon('trash')}Sil</button>${hlTerms(hid).map(t => `<button class="btn sm" data-act="gt" data-g="${t.id}">${icon('abc')}${esc(t.en)}</button>`).join('')}<button class="btn sm ai-only" data-act="hl-ai">${icon('spark')}İzah et</button><button class="btn sm primary" data-act="sheet-close">Hazır</button></div></div>`, null, list ? () => rerender() : null);
+  if (focus) { const t = $('#hl-n'); if (t) t.focus(); } // in the tap itself, so a phone opens its keyboard
+}
+function hlSheetAct(act, d) {
+  const box = $('.hl-sheet'); if (!box) return;
+  const g = hlGet(box.dataset.sid, box.dataset.hid); if (!g) { closeSheet(); return; }
+  const { it, list, cid, sid } = g;
+  const sec = document.getElementById(sid);
+  if (act === 'hl-k') {
+    if (!HL_NAME[d.k]) return;
+    it.k = d.k; Store.changed('hl-' + cid);
+    if (sec) hlPaintSec(sec);
+    box.querySelector('.hl-q').className = 'hl-q hl-' + it.k;
+    $$('.hl-kind', box).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === it.k)));
+  } else if (act === 'hl-del') {
+    list.splice(list.indexOf(it), 1); if (!list.length) delete hlDoc(cid).h[sid];
+    Store.changed('hl-' + cid); closeSheet();
+    if (sec) hlPaintSec(sec);
+    hlCount(cid); toast('İşarə silindi');
+  } else if (act === 'hl-ai') { closeSheet(); aiForSelection(it.t, sid); }
+}
+function hlNote(t) {
+  const box = t.closest('.hl-sheet'); if (!box) return;
+  const g = hlGet(box.dataset.sid, box.dataset.hid); if (!g) return;
+  g.it.n = t.value.slice(0, 1000); Store.changed('hl-' + g.cid, 1200);
+  const ms = $$(`mark.hl[data-hid="${g.it.id}"]`), last = ms[ms.length - 1];
+  ms.forEach(m => { m.classList.remove('has-n'); m.removeAttribute('title'); });
+  if (last && g.it.n.trim()) { last.classList.add('has-n'); last.title = g.it.n; }
+  if (ms[0] && ms[0].hasAttribute('role')) ms[0].setAttribute('aria-label', `${ms[0].textContent} — işarə: ${HL_NAME[g.it.k]}${g.it.n.trim() ? ', qeydi var' : ''}`);
+}
+// all highlights in book order; "lost" when the text is no longer in the book
+function hlAll(cid) {
+  const out = [];
+  (cid ? [chById[cid]] : CHAPTERS).forEach(c => c.sections.forEach(s => hlList(c.id, s.id).forEach(it => out.push({ c, s, it }))));
+  return out;
+}
+const hlSrc = (s, k) => k === 'm' ? s.html : k === 'q' ? s.x && s.x.short : k === 'd' ? s.x && s.x.deep : k === 'k' ? s.x && s.x.keys.map(x => `<li><span>${x}</span></li>`).join('\n') : k === 'e' ? s.task : '';
+const hlTextCache = {};
+function hlLost(s, it) {
+  const key = s.id + ':' + it.s;
+  if (hlTextCache[key] === undefined) { const d = document.createElement('div'); d.innerHTML = hlSrc(s, it.s) || ''; hlTextCache[key] = hlText(d); }
+  return !hlTextCache[key].includes(it.t);
+}
+function hlItemHTML({ c, s, it }) {
+  const lost = hlLost(s, it), q = it.t.length > 320 ? it.t.slice(0, 320) + '…' : it.t;
+  return `<div class="hl-item hl-${it.k}${lost ? ' lost' : ''}"><button class="hl-go" data-act="hl-go" data-sec="${s.id}" data-hid="${it.id}"${lost ? ' disabled' : ''}>
+      <span class="w"><i class="hl-dot"></i>${esc(HL_NAME[it.k])} · ${esc(c.num ? 'Fəsil ' + c.num : c.title)} · ${esc(s.num ? s.num + '. ' + s.title : s.title)}</span>
+      <span class="q">${esc(q)}</span>${it.n && it.n.trim() ? `<span class="n">${icon('pencil')}<span>${esc(it.n)}</span></span>` : ''}
+      ${lost ? '<span class="lostm">Kitabın mətni dəyişib: bu yer artıq tapılmır.</span>' : ''}</button>
+    ${lost ? `<button class="ibtn" data-act="hl-rm" data-sec="${s.id}" data-hid="${it.id}" aria-label="İşarəni sil">${icon('trash')}</button>`
+      : `<button class="ibtn" data-act="hl-edit" data-sec="${s.id}" data-hid="${it.id}" aria-label="İşarəni dəyiş: rəng, qeyd, sil">${icon('pencil')}</button>`}</div>`;
+}
+function hlCopyText(cid) {
+  let out = '', cur = null;
+  hlAll(cid).forEach(({ c, s, it }) => {
+    if (c !== cur) { cur = c; out += (out ? '\n' : '') + chLabel(c) + '\n'; }
+    out += `  • [${HL_NAME[it.k]}] “${it.t}” — ${secLabel(s)}${it.n && it.n.trim() ? '\n    Qeyd: ' + it.n.trim().replace(/\n/g, ' ') : ''}\n`;
+  });
+  return out.trim();
+}
+function vHighlights(v) {
+  const cid = chById[S.params.ch] ? S.params.ch : null, k = HL_NAME[S.params.k] ? S.params.k : '', c = cid && chById[cid];
+  setHeader({ back: true, kicker: c ? (c.num ? `Fəsil ${pad2(c.num)}` : c.title) + ' · işarələr' : 'Kitab', name: 'İşarələrim', right: [{ act: 'hl-copy', icon: 'copy', label: 'İşarələri kopyala' }] });
+  const all = hlAll(cid), list = k ? all.filter(x => x.it.k === k) : all;
+  const n = kk => all.filter(x => x.it.k === kk).length;
+  const chips = `<div class="row hl-f"><button class="chip${k ? '' : ' acc'}" data-act="hl-f" data-k="">Hamısı · ${all.length}</button>${HL_K.map(([kk, l]) => `<button class="chip hl-${kk}${k === kk ? ' acc' : ''}" data-act="hl-f" data-k="${kk}"><i class="hl-dot"></i>${l} · ${n(kk)}</button>`).join('')}${c ? `<button class="chip" data-act="hl-f" data-ch="" aria-label="Bütün fəsillər">${esc(c.num ? 'Fəsil ' + c.num : c.title)}${icon('x')}</button>` : ''}</div>`;
+  const groups = []; list.forEach(x => { const gr = groups[groups.length - 1]; if (gr && gr.c === x.c) gr.items.push(x); else groups.push({ c: x.c, items: [x] }); });
+  v.innerHTML = `<header class="ch-hero"><div class="kicker"><b>İşarələrim</b></div><h1 class="h1">Seçdiyin sözlər və cümlələr</h1>
+      <p class="muted" style="margin:8px 0 0;font-size:14.5px">Kitabda söz və ya cümləni seç, aşağıda çıxan rənglərdən birini bas. İşarəyə toxunanda rəngi dəyişə, qeyd yaza və ya silə bilərsən. Buradan işarəyə bassan, kitabda həmin yer açılacaq.</p></header>
+    ${all.length ? chips : ''}
+    ${groups.length ? groups.map(gr => `<section class="block"><div class="block-h"><h2>${esc(chLabel(gr.c))}</h2><span class="muted" style="font-size:13px">${gr.items.length}</span></div><div class="hl-list">${gr.items.map(hlItemHTML).join('')}</div></section>`).join('')
+      : `<div class="empty" style="margin-top:18px">${all.length ? 'Bu rəngdə işarə yoxdur.' : 'Hələ işarə yoxdur. Kitabda istənilən sözü, termini və ya cümləni barmaqla (kompüterdə siçanla) seç — aşağıda dörd rəng çıxacaq: Vacib, Termin, Misal, Sual.'}</div>`}`;
+}
 /* ---------- chapter summary (konspekt) ---------- */
 function konspektText(c) {
   let out = `${chLabel(c)} — konspekt\n\n`;
@@ -1274,6 +1516,7 @@ function vKonspekt(v) {
       <ol>${s.x.keys.map(k => `<li>${k}</li>`).join('')}</ol></div>`).join('')}</div>
     ${pit ? `<section class="block"><div class="block-h"><h2>Tez-tez edilən səhvlər</h2></div><div class="card kon-pit prose">${pit.html}</div></section>` : ''}
     ${terms.length ? `<section class="block"><div class="block-h"><h2>Fəslin terminləri</h2><span class="muted" style="font-size:13px">${terms.length}</span></div><div class="row">${terms.map(g => `<button class="chip" data-act="gt" data-g="${g.id}">${esc(g.en)}</button>`).join('')}</div></section>` : ''}
+    ${hlAll(c.id).length ? `<section class="block"><div class="block-h"><h2>Sənin işarələrin</h2><span class="muted" style="font-size:13px">${hlAll(c.id).length}</span></div><div class="hl-list">${hlAll(c.id).map(hlItemHTML).join('')}</div></section>` : ''}
     <div class="qz-act" style="margin-top:22px"><button class="btn primary" data-act="quiz" data-ch="${c.num}">${icon('target')}Fəsil testi</button><button class="btn ghost" data-act="open-ch" data-ch="${c.id}">${icon('book')}Fəslə qayıt</button></div>`;
 }
 /* ---------- summary sheet: one chapter on one printed A4 page ---------- */
@@ -5776,6 +6019,7 @@ function vProgress(v) {
     (weak.length || o.retry ? `<button class="quizcta ai-only" style="margin-top:10px" data-act="weak-lesson">${icon('steps')}<div style="flex:1;min-width:0;text-align:left"><b>Zəif mövzular üzrə dərs</b><span>Claude test səhvlərinə${o.retry ? ` və “Yenidən cəhd et” alan ${o.retry} tapşırığa` : ''} görə fərdi təkrar dərsi qurur</span></div>${icon('arrow')}</button>` : '');
   const notes = [];
   CHAPTERS.forEach(c => { const n = notesDoc(c.id).n; c.sections.forEach(s => { if (n[s.id] && n[s.id].trim()) notes.push({ c, s, t: n[s.id] }); }); });
+  const hls = hlAll().sort((p, q) => p.it.at - q.it.at);
   const notesHTML = notes.length ? `<div class="notes-list">${notes.map(x => `<button data-act="goto-sec" data-sec="${x.s.id}"><div class="w">${esc(x.c.num ? 'Fəsil ' + x.c.num : x.c.title)} · ${esc(x.s.num || x.s.title)}</div><div class="x">${esc(x.t.slice(0, 400))}</div></button>`).join('')}</div>`
     : `<div class="empty">Hər bölmənin altındakı “Qeyd” düyməsi ilə öz qeydlərini yaz — hamısı burada toplanacaq.</div>`;
   v.innerHTML = `
@@ -5794,8 +6038,10 @@ function vProgress(v) {
     <button class="quizcta alt" data-act="exam-open">${icon('target')}<div style="flex:1;min-width:0;text-align:left"><b>Son: ${P().exams[0].ok}/${P().exams[0].n} · ən yaxşı: ${Math.max(...P().exams.map(x => x.ok))}/${EXAM_N}</b><span>keçid həddi ${Math.ceil(EXAM_N * EXAM_PASS)} — ${P().exams[0].ok >= Math.ceil(P().exams[0].n * EXAM_PASS) ? 'son cəhd keçib' : 'son cəhd keçməyib'}</span></div>${icon('arrow')}</button></section>` : ''}
   <section class="block"><div class="block-h"><h2>Zəif mövzular</h2><span class="muted" style="font-size:13px">son test cəhdlərinə görə</span></div>${weakHTML}</section>
   <section class="block"><div class="block-h"><h2>Qeydlərim</h2><span class="muted" style="font-size:13px">${notes.length}</span></div>${notesHTML}</section>
+  <section class="block"><div class="block-h"><h2>İşarələrim</h2><span class="muted" style="font-size:13px">${hls.length}</span></div>${hls.length ? `<div class="hl-list">${hls.slice(-3).reverse().map(hlItemHTML).join('')}</div>` : '<div class="empty">Kitabda söz, termin və ya cümləni seç, aşağıda çıxan rənglərdən birini bas — işarələrin burada toplanacaq.</div>'}
+    <button class="quizcta alt" style="margin-top:10px" data-act="hl-open">${icon('marker')}<div style="flex:1;min-width:0;text-align:left"><b>Bütün işarələr</b><span>${hls.length ? HL_K.map(([k, l]) => `${l} ${hls.filter(x => x.it.k === k).length}`).join(' · ') : 'rəngə görə süz, kitabdakı yerinə keç, kopyala'}</span></div>${icon('arrow')}</button></section>
   <section class="block"><div class="block-h"><h2>Məlumatlar</h2></div><div class="card">
-    <div style="font-size:14.5px">${PWA ? 'İrəliləyiş, qeydlər və cavablar yalnız bu cihazda saxlanılır. Ehtiyat nüsxə üçün vaxtaşırı ixrac et — başqa cihazda “İdxal et” ilə bərpa olunur.' : Store.remote && !Store.readOnly ? 'İrəliləyişin hesabında saxlanılır və bütün cihazlarında görünür.' : 'İrəliləyiş hələlik yalnız bu brauzerdə saxlanılır.'}</div>
+    <div style="font-size:14.5px">${PWA ? 'İrəliləyiş, qeydlər, işarələr və cavablar yalnız bu cihazda saxlanılır. Ehtiyat nüsxə üçün vaxtaşırı ixrac et — başqa cihazda “İdxal et” ilə bərpa olunur.' : Store.remote && !Store.readOnly ? 'İrəliləyişin hesabında saxlanılır və bütün cihazlarında görünür.' : 'İrəliləyiş hələlik yalnız bu brauzerdə saxlanılır.'}</div>
     <div class="row" style="margin-top:12px">${PWA ? `<button class="btn sm" data-act="data-export">${icon('download')}İxrac et</button><button class="btn sm" data-act="data-import">${icon('upload')}İdxal et</button>` : ''}<button class="btn sm" data-act="settings">${icon('sliders')}Ayarlar</button><button class="btn sm ghost" data-act="reset-ask">${icon('trash')}İrəliləyişi sıfırla</button></div></div></section>`;
 }
 
@@ -5844,7 +6090,7 @@ function openSettings() {
       <div class="ds">Qısa — əsas fikirlər; Standart — kitabın mətni; Dərin — mətn, “Dərindən” qatı və mini-nümunə açıq. Hər bölmədə ayrıca da dəyişmək olar.</div></div>
     <div class="set-row"><div class="lb">Fleş kartların istiqaməti</div><div class="seg">${seg('dir', 'en', 'İngiliscə → az')}${seg('dir', 'az', 'Az → ingiliscə')}</div></div>
     ${PWA ? pwaClaudeRow() + pwaDataRow() + pwaAppRow() : `<div class="set-row"><div class="lb">Claude</div><div class="ds">${AI.state === 'on' ? 'Aktivdir: Claude Opus 5.5, maksimum düşünmə (high). Hər sorğu öz Claude limitindən istifadə edir; ilk sorğuda icazə soruşulur.' : AI.state === 'pending' ? 'Yoxlanılır…' : 'Bu görünüşdə əlçatan deyil. Kitab, testlər və kartlar AI olmadan da işləyir.'}</div></div>
-    <div class="set-row"><div class="lb">Saxlama</div><div class="ds">${Store.remote && !Store.readOnly ? 'İrəliləyiş, qeydlər və cavablar hesabında saxlanılır — telefonda və kompüterdə eyni görünür.' : 'Hazırda yalnız bu brauzerdə saxlanılır.'}</div></div>`}
+    <div class="set-row"><div class="lb">Saxlama</div><div class="ds">${Store.remote && !Store.readOnly ? 'İrəliləyiş, qeydlər, işarələr və cavablar hesabında saxlanılır — telefonda və kompüterdə eyni görünür.' : 'Hazırda yalnız bu brauzerdə saxlanılır.'}</div></div>`}
   </div>`);
   if (PWA) PWA.persisted().then(ok => { const el = $('#persist-st'); if (el && ok) el.textContent = ' Brauzer bu məlumatları daimi saxlayır.'; });
 }
@@ -5876,7 +6122,7 @@ function pwaClaudeRow() {
 }
 function pwaDataRow() {
   return `<div class="set-row"><div class="lb">Məlumatlar</div>
-    <div class="ds">İrəliləyiş, qeydlər və cavablar yalnız bu cihazda saxlanılır. Telefonu dəyişməzdən və ya brauzer məlumatlarını silməzdən əvvəl ixrac et.<span id="persist-st"></span></div>
+    <div class="ds">İrəliləyiş, qeydlər, işarələr və cavablar yalnız bu cihazda saxlanılır. Telefonu dəyişməzdən və ya brauzer məlumatlarını silməzdən əvvəl ixrac et.<span id="persist-st"></span></div>
     <div class="row"><button class="btn sm" data-act="data-export">${icon('download')}İxrac et (.json)</button><button class="btn sm ghost" data-act="data-import">${icon('upload')}İdxal et</button></div></div>`;
 }
 function pwaAppRow() {
@@ -5927,7 +6173,7 @@ async function saveKey(btn) {
   refreshPwaRow('set-claude');
   if (S.view === 'tutor' && !S.tutorBusy && !S.rpBusy) rerender();
 }
-const IMPORT_KEY = /^(progress|prefs|cards|checks|chat|roleplay|iv|pw|notes-[a-z0-9]+|ans-[a-z0-9]+)$/;
+const IMPORT_KEY = /^(progress|prefs|cards|checks|chat|roleplay|iv|pw|en|bh|notes-[a-z0-9]+|ans-[a-z0-9]+|hl-[a-z0-9]+)$/;
 async function exportData() {
   const docs = {};
   lsKeys().forEach(k => { if (IMPORT_KEY.test(k)) docs[k] = Store.doc(k); });
@@ -5944,7 +6190,7 @@ async function importData() {
   if (!j || j.app !== 'qa-kitab' || !j.docs || typeof j.docs !== 'object') { toast('Bu fayl QA Kitabının ixrac faylı deyil.'); return; }
   const keys = Object.keys(j.docs).filter(k => IMPORT_KEY.test(k) && j.docs[k] && typeof j.docs[k] === 'object' && !Array.isArray(j.docs[k]));
   if (!keys.length) { toast('Faylda məlumat tapılmadı.'); return; }
-  openConfirm('İdxal et', `Fayldakı məlumatlar (${keys.length} bölmə${j.exported ? ', ' + String(j.exported).slice(0, 10) : ''}) bu cihazdakı irəliləyişi, qeydləri və cavabları əvəz edəcək.`, 'İdxal et', () => {
+  openConfirm('İdxal et', `Fayldakı məlumatlar (${keys.length} bölmə${j.exported ? ', ' + String(j.exported).slice(0, 10) : ''}) bu cihazdakı irəliləyişi, qeydləri, işarələri və cavabları əvəz edəcək.`, 'İdxal et', () => {
     lsKeys().forEach(k => { try { localStorage.removeItem(LS + k); } catch (e) { } });
     Store.docs = {};
     keys.forEach(k => { const d = Object.assign(defFor(k), JSON.parse(JSON.stringify(j.docs[k]))); Store.docs[k] = d; lsSet(k, d); });
@@ -6195,20 +6441,33 @@ async function inlineAI(kind, id) {
 /* selection pill */
 let selState = null, selTimer = null;
 function hideSelPill() { const p = $('#selpill'); if (p) p.hidden = true; selState = null; }
+// the bar under a selection in the reader: four highlight colours and "Qeyd" when the selection lies in one block of the book's
+// text (hl*), and "İzah et" when Claude is on
 function onSelection() {
   clearTimeout(selTimer);
   selTimer = setTimeout(() => {
-    if (AI.state !== 'on' || S.view !== 'reader' || sheetEl) { hideSelPill(); return; }
+    if (S.view !== 'reader' || sheetEl) { hideSelPill(); return; }
     const sel = window.getSelection();
     const text = sel ? sel.toString().replace(/\s+/g, ' ').trim() : '';
-    if (!text || text.length < 3 || !sel.rangeCount) { setTimeout(() => { const s2 = window.getSelection(); if (!s2 || !s2.toString().trim()) hideSelPill(); }, 250); return; }
-    const node = sel.getRangeAt(0).commonAncestorContainer;
+    if (!text || text.length < 2 || !sel.rangeCount) { setTimeout(() => { const s2 = window.getSelection(); if (!s2 || !s2.toString().trim()) hideSelPill(); }, 250); return; }
+    const r = sel.getRangeAt(0), node = r.commonAncestorContainer;
     const el = node.nodeType === 1 ? node : node.parentElement;
-    const sec = el && el.closest('.sec');
-    if (!sec || el.closest('textarea,.sec-f,.fb')) { hideSelPill(); return; }
-    selState = { text: text.slice(0, 1500), sid: sec.id };
-    const p = $('#selpill'); p.hidden = false;
+    const sc = hlScopeOf(r), sec = (sc && sc.scope.closest('.sec')) || (el && el.closest('.sec'));
+    if (!sec || (!sc && el.closest('textarea,.sec-f,.fb'))) { hideSelPill(); return; }
+    let hl = null, long = false;
+    if (sc) { const x = hlRangeOf(sc.scope, sc.r); if (x && x.b - x.a <= HL_MAX) hl = { sid: sec.id, s: sc.scope.dataset.hl, a: x.a, b: x.b }; else if (x) long = true; }
+    if (!hl && !long && AI.state !== 'on') { hideSelPill(); return; }
+    selState = { text: text.slice(0, 1500), sid: sec.id, hl };
+    const p = $('#selpill'); p.classList.toggle('nohl', !hl); p.classList.toggle('long', long); p.hidden = false;
   }, 220);
+}
+function selPick(v) {
+  const st = selState; hideSelPill(); try { window.getSelection().removeAllRanges(); } catch (e) { }
+  if (!st) return;
+  if (v === 'ai') { aiForSelection(st.text, st.sid); return; }
+  if (!st.hl) return;
+  const it = hlAdd(st.hl, v === 'note' ? null : v);
+  if (it && v === 'note') hlSheet(st.sid, it.id, true);
 }
 
 /* =========================================================
@@ -6218,6 +6477,19 @@ function autoGrow(t) { if (!t) return; t.style.height = 'auto'; t.style.height =
 const noteTimers = {};
 document.addEventListener('click', ev => {
   if (PW.pick && ev.target.closest('#pw-dev')) { ev.preventDefault(); pwPickAt(ev.target); return; } // Playwright practice: pick an element
+  const sp = ev.target.closest('#selpill [data-sp]');
+  if (sp) { selPick(sp.dataset.sp); return; }
+  // a tap on a highlight opens it, also inside a glossary link (the sheet links the term); a link or another button keeps its own
+  // action. The sheet waits a moment, so a double click can still select a word inside the highlight
+  const mk = ev.target.closest('mark.hl[data-hid]');
+  if (mk && S.view === 'reader' && !sheetEl && !mk.closest('a[href],button:not(.gt)')) {
+    const s0 = window.getSelection(), sec = mk.closest('.sec');
+    if (sec && (!s0 || s0.isCollapsed || ev.detail > 1)) {
+      ev.preventDefault(); clearTimeout(hlTap);
+      if (ev.detail <= 1) hlTap = setTimeout(() => { const s1 = window.getSelection(); if (mk.isConnected && !sheetEl && (!s1 || s1.isCollapsed)) hlSheet(sec.id, mk.dataset.hid); }, 260);
+      return;
+    }
+  }
   const el = ev.target.closest('[data-act]');
   if (!el) return;
   const act = el.dataset.act;
@@ -6225,6 +6497,23 @@ document.addEventListener('click', ev => {
   switch (act) {
     case 'tab': goTab(d.tab); break;
     case 'dga': { const f = el.closest('figure.diagram[data-anim]'); if (f) dgaAct(f, d.v, d.i); break; }
+    case 'hl-open': go('hl', { ch: d.ch || null }); break;
+    case 'hl-f': { const p = Object.assign({}, S.params); if (d.k !== undefined) p.k = d.k; if (d.ch !== undefined) p.ch = d.ch || null; S.params = p; render({ keepScroll: true }); break; }
+    case 'hl-go': {
+      closeSheet(); const g = hlGet(d.sec, d.hid); if (!g) break;
+      const sid = d.sec; // open the block the highlight is in: the short text, the full text or the deep layer
+      if (g.it.s === 'q') LV[sid] = 'short'; else if (g.it.s !== 'k' && secById[sid].x && lvlOf(sid) === 'short') LV[sid] = 'std';
+      if (g.it.s === 'd') OPEN['d:' + sid] = true;
+      HLGO = d.hid; go('reader', { ch: secCh[sid], sec: sid }); break;
+    }
+    case 'hl-k': case 'hl-del': case 'hl-ai': hlSheetAct(act, d); break;
+    case 'hl-edit': hlSheet(d.sec, d.hid); break;
+    case 'hl-rm': { const g = hlGet(d.sec, d.hid); if (g) { g.list.splice(g.list.indexOf(g.it), 1); if (!g.list.length) delete hlDoc(g.cid).h[g.sid]; Store.changed('hl-' + g.cid); rerender(); toast('İşarə silindi'); } break; }
+    case 'hl-copy': {
+      const t = hlCopyText(chById[S.params.ch] ? S.params.ch : null); if (!t) { toast('Hələ işarə yoxdur'); break; }
+      try { navigator.clipboard.writeText(t).then(() => toast('İşarələr kopyalandı'), () => toast('Kopyalamaq alınmadı')); } catch (e) { toast('Kopyalamaq alınmadı'); }
+      break;
+    }
     case 'srt-pick': {
       const st = srtState(d.k); st.pick = st.pick === +d.j ? null : +d.j; srtRedraw(d.k); break;
     }
@@ -6566,19 +6855,14 @@ document.addEventListener('click', ev => {
     case 'pwa-install': if (PWA) PWA.install().then(ok => { if (ok) toast('Tətbiq quraşdırılır…'); if (S.view === 'home') rerender(); refreshPwaRow('set-app'); }); break;
     case 'pwa-hint-off': { const p = PREF(); p.pwaHint = 1; Store.changed('prefs'); rerender(); break; }
     case 'pwa-update': if (PWA) PWA.checkUpdate().then(r => toast(r === 'found' ? 'Yeni versiya yüklənir — hazır olanda xəbər verəcəyik.' : r === 'latest' ? 'Ən son versiya quraşdırılıb.' : r === 'offline' ? 'İnternet yoxdur.' : 'Yoxlamaq alınmadı.')); break;
-    case 'reset-ask': openConfirm('İrəliləyişi sıfırla', 'Öyrəndim işarələri, test nəticələri və kartların vəziyyəti silinəcək. Qeydlər və tapşırıq cavabları qalacaq.', 'Sıfırla', () => {
+    case 'reset-ask': openConfirm('İrəliləyişi sıfırla', '«Öyrəndim» nişanları, test nəticələri və kartların vəziyyəti silinəcək. Qeydlər, rəngli işarələr və tapşırıq cavabları qalacaq.', 'Sıfırla', () => {
       const p = P(); p.learned = {}; p.quiz = {}; p.last = null; Store.changed('progress');
       Store.doc('cards').c = {}; Store.changed('cards'); Store.doc('checks').k = {}; Store.changed('checks');
       toast('İrəliləyiş sıfırlandı'); rerender();
     }); break;
   }
 });
-document.addEventListener('pointerdown', ev => {
-  const p = ev.target.closest('#selpill');
-  if (!p) return;
-  ev.preventDefault();
-  if (selState) { const st = selState; hideSelPill(); try { window.getSelection().removeAllRanges(); } catch (e) { } aiForSelection(st.text, st.sid); }
-});
+document.addEventListener('pointerdown', ev => { if (ev.target.closest('#selpill')) ev.preventDefault(); }); // keeps the selection; the buttons act on click
 document.addEventListener('keydown', ev => {
   if (ev.key === 'Escape' && sheetEl) { closeSheet(); return; }
   if (DGA.fig && ev.target.closest && ev.target.closest('.dga.on') && !ev.ctrlKey && !ev.metaKey && !ev.altKey) { // a playing diagram: ← → walk the steps, Esc shows the whole
@@ -6626,6 +6910,9 @@ document.addEventListener('keydown', ev => {
     else if (ev.target.dataset && ev.target.dataset.bhTitle !== undefined) { ev.preventDefault(); bhSubmit(); bhRedraw(); }
   }
   if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.classList && ev.target.classList.contains('fc')) { ev.preventDefault(); ev.target.click(); }
+  if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches && ev.target.matches('mark.hl[role="button"]') && !sheetEl) { // a highlight from the keyboard
+    const sec = ev.target.closest('.sec'); if (sec) { ev.preventDefault(); hlSheet(sec.id, ev.target.dataset.hid); }
+  }
 });
 function selectText(el) { if (!el) return; try { const r = document.createRange(); r.selectNodeContents(el); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); toast('Mətn seçildi — kopyala'); } catch (e) { } }
 function updChk(sid) {
@@ -6635,6 +6922,7 @@ function updChk(sid) {
 }
 document.addEventListener('input', ev => {
   const t = ev.target;
+  if (t.id === 'hl-n') { hlNote(t); return; }
   if (t.id === 'iv-t') { ivSaveText(); return; }
   if (t.id === 'en-t') { const D = engDoc(), l = ENG.drills.filter(x => x.set === ENGS.set), cur = l[Math.min(ENGS.i, l.length - 1)]; if (cur) { D.txt[cur.id] = t.value.slice(0, 2000); Store.changed('en', 2500); } return; }
   if (t.id === 'en-own') { ENGS.own = t.value.slice(0, 4000); return; }
@@ -6726,8 +7014,9 @@ document.getElementById('tabbar').innerHTML = `<div class="side-brand"><span cla
   <button class="tab" data-act="tab" data-tab="progress">${icon('chart')}<span>İrəliləyiş</span></button></div>
   <div class="side-ctx" id="sidectx"></div>
   <div class="side-foot"><button class="side-b" data-act="side-search" title="Axtarış (${KEY_K})">${icon('search')}<span>Axtarış</span><kbd>${KEY_K}</kbd></button><button class="side-b" data-act="side-settings" title="Ayarlar">${icon('sliders')}<span>Ayarlar</span></button></div>`;
-const pill = document.createElement('button');
-pill.id = 'selpill'; pill.className = 'selpill'; pill.hidden = true; pill.innerHTML = icon('spark') + 'Seçiləni izah et';
+const pill = document.createElement('div');
+pill.id = 'selpill'; pill.className = 'selpill'; pill.hidden = true; pill.setAttribute('role', 'toolbar'); pill.setAttribute('aria-label', 'Seçilmiş mətn');
+pill.innerHTML = `<div class="hl-sw">${HL_K.map(([k, l]) => `<button class="hl-c hl-${k}" data-sp="${k}" aria-label="İşarələ: ${l}"><span>${l}</span></button>`).join('')}</div><span class="sp-long">Çox uzundur: qısa hissə seç</span><button class="sp-b" data-sp="note" aria-label="Qeydlə işarələ">${icon('pencil')}<span>Qeyd</span></button><button class="sp-b ai-only" data-sp="ai" aria-label="İzah et">${icon('spark')}<span>İzah et</span></button>`;
 document.body.appendChild(pill);
 applyPrefs();
 AI.setState('pending');
@@ -6737,7 +7026,7 @@ AI.setState('pending');
 // #magaza opens the practice store, #magaza-tc04 with that test case; #bugov the bug hunt, #bugov-2 that level; #reliz the release test, #reliz-tc06 that test case
 // on build 1.1; #devtools the DevTools practice, #devtools-dv3 that task; #playwright-pw3 a Playwright task, #lokator-l5
 // a locator; #git the Git practice, #git-g5 that task; #musahibe the interview practice; #ssenari the scripted role plays,
-// #ssenari-dev-works that one; #ingilisce the work English practice; #bacariq the skill map.
+// #ssenari-dev-works that one; #ingilisce the work English practice; #bacariq the skill map; #isareler the reader's highlights.
 let AUTO = null;
 const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 function routeHash() {
@@ -6759,6 +7048,7 @@ function routeHash() {
   else if (h === 'ga' || h === 'luget') { S.view = 'glossary'; S.params = {}; }
   else if (h === 'mesq' || h === 'practice') { S.tab = 'practice'; S.view = 'practice'; S.params = {}; }
   else if (h === 'xulase') { S.tab = 'practice'; S.view = 'summary'; S.params = { ch: 'all' }; }
+  else if (h === 'isareler') { S.tab = 'progress'; S.view = 'hl'; S.params = {}; }
   else if (t === 'magaza') { S.tab = 'practice'; S.view = 'store'; S.params = { sc: own(scById, act) ? act : null }; }
   else if (t === 'bugov') { S.tab = 'practice'; S.view = 'hunt'; S.params = { lv: /^[1-9]$/.test(act || '') && BHL(+act) ? +act : 0 }; }
   else if (t === 'reliz') { S.tab = 'practice'; if (own(scById, act)) { S.view = 'store'; S.params = { sc: act, ver: REL_D.ver }; } else { S.view = 'release'; S.params = {}; } }

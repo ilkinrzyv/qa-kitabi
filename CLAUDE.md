@@ -128,6 +128,19 @@ Screenshots land in `build/shots/` (gitignored).
   220 characters as an error. The whole diagram stays the default view (print, summary sheets); the player is drawn by
   `dgaDecorate` in the reader only, one diagram plays at a time and nothing is saved. Lines draw in, a dot runs along the arrows;
   reduced motion turns both off. `t39.js`.
+- Highlights (`hl*` in `app.js`, `#isareler`, `vHighlights`): a selection inside one block of the book's text shows the bar
+  (`#selpill`: four colours `HL_K` y Vacib / g Termin / b Misal / p Sual, "Qeyd", and "İzah et" when Claude is on; the buttons act on
+  click, pointerdown only keeps the selection). Blocks that can be marked carry `data-hl` (`m` main text, `q` short, `k` "Yadda saxla",
+  `d` deep, `e` an example's task); a new template for book text needs it too. A highlight is stored by its text `t`, offset `o` in
+  the block's text (diagrams and the player excluded, glossary links included) and 32 characters of context (`pre`, `suf`) in the
+  `hl-<chapter>` doc; `hlFind` puts it back after a redraw or a small edit of the book, one that cannot be found is listed as lost.
+  UI that code puts inside a text block (the SQL run bar) must be in `HL_SKIP` or carry `data-nohl`, or it becomes part of the text.
+  `hlScopeOf` pulls a range that ends at the next block's edge (triple click) back into its block. Like a marker pen, the same
+  colour over a highlight merges with it, another colour paints over it (the old one keeps what sticks out). `hlList` drops items
+  that are not well formed (ids must match `[a-z0-9]`). `hlPaint` runs after `vReader` and `refreshSec`; a tap on a mark (not in a
+  link or another button) opens its sheet after 260 ms, so a double click still selects a word; the first mark of each highlight is
+  focusable (Enter). The list (filters, jump, copy) is also on the progress page and in the konspekt. Export /
+  import carry `hl-*` (and `en`, `bh`). `t40.js`.
 - `build/app.js` — the whole UI in one IIFE, no framework. `PWA = window.QA_PWA` exists only in the offline build:
   guard PWA-only code with `if (PWA)` so the artifact keeps working.
 - Part colours (end of `app.css`): `--p0` … `--p8` per part, light and dark, each at least 4.5:1 as text; `[data-part]` sets `--pc`,

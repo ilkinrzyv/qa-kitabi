@@ -39,7 +39,7 @@ const { setup } = require('./harness');
     await page.waitForTimeout(500);
     const pillShown = await page.evaluate(() => !document.getElementById('selpill').hidden);
     console.log('C pill shown', pillShown);
-    await page.dispatchEvent('#selpill', 'pointerdown');
+    await page.click('#selpill [data-sp="ai"]');
     await page.waitForTimeout(1500);
     const sheetTitle = await page.evaluate(() => document.querySelector('.sheet .kicker') && document.querySelector('.sheet .kicker').textContent);
     const lastInput = await page.evaluate(() => { const c = window.__sampleCalls.at(-1); return (typeof c.input === 'string' ? c.input : c.input[0].content).slice(-300); });
