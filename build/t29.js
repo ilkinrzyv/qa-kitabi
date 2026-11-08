@@ -49,7 +49,7 @@ const VIEWS = ['#', '#c3s4', '#c8s3', '#mesq', '#musahibe', '#ingilisce', '#ssen
   out.toGit = await page.evaluate(() => ({ view: document.body.dataset.view, cur: (document.querySelector('#sidectx [aria-current="true"]') || {}).textContent }));
   await page.click('#sidectx .side-i.tool[data-act="rel-open"]'); await page.waitForTimeout(400);
   out.toRel = await page.evaluate(() => document.body.dataset.view);
-  if (out.tools.length !== 16 || out.toGit.view !== 'git' || (out.toGit.cur || '').trim() !== 'Git' || out.toRel !== 'release') bad.push('practice sidebar');
+  if (out.tools.length !== 17 ||out.toGit.view !== 'git' || (out.toGit.cur || '').trim() !== 'Git' || out.toRel !== 'release') bad.push('practice sidebar');
   // tutor and progress: no list
   await page.click('[data-act="tab"][data-tab="progress"]'); await page.waitForTimeout(300);
   out.progressSide = await page.$eval('#sidectx', e => e.childElementCount);

@@ -909,6 +909,45 @@ details.say-d[open]>summary{border-bottom:0;border-radius:0}
 .rel-pick b{font-family:var(--f-mono);font-size:12.5px;color:var(--accent)}
 .rel-pick.miss{border-color:var(--warn-line);background:var(--warn-soft)}
 .rel-md{margin:0;padding:10px 12px;border-radius:10px;background:var(--code-bg);color:var(--code-ink);font-family:var(--f-mono);font-size:12px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+/* bug hunt (#bugov): the level card, the finding form, the list of finds and the session sheet */
+.bh-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 2px}
+.bh-time{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.bh-stars{display:inline-flex;align-items:center;gap:1px;color:var(--ink-3)}
+.bh-stars svg.i{width:17px;height:17px;stroke-width:1.8}
+.bh-stars .on{color:var(--warn)}
+.bh-stars .on svg.i{fill:currentColor}
+.bh-d{margin-top:10px;padding:9px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2)}
+.bh-d summary{cursor:pointer;font-size:14px;font-weight:600}
+.bh-spec{margin:8px 0 0;padding-left:20px;font-size:14px;line-height:1.5}
+.bh-spec li+li{margin-top:5px}
+.bh-p{margin:6px 0 10px;font-size:13.5px;line-height:1.5}
+.bh-acts{margin-top:12px}
+.bh-in{height:44px;padding:0 12px;margin:2px 0 10px}
+.bh-form,.bh-list{margin-top:14px}
+.bh-form .field{min-height:0}
+.bh-form .br-f{margin-bottom:12px}
+.bh-fl{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.bh-fl li{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.bh-fl li>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;font-size:14px;line-height:1.45}
+.bh-fl li.bh-q{border-style:dashed;background:transparent}
+.bh-fl .btn{flex:none;height:30px;margin-left:auto}
+.bh-i{flex:none;display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--surface-2);font-family:var(--f-mono);font-size:12px;color:var(--ink-3)}
+.bh-ok .bh-i{background:var(--pass-soft);color:var(--pass)}
+.bh-i svg.i{width:14px;height:14px;stroke-width:2.4}
+.bh-mine{font-size:13px;color:var(--ink-2)}
+.bh-hint{display:flex;gap:6px;font-size:13px;color:var(--warn)}
+.bh-hint svg.i{flex:none;width:16px;height:16px}
+.bh-tags{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.bh-legend{display:flex;align-items:center;gap:8px;margin-top:12px}
+.bh-sh{margin-top:16px}
+.bh-list .br-f{margin:8px 0 10px}
+.bh-list .rel-md{margin-bottom:10px}
+.bh-n{font-family:var(--f-mono);font-size:11px;opacity:.85}
+.bh-lock{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.bh-lock>div{flex:1;min-width:200px;display:flex;flex-direction:column;gap:3px}
+.bh-lock>div span{font-size:13.5px;line-height:1.45;color:var(--ink-2)}
+.bh-lock>svg.i{width:26px;height:26px;color:var(--ink-3)}
+.bh-mini{margin:12px 0}
 /* DevTools: the store's Network and Console panels, the diagnosis form of the DevTools practice */
 .dvt-tg{display:flex;justify-content:center;margin:-4px 0 12px}
 .dvt{margin:0 0 14px;border:1px solid var(--line-2);border-radius:12px;background:var(--surface);overflow:hidden;font-size:13px}
@@ -1327,13 +1366,13 @@ pre.code .err{color:inherit;background:none}
 /* PC pages: the practice tools keep the task next to what it acts on. Only CSS grid places the children, so the phone keeps
    their order; the last explicit row (1fr) takes the slack when the sticky pane is taller than the column beside it */
 @media screen and (min-width:1024px){
-  body:is([data-view="store"],[data-view="devtools"]){--content:1240px}
-  body:is([data-view="store"],[data-view="devtools"]) #view{display:grid;grid-template-columns:minmax(0,1fr) 400px;grid-template-rows:repeat(7,auto) 1fr;column-gap:24px;align-items:start}
-  body:is([data-view="store"],[data-view="devtools"]) #view>*{grid-column:1;min-width:0}
-  body:is([data-view="store"],[data-view="devtools"]) #view>:is(.sm-intro,.rel-bar,.sm-pick){grid-column:1/-1}
-  body:is([data-view="store"],[data-view="devtools"]) #sm-dev{grid-column:2;grid-row:3/-1;position:sticky;top:72px;width:100%;margin:0;max-height:calc(100vh - 88px);overflow:auto}
+  body:is([data-view="store"],[data-view="devtools"],[data-view="hunt"]){--content:1240px}
+  body:is([data-view="store"],[data-view="devtools"],[data-view="hunt"]) #view{display:grid;grid-template-columns:minmax(0,1fr) 400px;grid-template-rows:repeat(7,auto) 1fr;column-gap:24px;align-items:start}
+  body:is([data-view="store"],[data-view="devtools"],[data-view="hunt"]) #view>*{grid-column:1;min-width:0}
+  body:is([data-view="store"],[data-view="devtools"],[data-view="hunt"]) #view>:is(.sm-intro,.rel-bar,.sm-pick,.bh-lock){grid-column:1/-1}
+  body:is([data-view="store"],[data-view="devtools"],[data-view="hunt"]) #sm-dev{grid-column:2;grid-row:3/-1;position:sticky;top:72px;width:100%;margin:0;max-height:calc(100vh - 88px);overflow:auto}
 
-  body[data-view="store"] .dvt-tg{margin-top:10px}
+  body:is([data-view="store"],[data-view="hunt"]) .dvt-tg{margin-top:10px}
   body[data-view="devtools"] #dvt{margin:14px 0 0}
 
   body[data-view="release"]{--content:1180px}

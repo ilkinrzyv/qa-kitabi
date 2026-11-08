@@ -559,6 +559,46 @@ for sid in devtools.pop('sections'):
     if not sec:
         print('ERR devtools section', sid, file=sys.stderr); errors += 1; continue
     sec['dt'] = 1
+# ---------- 6f3. bug hunt (bughunt.json): four new builds of the store, each with planted bugs. The reader logs a bug by its
+# title; app.js identifies it by the keyword groups (where: any, what / when: every group), so each model title and each alt
+# must identify its own bug and no other bug of the level ----------
+bughunt = json.load(open(os.path.join(BASE, 'bughunt.json'), encoding='utf-8'))
+def bh_fz(s):
+    s = str(s or '').lower().replace('̇', '')
+    for a, b in (('ə', 'e'), ('ı', 'i'), ('ö', 'o'), ('ü', 'u'), ('ş', 's'), ('ç', 'c'), ('ğ', 'g')):
+        s = s.replace(a, b)
+    return re.sub(r'\s+', ' ', re.sub(r'[«»“”"\'’„`]', '', s)).strip()
+def bh_parts(title, b):
+    T = bh_fz(title)
+    has = lambda arr: any(bh_fz(k) in T for k in arr)
+    return has(b['where']), all(has(g) for g in b['what']), (all(has(g) for g in b['when']) if b.get('when') else None)
+groups_ok = lambda g: isinstance(g, list) and g and all(isinstance(x, list) and x and all(isinstance(k, str) and k for k in x) for x in g)
+bh_keys = set()
+if not (bughunt.get('intro') and isinstance(bughunt.get('need'), int) and bughunt.get('spec') and len(bughunt.get('levels', [])) == 4):
+    print('ERR bughunt top', file=sys.stderr); errors += 1
+for i, lv in enumerate(bughunt.get('levels', [])):
+    ok = lv.get('id') == i + 1 and all(lv.get(k) for k in ('name', 'build', 'min', 'charter', 'tips', 'bugs')) and len(lv['bugs']) >= bughunt.get('need', 0)
+    if not ok:
+        print('ERR bughunt level', lv.get('id'), file=sys.stderr); errors += 1; continue
+    for k, b in lv['bugs'].items():
+        ok = k.startswith('h%d' % lv['id']) and k not in bh_keys and all(b.get(x) for x in ('t', 'sevWhy', 'hint', 'why', 'model')) \
+            and isinstance(b.get('where'), list) and b['where'] and groups_ok(b.get('what')) and (b.get('when') is None or groups_ok(b['when'])) \
+            and b.get('sev') and set(b['sev']) <= set(SEVS) and isinstance(b.get('alt', []), list)
+        bh_keys.add(k)
+        if not ok:
+            print('ERR bughunt bug', k, file=sys.stderr); errors += 1; continue
+        for t in [b['model']] + b.get('alt', []):
+            p = bh_parts(t, b)
+            if not (p[1] and (t != b['model'] or (p[0] and p[2] is not False))):
+                print('ERR bughunt title does not identify', k, t, p, file=sys.stderr); errors += 1
+            other = [o for o, ob in lv['bugs'].items() if o != k and bh_parts(t, ob)[1]]
+            if other and t == b['model']:
+                print('ERR bughunt model title also matches', k, other, file=sys.stderr); errors += 1
+for sid, lvs in bughunt.pop('sections').items():
+    sec = next((s for c in chapters for s in c['sections'] if s['id'] == sid), None)
+    if not sec or not all(isinstance(n, int) and 1 <= n <= len(bughunt['levels']) for n in lvs):
+        print('ERR bughunt section', sid, file=sys.stderr); errors += 1; continue
+    sec['bh'] = lvs
 # ---------- 6g. code tracer (trace.json, keyed by section id): JavaScript stepped line by line, Playwright tests run against
 # the practice store; every line is pre-highlighted (Playwright lines by role: locator, action, assertion) ----------
 PW_TOK = re.compile(r"(?P<loc>page\.(?:getBy\w+|locator)\((?:[^()]|\([^()]*\))*\))|(?P<as>expect\(|\)\.to\w+\((?:[^()]|\([^()]*\))*\))"
@@ -974,7 +1014,7 @@ for c in chapters:
             s['x']['short'], k = gl_wrap(s['x']['short'], rx, idx, 2); gl_total += k
 print('glossary links', gl_total)
 out = {'title': 'QA Kitabı: Sıfırdan Peşəkar Testerə', 'parts': parts, 'chapters': chapters,
-       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'devtools': devtools, 'playwright': playwright, 'ivsim': ivsim, 'rpscript': rpscript, 'english': english, 'api': api, 'sql': sqlcfg, 'git': gitcfg, 'ctfl': ctfl}
+       'glossary': glossary, 'quizzes': quizzes, 'store': store, 'devtools': devtools, 'bughunt': bughunt,'playwright': playwright, 'ivsim': ivsim, 'rpscript': rpscript, 'english': english, 'api': api, 'sql': sqlcfg, 'git': gitcfg, 'ctfl': ctfl}
 json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 # ---------- 7. report ----------
